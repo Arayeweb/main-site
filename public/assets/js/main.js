@@ -1,0 +1,171 @@
+/* =========================================================
+   آرایه — main.js
+   Orchestration: analytics shim, scroll behaviors, reveals,
+   hero demo loop, scroll-intent nudge, CTA routing.
+   No external dependencies.
+   ========================================================= */
+(function () {
+  "use strict";
+
+  /* ---------- Analytics shim (GA4-ready, no external script) ---------- */
+  window.dataLayer = window.dataLayer || [];
+  const track = (window.track = function (event, props) {
+    const payload = Object.assign({ event: event, ts: Date.now() }, props || {});
+    window.dataLayer.push(payload);
+    // visible during verification; harmless in production
+    if (window.console) console.debug("[track]", event, props || {});
+  });
+
+  const $ = (s, c) => (c || document).querySelector(s);
+  const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- Delegated CTA / action routing ---------- */
+  document.addEventListener("click", function (e) {
+    const el = e.target.closest("[data-track]");
+    if (el && el.dataset.track) track(el.dataset.track, { cta: el.dataset.cta || null });
+
+    const actor = e.target.closest("[data-action]");
+    if (!actor) return;
+    const action = actor.dataset.action;
+
+    if (action === "open-chat") {
+      e.preventDefault();
+      window.Arayeh && window.Arayeh.openChat && window.Arayeh.openChat(actor.dataset.from || "cta");
+    } else if (action === "close-chat") {
+      window.Arayeh && window.Arayeh.closeChat && window.Arayeh.closeChat();
+    } else if (action === "goto-form") {
+      e.preventDefault();
+      if (actor.dataset.plan && window.Arayeh && window.Arayeh.presetPlan) {
+        window.Arayeh.presetPlan(actor.dataset.plan);
+      }
+      closeExit();
+      smoothTo("#leadform");
+    } else if (action === "close-exit") {
+      closeExit();
+    }
+  });
+
+  /* ---------- Smooth scroll for in-page anchors ---------- */
+  function smoothTo(hash) {
+    const target = document.querySelector(hash);
+    if (!target) return;
+    target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }
+  document.addEventListener("click", function (e) {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute("href");
+    if (id.length < 2) return;
+    const target = document.querySelector(id);
+    if (target) {
+      e.preventDefault();
+      smoothTo(id);
+    }
+  });
+
+  /* ---------- Sticky header shadow ---------- */
+  const header = $(".site-header");
+  const onScroll = () => {
+    if (!header) return;
+    header.classList.toggle("scrolled", window.scrollY > 8);
+  };
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  /* ---------- IntersectionObserver reveals ---------- */
+  const reveals = $$(".reveal");
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    reveals.forEach((r) => r.classList.add("is-in"));
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const delay = parseInt(entry.target.dataset.revealDelay || "0", 10);
+            setTimeout(() => entry.target.classList.add("is-in"), delay);
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -8% 0px" }
+    );
+    reveals.forEach((r) => io.observe(r));
+  }
+
+  /* ---------- Hero mockup live demo loop ---------- */
+  const heroThread = $("#heroThread");
+  if (heroThread && !reduceMotion) {
+    // a page may tailor the mockup conversation via window.ARAYEH_HERO_DEMO
+    const script = (window.ARAYEH_HERO_DEMO && window.ARAYEH_HERO_DEMO.length) ? window.ARAYEH_HERO_DEMO : [
+      { who: "bot", text: "سلام! چطور می‌تونم کمکتون کنم؟" },
+      { who: "user", text: "ساعت کاری‌تون چنده؟" },
+      { who: "bot", text: "هر روز ۹ تا ۲۱ 🙌 می‌خواید همین حالا نوبت بگیرم؟" },
+      { who: "user", text: "بله، لطفاً" },
+      { who: "bot", text: "ایمیلتون رو بفرستید تا تأیید رو بفرستم ✅" },
+    ];
+    let i = 0;
+    function step() {
+      if (i >= script.length) {
+        setTimeout(() => {
+          heroThread.innerHTML = "";
+          i = 0;
+          step();
+        }, 2600);
+        return;
+      }
+      const item = script[i++];
+      if (item.who === "bot") {
+        const t = document.createElement("div");
+        t.className = "demo-msg bot typing";
+        t.innerHTML = "<span></span><span></span><span></span>";
+        heroThread.appendChild(t);
+        scrollThread(heroThread);
+        setTimeout(() => {
+          t.remove();
+          addDemo(item);
+          setTimeout(step, 900);
+        }, 850);
+      } else {
+        addDemo(item);
+        setTimeout(step, 800);
+      }
+    }
+    function addDemo(item) {
+      const m = document.createElement("div");
+      m.className = "demo-msg " + item.who;
+      m.textContent = item.text;
+      heroThread.appendChild(m);
+      // keep only last few to avoid overflow
+      while (heroThread.children.length > 4) heroThread.removeChild(heroThread.firstChild);
+      scrollThread(heroThread);
+    }
+    setTimeout(step, 700);
+  }
+  function scrollThread(el) {
+    el.scrollTop = el.scrollHeight;
+  }
+
+  /* ---------- Exit-intent: disabled by request (never shown) ---------- */
+  // The exit-intent popup was removed. closeExit() is kept as a safe no-op
+  // so the shared [data-action] click routing continues to work.
+  function closeExit() {}
+  window.Arayeh = window.Arayeh || {};
+
+  /* ---------- Scroll-intent chat nudge near pricing ---------- */
+  const pricing = $("#pricing");
+  if (pricing && "IntersectionObserver" in window) {
+    const nio = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            window.Arayeh && window.Arayeh.nudge && window.Arayeh.nudge();
+            nio.disconnect();
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    nio.observe(pricing);
+  }
+})();
