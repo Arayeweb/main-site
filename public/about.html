@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>درباره ما | آرایه — تیم سازنده سایت‌های مشتری‌ساز</title>
+  <meta name="description" content="آرایه یک استودیوی طراحی وب تبدیل‌محور است. بیشتر درباره داستان، ارزش‌ها و تیم ما بدانید." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#0E1A2B" />
+  <link rel="canonical" href="https://arayeh.studio/about" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/logo-icon.svg" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="preload" href="assets/css/styles.css" as="style" />
+  <link rel="preload" href="assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <meta property="og:site_name" content="آرایه" />
+  <meta property="og:locale" content="fa_IR" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://arayeh.studio/about" />
+  <meta property="og:title" content="درباره ما | آرایه" />
+  <meta property="og:description" content="آرایه یک استودیوی طراحی وب تبدیل‌محور است. بیشتر درباره داستان، ارزش‌ها و تیم ما بدانید." />
+  <meta property="og:image" content="https://arayeh.studio/assets/og-cover.svg" />
+  <meta property="og:image:type" content="image/svg+xml" />
+  <meta property="og:image:alt" content="درباره آرایه — استودیوی سایت‌ساز تبدیل‌محور" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="درباره ما | آرایه" />
+  <meta name="twitter:description" content="آرایه یک استودیوی طراحی وب تبدیل‌محور است. بیشتر درباره داستان، ارزش‌ها و تیم ما بدانید." />
+  <meta name="twitter:image" content="https://arayeh.studio/assets/og-cover.svg" />
+  <meta name="twitter:image:alt" content="درباره آرایه — استودیوی سایت‌ساز تبدیل‌محور" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    /* ===== ABOUT PAGE SPECIFIC STYLES ===== */
+    .about-hero {
+      padding: 8rem 0 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .about-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(99,102,241,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .about-hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .about-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .about-eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .about-title {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--txt-hi);
+      margin-bottom: 1.5rem;
+    }
+    .about-title .hl {
+      color: var(--accent);
+    }
+    .about-lead {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--txt-med);
+      margin-bottom: 2rem;
+    }
+    .about-hero-art {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .about-card-stack {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .about-card-base {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 2rem;
+    }
+    .about-card-stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .about-stat-box {
+      background: var(--surface-0);
+      border: 1px solid var(--border);
+      border-radius: .875rem;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .about-stat-box .stat-num {
+      display: block;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .about-stat-box .stat-lbl {
+      display: block;
+      font-size: .75rem;
+      color: var(--txt-med);
+      margin-top: .25rem;
+    }
+    .about-card-label {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--txt-lo);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: .75rem;
+    }
+    .about-card-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--txt-hi);
+      margin-bottom: .5rem;
+    }
+    .about-card-sub {
+      font-size: .9rem;
+      color: var(--txt-med);
+      line-height: 1.6;
+    }
+
+    /* Story section */
+    .about-story {
+      padding: 5rem 0;
+      background: var(--surface-0);
+    }
+    .about-story-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: start;
+    }
+    .story-sticky {
+      position: sticky;
+      top: 6rem;
+    }
+    .story-body p {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: var(--txt-med);
+      margin-bottom: 1.5rem;
+    }
+    .story-body strong {
+      color: var(--txt-hi);
+    }
+    .story-highlight {
+      background: var(--surface-1);
+      border-right: 3px solid var(--accent);
+      border-radius: .5rem;
+      padding: 1.25rem 1.5rem;
+      margin: 2rem 0;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--txt-hi);
+      line-height: 1.7;
+    }
+
+    /* Values */
+    .about-values {
+      padding: 5rem 0;
+    }
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .value-item {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+      transition: border-color .2s, transform .2s;
+    }
+    .value-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+    .value-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(99,102,241,.12);
+      border-radius: .75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      color: var(--accent);
+    }
+    .value-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+    .value-item h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--txt-hi);
+      margin-bottom: .625rem;
+    }
+    .value-item p {
+      font-size: .9rem;
+      line-height: 1.7;
+      color: var(--txt-med);
+    }
+
+    /* Team */
+    .about-team {
+      padding: 5rem 0;
+      background: var(--surface-0);
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .team-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      transition: border-color .2s;
+    }
+    .team-card:hover {
+      border-color: var(--accent);
+    }
+    .team-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0 auto 1.25rem;
+    }
+    .team-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--txt-hi);
+      margin-bottom: .375rem;
+    }
+    .team-role {
+      font-size: .85rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: .75rem;
+    }
+    .team-bio {
+      font-size: .85rem;
+      line-height: 1.65;
+      color: var(--txt-med);
+    }
+
+    /* CTA */
+    .about-cta {
+      padding: 6rem 0;
+      text-align: center;
+    }
+    .about-cta-inner {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .about-cta h2 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 800;
+      color: var(--txt-hi);
+      margin-bottom: 1rem;
+    }
+    .about-cta p {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--txt-med);
+      margin-bottom: 2.5rem;
+    }
+    .about-cta-btns {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+      .about-hero-inner,
+      .about-story-inner {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+      .story-sticky {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <a class="skip-link" href="#about-story">پرش به محتوا</a>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="آرایه — صفحه اصلی">
+        <img class="brand-mark" src="assets/logo-icon.svg" alt="" width="34" height="34" aria-hidden="true" />
+        <span class="brand-name">آرایه</span>
+      </a>
+      <nav class="header-nav" aria-label="ناوبری اصلی">
+        <a href="/#services">خدمات</a>
+        <a href="/clinic">کلینیک</a>
+        <a href="/doctors">پزشکان</a>
+        <a href="/#pricing">قیمت‌ها</a>
+        <a href="/about" aria-current="page">درباره ما</a>
+      </nav>
+      <a class="btn btn-primary header-cta" href="/#leadform" data-track="cta_click" data-cta="header">دریافت مشاوره رایگان</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ ABOUT HERO ============ -->
+    <section class="about-hero">
+      <div class="container about-hero-inner">
+        <div class="about-copy reveal">
+          <span class="about-eyebrow"><span class="about-eyebrow-dot"></span>داستان ما</span>
+          <h1 class="about-title">ما سایت می‌سازیم؛<br /><span class="hl">نه برای نمایش، برای فروش.</span></h1>
+          <p class="about-lead">آرایه یک استودیوی طراحی وب تبدیل‌محور است. از روز اول، هدفمان این بوده که هر پروژه‌ای که تحویل می‌دهیم یک دارایی واقعی برای کسب‌وکار باشد؛ سایتی که مشتری می‌آورد، نه صرفاً یک آدرس اینترنتی.</p>
+          <div class="about-cta-btns" style="justify-content: flex-start;">
+            <a class="btn btn-primary" href="/#leadform" data-track="cta_click" data-cta="about_hero">مشاوره رایگان بگیرید</a>
+            <a class="btn btn-ghost" href="#about-story">بیشتر بدانید</a>
+          </div>
+        </div>
+        <div class="about-hero-art reveal" data-reveal-delay="100">
+          <div class="about-card-stack">
+            <div class="about-card-base">
+              <p class="about-card-label">آرایه استودیو</p>
+              <p class="about-card-title">سایت بسازید، مشتری بگیرید.</p>
+              <p class="about-card-sub">از طراحی تا چت‌بات و CRM — همه‌چیز یکپارچه، با یک تیم پاسخ‌گو.</p>
+              <div class="about-card-stat-row">
+                <div class="about-stat-box">
+                  <span class="stat-num">۹۵٪</span>
+                  <span class="stat-lbl">رضایت مشتریان</span>
+                </div>
+                <div class="about-stat-box">
+                  <span class="stat-num">۲ روز</span>
+                  <span class="stat-lbl">میانگین تحویل اولین نسخه</span>
+                </div>
+                <div class="about-stat-box">
+                  <span class="stat-num">۲۴/۷</span>
+                  <span class="stat-lbl">پشتیبانی شبانه‌روزی</span>
+                </div>
+                <div class="about-stat-box">
+                  <span class="stat-num">+۱۰٪</span>
+                  <span class="stat-lbl">هدف نرخ تبدیل</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STORY ============ -->
+    <section class="about-story" id="about-story">
+      <div class="container about-story-inner">
+        <div class="story-sticky reveal">
+          <span class="kicker">۰۱ — داستان ما</span>
+          <h2 class="section-title">چرا آرایه شکل گرفت؟</h2>
+          <p class="section-lead">ما دیده بودیم که کسب‌وکارها برای سایت هزینه می‌کنند و در آخر چیزی می‌گیرند که فقط روی نت است؛ بدون مشتری، بدون اثر.</p>
+        </div>
+        <div class="story-body reveal" data-reveal-delay="100">
+          <p>آرایه از یک سؤال ساده شروع شد: <strong>چرا بیشتر سایت‌های ایرانی هیچ مشتری نمی‌آورند؟</strong></p>
+          <p>بعد از کار روی ده‌ها پروژه، دیدیم مشکل اصلی این نیست که سایت‌ها بدقواره‌اند. مشکل این است که طراحی‌شده برای «حضور آنلاین»، نه برای «تبدیل بازدیدکننده به مشتری». هیچ فرم هوشمندی، هیچ چت‌بات پاسخگویی، هیچ مسیر روشنی برای اقدام وجود ندارد.</p>
+
+          <div class="story-highlight">«ما تصمیم گرفتیم سایت را از منظر یک ابزار فروش طراحی کنیم، نه یک ویترین دیجیتال.»</div>
+
+          <p>آرایه با این باور ساخته شد که هر سایتی باید <strong>معماری متقاعدسازی</strong> داشته باشد؛ یعنی هر بخش، هر جمله و هر دکمه‌ای در خدمت یک هدف است: بردن بازدیدکننده تا لحظه‌ای که اقدام کند.</p>
+          <p>امروز با طیفی از کسب‌وکارها — از کلینیک‌های زیبایی تا استارتاپ‌های فناوری — کار می‌کنیم و برای هر کدام یک دارایی فروش می‌سازیم که با گذشت زمان بهتر می‌شود.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VALUES ============ -->
+    <section class="about-values" id="about-values">
+      <div class="container">
+        <header class="section-head reveal">
+          <span class="kicker">۰۲ — ارزش‌های ما</span>
+          <h2 class="section-title">اصولی که هر پروژه را شکل می‌دهند</h2>
+          <p class="section-lead">نه شعار، نه پوستر دیواری. اینها قوانینی‌اند که کارمان را با آن‌ها می‌سنجیم.</p>
+        </header>
+        <div class="values-grid">
+          <article class="value-item reveal">
+            <div class="value-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20V10M18 20V4M6 20v-4"/>
+              </svg>
+            </div>
+            <h3>نتیجه، نه نمایش</h3>
+            <p>موفقیت پروژه را با مشتری‌هایی که از سایت می‌آیند می‌سنجیم، نه تعداد انیمیشن‌ها یا رنگ‌های جذاب.</p>
+          </article>
+          <article class="value-item reveal" data-reveal-delay="80">
+            <div class="value-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12l2 2 4-4"/><path d="M12 3a9 9 0 1 0 0 18A9 9 0 0 0 12 3z"/>
+              </svg>
+            </div>
+            <h3>صادقانه، بدون وعده توخالی</h3>
+            <p>برآورد واقعی می‌دهیم. اگر پروژه‌ای برای کسب‌وکار مناسب نباشد، صادقانه می‌گوییم.</p>
+          </article>
+          <article class="value-item reveal" data-reveal-delay="160">
+            <div class="value-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <h3>سرعت بدون کاهش کیفیت</h3>
+            <p>می‌دانیم که زمان برای کسب‌وکار پول است. اولین نسخه را سریع تحویل می‌دهیم، بدون اینکه کیفیت را فدا کنیم.</p>
+          </article>
+          <article class="value-item reveal" data-reveal-delay="240">
+            <div class="value-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <h3>رابطه بلندمدت، نه پروژه تمام‌شده</h3>
+            <p>بعد از تحویل همراه می‌مانیم. بهینه‌سازی مستمر و پشتیبانی سریع بخشی از تعهد ماست.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TEAM ============ -->
+    <section class="about-team" id="about-team">
+      <div class="container">
+        <header class="section-head reveal">
+          <span class="kicker">۰۳ — تیم ما</span>
+          <h2 class="section-title">افرادی که پشت هر پروژه‌اند</h2>
+          <p class="section-lead">تیم کوچک و متمرکز ما ترکیبی از طراح، توسعه‌دهنده و متخصص رشد است.</p>
+        </header>
+        <div class="team-grid">
+          <article class="team-card reveal">
+            <div class="team-avatar">آ</div>
+            <p class="team-name">آبتین آرایه</p>
+            <p class="team-role">بنیان‌گذار و مدیر خلاق</p>
+            <p class="team-bio">متخصص طراحی تبدیل‌محور و معماری تجربه کاربری با تمرکز بر رشد کسب‌وکارهای ایرانی.</p>
+          </article>
+          <article class="team-card reveal" data-reveal-delay="80">
+            <div class="team-avatar">ف</div>
+            <p class="team-name">فریده ملکی</p>
+            <p class="team-role">توسعه‌دهنده ارشد</p>
+            <p class="team-bio">متخصص ساخت زیرساخت‌های سریع، پایدار و بهینه‌سازی‌شده برای موتورهای جستجو.</p>
+          </article>
+          <article class="team-card reveal" data-reveal-delay="160">
+            <div class="team-avatar">س</div>
+            <p class="team-name">سارا رحیمی</p>
+            <p class="team-role">متخصص هوش مصنوعی و چت‌بات</p>
+            <p class="team-bio">طراحی و پیاده‌سازی سیستم‌های پاسخگویی هوشمند بر پایه دانش اختصاصی کسب‌وکار.</p>
+          </article>
+          <article class="team-card reveal" data-reveal-delay="240">
+            <div class="team-avatar">م</div>
+            <p class="team-name">مهدی کریمی</p>
+            <p class="team-role">مدیر موفقیت مشتری</p>
+            <p class="team-bio">اطمینان از اینکه هر پروژه نتیجه‌ای واقعی ایجاد می‌کند؛ از مشاوره اولیه تا پشتیبانی مستمر.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CLIENTS ============ -->
+    <section class="trust" style="padding: 4rem 0;">
+      <div class="container">
+        <p class="trust-label">کسب‌وکارهایی که به ما اعتماد کردند</p>
+        <div class="trust-logos" aria-label="مشتریان">
+          <span class="logo-ph">Ashrafi studio</span>
+          <span class="logo-ph">امروز</span>
+          <span class="logo-ph">دکتر پوردست</span>
+          <span class="logo-ph">Deepin</span>
+          <span class="logo-ph">اپشن ساز</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="about-cta reveal">
+      <div class="container about-cta-inner">
+        <span class="kicker" style="display:block; margin-bottom: 1rem;">۰۴ — شروع کنیم</span>
+        <h2>آماده‌اید سایت‌تان مشتری بیاورد؟</h2>
+        <p>با یک مشاوره رایگان شروع کنید. کارشناسان آرایه در کمتر از یک روز کاری با شما تماس می‌گیرند.</p>
+        <div class="about-cta-btns">
+          <a class="btn btn-primary" href="/#leadform" data-track="cta_click" data-cta="about_cta">دریافت مشاوره رایگان</a>
+          <button class="btn btn-ghost" type="button" data-action="open-chat" data-track="cta_click" data-cta="about_chat">
+            <span class="btn-pulse" aria-hidden="true"></span>
+            گپ با دستیار هوشمند
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-name">آرایه</span>
+        <p>سایت بسازید، مشتری بگیرید.</p>
+      </div>
+      <div class="footer-ch">
+        <span class="footer-label">کانال‌های ارتباطی ما</span>
+        <div class="footer-links">
+          <a href="/#leadform" data-track="cta_click" data-cta="footer">مشاورهٔ رایگان</a>
+          <a href="#" data-channel="bale">بله</a>
+          <a href="#" data-channel="telegram">تلگرام</a>
+        </div>
+      </div>
+      <div class="footer-ch">
+        <span class="footer-label">راهکارهای صنفی</span>
+        <div class="footer-links">
+          <a href="/clinic">طراحی سایت کلینیک زیبایی</a>
+          <a href="/doctors">سایت و نوبت‌دهی پزشکان</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-base">
+      <span>© ۱۴۰۵ آرایه — همهٔ حقوق محفوظ است.</span>
+      <span class="footer-resil"><span class="chip-dot"></span> زیرساخت بومی، پایدار و مطمئن</span>
+    </div>
+  </footer>
+
+  <!-- ============ CHATBOT WIDGET ============ -->
+  <button class="chat-launcher" id="chatLauncher" type="button" aria-label="گفتگو با دستیار آرایه" data-track="chat_open">
+    <span class="chat-launcher-bubble" id="chatNudge" hidden>سؤالی درباره آرایه دارید؟ بپرسید 👋</span>
+    <svg class="ic-chat" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <svg class="ic-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <span class="launcher-ping" aria-hidden="true"></span>
+  </button>
+
+  <div class="chat-panel" id="chatPanel" role="dialog" aria-label="دستیار آرایه" hidden>
+    <header class="chat-head">
+      <span class="chat-avatar">آ</span>
+      <span class="chat-id">
+        <strong>دستیار آرایه</strong>
+        <small><span class="online-dot"></span>معمولاً فوری پاسخ می‌دهد</small>
+      </span>
+      <button class="chat-min" type="button" data-action="close-chat" aria-label="بستن گفتگو">
+        <svg viewBox="0 0 24 24"><path d="M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="chat-thread" id="chatThread" aria-live="polite"></div>
+    <div class="chat-quick" id="chatQuick"></div>
+    <form class="chat-input" id="chatInputForm" hidden>
+      <input type="text" id="chatInput" placeholder="پیام‌تان را بنویسید…" autocomplete="off" />
+      <button type="submit" aria-label="ارسال">
+        <svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2z" fill="currentColor"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/chatbot.js" defer></script>
+</body>
+</html>

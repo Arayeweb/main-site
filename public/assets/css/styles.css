@@ -416,13 +416,33 @@ body[class*="theme-"] .brand-tag{color:var(--th);background:color-mix(in srgb,va
 .demo-invite .section-lead{color:rgba(255,255,255,.74)}
 .demo-invite .btn{margin-top:26px}
 .demo-invite-art{position:relative;height:200px;display:grid;place-items:center}
-.orbit{position:absolute;border:1.5px dashed rgba(95,191,168,.4);border-radius:50%}
+.orbit{position:absolute;border:1.5px dashed rgba(95,191,168,.28);border-radius:50%}
 .orbit.o1{width:150px;height:150px;animation:spin 16s linear infinite}
 .orbit.o2{width:210px;height:210px;animation:spin 24s linear infinite reverse}
+.orbit::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--emerald-soft);box-shadow:0 0 10px var(--emerald-soft)}
+.orbit.o1::after{top:0;left:50%;transform:translate(-50%,-50%)}
+.orbit.o2::after{bottom:0;left:50%;transform:translate(-50%,50%)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .orbit-core{
   width:78px;height:78px;border-radius:50%;display:grid;place-items:center;
-  background:var(--emerald);color:#fff;font-weight:800;font-size:1.8rem;box-shadow:0 0 40px rgba(63,160,138,.7);
+  background:radial-gradient(circle at 32% 28%,var(--emerald-bright),var(--emerald));
+  color:#fff;
+  box-shadow:
+    0 0 0 10px rgba(63,160,138,.12),
+    0 0 48px rgba(63,160,138,.55),
+    inset 0 -5px 12px rgba(0,0,0,.18);
+  position:relative;z-index:2;
+  animation:corePulse 3s ease-in-out infinite;
+}
+.orbit-core svg{width:32px;height:32px}
+.orbit-core::before{
+  content:"";position:absolute;inset:6px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,0) 55%);
+  pointer-events:none;
+}
+@keyframes corePulse{
+  0%,100%{box-shadow:0 0 0 10px rgba(63,160,138,.12),0 0 48px rgba(63,160,138,.55),inset 0 -5px 12px rgba(0,0,0,.18)}
+  50%{box-shadow:0 0 0 16px rgba(63,160,138,.06),0 0 64px rgba(63,160,138,.78),inset 0 -5px 12px rgba(0,0,0,.18)}
 }
 
 /* =========================================================
@@ -566,6 +586,17 @@ body[class*="theme-"] .brand-tag{color:var(--th);background:color-mix(in srgb,va
 .success-ring svg{width:36px;height:36px}
 .form-success h3{font-size:1.4rem;font-weight:800}
 .form-success p{margin:10px auto 22px;color:var(--muted);max-width:340px}
+
+.step-hint{color:var(--muted);font-size:.9rem;margin:-6px 0 14px;line-height:1.6}
+
+.recommendation{background:var(--paper);border:1.5px solid var(--line);border-radius:var(--r-md);padding:18px;margin-bottom:18px}
+.recommendation h3{font-size:1.15rem;font-weight:800;margin:10px 0 8px;color:var(--ink)}
+.recommendation ul{list-style:disc;padding-inline-start:22px;margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.recommendation li,.recommendation p{color:var(--muted);font-size:.95rem;line-height:1.6}
+.recommendation p{margin-bottom:8px}
+.recommendation p strong{color:var(--ink);font-weight:700}
+
+.form-disclaimer{text-align:center;font-size:.82rem;color:var(--muted);margin-top:14px}
 
 /* =========================================================
    FOOTER

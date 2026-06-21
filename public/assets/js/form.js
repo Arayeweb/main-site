@@ -21,12 +21,13 @@
   const progressLabel = document.getElementById("progressLabel");
   const btnBack = document.getElementById("formBack");
   const btnNext = document.getElementById("formNext");
+  const btnSkip = document.getElementById("formSkip");
   const step2Q = document.getElementById("step2Q");
 
   const TOTAL = 4;
   const PROGRESS = { 1: 25, 2: 50, 3: 75, 4: 100, done: 100 }; // honest progress
 
-  const data = { goal: "", budget: "", name: "", contact: "", consent: true, plan: "" };
+  const data = { need: "", infra: "", challenge: "", name: "", contact: "", consent: true, plan: "" };
   const source = (form.dataset.source || "multistep_form");
   let current = 1;
 
@@ -58,7 +59,7 @@
     return $$(".step2-variant", form);
   }
   function activeVariant() {
-    return step2Variants().find((b) => (b.dataset.when || "").split(/\s+/).includes(data.goal)) || null;
+    return step2Variants().find((b) => (b.dataset.when || "").split(/\s+/).includes(data.need)) || null;
   }
   function variantField(block) {
     const opt = block && block.querySelector(".opt");
@@ -90,16 +91,17 @@
     steps.forEach((s) => s.classList.toggle("is-active", Number(s.dataset.step) === n));
     if (successPanel) successPanel.hidden = true;
     btnNext.hidden = false;
-    btnBack.hidden = n === 1;
+    btnBack.hidden = n === 1 || n === 4;
+    if (btnSkip) btnSkip.hidden = n !== 4;
     if (n === 2) syncStep2();
     btnNext.innerHTML =
       n === TOTAL
-        ? 'ارسال درخواست <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ? 'دریافت مشاوره و برآورد اولیه <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         : 'ادامه <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     setProgress(n);
     refreshSelected();
     if (n === 4) validateStep4();
-    track("form_step", { step: n, goal: data.goal });
+    track("form_step", { step: n, need: data.need });
     // focus the first interactive element of the step
     const active = steps[n - 1];
     const focusable = active.querySelector(".opt:not([hidden]), input");
@@ -111,12 +113,12 @@
 
   /* ---------- validation ---------- */
   function stepValid(n) {
-    if (n === 1) return !!data.goal;
+    if (n === 1) return !!data.need;
     if (n === 2) {
       const field = variantField(activeVariant());
       return field ? !!data[field] : true;
     }
-    if (n === 3) return !!data.budget;
+    if (n === 3) return !!data.challenge;
     if (n === 4) return validateStep4();
     return true;
   }
@@ -125,7 +127,6 @@
   const contactInput = document.getElementById("leadContact");
   const consentInput = document.getElementById("leadConsent");
 
-  function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
   function isPhone(v) {
     const d = toLatinDigits(v).replace(/[\s\-()]/g, "");
     return /^(\+98|0098|0)?9\d{9}$/.test(d);
@@ -143,9 +144,9 @@
     const name = nameInput.value.trim();
     const contact = contactInput.value.trim();
     const nameOk = name.length >= 2;
-    const contactOk = isEmail(contact) || isPhone(contact);
+    const contactOk = isPhone(contact);
     if (showErrors || name.length) setFieldState(nameInput, nameOk, "لطفاً نام‌تان را وارد کنید.");
-    if (showErrors || contact.length) setFieldState(contactInput, contactOk, "ایمیل یا شمارهٔ موبایل معتبر وارد کنید.");
+    if (showErrors || contact.length) setFieldState(contactInput, contactOk, "شماره موبایل معتبر وارد کنید.");
     const ok = nameOk && contactOk;
     btnNext.disabled = !ok;
     return ok;
@@ -177,8 +178,8 @@
     const field = opt.dataset.field;
     data[field] = opt.dataset.value;
     refreshSelected();
-    if (field === "goal") {
-      // reset downstream conditional answers when goal changes
+    if (field === "need") {
+      // reset downstream conditional answers when primary need changes
       clearStep2Fields();
     }
     btnNext.disabled = false;
@@ -191,9 +192,15 @@
     goNext();
   });
   btnBack.addEventListener("click", goBack);
+  if (btnSkip) btnSkip.addEventListener("click", skipContact);
+
+  /* ---------- skip contact on last step ---------- */
+  function skipContact() {
+    finish(true);
+  }
 
   /* ---------- finish ---------- */
-  function finish() {
+  function finish(skipped) {
     data.name = nameInput.value.trim();
     data.contact = contactInput.value.trim();
     data.consent = consentInput ? consentInput.checked : true;
@@ -212,8 +219,12 @@
       msg.textContent =
         "درخواست شما برای پکیج «" + planName + "» ثبت شد. کارشناسان آرایه طی کمتر از یک روز کاری با شما تماس می‌گیرند.";
     }
-    track("form_submit", { goal: data.goal, budget: data.budget, plan: data.plan || null });
-    track("lead_captured", { source: source, channel: data.channel || data.sitetype || null });
+    if (skipped) {
+      track("form_skip", { need: data.need, infra: data.infra, challenge: data.challenge });
+    } else {
+      track("form_submit", { need: data.need, infra: data.infra, challenge: data.challenge, plan: data.plan || null });
+    }
+    track("lead_captured", { source: source, need: data.need, infra: data.infra, challenge: data.challenge });
   }
 
   /* ---------- submission hook → /api/leads ---------- */
