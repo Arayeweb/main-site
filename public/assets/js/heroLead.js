@@ -28,11 +28,27 @@
     return { kind: "invalid", value: raw };
   }
 
+  function getUtmParams() {
+    var p = new URLSearchParams(window.location.search);
+    var utms = {};
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
+      if (p.has(k)) utms[k] = p.get(k);
+    });
+    var stored = {};
+    try { stored = JSON.parse(sessionStorage.getItem("__utms") || "{}"); } catch (_) {}
+    var merged = Object.assign({}, stored, utms);
+    if (Object.keys(merged).length) {
+      try { sessionStorage.setItem("__utms", JSON.stringify(merged)); } catch (_) {}
+    }
+    return merged;
+  }
+
   function submitLead(payload) {
+    var utms = getUtmParams();
     return fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.assign({ ts: Date.now(), page: location.pathname }, payload)),
+      body: JSON.stringify(Object.assign({ ts: Date.now(), page: location.pathname, referrer: document.referrer || undefined }, utms, payload)),
       keepalive: true,
     });
   }

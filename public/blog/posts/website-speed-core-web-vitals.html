@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>سرعت سایت و Core Web Vitals؛ چرا مشتری را از دست می‌دهید | بلاگ آرایه</title>
+  <meta name="description" content="سرعت سایت مستقیماً روی رتبه گوگل و درصد مشتریانی که می‌مانند اثر می‌گذارد. بیاموزید Core Web Vitals چیست و چطور سایت‌تان را سریع کنید." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#0E1A2B" />
+  <link rel="canonical" href="https://blog.arayeh.studio/posts/website-speed-core-web-vitals.html" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="preload" href="/assets/css/styles.css" as="style" />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <meta property="og:site_name" content="بلاگ آرایه" />
+  <meta property="og:locale" content="fa_IR" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://blog.arayeh.studio/posts/website-speed-core-web-vitals.html" />
+  <meta property="og:title" content="سرعت سایت و Core Web Vitals؛ چرا مشتری را از دست می‌دهید" />
+  <meta property="og:description" content="هر ثانیه تأخیر در بارگذاری سایت، درصدی از مشتری‌ها را می‌برد. یاد بگیرید Core Web Vitals چیست و سایت‌تان را سریع کنید." />
+  <meta property="og:image" content="https://arayeh.studio/assets/og-cover.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="سرعت سایت و Core Web Vitals؛ چرا مشتری را از دست می‌دهید" />
+  <meta name="twitter:description" content="راهنمای عملی بهبود سرعت سایت و Core Web Vitals برای رتبه بهتر گوگل و مشتری بیشتر." />
+  <meta name="twitter:image" content="https://arayeh.studio/assets/og-cover.svg" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <link rel="stylesheet" href="/assets/css/blog.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        "headline": "سرعت سایت و Core Web Vitals؛ چرا مشتری را از دست می‌دهید",
+        "description": "سرعت سایت مستقیماً روی رتبه گوگل و درصد مشتریانی که می‌مانند اثر می‌گذارد. بیاموزید Core Web Vitals چیست و چطور سایت‌تان را سریع کنید.",
+        "inLanguage": "fa-IR",
+        "datePublished": "2026-06-28",
+        "dateModified": "2026-06-28",
+        "author": { "@type": "Organization", "name": "آرایه" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "آرایه",
+          "logo": { "@type": "ImageObject", "url": "https://arayeh.studio/assets/og-cover.svg" }
+        },
+        "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.arayeh.studio/posts/website-speed-core-web-vitals.html" },
+        "image": "https://arayeh.studio/assets/og-cover.svg",
+        "keywords": "سرعت سایت, Core Web Vitals, LCP, CLS, FID, بهینه‌سازی سایت, سئو تکنیکال"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "آرایه", "item": "https://arayeh.studio/" },
+          { "@type": "ListItem", "position": 2, "name": "بلاگ", "item": "https://blog.arayeh.studio/" },
+          { "@type": "ListItem", "position": 3, "name": "سرعت سایت و Core Web Vitals", "item": "https://blog.arayeh.studio/posts/website-speed-core-web-vitals.html" }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-header blog-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="https://arayeh.studio/" aria-label="آرایه — صفحه اصلی">
+        <img class="brand-mark" src="/assets/logo-icon.svg" alt="" width="34" height="34" aria-hidden="true" />
+        <span class="brand-name">آرایه</span>
+        <span class="brand-tag">بلاگ</span>
+      </a>
+      <nav class="header-nav" aria-label="ناوبری اصلی">
+        <a href="https://arayeh.studio/">خانه</a>
+        <a href="/blog">بلاگ</a>
+        <a href="https://arayeh.studio/clinic">کلینیک</a>
+        <a href="https://arayeh.studio/doctors">پزشکان</a>
+        <a href="https://arayeh.studio/restaurant">رستوران</a>
+      </nav>
+      <a class="btn btn-primary header-cta" href="https://arayeh.studio/#leadform">دریافت مشاوره رایگان</a>
+    </div>
+  </header>
+
+  <main>
+    <article>
+      <div class="article-head">
+        <div class="container article-wrap">
+          <nav class="breadcrumb" aria-label="مسیر صفحه">
+            <a href="https://arayeh.studio/">آرایه</a><span class="sep">/</span>
+            <a href="/blog">بلاگ</a><span class="sep">/</span>
+            <span>سرعت سایت و Core Web Vitals</span>
+          </nav>
+          <span class="article-cat">سئو تکنیکال</span>
+          <h1 class="article-title">سرعت سایت و Core Web Vitals؛ چرا مشتری را از دست می‌دهید</h1>
+          <p class="article-lead">تحقیقات گوگل نشان می‌دهد به ازای هر ثانیه تأخیر در بارگذاری موبایل، نرخ ترک صفحه ۳۲٪ بالا می‌رود. اگر سایت‌تان کند است، نه‌تنها رتبه گوگل پایین‌تری دارید، بلکه مشتری‌هایی که به سختی جذب کرده‌اید را هم از دست می‌دهید. در این مقاله یاد می‌گیرید Core Web Vitals چیست، چطور سایت‌تان را بسنجید و کجا شروع کنید.</p>
+          <div class="article-meta">
+            <span>نویسنده: تیم آرایه</span><span class="dot"></span>
+            <span>۷ تیر ۱۴۰۵</span><span class="dot"></span>
+            <span>۱۱ دقیقه مطالعه</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="article-cover"><img src="/assets/blog/core-web-vitals.svg" alt="معیارهای Core Web Vitals با امتیاز خوب" width="1280" height="560" loading="eager"/></div>
+      </div>
+
+      <div class="article-body">
+        <p>از سال ۲۰۲۱ گوگل معیارهای تجربه کاربری را به‌عنوان <strong>فاکتور رتبه‌بندی</strong> لحاظ کرده است. این معیارها را «Core Web Vitals» می‌نامند: سه عدد ساده که سرعت، پایداری بصری و واکنش‌گری سایت‌تان را اندازه می‌گیرند. سایتی که این اعداد را خوب دارد، هم گوگل دوستش دارد، هم کاربر.</p>
+
+        <h2>۱. Core Web Vitals را بشناسید</h2>
+        <p>سه معیار اصلی اینها هستند:</p>
+
+        <h3>LCP — بزرگ‌ترین محتوای قابل مشاهده</h3>
+        <p><strong>Largest Contentful Paint</strong> زمانی است که بزرگ‌ترین عنصر قابل مشاهده صفحه (معمولاً تصویر اصلی یا تیتر بزرگ) بارگذاری می‌شود. هدف: <strong>زیر ۲.۵ ثانیه</strong>. بالای ۴ ثانیه ضعیف است.</p>
+
+        <h3>INP — واکنش به تعامل</h3>
+        <p><strong>Interaction to Next Paint</strong> (جایگزین FID از ۲۰۲۴) سرعت پاسخ سایت به کلیک، لمس یا تایپ کاربر را می‌سنجد. هدف: <strong>زیر ۲۰۰ میلی‌ثانیه</strong>.</p>
+
+        <h3>CLS — جابه‌جایی چیدمان</h3>
+        <p><strong>Cumulative Layout Shift</strong> میزان جابه‌جایی ناخواستهٔ عناصر صفحه حین بارگذاری را اندازه می‌گیرد. مثلاً وقتی دکمه‌ای را می‌خواهید بزنید و ناگهان صفحه تکان می‌خورد. هدف: <strong>زیر ۰.۱</strong>.</p>
+
+        <div class="callout">
+          <h3>ابزار رایگان: PageSpeed Insights</h3>
+          <p>آدرس سایت‌تان را در <strong>pagespeed.web.dev</strong> وارد کنید تا امتیاز Core Web Vitals و لیستی از مشکلات اولویت‌بندی‌شده ببینید. حتماً هر دو نسخه موبایل و دسکتاپ را بررسی کنید؛ موبایل معمولاً مشکل‌دارتر است.</p>
+        </div>
+
+        <h2>۲. دلایل اصلی کندی سایت در ایران</h2>
+        <p>علاوه بر مشکلات جهانی، چند عامل خاص کسب‌وکارهای ایرانی وجود دارد:</p>
+        <ul>
+          <li><strong>تصاویر فشرده‌نشده:</strong> اکثر سایت‌های ایرانی تصاویر ۳–۵ مگابایتی آپلود می‌کنند؛ باید زیر ۲۰۰ کیلوبایت باشند.</li>
+          <li><strong>فونت‌های فارسی سنگین:</strong> فونت Vazirmatn یا Shabnam را به‌صورت WOFF2 و فقط وزن‌های موردنیاز بارگذاری کنید.</li>
+          <li><strong>سرور با پینگ بالا:</strong> هاست ایرانی با CDN مناسب یا هاست اروپایی نزدیک انتخاب کنید.</li>
+          <li><strong>پلاگین‌های اضافه وردپرس:</strong> هر پلاگین چندین فایل JS/CSS بار می‌کند؛ فقط ضروری‌ها را نگه دارید.</li>
+          <li><strong>رندر جاوااسکریپت مسدودکننده:</strong> اسکریپت‌هایی که صفحه را block می‌کنند باید defer یا async باشند.</li>
+        </ul>
+
+        <h2>۳. اقدامات عملی برای سرعت بیشتر</h2>
+        <p>اینها را به ترتیب اولویت انجام دهید:</p>
+        <ol>
+          <li><strong>تصاویر:</strong> همه عکس‌ها را به فرمت WebP تبدیل و فشرده کنید. از <code>loading="lazy"</code> برای عکس‌های پایین صفحه استفاده کنید.</li>
+          <li><strong>فونت:</strong> فونت فارسی را <code>preload</code> کنید و از <code>font-display: swap</code> استفاده کنید تا متن قبل از لود فونت نمایش داده شود.</li>
+          <li><strong>CSS و JS:</strong> فایل‌ها را minify و ترکیب کنید؛ کد استفاده‌نشده را حذف کنید.</li>
+          <li><strong>Caching:</strong> برای فایل‌های ثابت (عکس، CSS، JS) هدرهای cache طولانی تنظیم کنید.</li>
+          <li><strong>CDN:</strong> از شبکه توزیع محتوا استفاده کنید تا فایل‌ها از نزدیک‌ترین سرور به کاربر بارگذاری شوند.</li>
+          <li><strong>LCP image را preload کنید:</strong> تصویر اصلی صفحه (hero) را با تگ <code>&lt;link rel="preload"&gt;</code> اولویت‌دهی کنید.</li>
+        </ol>
+
+        <h2>۴. CLS را چطور درست کنیم؟</h2>
+        <p>جابه‌جایی چیدمان اغلب از این موارد می‌آید:</p>
+        <ul>
+          <li>تصاویر بدون <code>width</code> و <code>height</code>: حتماً اندازه را در HTML مشخص کنید تا مرورگر جا نگه دارد.</li>
+          <li>آگهی‌ها و بنرهای پویا: یک ظرف با ارتفاع ثابت برایشان رزرو کنید.</li>
+          <li>فونت‌هایی که جایگزین می‌شوند: <code>font-display: optional</code> یا <code>swap</code> با اندازه مناسب fallback font.</li>
+          <li>محتوای بارگذاری‌شده دیرهنگام: اگر محتوا از API می‌آید، skeleton placeholder نمایش دهید.</li>
+        </ul>
+
+        <blockquote>سرعت سایت تنها یک فاکتور سئو نیست — یک عامل احترام به کاربر است. سایت کند یعنی وقت مشتری برایتان مهم نیست.</blockquote>
+
+        <h2>۵. ابزارهای اندازه‌گیری</h2>
+        <p>برای پایش مداوم این ابزارها را در نظر بگیرید:</p>
+        <ul>
+          <li><strong>PageSpeed Insights:</strong> سریع‌ترین راه برای گرفتن امتیاز Core Web Vitals.</li>
+          <li><strong>Google Search Console:</strong> بخش Core Web Vitals نشان می‌دهد کدام صفحه‌ها مشکل دارند.</li>
+          <li><strong>WebPageTest:</strong> آنالیز عمیق‌تر با waterfall chart.</li>
+          <li><strong>Chrome DevTools:</strong> تب Performance برای بررسی دقیق در مرورگر.</li>
+        </ul>
+
+        <h2>جمع‌بندی</h2>
+        <p>سایت سریع = رتبه بهتر + مشتری بیشتر + نرخ ترک کمتر. این سه، با هم، مستقیماً به درآمد تبدیل می‌شوند. در آرایه، سرعت بالا و نمره Core Web Vitals خوب بخشی از استاندارد پیش‌فرض هر پروژه است؛ نه یک گزینهٔ اضافه. برای ترکیب کامل، <a href="/blog/posts/seo-checklist-business-site">چک‌لیست سئوی سایت کسب‌وکار</a> ما را هم بخوانید.</p>
+
+        <div class="blog-cta">
+          <h2>سایت‌تان امتیاز PageSpeed پایینی دارد؟</h2>
+          <p>تیم آرایه سرعت و تجربه کاربری سایت شما را بررسی و بهینه می‌کند تا Core Web Vitals سبز شود.</p>
+          <a class="btn btn-primary btn-lg" href="https://arayeh.studio/#leadform">دریافت مشاورهٔ رایگان</a>
+        </div>
+      </div>
+    </article>
+
+    <section class="related">
+      <div class="container">
+        <header class="section-head"><h2 class="section-title">مطالب مرتبط</h2></header>
+        <div class="post-grid">
+          <article class="post-card">
+            <a class="post-card-cover" href="/blog/posts/seo-checklist-business-site"><span class="post-card-cat">سئو</span></a>
+            <div class="post-card-body">
+              <h3><a href="/blog/posts/seo-checklist-business-site">چک‌لیست کامل سئوی سایت کسب‌وکار</a></h3>
+              <p>سرعت، محتوا و لینک‌سازی؛ همه در یک چک‌لیست.</p>
+            </div>
+          </article>
+          <article class="post-card">
+            <a class="post-card-cover" href="/blog/posts/google-my-business-local-seo"><span class="post-card-cat">سئوی محلی</span></a>
+            <div class="post-card-body">
+              <h3><a href="/blog/posts/google-my-business-local-seo">گوگل مای بیزنس؛ راهنمای کامل</a></h3>
+              <p>در نقشه گوگل دیده شوید و مشتری محلی بگیرید.</p>
+            </div>
+          </article>
+          <article class="post-card">
+            <a class="post-card-cover" href="/blog/posts/conversion-rate-optimization"><span class="post-card-cat">نرخ تبدیل</span></a>
+            <div class="post-card-body">
+              <h3><a href="/blog/posts/conversion-rate-optimization">۷ تکنیک افزایش نرخ تبدیل سایت</a></h3>
+              <p>سایت سریع‌تان را به مشتری‌ساز تبدیل کنید.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-name">آرایه</span>
+        <p>سایت بسازید، مشتری بگیرید.</p>
+      </div>
+      <div class="footer-ch">
+        <span class="footer-label">پیوندهای مفید</span>
+        <div class="footer-links">
+          <a href="https://arayeh.studio/">سایت اصلی</a>
+          <a href="/blog">بلاگ</a>
+          <a href="https://arayeh.studio/#leadform">مشاورهٔ رایگان</a>
+        </div>
+      </div>
+      <div class="footer-ch">
+        <span class="footer-label">راهکارهای صنفی</span>
+        <div class="footer-links">
+          <a href="https://arayeh.studio/clinic">سایت کلینیک زیبایی</a>
+          <a href="https://arayeh.studio/doctors">سایت و نوبت‌دهی پزشکان</a>
+          <a href="https://arayeh.studio/restaurant">سایت و سفارش آنلاین رستوران</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-base">
+      <span>© ۱۴۰۵ آرایه — همهٔ حقوق محفوظ است.</span>
+      <span class="footer-resil"><span class="chip-dot"></span> زیرساخت بومی، پایدار و مطمئن</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js" defer></script>
+</body>
+</html>

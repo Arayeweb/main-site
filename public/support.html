@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>پشتیبانی | آرایه — پیگیری پروژه و ثبت تیکت</title>
+  <meta name="description" content="پنل پشتیبانی آرایه: وضعیت پروژه خود را با کد پروژه پیگیری کنید و برای دریافت کمک، تیکت پشتیبانی ثبت کنید." />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#0E1A2B" />
+  <link rel="canonical" href="https://arayeh.studio/support" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/logo-icon.svg" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="preload" href="assets/css/styles.css" as="style" />
+  <link rel="preload" href="assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <a class="skip-link" href="#support-main">پرش به محتوا</a>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="آرایه — صفحه اصلی">
+        <img class="brand-mark" src="assets/logo-icon.svg" alt="" width="34" height="34" aria-hidden="true" />
+        <span class="brand-name">آرایه</span>
+      </a>
+      <nav class="header-nav" aria-label="ناوبری اصلی">
+        <a href="/clinic">کلینیک</a>
+        <a href="/doctors">پزشکان</a>
+        <a href="/about">درباره ما</a>
+        <a href="/support" aria-current="page">پشتیبانی</a>
+      </nav>
+      <a class="btn btn-primary header-cta" href="/#leadform" data-track="cta_click" data-cta="header">دریافت مشاوره رایگان</a>
+    </div>
+  </header>
+
+  <main id="support-main">
+    <!-- ============ HERO ============ -->
+    <section class="support-hero">
+      <div class="container">
+        <span class="eyebrow"><span class="eyebrow-dot"></span>مرکز پشتیبانی آرایه</span>
+        <h1 class="support-title">پروژه‌تان کجاست و چه کمکی لازم دارید؟</h1>
+        <p class="support-lead">اگر با آرایه سایت یا خدمتی گرفته‌اید، اینجا می‌توانید وضعیت پروژه را پیگیری کنید و برای هر سؤال یا مشکلی تیکت پشتیبانی ثبت کنید.</p>
+        <div class="support-tabs" role="tablist" aria-label="بخش‌های پشتیبانی">
+          <button class="support-tab is-active" type="button" role="tab" id="tab-status" aria-controls="panel-status" aria-selected="true" data-tab="status">پیگیری وضعیت پروژه</button>
+          <button class="support-tab" type="button" role="tab" id="tab-ticket" aria-controls="panel-ticket" aria-selected="false" data-tab="ticket">ثبت تیکت پشتیبانی</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PANELS ============ -->
+    <section class="support-body">
+      <div class="container">
+
+        <!-- ===== Panel: Project status ===== -->
+        <div class="support-panel is-active" id="panel-status" role="tabpanel" aria-labelledby="tab-status">
+          <div class="support-card">
+            <h2 class="support-card-title">پیگیری وضعیت پروژه</h2>
+            <p class="support-card-sub">کد پروژه و رمزی که هنگام شروع کار از تیم آرایه دریافت کرده‌اید را وارد کنید.</p>
+
+            <form class="support-form" id="statusForm" novalidate>
+              <div class="field">
+                <label for="statusCode">کد پروژه</label>
+                <input type="text" id="statusCode" name="projectCode" placeholder="مثلاً ARY-1024" autocomplete="off" required />
+              </div>
+              <div class="field">
+                <label for="statusPassword">رمز پروژه</label>
+                <input type="password" id="statusPassword" name="password" placeholder="رمزی که از تیم آرایه گرفته‌اید" autocomplete="current-password" required />
+              </div>
+              <span class="form-err" id="statusErr" aria-live="polite"></span>
+              <button type="submit" class="btn btn-primary btn-block" id="statusSubmit">پیگیری پروژه</button>
+            </form>
+
+            <!-- result -->
+            <div class="status-result" id="statusResult" hidden>
+              <div class="status-result-head">
+                <div>
+                  <span class="status-result-label">پروژه</span>
+                  <h3 class="status-result-title" id="resTitle">—</h3>
+                </div>
+                <span class="status-badge" id="resBadge">—</span>
+              </div>
+
+              <div class="status-progress">
+                <div class="status-progress-bar"><span id="resProgressBar" style="width:0%"></span></div>
+                <span class="status-progress-num" id="resProgressNum">۰٪</span>
+              </div>
+
+              <dl class="status-meta">
+                <div><dt>کد پروژه</dt><dd id="resCode">—</dd></div>
+                <div><dt>نوع خدمت</dt><dd id="resService">—</dd></div>
+                <div><dt>تاریخ تخمینی تحویل</dt><dd id="resDelivery">—</dd></div>
+                <div><dt>آخرین به‌روزرسانی</dt><dd id="resUpdated">—</dd></div>
+              </dl>
+
+              <div class="status-note" id="resNoteWrap" hidden>
+                <span class="status-note-label">آخرین یادداشت تیم</span>
+                <p id="resNote">—</p>
+              </div>
+
+              <div class="status-actions">
+                <button type="button" class="btn btn-ghost" id="statusReset">پیگیری پروژه دیگر</button>
+                <button type="button" class="btn btn-text" data-goto-ticket>ثبت تیکت برای این پروژه</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Panel: Ticket ===== -->
+        <div class="support-panel" id="panel-ticket" role="tabpanel" aria-labelledby="tab-ticket" hidden>
+          <div class="support-card">
+            <h2 class="support-card-title">ثبت تیکت پشتیبانی</h2>
+            <p class="support-card-sub">سؤال یا مشکل‌تان را شرح دهید؛ کارشناسان آرایه در اسرع وقت پاسخ می‌دهند.</p>
+
+            <form class="support-form" id="ticketForm" novalidate>
+              <!-- honeypot -->
+              <input type="text" name="company" tabindex="-1" autocomplete="off" class="hp-field" aria-hidden="true" />
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="ticketName">نام شما</label>
+                  <input type="text" id="ticketName" name="name" placeholder="نام و نام خانوادگی" autocomplete="name" />
+                </div>
+                <div class="field">
+                  <label for="ticketContact">ایمیل یا شماره موبایل</label>
+                  <input type="text" id="ticketContact" name="contact" inputmode="email" placeholder="ایمیل یا 09xxxxxxxxx" autocomplete="off" required />
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="ticketProject">کد پروژه (اختیاری)</label>
+                  <input type="text" id="ticketProject" name="projectCode" placeholder="مثلاً ARY-1024" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="ticketCategory">دسته‌بندی</label>
+                  <select id="ticketCategory" name="category">
+                    <option value="technical">مشکل فنی</option>
+                    <option value="content">محتوا و ویرایش</option>
+                    <option value="billing">مالی و صورتحساب</option>
+                    <option value="other" selected>سایر</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="ticketSubject">موضوع</label>
+                  <input type="text" id="ticketSubject" name="subject" placeholder="موضوع تیکت" autocomplete="off" required />
+                </div>
+                <div class="field">
+                  <label for="ticketPriority">اولویت</label>
+                  <select id="ticketPriority" name="priority">
+                    <option value="low">کم</option>
+                    <option value="normal" selected>عادی</option>
+                    <option value="high">زیاد</option>
+                    <option value="urgent">فوری</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="ticketMessage">شرح درخواست</label>
+                <textarea id="ticketMessage" name="message" rows="5" placeholder="جزئیات مشکل یا سؤال‌تان را بنویسید…" required></textarea>
+              </div>
+
+              <span class="form-err" id="ticketErr" aria-live="polite"></span>
+              <button type="submit" class="btn btn-primary btn-block" id="ticketSubmit">ارسال تیکت</button>
+            </form>
+
+            <!-- success -->
+            <div class="ticket-success" id="ticketSuccess" hidden>
+              <span class="success-ring" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <h3>تیکت شما ثبت شد</h3>
+              <p>کد پیگیری تیکت شما:</p>
+              <span class="ticket-code" id="ticketCodeOut">—</span>
+              <p class="ticket-success-note">این کد را نگه دارید. کارشناسان آرایه از طریق راه ارتباطی واردشده با شما در تماس خواهند بود.</p>
+              <button type="button" class="btn btn-ghost" id="ticketReset">ثبت تیکت جدید</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-name">آرایه</span>
+        <p>سایت بسازید، مشتری بگیرید.</p>
+      </div>
+      <div class="footer-ch">
+        <span class="footer-label">کانال‌های ارتباطی ما</span>
+        <div class="footer-links">
+          <a href="/#leadform" data-track="cta_click" data-cta="footer">مشاورهٔ رایگان</a>
+          <a href="#" data-channel="bale">بله</a>
+          <a href="#" data-channel="telegram">تلگرام</a>
+        </div>
+      </div>
+      <div class="footer-ch">
+        <span class="footer-label">راهکارهای صنفی</span>
+        <div class="footer-links">
+          <a href="/clinic">طراحی سایت کلینیک زیبایی</a>
+          <a href="/doctors">سایت و نوبت‌دهی پزشکان</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-base">
+      <span>© ۱۴۰۵ آرایه — همهٔ حقوق محفوظ است.</span>
+      <span class="footer-resil"><span class="chip-dot"></span> زیرساخت بومی، پایدار و مطمئن</span>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/support.js" defer></script>
+</body>
+</html>

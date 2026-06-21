@@ -98,12 +98,11 @@
         <span class="brand-name">آرایه</span>
       </a>
       <nav class="header-nav" aria-label="ناوبری اصلی">
-        <a href="#services">خدمات</a>
         <a href="/clinic">کلینیک</a>
         <a href="/doctors">پزشکان</a>
-        <a href="#pricing">قیمت‌ها</a>
         <a href="https://blog.arayeh.studio/">بلاگ</a>
         <a href="/about">درباره ما</a>
+        <a href="/support">پشتیبانی</a>
       </nav>
       <a class="btn btn-primary header-cta" href="#leadform" data-track="cta_click" data-cta="header">دریافت مشاوره رایگان</a>
     </div>
@@ -517,15 +516,15 @@
             <!-- STEP 4: recommendation + contact -->
             <fieldset class="form-step" data-step="4">
               <legend class="step-q">پیشنهاد اولیه شما آماده است</legend>
-              <div class="recommendation">
+              <div class="recommendation" data-recommendation>
                 <p>بر اساس پاسخ‌ها، مناسب‌ترین نقطه شروع برای کسب‌وکار شما:</p>
-                <h3>[نام راهکار پیشنهادی]</h3>
-                <p>[توضیح کوتاه درباره اینکه چرا این راهکار برای شرایط کاربر مناسب است.]</p>
+                <h3 data-rec="title">راهکار اختصاصی آرایه</h3>
+                <p data-rec="why">با توجه به پاسخ‌های شما، بهترین نقطه شروع را پیشنهاد می‌کنیم.</p>
                 <p><strong>پیشنهاد ما می‌تواند شامل این موارد باشد:</strong></p>
                 <ul>
-                  <li>[خدمت اصلی پیشنهادی]</li>
-                  <li>[خدمت مکمل مرتبط]</li>
-                  <li>[نتیجه‌ای که برای کسب‌وکار ایجاد می‌شود]</li>
+                  <li data-rec="main">خدمت اصلی پیشنهادی</li>
+                  <li data-rec="comp">خدمت مکمل مرتبط</li>
+                  <li data-rec="outcome">نتیجه‌ای که برای کسب‌وکار ایجاد می‌شود</li>
                 </ul>
               </div>
               <p class="step-hint">برای دریافت مشاوره و برآورد دقیق‌تر، اطلاعات تماس خود را وارد کنید.</p>
@@ -583,6 +582,7 @@
         <span class="footer-label">کانال‌های ارتباطی ما</span>
         <div class="footer-links">
           <a href="#leadform" data-track="cta_click" data-cta="footer">مشاورهٔ رایگان</a>
+          <a href="/support">پشتیبانی</a>
           <a href="https://blog.arayeh.studio/">بلاگ</a>
           <a href="#" data-channel="bale">بله</a>
           <a href="#" data-channel="telegram">تلگرام</a>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>پنل مدیریت | آرایه</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0E1A2B" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="preload" href="assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    .admin-shell{min-height:100vh;background:var(--paper-2)}
+    .admin-bar{background:var(--navy-800);color:#fff}
+    .admin-bar .container{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:16px}
+    .admin-bar .brand-name{color:#fff}
+    .admin-bar-title{font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:10px}
+    .admin-bar .btn-ghost{border-color:rgba(255,255,255,.25);color:#fff}
+    .admin-bar .btn-ghost:hover{border-color:var(--emerald-soft);color:var(--emerald-soft)}
+    .admin-main{padding-block:clamp(24px,4vw,40px)}
+
+    /* login */
+    .admin-login{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--navy-800)}
+    .admin-login-card{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-lg);padding:clamp(26px,4vw,40px);width:min(420px,100%)}
+    .admin-login-card h1{font-size:1.4rem;font-weight:800;margin-bottom:6px}
+    .admin-login-card p{color:var(--muted);font-size:.95rem;margin-bottom:22px}
+
+    /* tabs */
+    .admin-tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+    .admin-tab{padding:10px 22px;border-radius:var(--r-pill);font-weight:700;font-size:.95rem;color:var(--muted);background:var(--card);border:1.5px solid var(--line);cursor:pointer;transition:all .2s}
+    .admin-tab.is-active{background:var(--emerald);color:#fff;border-color:var(--emerald);box-shadow:var(--sh-emerald)}
+    .admin-panel{display:none}
+    .admin-panel.is-active{display:block}
+
+    .admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+    .admin-toolbar h2{font-size:1.25rem;font-weight:800}
+    .admin-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .admin-filter select{padding:9px 14px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:#fff;font-family:inherit;font-size:.9rem}
+
+    /* cards */
+    .admin-list{display:grid;gap:14px}
+    .admin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:18px 20px}
+    .admin-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .admin-card-code{font-weight:800;font-size:1.05rem}
+    .admin-card-sub{color:var(--muted);font-size:.88rem;margin-top:3px}
+    .admin-meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;color:var(--muted);font-size:.85rem}
+    .admin-meta b{color:var(--ink);font-weight:700}
+    .admin-msg{margin-top:12px;padding:12px 14px;background:var(--paper-2);border-radius:var(--r-sm);font-size:.92rem;line-height:1.7;white-space:pre-wrap}
+
+    .pill{display:inline-flex;align-items:center;padding:4px 12px;border-radius:var(--r-pill);font-size:.78rem;font-weight:700}
+    .pill.st-open{background:rgba(63,160,138,.14);color:var(--emerald-bright)}
+    .pill.st-in_progress{background:rgba(232,180,90,.18);color:#a9791f}
+    .pill.st-answered{background:rgba(46,125,107,.16);color:var(--emerald)}
+    .pill.st-closed{background:rgba(91,107,123,.14);color:var(--muted)}
+    .pill.pr-urgent{background:rgba(217,83,79,.14);color:#c0392b}
+    .pill.pr-high{background:rgba(232,180,90,.18);color:#a9791f}
+    .pill.pr-normal{background:rgba(91,107,123,.12);color:var(--muted)}
+    .pill.pr-low{background:rgba(91,107,123,.10);color:var(--muted-2)}
+
+    .admin-edit{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);display:none}
+    .admin-edit.is-open{display:block}
+    .admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+    .admin-grid .field{margin:0}
+    .admin-grid label{display:block;font-weight:700;font-size:.85rem;margin-bottom:6px}
+    .admin-grid input,.admin-grid select,.admin-grid textarea{width:100%;padding:11px 13px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:#fff;font-family:inherit;font-size:.92rem}
+    .admin-grid textarea{min-height:80px;resize:vertical;line-height:1.7}
+    .admin-grid .col-full{grid-column:1/-1}
+    .admin-edit-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+
+    .admin-row-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .admin-row-actions select{padding:8px 12px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:#fff;font-family:inherit;font-size:.85rem}
+    .btn-sm{padding:9px 18px;font-size:.85rem}
+    .admin-empty{text-align:center;color:var(--muted);padding:40px 20px}
+    .admin-note{font-size:.82rem;color:var(--muted-2);margin-top:4px}
+    .form-err{color:#d9534f;font-weight:600;font-size:.88rem;min-height:18px;display:block}
+    .has-pw{color:var(--emerald);font-weight:700}
+    .no-pw{color:#c0392b;font-weight:700}
+
+    /* lead source badges */
+    .src-multistep_form{background:rgba(46,125,107,.15);color:var(--emerald)}
+    .src-hero_form{background:rgba(52,120,200,.13);color:#1a5fa8}
+    .src-chatbot{background:rgba(140,95,200,.13);color:#6b3a9e}
+
+    /* stats */
+    .stats-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:28px}
+    .stat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:20px 18px;text-align:center}
+    .stat-num{font-size:2rem;font-weight:800;color:var(--emerald);line-height:1}
+    .stat-label{font-size:.82rem;color:var(--muted);margin-top:6px}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+    .stats-block{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:18px 20px}
+    .stats-block h3{font-size:.95rem;font-weight:800;margin-bottom:12px}
+    .stats-table{width:100%;border-collapse:collapse;font-size:.88rem}
+    .stats-table td{padding:7px 8px;border-bottom:1px solid var(--line)}
+    .stats-table tr:last-child td{border-bottom:none}
+    .stats-table td:last-child{text-align:left;font-weight:700;color:var(--emerald);font-variant-numeric:tabular-nums}
+    .stats-bar{display:inline-block;height:6px;background:var(--emerald);border-radius:3px;vertical-align:middle;margin-right:6px;opacity:.7}
+
+    /* leads filter */
+    .admin-filter input[type=text]{padding:9px 14px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:#fff;font-family:inherit;font-size:.9rem;width:160px}
+    .utm-row{font-size:.8rem;color:var(--muted-2);margin-top:6px}
+    .utm-row b{color:var(--ink)}
+    .load-more{text-align:center;margin-top:16px}
+  </style>
+</head>
+<body>
+  <!-- ============ LOGIN ============ -->
+  <section class="admin-login" id="loginView">
+    <form class="admin-login-card" id="loginForm" novalidate>
+      <h1>پنل مدیریت آرایه</h1>
+      <p>برای ورود، رمز مدیریت را وارد کنید.</p>
+      <div class="field">
+        <label for="loginPassword">رمز مدیریت</label>
+        <input type="password" id="loginPassword" name="password" autocomplete="current-password" required />
+      </div>
+      <span class="form-err" id="loginErr" aria-live="polite"></span>
+      <button type="submit" class="btn btn-primary btn-block" id="loginSubmit" style="margin-top:8px">ورود</button>
+    </form>
+  </section>
+
+  <!-- ============ APP ============ -->
+  <div class="admin-shell" id="appView" hidden>
+    <header class="admin-bar">
+      <div class="container">
+        <span class="admin-bar-title">
+          <img src="assets/logo-icon.svg" alt="" width="28" height="28" />
+          پنل مدیریت آرایه
+        </span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logoutBtn">خروج</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <div class="container">
+        <div class="admin-tabs" role="tablist">
+          <button class="admin-tab is-active" type="button" data-tab="projects">پروژه‌ها</button>
+          <button class="admin-tab" type="button" data-tab="tickets">تیکت‌ها</button>
+          <button class="admin-tab" type="button" data-tab="leads">لیدها</button>
+          <button class="admin-tab" type="button" data-tab="stats">آمار</button>
+        </div>
+
+        <!-- ===== Projects ===== -->
+        <section class="admin-panel is-active" id="panelProjects">
+          <div class="admin-toolbar">
+            <h2>پروژه‌ها</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="newProjectBtn">+ پروژه جدید</button>
+          </div>
+
+          <!-- create form -->
+          <div class="admin-card" id="newProjectCard" hidden>
+            <div class="admin-card-head"><span class="admin-card-code">ساخت پروژه‌ی جدید</span></div>
+            <div class="admin-grid" style="margin-top:14px">
+              <div class="field"><label>عنوان پروژه *</label><input type="text" data-np="title" placeholder="مثلاً سایت کلینیک نمونه" /></div>
+              <div class="field"><label>کد پروژه (خالی = خودکار)</label><input type="text" data-np="project_code" placeholder="ARY-1024" /></div>
+              <div class="field"><label>رمز ورود مشتری</label><input type="text" data-np="password" placeholder="رمزی که به مشتری می‌دهید" /></div>
+              <div class="field"><label>نام مشتری</label><input type="text" data-np="customer_name" /></div>
+              <div class="field"><label>راه ارتباطی (اختیاری)</label><input type="text" data-np="customer_contact" placeholder="ایمیل یا 09xxxxxxxxx" /></div>
+              <div class="field"><label>نوع خدمت</label>
+                <select data-np="service_type">
+                  <option value="">—</option>
+                  <option value="website">وب‌سایت</option>
+                  <option value="landing">لندینگ‌پیج</option>
+                  <option value="chatbot">چت‌بات</option>
+                  <option value="other">سایر</option>
+                </select>
+              </div>
+              <div class="field"><label>وضعیت</label>
+                <select data-np="status">
+                  <option value="intake">دریافت اطلاعات</option>
+                  <option value="design">طراحی</option>
+                  <option value="development">توسعه</option>
+                  <option value="review">بازبینی</option>
+                  <option value="delivered">تحویل‌شده</option>
+                  <option value="paused">متوقف</option>
+                </select>
+              </div>
+              <div class="field"><label>درصد پیشرفت</label><input type="number" data-np="progress_percent" min="0" max="100" value="0" /></div>
+              <div class="field"><label>تاریخ تخمینی تحویل</label><input type="date" data-np="estimated_delivery_at" /></div>
+              <div class="field col-full"><label>یادداشت برای مشتری</label><textarea data-np="last_note"></textarea></div>
+            </div>
+            <span class="form-err" id="newProjectErr"></span>
+            <div class="admin-edit-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="createProjectBtn">ساخت پروژه</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="cancelProjectBtn">انصراف</button>
+            </div>
+          </div>
+
+          <div class="admin-list" id="projectsList"></div>
+        </section>
+
+        <!-- ===== Tickets ===== -->
+        <section class="admin-panel" id="panelTickets">
+          <div class="admin-toolbar">
+            <h2>تیکت‌ها</h2>
+            <div class="admin-filter">
+              <label for="ticketFilter" style="font-size:.85rem;color:var(--muted)">فیلتر وضعیت:</label>
+              <select id="ticketFilter">
+                <option value="">همه</option>
+                <option value="open">باز</option>
+                <option value="in_progress">در حال بررسی</option>
+                <option value="answered">پاسخ‌داده‌شده</option>
+                <option value="closed">بسته</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-list" id="ticketsList"></div>
+        </section>
+
+        <!-- ===== Leads ===== -->
+        <section class="admin-panel" id="panelLeads">
+          <div class="admin-toolbar">
+            <h2>لیدها</h2>
+            <div class="admin-filter">
+              <select id="leadSourceFilter">
+                <option value="">همه منابع</option>
+                <option value="multistep_form">فرم چندمرحله‌ای</option>
+                <option value="hero_form">فرم هرو</option>
+                <option value="chatbot">چت‌بات</option>
+              </select>
+              <select id="leadPageFilter">
+                <option value="">همه صفحات</option>
+                <option value="index">صفحه اصلی</option>
+                <option value="clinic">کلینیک</option>
+                <option value="restaurant">رستوران</option>
+                <option value="doctors">پزشکان</option>
+              </select>
+              <input type="text" id="leadUtmFilter" placeholder="utm_source…" />
+              <button type="button" class="btn btn-ghost btn-sm" id="leadFilterBtn">اعمال</button>
+            </div>
+          </div>
+          <div class="admin-list" id="leadsList"></div>
+          <div class="load-more" id="leadsLoadMore" hidden>
+            <button type="button" class="btn btn-ghost btn-sm" id="leadsMoreBtn">بارگذاری بیشتر</button>
+          </div>
+        </section>
+
+        <!-- ===== Stats ===== -->
+        <section class="admin-panel" id="panelStats">
+          <div class="admin-toolbar">
+            <h2>آمار و UTM</h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="statsRefreshBtn">↻ به‌روزرسانی</button>
+          </div>
+          <div id="statsContent"><div class="admin-empty">در حال بارگذاری…</div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/admin.js" defer></script>
+</body>
+</html>

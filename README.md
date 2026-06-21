@@ -14,8 +14,10 @@
    - محتوای [`supabase/schema.sql`](supabase/schema.sql) را در **SQL Editor** اجرا کنید.
 
 3. **متغیرهای محیطی**
-   - از روی [`.env.local.example`](.env.local.example) یک فایل `.env.local` بسازید و مقادیر را از
-     داشبورد Supabase (**Settings → API**) پر کنید: `SUPABASE_URL` و `SUPABASE_SERVICE_ROLE_KEY`.
+   - از روی [`.env.example`](.env.example) یک فایل `.env.local` بسازید و این مقادیر را پر کنید:
+     - `SUPABASE_URL` و `SUPABASE_SERVICE_ROLE_KEY` از داشبورد Supabase (**Settings → API**).
+     - `ADMIN_PASSWORD` — رمز ورود به پنل مدیریت `/admin`.
+     - `ADMIN_SESSION_SECRET` — کلید امضای نشست ادمین؛ یک رشتهٔ تصادفی ≥۳۲ کاراکتری (`openssl rand -hex 32`).
 
 4. **اجرا**
    ```bash
@@ -29,9 +31,39 @@
 |------|-------|
 | `/` | `public/index.html` |
 | `/clinic` `/doctors` `/restaurant` | صفحات مربوطه |
+| `/support` | `public/support.html` — پنل پشتیبانی مشتری |
+| `/admin` | `public/admin.html` — پنل مدیریت (نیازمند رمز) |
 | `POST /api/leads` | دریافت و ذخیرهٔ لید |
+| `POST /api/support/project-status` | پیگیری وضعیت پروژه با `projectCode` + `password` |
+| `POST /api/support/tickets` | ثبت تیکت پشتیبانی |
+| `POST/GET/DELETE /api/admin/login` | ورود/بررسی نشست/خروج ادمین |
+| `GET/POST/PATCH /api/admin/projects` | لیست/ساخت/ویرایش پروژه‌ها (محافظت‌شده) |
+| `GET/PATCH /api/admin/tickets` | لیست/تغییر وضعیت تیکت‌ها (محافظت‌شده) |
 
-## پنل مدیریت
+## پنل پشتیبانی
+
+صفحهٔ `/support` دو کار دارد:
+
+- **پیگیری وضعیت پروژه**: مشتری با `project_code` و **رمز پروژه** وضعیت، درصد پیشرفت، تاریخ تخمینی تحویل و آخرین یادداشت تیم را می‌بیند.
+- **ثبت تیکت**: مشتری تیکت می‌سازد و یک `ticket_code` یکتا دریافت می‌کند.
+
+جدول‌های مربوطه در [`supabase/schema.sql`](supabase/schema.sql) تعریف شده‌اند:
+
+- `support_projects` — پروژه‌ها با `project_code`، `access_password` (هش scrypt)، `status`، `progress_percent` و `estimated_delivery_at`.
+- `support_tickets` — تیکت‌ها با `ticket_code`، `category`، `priority` و `status`.
+
+## پنل مدیریت (`/admin`)
+
+پنل مدیریت برای تیم آرایه؛ ورود با `ADMIN_PASSWORD` و نشست کوکی httpOnly امضاشده با HMAC.
+
+- **پروژه‌ها**: ساخت پروژهٔ جدید (با تعیین رمز ورود مشتری)، ویرایش وضعیت/درصد پیشرفت/تاریخ تحویل/یادداشت و تغییر رمز.
+- **تیکت‌ها**: مشاهدهٔ تیکت‌ها با فیلتر وضعیت و تغییر وضعیت/اولویت.
+
+جریان کار: در پنل یک پروژه بسازید، یک **رمز** برایش تعیین کنید و `project_code` + رمز را به مشتری بدهید.
+مشتری با همین دو مقدار در `/support` وضعیت را پیگیری می‌کند. رمزها به‌صورت هش (scrypt) ذخیره می‌شوند و
+هرگز به کلاینت برنمی‌گردند. تمام روت‌های `/api/admin/*` با کوکی نشست محافظت می‌شوند.
+
+## پنل مدیریت لیدها
 
 فاز اول: داشبورد Supabase → **Table Editor** روی جدول `leads` (مرتب بر اساس `created_at`، فیلتر بر اساس `source`/`page`).
 

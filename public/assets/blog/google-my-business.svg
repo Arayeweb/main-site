@@ -1,0 +1,45 @@
+<svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="پروفایل گوگل مای بیزنس با امتیاز ستاره">
+  <title>پروفایل Google Business Profile با امتیاز ۴.۸ ستاره</title>
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#162236"/>
+      <stop offset="100%" stop-color="#0A1520"/>
+    </linearGradient>
+    <radialGradient id="glow4" cx="50%" cy="42%" r="56%">
+      <stop offset="0%" stop-color="#2E7D6B" stop-opacity=".34"/>
+      <stop offset="100%" stop-color="#0A1520" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg4)"/>
+  <rect width="640" height="360" fill="url(#glow4)"/>
+  <!-- Map background hint (subtle grid) -->
+  <line x1="0" y1="120" x2="640" y2="120" stroke="#1A2E42" stroke-width="1"/>
+  <line x1="0" y1="200" x2="640" y2="200" stroke="#1A2E42" stroke-width="1"/>
+  <line x1="160" y1="60" x2="160" y2="310" stroke="#1A2E42" stroke-width="1"/>
+  <line x1="320" y1="60" x2="320" y2="310" stroke="#1A2E42" stroke-width="1"/>
+  <line x1="480" y1="60" x2="480" y2="310" stroke="#1A2E42" stroke-width="1"/>
+  <!-- Map pin shape -->
+  <path d="M320 52 C285 52 258 79 258 112 C258 158 320 232 320 232 C320 232 382 158 382 112 C382 79 355 52 320 52 Z" fill="#2E7D6B"/>
+  <circle cx="320" cy="110" r="24" fill="#0E1A2B"/>
+  <circle cx="320" cy="110" r="15" fill="#5FBFA8"/>
+  <!-- Pin shadow -->
+  <ellipse cx="320" cy="238" rx="22" ry="7" fill="#000" opacity=".25"/>
+  <!-- Business card panel -->
+  <rect x="148" y="256" width="344" height="80" rx="16" fill="#162236" stroke="#243448" stroke-width="1.5"/>
+  <!-- Business name + address -->
+  <rect x="168" y="272" width="130" height="11" rx="5.5" fill="#3FA08A" opacity=".75"/>
+  <rect x="168" y="291" width="90" height="8" rx="4" fill="#1E3048"/>
+  <rect x="168" y="306" width="70" height="8" rx="4" fill="#1E3048" opacity=".6"/>
+  <!-- Star row -->
+  <!-- 5 stars -->
+  <text x="318" y="278" text-anchor="start" fill="#F59E0B" font-size="18" font-family="sans-serif">★★★★</text>
+  <text x="390" y="278" text-anchor="start" fill="#F59E0B" font-size="18" font-family="sans-serif" opacity=".45">★</text>
+  <!-- Rating number -->
+  <text x="318" y="300" fill="#F59E0B" font-size="14" font-family="sans-serif" font-weight="700">۴.۸</text>
+  <text x="342" y="300" fill="#64748B" font-size="11" font-family="sans-serif">(۱۲۴ نظر)</text>
+  <!-- CTA button -->
+  <rect x="318" y="306" width="110" height="24" rx="12" fill="#2E7D6B" opacity=".85"/>
+  <text x="373" y="322" text-anchor="middle" fill="#fff" font-size="11" font-family="sans-serif" font-weight="600">مسیریابی</text>
+  <!-- Bottom label -->
+  <text x="148" y="352" fill="#5FBFA8" font-size="10" font-family="sans-serif" font-weight="600" opacity=".6" letter-spacing="1.5">GOOGLE MY BUSINESS</text>
+</svg>

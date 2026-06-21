@@ -1,0 +1,73 @@
+<svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="تقویم نوبت‌دهی آنلاین کلینیک">
+  <title>سیستم نوبت‌دهی آنلاین — تقویم رزرو نوبت کلینیک</title>
+  <defs>
+    <linearGradient id="bg6" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#162236"/>
+      <stop offset="100%" stop-color="#0A1520"/>
+    </linearGradient>
+    <radialGradient id="glow6" cx="48%" cy="46%" r="54%">
+      <stop offset="0%" stop-color="#2E7D6B" stop-opacity=".34"/>
+      <stop offset="100%" stop-color="#0A1520" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg6)"/>
+  <rect width="640" height="360" fill="url(#glow6)"/>
+  <!-- Calendar card -->
+  <rect x="148" y="44" width="344" height="282" rx="18" fill="#162236" stroke="#243448" stroke-width="1.5"/>
+  <!-- Calendar header -->
+  <rect x="148" y="44" width="344" height="60" rx="18" fill="#2E7D6B"/>
+  <rect x="148" y="86" width="344" height="18" fill="#2E7D6B"/>
+  <text x="320" y="80" text-anchor="middle" fill="#fff" font-size="17" font-family="sans-serif" font-weight="700">تیر ۱۴۰۵</text>
+  <!-- Calendar clip pins -->
+  <rect x="208" y="34" width="14" height="26" rx="5" fill="#1E3048"/>
+  <rect x="418" y="34" width="14" height="26" rx="5" fill="#1E3048"/>
+  <!-- Day header labels -->
+  <text x="176" y="130" text-anchor="middle" fill="#5FBFA8" font-size="11" font-family="sans-serif" font-weight="600">ش</text>
+  <text x="225" y="130" text-anchor="middle" fill="#5FBFA8" font-size="11" font-family="sans-serif" font-weight="600">ی</text>
+  <text x="272" y="130" text-anchor="middle" fill="#5FBFA8" font-size="11" font-family="sans-serif" font-weight="600">د</text>
+  <text x="320" y="130" text-anchor="middle" fill="#5FBFA8" font-size="11" font-family="sans-serif" font-weight="600">س</text>
+  <text x="368" y="130" text-anchor="middle" fill="#5FBFA8" font-size="11" font-family="sans-serif" font-weight="600">چ</text>
+  <text x="416" y="130" text-anchor="middle" fill="#5FBFA8" font-size="11" font-family="sans-serif" font-weight="600">پ</text>
+  <text x="464" y="130" text-anchor="middle" fill="#64748B" font-size="11" font-family="sans-serif" font-weight="600">ج</text>
+  <!-- Separator -->
+  <line x1="162" y1="136" x2="478" y2="136" stroke="#1E3048" stroke-width="1"/>
+  <!-- Row 1 -->
+  <text x="176" y="164" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱</text>
+  <text x="225" y="164" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۲</text>
+  <text x="272" y="164" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۳</text>
+  <text x="320" y="164" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۴</text>
+  <text x="368" y="164" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۵</text>
+  <text x="416" y="164" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۶</text>
+  <text x="464" y="164" text-anchor="middle" fill="#64748B" font-size="14" font-family="sans-serif">۷</text>
+  <!-- Row 2 — with highlighted day -->
+  <text x="176" y="210" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۸</text>
+  <text x="225" y="210" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۹</text>
+  <text x="272" y="210" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱۰</text>
+  <!-- Highlighted booking day -->
+  <circle cx="320" cy="204" r="20" fill="#2E7D6B"/>
+  <text x="320" y="210" text-anchor="middle" fill="#fff" font-size="14" font-family="sans-serif" font-weight="700">۱۱</text>
+  <text x="368" y="210" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱۲</text>
+  <text x="416" y="210" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱۳</text>
+  <text x="464" y="210" text-anchor="middle" fill="#64748B" font-size="14" font-family="sans-serif">۱۴</text>
+  <!-- Row 3 -->
+  <text x="176" y="254" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱۵</text>
+  <text x="225" y="254" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱۶</text>
+  <text x="272" y="254" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱۷</text>
+  <text x="320" y="254" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱۸</text>
+  <text x="368" y="254" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۱۹</text>
+  <text x="416" y="254" text-anchor="middle" fill="#94A3B8" font-size="14" font-family="sans-serif">۲۰</text>
+  <text x="464" y="254" text-anchor="middle" fill="#64748B" font-size="14" font-family="sans-serif">۲۱</text>
+  <!-- Booking tooltip -->
+  <rect x="258" y="226" width="124" height="42" rx="10" fill="#0A1520" stroke="#2E7D6B" stroke-width="1.5"/>
+  <path d="M314 226 L320 218 L326 226" fill="#0A1520" stroke="#2E7D6B" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="320" y="242" text-anchor="middle" fill="#5FBFA8" font-size="11" font-family="sans-serif" font-weight="600">✓ نوبت رزرو شد</text>
+  <text x="320" y="258" text-anchor="middle" fill="#64748B" font-size="10" font-family="sans-serif">ساعت ۱۰:۳۰ صبح</text>
+  <!-- Row 4 partial -->
+  <text x="176" y="296" text-anchor="middle" fill="#64748B" font-size="14" font-family="sans-serif">۲۲</text>
+  <text x="225" y="296" text-anchor="middle" fill="#64748B" font-size="14" font-family="sans-serif">۲۳</text>
+  <!-- Check badge bottom right -->
+  <circle cx="524" cy="280" r="32" fill="#2E7D6B"/>
+  <path d="M510 280 L520 291 L540 268" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Bottom label -->
+  <text x="148" y="348" fill="#5FBFA8" font-size="10" font-family="sans-serif" font-weight="600" opacity=".6" letter-spacing="1.5">ONLINE BOOKING</text>
+</svg>

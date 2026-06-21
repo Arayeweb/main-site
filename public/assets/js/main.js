@@ -29,6 +29,35 @@
   });
   track("page_view", { title: document.title, referrer: document.referrer });
 
+  /* ---------- UTM page-view tracker ----------
+     فقط وقتی utm_source در URL باشد، یک beacon می‌زند.
+     sessionStorage جلوگیری از ارسال مجدد در همان session. */
+  (function () {
+    var p = new URLSearchParams(location.search);
+    var utmSource = p.get("utm_source");
+    if (!utmSource) return;
+    var sessionKey = "__pv_" + utmSource + "_" + (p.get("utm_campaign") || "");
+    if (sessionStorage.getItem(sessionKey)) return;
+    try { sessionStorage.setItem(sessionKey, "1"); } catch (_) {}
+    var payload = {
+      page: location.pathname,
+      utm_source: utmSource,
+      utm_medium: p.get("utm_medium") || undefined,
+      utm_campaign: p.get("utm_campaign") || undefined,
+      utm_content: p.get("utm_content") || undefined,
+      utm_term: p.get("utm_term") || undefined,
+      referrer: document.referrer || undefined,
+    };
+    // ذخیره در sessionStorage برای فرم‌ها
+    try { sessionStorage.setItem("__utms", JSON.stringify(payload)); } catch (_) {}
+    fetch("/api/pageview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(function () {});
+  })();
+
   const $ = (s, c) => (c || document).querySelector(s);
   const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -380,12 +380,28 @@
     });
   }
 
+  function getUtmParams() {
+    var p = new URLSearchParams(window.location.search);
+    var utms = {};
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
+      if (p.has(k)) utms[k] = p.get(k);
+    });
+    var stored = {};
+    try { stored = JSON.parse(sessionStorage.getItem("__utms") || "{}"); } catch (_) {}
+    var merged = Object.assign({}, stored, utms);
+    if (Object.keys(merged).length) {
+      try { sessionStorage.setItem("__utms", JSON.stringify(merged)); } catch (_) {}
+    }
+    return merged;
+  }
+
   function submitLead(payload) {
-    sendLead(payload)
+    var enriched = Object.assign({}, getUtmParams(), { referrer: document.referrer || undefined }, payload);
+    sendLead(enriched)
       .then(function () { track("lead_sent", { source: payload.source, intent: payload.intent }); })
       .catch(function () {
         track("lead_send_failed", { source: payload.source, intent: payload.intent });
-        backupLead(payload);
+        backupLead(enriched);
       });
   }
 

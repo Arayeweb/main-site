@@ -77,6 +77,12 @@ export async function POST(req: NextRequest) {
     intent: str(body.intent),
     detail: str(body.detail),
     consent: body.consent === false ? false : true,
+    utm_source: str(body.utm_source),
+    utm_medium: str(body.utm_medium),
+    utm_campaign: str(body.utm_campaign),
+    utm_content: str(body.utm_content),
+    utm_term: str(body.utm_term),
+    referrer: str(body.referrer),
     raw: body,
     user_agent: req.headers.get("user-agent")?.slice(0, 500) || null,
   };

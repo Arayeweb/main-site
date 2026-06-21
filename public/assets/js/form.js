@@ -86,6 +86,85 @@
     });
   }
 
+  /* ---------- recommendation engine ----------
+     Builds the step-4 suggestion from the collected answers
+     (need + challenge + infra). need & challenge are always set
+     by the time step 4 opens; infra refines the wording. */
+  const RECS = {
+    website: {
+      title: "طراحی وب‌سایت تبدیل‌محور",
+      main: "طراحی سایت اختصاصی همراه با فرم لید و رزرو یا سفارش آنلاین",
+      comp: "زیرساخت سئو، سرعت بالا و تحلیل رفتار کاربران",
+      outcome: "سایتی که فقط دیده نمی‌شود؛ بازدید را به مشتری تبدیل می‌کند",
+    },
+    visibility: {
+      title: "دیده‌شدن و دسترسی آسان مشتری",
+      main: "ثبت در نقشه‌ها و مسیریاب‌ها به‌همراه لینک همه‌کاره",
+      comp: "بهینه‌سازی سئوی محلی برای جست‌وجوهای منطقه‌ای",
+      outcome: "مشتری‌ها راحت‌تر شما را پیدا و انتخاب می‌کنند",
+    },
+    support: {
+      title: "چت‌بات هوشمند و پاسخ‌گویی خودکار",
+      main: "چت‌بات اختصاصی آموزش‌دیده روی اطلاعات کسب‌وکار شما",
+      comp: "اتصال به CRM برای پیگیری منظم مشتریان و فرصت‌های فروش",
+      outcome: "پاسخ سریع و شبانه‌روزی، بدون از دست رفتن هیچ مشتری",
+    },
+    automation: {
+      title: "اتوماسیون فروش و فرایندهای کسب‌وکار",
+      main: "اتوماسیون اختصاصی فرایندهای فروش، پشتیبانی و کارهای داخلی",
+      comp: "چت‌بات هوشمند و CRM یکپارچه برای مدیریت مشتریان",
+      outcome: "حذف کارهای تکراری و آزاد شدن وقت تیم برای رشد",
+    },
+  };
+  const CHALLENGE_WHY = {
+    discover: "چون مشتریان به‌سختی شما را پیدا می‌کنند",
+    website: "چون وب‌سایت فعلی پاسخ‌گوی نیاز شما نیست",
+    response: "چون پاسخ‌گویی به مشتریان زمان زیادی می‌برد",
+    scattered: "چون اطلاعات و پیگیری مشتریان پراکنده است",
+    repetitive: "چون کارهای تکراری وقت تیم را می‌گیرد",
+    support: "چون برای سایت به پشتیبانی فنی مطمئن نیاز دارید",
+  };
+
+  function buildRecommendation() {
+    const base = RECS[data.need] || RECS.website;
+    const rec = Object.assign({}, base);
+    // refine title when the user already owns the core infrastructure
+    if (data.need === "website" && data.infra === "website") {
+      rec.title = "بازطراحی و ارتقای وب‌سایت";
+      rec.main = "بازطراحی سایت فعلی با فرم لید و رزرو یا سفارش آنلاین";
+    }
+    if (data.need === "support" && data.infra === "chatbot") {
+      rec.title = "ارتقای چت‌بات و پاسخ‌گویی هوشمند";
+    }
+    const reason = CHALLENGE_WHY[data.challenge];
+    rec.why =
+      "این راهکار را به شما پیشنهاد می‌کنیم" +
+      (reason ? " " + reason : "") +
+      "؛ بنابراین تمرکز ما روی همین نقطه است.";
+    return rec;
+  }
+
+  function renderRecommendation() {
+    const box = $("[data-recommendation]", form);
+    if (!box) return;
+    const rec = buildRecommendation();
+    const set = (key, val) => {
+      const el = box.querySelector('[data-rec="' + key + '"]');
+      if (el && val) el.textContent = val;
+    };
+    set("title", rec.title);
+    set("why", rec.why);
+    set("main", rec.main);
+    set("comp", rec.comp);
+    set("outcome", rec.outcome);
+    track("recommendation_view", {
+      need: data.need,
+      challenge: data.challenge,
+      infra: data.infra,
+      recommendation: rec.title,
+    });
+  }
+
   function showStep(n) {
     current = n;
     steps.forEach((s) => s.classList.toggle("is-active", Number(s.dataset.step) === n));
@@ -100,7 +179,7 @@
         : 'ادامه <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     setProgress(n);
     refreshSelected();
-    if (n === 4) validateStep4();
+    if (n === 4) { renderRecommendation(); validateStep4(); }
     track("form_step", { step: n, need: data.need });
     // focus the first interactive element of the step
     const active = steps[n - 1];
@@ -227,9 +306,26 @@
     track("lead_captured", { source: source, need: data.need, infra: data.infra, challenge: data.challenge });
   }
 
+  /* ---------- UTM capture ---------- */
+  function getUtmParams() {
+    var p = new URLSearchParams(window.location.search);
+    var utms = {};
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
+      if (p.has(k)) utms[k] = p.get(k);
+    });
+    var stored = {};
+    try { stored = JSON.parse(sessionStorage.getItem("__utms") || "{}"); } catch (_) {}
+    var merged = Object.assign({}, stored, utms);
+    if (Object.keys(merged).length) {
+      try { sessionStorage.setItem("__utms", JSON.stringify(merged)); } catch (_) {}
+    }
+    return merged;
+  }
+
   /* ---------- submission hook → /api/leads ---------- */
   function submitLead(payload) {
     // ارسال fire-and-forget تا تجربهٔ موفقیت فرم بدون تأخیر بماند.
+    var utms = getUtmParams();
     fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -237,7 +333,8 @@
         Object.assign({}, payload, {
           source: source,
           page: location.pathname,
-        })
+          referrer: document.referrer || undefined,
+        }, utms)
       ),
       keepalive: true,
     }).catch(function () {});

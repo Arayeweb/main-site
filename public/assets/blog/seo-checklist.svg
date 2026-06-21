@@ -1,0 +1,45 @@
+<svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="نمودار رشد رتبه‌بندی گوگل">
+  <title>نمودار رشد رتبه‌بندی سایت در گوگل</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#162236"/>
+      <stop offset="100%" stop-color="#0A1520"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="68%" cy="35%" r="48%">
+      <stop offset="0%" stop-color="#2E7D6B" stop-opacity=".38"/>
+      <stop offset="100%" stop-color="#0A1520" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <rect width="640" height="360" fill="url(#glow)"/>
+  <!-- Grid lines -->
+  <line x1="140" y1="60" x2="140" y2="295" stroke="#1E3048" stroke-width="1"/>
+  <line x1="140" y1="295" x2="510" y2="295" stroke="#1E3048" stroke-width="1"/>
+  <line x1="140" y1="220" x2="510" y2="220" stroke="#1E3048" stroke-width="1" opacity=".4"/>
+  <line x1="140" y1="155" x2="510" y2="155" stroke="#1E3048" stroke-width="1" opacity=".3"/>
+  <!-- Bars -->
+  <rect x="162" y="258" width="44" height="37" rx="5" fill="#1E3048"/>
+  <rect x="228" y="225" width="44" height="70" rx="5" fill="#2E7D6B" opacity=".45"/>
+  <rect x="294" y="188" width="44" height="107" rx="5" fill="#2E7D6B" opacity=".6"/>
+  <rect x="360" y="145" width="44" height="150" rx="5" fill="#2E7D6B" opacity=".78"/>
+  <rect x="426" y="92" width="44" height="203" rx="5" fill="#3FA08A"/>
+  <!-- #1 badge -->
+  <rect x="422" y="68" width="52" height="22" rx="11" fill="#5FBFA8"/>
+  <text x="448" y="83" text-anchor="middle" fill="#0E1A2B" font-size="11" font-family="sans-serif" font-weight="800">#1</text>
+  <!-- Trend dashes -->
+  <polyline points="184,261 250,228 316,191 382,148 448,95" stroke="#5FBFA8" stroke-width="1.8" fill="none" stroke-dasharray="5 3" opacity=".6"/>
+  <!-- Magnifying glass -->
+  <circle cx="545" cy="108" r="40" fill="none" stroke="#2E7D6B" stroke-width="2.5"/>
+  <circle cx="545" cy="108" r="29" fill="#0E1A2B" opacity=".75"/>
+  <circle cx="545" cy="108" r="29" fill="none" stroke="#3FA08A" stroke-width="1.2" opacity=".5"/>
+  <!-- Lens glare -->
+  <path d="M530 93 Q534 89 540 88" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+  <!-- Search lines inside glass -->
+  <rect x="531" y="100" width="26" height="3" rx="1.5" fill="#5FBFA8" opacity=".85"/>
+  <rect x="531" y="107" width="20" height="3" rx="1.5" fill="#5FBFA8" opacity=".65"/>
+  <rect x="531" y="114" width="23" height="3" rx="1.5" fill="#5FBFA8" opacity=".75"/>
+  <!-- Handle -->
+  <line x1="575" y1="138" x2="591" y2="154" stroke="#3FA08A" stroke-width="4" stroke-linecap="round"/>
+  <!-- Bottom label -->
+  <text x="162" y="335" fill="#5FBFA8" font-size="10" font-family="sans-serif" font-weight="600" opacity=".6" letter-spacing="1.5">SEO CHECKLIST</text>
+</svg>

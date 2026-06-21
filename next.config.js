@@ -8,6 +8,8 @@ const nextConfig = {
       { source: "/clinic", destination: "/clinic.html" },
       { source: "/doctors", destination: "/doctors.html" },
       { source: "/restaurant", destination: "/restaurant.html" },
+      { source: "/support", destination: "/support.html" },
+      { source: "/admin", destination: "/admin.html" },
       { source: "/results", destination: "/results.html" },
       { source: "/cases", destination: "/results.html" },
       // بلاگ (قابل سرو روی subdomain یا مسیر /blog)
