@@ -7,14 +7,27 @@
 (function () {
   "use strict";
 
-  /* ---------- Analytics shim (GA4-ready, no external script) ---------- */
+  /* ---------- Analytics shim (GA4/PostHog/GTM-ready, no external script) ----------
+     Events fired: page_view, cta_click, form_step, form_submit, chat_open,
+     chat_reply, chat_recommend, lead_captured, hero_form_error, etc.
+     To send events to your own backend, set window.ARAYEH_ANALYTICS_ENDPOINT.
+     To use GA4, load gtag and push dataLayer events; this shim already prepares them. */
   window.dataLayer = window.dataLayer || [];
+  const ANALYTICS_ENDPOINT = window.ARAYEH_ANALYTICS_ENDPOINT || null;
   const track = (window.track = function (event, props) {
-    const payload = Object.assign({ event: event, ts: Date.now() }, props || {});
+    const payload = Object.assign({ event: event, ts: Date.now(), page: location.pathname }, props || {});
     window.dataLayer.push(payload);
-    // visible during verification; harmless in production
+    if (ANALYTICS_ENDPOINT) {
+      fetch(ANALYTICS_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(function () {});
+    }
     if (window.console) console.debug("[track]", event, props || {});
   });
+  track("page_view", { title: document.title, referrer: document.referrer });
 
   const $ = (s, c) => (c || document).querySelector(s);
   const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
@@ -66,10 +79,18 @@
 
   /* ---------- Sticky header shadow ---------- */
   const header = $(".site-header");
-  const onScroll = () => {
-    if (!header) return;
-    header.classList.toggle("scrolled", window.scrollY > 8);
-  };
+  const stickyCta = $("#stickyCta");
+  const leadform = $("#leadform");
+  const hero = $(".hero");
+  function onScroll() {
+    if (header) header.classList.toggle("scrolled", window.scrollY > 8);
+    if (!stickyCta) return;
+    // show sticky CTA once user has scrolled past hero and form is not yet visible
+    const heroBottom = hero ? hero.getBoundingClientRect().bottom : 300;
+    const formVisible = leadform ? leadform.getBoundingClientRect().top < window.innerHeight : false;
+    const show = heroBottom < 120 && !formVisible && !document.body.classList.contains("chat-open");
+    stickyCta.classList.toggle("is-hidden", !show);
+  }
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
 

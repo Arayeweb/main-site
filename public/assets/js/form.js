@@ -24,9 +24,10 @@
   const step2Q = document.getElementById("step2Q");
 
   const TOTAL = 4;
-  const PROGRESS = { 1: 20, 2: 40, 3: 60, 4: 80, done: 100 }; // endowed progress
+  const PROGRESS = { 1: 25, 2: 50, 3: 75, 4: 100, done: 100 }; // honest progress
 
   const data = { goal: "", budget: "", name: "", contact: "", consent: true, plan: "" };
+  const source = (form.dataset.source || "multistep_form");
   let current = 1;
 
   /* ---------- digit normalization ---------- */
@@ -212,7 +213,7 @@
         "درخواست شما برای پکیج «" + planName + "» ثبت شد. کارشناسان آرایه طی کمتر از یک روز کاری با شما تماس می‌گیرند.";
     }
     track("form_submit", { goal: data.goal, budget: data.budget, plan: data.plan || null });
-    track("lead_captured", { source: "multistep_form", channel: data.channel || data.sitetype || null });
+    track("lead_captured", { source: source, channel: data.channel || data.sitetype || null });
   }
 
   /* ---------- submission hook → /api/leads ---------- */
@@ -223,7 +224,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
         Object.assign({}, payload, {
-          source: "multistep_form",
+          source: source,
           page: location.pathname,
         })
       ),

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" direction="rtl">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0A1422"/>
+      <stop offset="1" stop-color="#13243B"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.28" r="0.55">
+      <stop offset="0" stop-color="#3FA08A" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#3FA08A" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      text{font-family:"Vazirmatn","Segoe UI",Tahoma,sans-serif;}
+    </style>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- brand mark -->
+  <g transform="translate(980,150)">
+    <rect x="-44" y="-44" width="88" height="88" rx="20" fill="none" stroke="#3FA08A" stroke-width="3" opacity="0.5"/>
+    <path d="M-22 26 L0 -22 L22 26" fill="none" stroke="#E8B45A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M-11 12 L11 12" fill="none" stroke="#E8B45A" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- brand name + headline -->
+  <text x="1120" y="300" text-anchor="end" fill="#F6F8FA" font-size="92" font-weight="800">آرایه</text>
+  <text x="1120" y="380" text-anchor="end" fill="#F6F8FA" font-size="46" font-weight="700">کسب‌وکارتان را بی‌نقص روایت کنید.</text>
+  <text x="1120" y="436" text-anchor="end" fill="#9FB2C2" font-size="30" font-weight="500">طراحی وب‌سایت تعاملی و چت‌بات هوشمند متصل به CRM</text>
+
+  <!-- resilience chip -->
+  <g transform="translate(1120,505)">
+    <rect x="-470" y="-34" width="470" height="56" rx="28" fill="#2E7D6B" opacity="0.18"/>
+    <circle cx="-36" cy="-5" r="7" fill="#3FA08A"/>
+    <text x="-58" y="4" text-anchor="end" fill="#5FBFA8" font-size="27" font-weight="600">پشتیبانی همیشگی و مدیریت کانال‌های مختلف</text>
+  </g>
+</svg>

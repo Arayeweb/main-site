@@ -1,0 +1,20 @@
+{
+  "name": "آرایه — سایت‌ساز تبدیل‌محور",
+  "short_name": "آرایه",
+  "description": "طراحی سایت اختصاصی همراه با چت‌بات هوشمند، فرم لید، رزرو و سفارش آنلاین و اتصال به CRM.",
+  "lang": "fa-IR",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0E1A2B",
+  "theme_color": "#0E1A2B",
+  "icons": [
+    {
+      "src": "/assets/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
