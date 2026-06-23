@@ -230,59 +230,6 @@
       color: var(--txt-med);
     }
 
-    /* Team */
-    .about-team {
-      padding: 5rem 0;
-      background: var(--surface-0);
-    }
-    .team-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-    .team-card {
-      background: var(--surface-1);
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-      padding: 2rem 1.5rem;
-      text-align: center;
-      transition: border-color .2s;
-    }
-    .team-card:hover {
-      border-color: var(--accent);
-    }
-    .team-avatar {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #fff;
-      margin: 0 auto 1.25rem;
-    }
-    .team-name {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--txt-hi);
-      margin-bottom: .375rem;
-    }
-    .team-role {
-      font-size: .85rem;
-      color: var(--accent);
-      font-weight: 600;
-      margin-bottom: .75rem;
-    }
-    .team-bio {
-      font-size: .85rem;
-      line-height: 1.65;
-      color: var(--txt-med);
-    }
-
     /* CTA */
     .about-cta {
       padding: 6rem 0;
@@ -338,6 +285,7 @@
       <nav class="header-nav" aria-label="ناوبری اصلی">
         <a href="/clinic">کلینیک</a>
         <a href="/doctors">پزشکان</a>
+        <a href="/software">نرم‌افزار</a>
         <a href="/about" aria-current="page">درباره ما</a>
       </nav>
       <a class="btn btn-primary header-cta" href="/#leadform" data-track="cta_click" data-cta="header">دریافت مشاوره رایگان</a>
@@ -456,43 +404,6 @@
       </div>
     </section>
 
-    <!-- ============ TEAM ============ -->
-    <section class="about-team" id="about-team">
-      <div class="container">
-        <header class="section-head reveal">
-          <span class="kicker">۰۳ — تیم ما</span>
-          <h2 class="section-title">افرادی که پشت هر پروژه‌اند</h2>
-          <p class="section-lead">تیم کوچک و متمرکز ما ترکیبی از طراح، توسعه‌دهنده و متخصص رشد است.</p>
-        </header>
-        <div class="team-grid">
-          <article class="team-card reveal">
-            <div class="team-avatar">آ</div>
-            <p class="team-name">آبتین آرایه</p>
-            <p class="team-role">بنیان‌گذار و مدیر خلاق</p>
-            <p class="team-bio">متخصص طراحی تبدیل‌محور و معماری تجربه کاربری با تمرکز بر رشد کسب‌وکارهای ایرانی.</p>
-          </article>
-          <article class="team-card reveal" data-reveal-delay="80">
-            <div class="team-avatar">ف</div>
-            <p class="team-name">فریده ملکی</p>
-            <p class="team-role">توسعه‌دهنده ارشد</p>
-            <p class="team-bio">متخصص ساخت زیرساخت‌های سریع، پایدار و بهینه‌سازی‌شده برای موتورهای جستجو.</p>
-          </article>
-          <article class="team-card reveal" data-reveal-delay="160">
-            <div class="team-avatar">س</div>
-            <p class="team-name">سارا رحیمی</p>
-            <p class="team-role">متخصص هوش مصنوعی و چت‌بات</p>
-            <p class="team-bio">طراحی و پیاده‌سازی سیستم‌های پاسخگویی هوشمند بر پایه دانش اختصاصی کسب‌وکار.</p>
-          </article>
-          <article class="team-card reveal" data-reveal-delay="240">
-            <div class="team-avatar">م</div>
-            <p class="team-name">مهدی کریمی</p>
-            <p class="team-role">مدیر موفقیت مشتری</p>
-            <p class="team-bio">اطمینان از اینکه هر پروژه نتیجه‌ای واقعی ایجاد می‌کند؛ از مشاوره اولیه تا پشتیبانی مستمر.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <!-- ============ CLIENTS ============ -->
     <section class="trust" style="padding: 4rem 0;">
       <div class="container">
@@ -510,7 +421,7 @@
     <!-- ============ CTA ============ -->
     <section class="about-cta reveal">
       <div class="container about-cta-inner">
-        <span class="kicker" style="display:block; margin-bottom: 1rem;">۰۴ — شروع کنیم</span>
+        <span class="kicker" style="display:block; margin-bottom: 1rem;">۰۳ — شروع کنیم</span>
         <h2>آماده‌اید سایت‌تان مشتری بیاورد؟</h2>
         <p>با یک مشاوره رایگان شروع کنید. کارشناسان آرایه در کمتر از یک روز کاری با شما تماس می‌گیرند.</p>
         <div class="about-cta-btns">
@@ -543,8 +454,10 @@
       <div class="footer-ch">
         <span class="footer-label">راهکارهای صنفی</span>
         <div class="footer-links">
+          <a href="/software">تولید نرم‌افزار</a>
           <a href="/clinic">طراحی سایت کلینیک زیبایی</a>
           <a href="/doctors">سایت و نوبت‌دهی پزشکان</a>
+          <a href="/portfolio">سایت پرتفولیو و برند شخصی</a>
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ const nextConfig = {
       { source: "/results", destination: "/results.html" },
       { source: "/cases", destination: "/results.html" },
       { source: "/portfolio", destination: "/portfolio.html" },
+      { source: "/software", destination: "/software.html" },
       // بلاگ (قابل سرو روی subdomain یا مسیر /blog)
       { source: "/blog", destination: "/blog/index.html" },
       { source: "/blog/posts/:slug", destination: "/blog/posts/:slug.html" },
