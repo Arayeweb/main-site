@@ -48,6 +48,14 @@
   /* surfaces */
   --bg:var(--paper);
   --card:#FFFFFF;
+  --border:#E2E8EE;
+  --surface-0:#F8FAFC;
+  --surface-1:#FFFFFF;
+
+  /* text tokens */
+  --txt-med:var(--muted);
+  --txt-hi:var(--ink);
+  --accent:var(--emerald);
 
   /* type */
   --font:"Vazirmatn",system-ui,"Segoe UI",Tahoma,sans-serif;
