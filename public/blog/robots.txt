@@ -13,4 +13,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://blog.arayeh.studio/sitemap.xml
+Sitemap: https://blog.araaye.com/sitemap.xml
