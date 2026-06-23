@@ -29,6 +29,110 @@
   <meta name="twitter:image" content="https://arayeh.studio/assets/og-cover.svg" />
   <meta name="twitter:image:alt" content="طراحی سایت و نوبت‌دهی آنلاین برای پزشکان و مطب‌ها — آرایه" />
   <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    /* ===== CASE STUDY / PORTFOLIO ===== */
+    .casestudy { margin-top: 1.5rem; display: grid; gap: 1.5rem; }
+    .casestudy-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .casestudy .shot {
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+      background: var(--surface-1);
+      box-shadow: 0 14px 36px rgba(0,0,0,.16);
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .casestudy .shot:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 20px 48px rgba(0,0,0,.22); }
+    .casestudy .shot img { display: block; width: 100%; height: auto; }
+    .casestudy .shot figcaption {
+      padding: .85rem 1.1rem;
+      font-size: .85rem;
+      color: var(--txt-med);
+      border-top: 1px solid var(--border);
+      background: var(--surface-0);
+    }
+    .casestudy-quote {
+      margin: 0;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-right: 3px solid var(--accent);
+      border-radius: 1rem;
+      padding: 1.75rem 2rem;
+    }
+    .casestudy-quote blockquote { margin: 0 0 1rem; font-size: 1.05rem; line-height: 1.9; color: var(--txt-hi); }
+    .casestudy-quote figcaption strong { display: block; color: var(--txt-hi); }
+    .casestudy-quote figcaption span { color: var(--txt-med); font-size: .9rem; }
+    @media (max-width: 768px) { .casestudy-shots { grid-template-columns: 1fr; } }
+
+    /* portfolio item label */
+    .pf-label { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--txt-hi); margin: 0 0 1.1rem; font-size: 1rem; }
+    .pf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; flex: 0 0 auto; }
+
+    /* designed mockup (stands in for a screenshot) */
+    .shot--mock { background: transparent; border: none; box-shadow: none; overflow: visible; }
+    .shot--mock:hover { transform: none; box-shadow: none; border: none; }
+    .np-browser { border: 1px solid var(--border); border-radius: 1rem; overflow: hidden; background: #fff; box-shadow: 0 14px 36px rgba(0,0,0,.18); }
+    .np-bar { display: flex; align-items: center; gap: .4rem; padding: .6rem .9rem; background: #0E1A2B; }
+    .np-bar i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.35); display: inline-block; }
+    .np-bar em { margin-inline-start: auto; font-style: normal; font-size: .75rem; color: rgba(255,255,255,.6); direction: ltr; }
+    .np-site { background: #fff; color: #0E1A2B; }
+    .np-nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #eef1f4; }
+    .np-nav strong { color: #0E1A2B; font-size: 1rem; }
+    .np-nav nav { display: flex; align-items: center; gap: 1.1rem; }
+    .np-nav nav a { font-size: .8rem; color: #5b6b7b; }
+    .np-cta-sm { background: #137a8b; color: #fff !important; padding: .4rem .8rem; border-radius: .6rem; }
+    .np-hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1.5rem; align-items: center; padding: 2.25rem 1.75rem; background: linear-gradient(135deg, #0E1A2B 0%, #14384a 100%); color: #fff; }
+    .np-eyebrow { color: #f0b24a; font-size: .75rem; font-weight: 700; letter-spacing: .03em; }
+    .np-hero-copy h4 { font-size: 1.7rem; font-weight: 800; margin: .6rem 0; line-height: 1.3; color: #fff; }
+    .np-hero-copy h4 .am { color: #f0b24a; }
+    .np-hero-copy p { font-size: .9rem; color: rgba(255,255,255,.82); line-height: 1.8; margin-bottom: 1.2rem; }
+    .np-hero-cta { display: flex; gap: .7rem; flex-wrap: wrap; }
+    .np-btn { background: #f0b24a; color: #0E1A2B; font-weight: 700; font-size: .85rem; padding: .6rem 1.1rem; border-radius: .7rem; }
+    .np-btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.3); }
+    .np-hero-art { display: flex; align-items: center; justify-content: center; }
+    .np-faq { padding: 1.75rem; }
+    .np-faq h5 { font-size: 1.05rem; font-weight: 800; margin: 0 0 1rem; color: #0E1A2B; }
+    .np-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem; border: 1px solid #eef1f4; border-radius: .7rem; margin-bottom: .6rem; font-size: .85rem; color: #33414f; background: #f8fafc; }
+    .np-q b { font-weight: 500; }
+    .np-q span { color: #137a8b; font-weight: 800; font-size: 1.1rem; flex: 0 0 auto; }
+    @media (max-width: 600px) { .np-hero { grid-template-columns: 1fr; } .np-hero-art { display: none; } .np-nav nav a:not(.np-cta-sm) { display: none; } }
+
+    /* nav with subtitle */
+    .np-nav strong em { display: block; font-size: .65rem; font-weight: 500; color: #5b6b7b; font-style: normal; margin-top: .15rem; }
+    /* hero photo card */
+    .np-photo { position: relative; border-radius: 1rem; overflow: hidden; background: linear-gradient(160deg, #e8eef2, #c7d4dd); aspect-ratio: 4/5; display: flex; align-items: flex-end; }
+    .np-photo > svg { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 72%; height: auto; color: #a6b8c6; }
+    .np-photo-cap { position: relative; z-index: 2; width: 100%; padding: 1.1rem 1rem .9rem; background: linear-gradient(180deg, transparent, rgba(14,26,43,.88)); color: #fff; }
+    .np-photo-cap strong { display: block; font-size: .95rem; }
+    .np-photo-cap span { font-size: .75rem; color: #f0b24a; }
+    .np-chip { position: absolute; top: 14px; right: 14px; z-index: 3; background: #fff; border-radius: .7rem; padding: .5rem .7rem; box-shadow: 0 10px 24px rgba(0,0,0,.2); display: flex; align-items: center; gap: .5rem; }
+    .np-chip i { width: 28px; height: 28px; border-radius: .5rem; background: #e6f3f5; display: flex; align-items: center; justify-content: center; color: #137a8b; flex: 0 0 auto; }
+    .np-chip b { font-size: .72rem; color: #0E1A2B; font-weight: 700; display: block; }
+    .np-chip em { font-size: .66rem; color: #5b6b7b; font-style: normal; }
+    /* stats row (dark) */
+    .np-stats { display: flex; gap: 2rem; padding: 1.25rem 1.75rem; background: #0E1A2B; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,.1); }
+    .np-stat { text-align: center; }
+    .np-stat b { display: block; font-size: 1.35rem; font-weight: 800; color: #f0b24a; }
+    .np-stat span { font-size: .68rem; color: rgba(255,255,255,.72); }
+    /* contact mockup */
+    .np-contact { padding: 1.75rem; }
+    .np-contact .eb { color: #137a8b; font-size: .7rem; font-weight: 700; letter-spacing: .05em; }
+    .np-contact h4 { font-size: 1.5rem; font-weight: 800; color: #0E1A2B; margin: .4rem 0 1.25rem; }
+    .np-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .np-map { position: relative; border-radius: .9rem; overflow: hidden; min-height: 240px; border: 1px solid #e2e8ee;
+      background:
+        repeating-linear-gradient(0deg, #eef2f5 0 22px, #e6ebef 22px 23px),
+        repeating-linear-gradient(90deg, #eef2f5 0 22px, #e6ebef 22px 23px); }
+    .np-map::before { content: ""; position: absolute; top: 20%; left: -10%; width: 60%; height: 14px; background: #dfe7ec; transform: rotate(18deg); }
+    .np-map::after { content: ""; position: absolute; bottom: 25%; right: -5%; width: 70%; height: 16px; background: #d7e6e0; transform: rotate(-10deg); }
+    .np-pin { position: absolute; top: 44%; left: 46%; z-index: 2; color: #e2483d; }
+    .np-cards { display: flex; flex-direction: column; gap: .8rem; }
+    .np-card { display: flex; gap: .8rem; align-items: flex-start; background: #f1f7fb; border: 1px solid #e3eef5; border-radius: .8rem; padding: .9rem 1rem; }
+    .np-card i { width: 36px; height: 36px; border-radius: .6rem; background: #137a8b; color: #fff; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .np-card b { display: block; font-size: .85rem; color: #0E1A2B; margin-bottom: .15rem; }
+    .np-card span { font-size: .78rem; color: #5b6b7b; line-height: 1.6; }
+    @media (max-width: 600px) { .np-contact-grid { grid-template-columns: 1fr; } .np-stats { flex-wrap: wrap; gap: 1.25rem; justify-content: space-between; } }
+  </style>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -95,6 +199,14 @@
         <span class="brand-name">آرایه</span>
         <span class="brand-tag">ویژهٔ پزشکان</span>
       </a>
+      <nav class="header-nav" aria-label="ناوبری اصلی">
+        <a href="/clinic">کلینیک</a>
+        <a href="/doctors" aria-current="page">پزشکان</a>
+        <a href="/portfolio">هنرمندان</a>
+        <a href="https://blog.arayeh.studio/">بلاگ</a>
+        <a href="/about">درباره ما</a>
+        <a href="/support">پشتیبانی</a>
+      </nav>
       <a class="btn btn-primary header-cta" href="#leadform" data-track="cta_click" data-cta="header">مشاورهٔ رایگان</a>
     </div>
   </header>
@@ -157,7 +269,7 @@
             </div>
           </div>
           <div class="float-chip chip-lead"><span class="chip-dot"></span> نوبت جدید ثبت شد</div>
-          <div class="float-chip chip-rate">رضایت بیمار <strong>۹۸٪</strong></div>
+          <div class="float-chip chip-rate">رضایت مشتریان آرایه <strong>۹۵٪</strong></div>
         </div>
       </div>
     </section>
@@ -165,17 +277,18 @@
     <!-- TRUST -->
     <section class="trust">
       <div class="container">
-        <p class="trust-label">پزشکان و کلینیک‌هایی که با آرایه آنلاین شدند</p>
+        <p class="trust-label">بخشی از کسب‌وکارهایی که به آرایه اعتماد کرده‌اند</p>
         <div class="trust-logos" aria-label="مشتریان">
-          <span class="logo-ph">کلینیک مهر</span>
-          <span class="logo-ph">دکتر سلامت</span>
-          <span class="logo-ph">دندان‌پزشکی آوا</span>
-          <span class="logo-ph">مرکز قلب پارس</span>
+          <span class="logo-ph">دکتر پوردست</span>
+          <span class="logo-ph">Ashrafi studio</span>
+          <span class="logo-ph">امروز</span>
+          <span class="logo-ph">Deepin</span>
+          <span class="logo-ph">اپشن ساز</span>
         </div>
         <div class="trust-stats">
-          <div class="stat"><span class="stat-num">۴۰٪+</span><span class="stat-lbl">کاهش تماس‌های تلفنی منشی</span></div>
+          <div class="stat"><span class="stat-num">۹۵٪</span><span class="stat-lbl">رضایت مشتریان آرایه از نتیجهٔ پروژه</span></div>
           <div class="stat"><span class="stat-num">۲۴/۷</span><span class="stat-lbl">ثبت نوبت حتی بیرون از ساعت کاری</span></div>
-          <div class="stat"><span class="stat-num">۱۵۰٪</span><span class="stat-lbl">رشد نوبت‌دهی آنلاین مطب‌ها</span></div>
+          <div class="stat"><span class="stat-num">۲ روز</span><span class="stat-lbl">میانگین تحویل اولین نسخه</span></div>
         </div>
       </div>
     </section>
@@ -302,24 +415,100 @@
     <section class="proof" id="proof">
       <div class="container">
         <header class="section-head reveal">
-          <span class="kicker">۰۴ — تجربهٔ همکاران شما</span>
-          <h2 class="section-title">پزشکانی که خیال‌شان راحت شد</h2>
+          <span class="kicker">۰۴ — نمونه‌کار</span>
+          <h2 class="section-title">نمونه‌کارهای ما برای پزشکان</h2>
+          <p class="section-lead">از سایت تخصصی و نوبت‌دهی آنلاین تا معرفی خدمات و سؤالات متداول — چند نمونه از کارهایی که برای پزشکان طراحی کرده‌ایم.</p>
         </header>
-        <div class="proof-grid">
-          <figure class="proof-card reveal">
-            <span class="proof-logo">دکتر پوردست</span>
-            <blockquote>«سایت تخصصی و نوبت‌دهی آنلاینم را آرایه ساخت. حالا بیمارها شبانه‌روز خودشان نوبت می‌گیرند و سایت، تخصص و سابقهٔ علمی‌ام را همان‌طور که هست منتقل می‌کند. من حتی یک‌بار هم درگیر کار فنی نشدم.»</blockquote>
-            <figcaption><strong>دکتر عالیه پوردست</strong><span>متخصص بیماری‌های عفونی و گرمسیری</span></figcaption>
+        <div class="casestudy">
+          <p class="pf-label"><span class="pf-dot"></span>وب‌سایت دکتر عالیه پوردست — متخصص بیماری‌های عفونی</p>
+          <figure class="shot reveal">
+            <img src="assets/img/pordast.png" alt="صفحهٔ اصلی وب‌سایت دکتر عالیه پوردست — طراحی آرایه" loading="lazy" />
+            <figcaption>صفحهٔ اصلی و معرفی تخصص</figcaption>
           </figure>
-          <figure class="proof-card reveal" data-reveal-delay="80">
-            <span class="proof-logo">کلینیک مهر</span>
-            <blockquote>«چت‌بات نوبت‌دهی کار منشی را خیلی راحت کرد. بیمارها خودشان آنلاین نوبت می‌گیرند و یادآوری پیامکی هم می‌رسد؛ تعداد تماس‌های تلفنی نصف شد و نوبت‌های جاماندنی کمتر.»</blockquote>
-            <figcaption><strong>دکتر محمدرضا کاظمی</strong><span>متخصص اطفال، کلینیک مهر</span></figcaption>
+
+          <figure class="shot shot--mock reveal" data-reveal-delay="80">
+            <div class="np-browser" role="img" aria-label="نمونهٔ طراحی صفحهٔ تماس وب‌سایت دکتر عالیه پوردست">
+              <div class="np-bar"><i></i><i></i><i></i><em>dr-pourdast.ir/contact</em></div>
+              <div class="np-site">
+                <div class="np-nav">
+                  <strong>دکتر عالیه پوردست<em>متخصص بیماری‌های عفونی</em></strong>
+                  <nav>
+                    <a>خدمات</a><a>درباره دکتر</a><a>مقالات</a><a>تماس</a><a class="np-cta-sm">رزرو نوبت</a>
+                  </nav>
+                </div>
+                <div class="np-contact">
+                  <span class="eb">— اطلاعات تماس</span>
+                  <h4>تماس با مطب</h4>
+                  <div class="np-contact-grid">
+                    <div class="np-map">
+                      <svg class="np-pin" viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+                    </div>
+                    <div class="np-cards">
+                      <div class="np-card">
+                        <i><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></i>
+                        <div><b>آدرس مطب</b><span>تهران، خیابان ولیعصر، روبه‌روی بیمارستان دی، ساختمان پزشکان سینا، طبقهٔ چهارم</span></div>
+                      </div>
+                      <div class="np-card">
+                        <i><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h4l2 5-3 2a13 13 0 0 0 6 6l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 2 6a2 2 0 0 1 2-2z"/></svg></i>
+                        <div><b>شمارهٔ تماس</b><span>۰۲۱-۸۸۸۷۸۱۳۱</span></div>
+                      </div>
+                      <div class="np-card">
+                        <i><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i>
+                        <div><b>رزرو نوبت آنلاین</b><span>۲۴ ساعته از طریق سامانهٔ نوبت‌دهی</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <figcaption>نمونهٔ طراحی: صفحهٔ تماس با نقشهٔ مطب و رزرو نوبت</figcaption>
           </figure>
-          <figure class="proof-card reveal" data-reveal-delay="160">
-            <span class="proof-logo">دندان‌پزشکی آوا</span>
-            <blockquote>«سایت تخصصی‌ام دقیقاً حسِ حرفه‌ای بودن کلینیک را منتقل می‌کند. بیمارها قبل از مراجعه همه‌چیز را می‌دانند — هزینه، آدرس، بیمه. دیگر سؤالات تکراری به منشی نمی‌رسد.»</blockquote>
-            <figcaption><strong>دکتر سارا موسوی</strong><span>دندان‌پزشک، کلینیک آوا</span></figcaption>
+          <figure class="casestudy-quote reveal" data-reveal-delay="120">
+            <blockquote>«قبلاً بخش زیادی از هماهنگی نوبت‌ها به‌صورت دستی انجام می‌شد. بعد از راه‌اندازی سایت، بیماران در هر ساعتی می‌توانند خدمات را ببینند و برای نوبت اقدام کنند. برای من مهم بود که سایت هم تخصص و سابقهٔ علمی‌ام را درست نشان بدهد و هم کارکردن با آن ساده باشد؛ خوشبختانه در تمام مراحل، مسائل فنی را خود تیم مدیریت کرد.»</blockquote>
+            <figcaption><strong>دکتر عالیه پوردست</strong><span>فوق تخصص بیماری‌های عفونی و گرمسیری</span></figcaption>
+          </figure>
+        </div>
+
+        <div class="casestudy" style="margin-top: 2.75rem;">
+          <p class="pf-label"><span class="pf-dot"></span>وب‌سایت دکتر اشرفی‌وند — شنوایی‌سنجی و تجویز سمعک</p>
+          <figure class="shot shot--mock reveal">
+            <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت دکتر اشرفی‌وند، شنوایی‌سنج — صفحهٔ اصلی و سؤالات متداول">
+              <div class="np-bar"><i></i><i></i><i></i><em>dr-ashrafivand.ir</em></div>
+              <div class="np-site">
+                <div class="np-nav">
+                  <strong>دکتر اشرفی‌وند</strong>
+                  <nav>
+                    <a>خانه</a><a>خدمات</a><a>سؤالات متداول</a><a class="np-cta-sm">رزرو نوبت</a>
+                  </nav>
+                </div>
+                <div class="np-hero">
+                  <div class="np-hero-copy">
+                    <span class="np-eyebrow">● شنوایی‌سنجی و تجویز سمعک</span>
+                    <h4>شنیدنِ دوباره، با <span class="am">تخصص و آرامش</span></h4>
+                    <p>ارزیابی دقیق شنوایی، تجویز و تنظیم سمعک‌های روز دنیا و توان‌بخشی شنیداری — زیر نظر دکتر اشرفی‌وند، شنوایی‌شناس.</p>
+                    <div class="np-hero-cta">
+                      <span class="np-btn">رزرو نوبت ارزیابی شنوایی</span>
+                      <span class="np-btn np-btn-ghost">مشاهدهٔ خدمات</span>
+                    </div>
+                  </div>
+                  <div class="np-hero-art" aria-hidden="true">
+                    <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#f0b24a" stroke-width="3.2" stroke-linecap="round">
+                      <circle cx="38" cy="60" r="11" fill="#f0b24a" stroke="none"/>
+                      <path d="M58 42a26 26 0 0 1 0 36"/>
+                      <path d="M70 32a42 42 0 0 1 0 56" opacity=".7"/>
+                      <path d="M82 22a58 58 0 0 1 0 76" opacity=".42"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="np-faq">
+                  <h5>سؤالات متداول</h5>
+                  <div class="np-q"><b>آزمایش شنوایی‌سنجی چقدر طول می‌کشد و دردناک است؟</b><span>+</span></div>
+                  <div class="np-q"><b>برای تنظیم و عادت به سمعک چند جلسه لازم است؟</b><span>+</span></div>
+                  <div class="np-q"><b>ارزیابی شنوایی نوزادان و کودکان هم انجام می‌شود؟</b><span>+</span></div>
+                </div>
+              </div>
+            </div>
+            <figcaption>نمونهٔ طراحی: صفحهٔ اصلی و بخش سؤالات متداول</figcaption>
           </figure>
         </div>
       </div>
@@ -342,6 +531,7 @@
               <li>نوبت‌دهی آنلاین پایه</li>
               <li>دامنه و سرور یک‌سال</li>
             </ul>
+            <p class="price-amount">تماس با پشتیبانی</p>
             <button class="btn btn-ghost btn-block" type="button" data-action="goto-form" data-plan="bronze" data-track="cta_click" data-cta="price_office">انتخاب پکیج مطب</button>
           </article>
           <article class="price-card price-card--pop reveal" data-reveal-delay="80">
@@ -354,6 +544,7 @@
               <li>درگاه پرداخت و پیش‌پرداخت ویزیت</li>
               <li>سئوی تخصصی + پشتیبانی</li>
             </ul>
+            <p class="price-amount">تماس با پشتیبانی</p>
             <button class="btn btn-primary btn-block" type="button" data-action="goto-form" data-plan="silver" data-track="cta_click" data-cta="price_clinic">انتخاب پکیج کلینیک</button>
           </article>
           <article class="price-card reveal" data-reveal-delay="160">
@@ -365,6 +556,7 @@
               <li>اپلیکیشن/پنل اختصاصی</li>
               <li>مدیر پروژهٔ اختصاصی</li>
             </ul>
+            <p class="price-amount">تماس با پشتیبانی</p>
             <button class="btn btn-ghost btn-block" type="button" data-action="goto-form" data-plan="gold" data-track="cta_click" data-cta="price_center">انتخاب سازمانی</button>
           </article>
         </div>

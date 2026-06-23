@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>آرایه | طراحی سایت پرتفولیو و پرسونال برند برای هنرمندان</title>
+  <meta name="description" content="آرایه برای هنرمندان و برندهای شخصی سایتی می‌سازد که دیده می‌شوید و سفارش می‌گیرید: گالری نمونه‌کار، صفحهٔ بیو، فروش آثار و رزرو جلسه، دامنه، سرور و درگاه پرداخت. کلید تحویل." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#0E1A2B" />
+  <link rel="canonical" href="https://arayeh.studio/portfolio" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/logo-icon.svg" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="preload" href="assets/css/styles.css" as="style" />
+  <link rel="preload" href="assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <meta property="og:site_name" content="آرایه" />
+  <meta property="og:locale" content="fa_IR" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://arayeh.studio/portfolio" />
+  <meta property="og:title" content="طراحی سایت پرتفولیو و پرسونال برند برای هنرمندان | آرایه" />
+  <meta property="og:description" content="سایت پرتفولیو و برند شخصی برای هنرمندان؛ گالری نمونه‌کار، فروش آثار، رزرو جلسه، چت‌بات پاسخگو، دامنه، سرور و درگاه پرداخت هم با آرایه." />
+  <meta property="og:image" content="https://arayeh.studio/assets/og-cover.svg" />
+  <meta property="og:image:type" content="image/svg+xml" />
+  <meta property="og:image:alt" content="طراحی سایت پرتفولیو و پرسونال برند برای هنرمندان — آرایه" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="طراحی سایت پرتفولیو و پرسونال برند برای هنرمندان | آرایه" />
+  <meta name="twitter:description" content="سایت پرتفولیو برای هنرمندان و برند شخصی با گالری نمونه‌کار، فروش آثار و رزرو جلسه." />
+  <meta name="twitter:image" content="https://arayeh.studio/assets/og-cover.svg" />
+  <meta name="twitter:image:alt" content="طراحی سایت پرتفولیو و پرسونال برند برای هنرمندان — آرایه" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    /* ===== CASE STUDY / PORTFOLIO ===== */
+    .casestudy { margin-top: 1.5rem; display: grid; gap: 1.5rem; }
+    .casestudy-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .casestudy .shot {
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+      background: var(--surface-1);
+      box-shadow: 0 14px 36px rgba(0,0,0,.16);
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .casestudy .shot:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 20px 48px rgba(0,0,0,.22); }
+    .casestudy .shot img { display: block; width: 100%; height: auto; }
+    .casestudy .shot figcaption {
+      padding: .85rem 1.1rem;
+      font-size: .85rem;
+      color: var(--txt-med);
+      border-top: 1px solid var(--border);
+      background: var(--surface-0);
+    }
+    .casestudy-quote {
+      margin: 0;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-right: 3px solid var(--accent);
+      border-radius: 1rem;
+      padding: 1.75rem 2rem;
+    }
+    .casestudy-quote blockquote { margin: 0 0 1rem; font-size: 1.05rem; line-height: 1.9; color: var(--txt-hi); }
+    .casestudy-quote figcaption strong { display: block; color: var(--txt-hi); }
+    .casestudy-quote figcaption span { color: var(--txt-med); font-size: .9rem; }
+    @media (max-width: 768px) { .casestudy-shots { grid-template-columns: 1fr; } }
+
+    /* portfolio item label */
+    .pf-label { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--txt-hi); margin: 0 0 1.1rem; font-size: 1rem; }
+    .pf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; flex: 0 0 auto; }
+
+    /* designed mockup (stands in for a screenshot) */
+    .shot--mock { background: transparent; border: none; box-shadow: none; overflow: visible; }
+    .shot--mock:hover { transform: none; box-shadow: none; border: none; }
+    .np-browser { border: 1px solid var(--border); border-radius: 1rem; overflow: hidden; background: #fff; box-shadow: 0 14px 36px rgba(0,0,0,.18); }
+    .np-bar { display: flex; align-items: center; gap: .4rem; padding: .6rem .9rem; background: #0E1A2B; }
+    .np-bar i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.35); display: inline-block; }
+    .np-bar em { margin-inline-start: auto; font-style: normal; font-size: .75rem; color: rgba(255,255,255,.6); direction: ltr; }
+    .np-site { background: #fff; color: #0E1A2B; }
+    .np-nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #eef1f4; }
+    .np-nav strong { color: #0E1A2B; font-size: 1rem; }
+    .np-nav nav { display: flex; align-items: center; gap: 1.1rem; }
+    .np-nav nav a { font-size: .8rem; color: #5b6b7b; }
+    .np-cta-sm { background: #7C5CC4; color: #fff !important; padding: .4rem .8rem; border-radius: .6rem; }
+    .np-hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1.5rem; align-items: center; padding: 2.25rem 1.75rem; background: linear-gradient(135deg, #1a1140 0%, #3a2570 100%); color: #fff; }
+    .np-eyebrow { color: #f0b24a; font-size: .75rem; font-weight: 700; letter-spacing: .03em; }
+    .np-hero-copy h4 { font-size: 1.7rem; font-weight: 800; margin: .6rem 0; line-height: 1.3; color: #fff; }
+    .np-hero-copy h4 .am { color: #f0b24a; }
+    .np-hero-copy p { font-size: .9rem; color: rgba(255,255,255,.82); line-height: 1.8; margin-bottom: 1.2rem; }
+    .np-hero-cta { display: flex; gap: .7rem; flex-wrap: wrap; }
+    .np-btn { background: #f0b24a; color: #1a1140; font-weight: 700; font-size: .85rem; padding: .6rem 1.1rem; border-radius: .7rem; }
+    .np-btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.3); }
+    .np-hero-art { display: flex; align-items: center; justify-content: center; }
+    .np-faq { padding: 1.75rem; }
+    .np-faq h5 { font-size: 1.05rem; font-weight: 800; margin: 0 0 1rem; color: #0E1A2B; }
+    .np-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem; border: 1px solid #eef1f4; border-radius: .7rem; margin-bottom: .6rem; font-size: .85rem; color: #33414f; background: #f8fafc; }
+    .np-q b { font-weight: 500; }
+    .np-q span { color: #7C5CC4; font-weight: 800; font-size: 1.1rem; flex: 0 0 auto; }
+
+    /* mock gallery grid for portfolio site mockup */
+    .np-gallery { padding: 1.5rem 1.75rem 2rem; }
+    .np-gallery h5 { font-size: 1.05rem; font-weight: 800; margin: 0 0 1rem; color: #0E1A2B; }
+    .np-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+    .np-grid span { aspect-ratio: 1/1; border-radius: .6rem; display: block; }
+    .np-grid span:nth-child(1) { background: linear-gradient(135deg,#7C5CC4,#b79bf2); }
+    .np-grid span:nth-child(2) { background: linear-gradient(135deg,#f0b24a,#f5cf86); }
+    .np-grid span:nth-child(3) { background: linear-gradient(135deg,#2E83A6,#6fb8d6); }
+    .np-grid span:nth-child(4) { background: linear-gradient(135deg,#B56E86,#d9a2b6); }
+    .np-grid span:nth-child(5) { background: linear-gradient(135deg,#3a2570,#7C5CC4); }
+    .np-grid span:nth-child(6) { background: linear-gradient(135deg,#C2703D,#e3a368); }
+    @media (max-width: 600px) { .np-hero { grid-template-columns: 1fr; } .np-hero-art { display: none; } .np-nav nav a:not(.np-cta-sm) { display: none; } }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Service",
+        "name": "طراحی سایت پرتفولیو و پرسونال برند برای هنرمندان",
+        "serviceType": "طراحی وب‌سایت پرتفولیو، گالری نمونه‌کار و برند شخصی",
+        "provider": { "@type": "Organization", "name": "آرایه", "url": "https://arayeh.studio/" },
+        "areaServed": { "@type": "Country", "name": "Iran" },
+        "url": "https://arayeh.studio/portfolio",
+        "description": "سایت پرتفولیو و برند شخصی برای هنرمندان با گالری نمونه‌کار، فروش آثار، رزرو جلسه، چت‌بات پاسخگو، درگاه پرداخت و پشتیبانی همیشگی."
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "آرایه", "item": "https://arayeh.studio/" },
+          { "@type": "ListItem", "position": 2, "name": "هنرمندان و پرسونال برند", "item": "https://arayeh.studio/portfolio" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "آیا سایت‌ها از نظر سئو (SEO) و موتورهای جستجو بهینه‌سازی شده‌اند؟",
+            "acceptedAnswer": { "@type": "Answer", "text": "بله، رعایت اصول اولیه سئو تکنیکال، سرعت بالای بارگذاری، کدهای تمیز و ساختار استاندارد در تمامی پروژه‌های ما لحاظ می‌شود تا نام و آثار شما در گوگل به‌خوبی دیده شوند." }
+          },
+          {
+            "@type": "Question",
+            "name": "برای راه‌اندازی باید کار فنی انجام بدهم؟",
+            "acceptedAnswer": { "@type": "Answer", "text": "خیر. طراحی، کدنویسی، تهیهٔ دامنه، راه‌اندازی سرور و اتصال درگاه پرداخت کاملاً به‌عهدهٔ آرایه است. شما فقط آثار، تصاویر و داستان برندتان را در اختیار ما می‌گذارید." }
+          },
+          {
+            "@type": "Question",
+            "name": "دامنه و سرور به نام چه کسی ثبت می‌شود؟",
+            "acceptedAnswer": { "@type": "Answer", "text": "به نام شما. مالکیت دامنه و دارایی دیجیتال برند شخصی شما همیشه متعلق به خودتان است؛ ما فقط مدیریت فنی و تمدید آن را انجام می‌دهیم." }
+          },
+          {
+            "@type": "Question",
+            "name": "می‌توانم آثارم را مستقیم از سایت بفروشم یا سفارش بگیرم؟",
+            "acceptedAnswer": { "@type": "Answer", "text": "بله. امکان فروش آثار، دریافت سفارش اختصاصی (Commission) و رزرو جلسه با اتصال به درگاه پرداخت روی سایت شما فعال می‌شود." }
+          },
+          {
+            "@type": "Question",
+            "name": "اگر فقط یک صفحهٔ بیو و لینک‌این‌بایو بخواهم چطور؟",
+            "acceptedAnswer": { "@type": "Answer", "text": "می‌توانیم با یک صفحهٔ بیوی حرفه‌ای و تجمیع لینک‌های شبکه‌های اجتماعی شروع کنیم و بعداً آن را به یک سایت پرتفولیوی کامل گسترش دهیم." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body class="theme-creative">
+  <div class="grain" aria-hidden="true"></div>
+  <a class="skip-link" href="#leadform">پرش به فرم مشاوره</a>
+
+  <!-- HEADER -->
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="آرایه">
+        <img class="brand-mark" src="assets/logo-icon.svg" alt="" width="34" height="34" aria-hidden="true" />
+        <span class="brand-name">آرایه</span>
+        <span class="brand-tag">ویژهٔ هنرمندان و برند شخصی</span>
+      </a>
+      <nav class="header-nav" aria-label="ناوبری اصلی">
+        <a href="/clinic">کلینیک</a>
+        <a href="/doctors">پزشکان</a>
+        <a href="/portfolio" aria-current="page">هنرمندان</a>
+        <a href="https://blog.arayeh.studio/">بلاگ</a>
+        <a href="/about">درباره ما</a>
+        <a href="/support">پشتیبانی</a>
+      </nav>
+      <a class="btn btn-primary header-cta" href="#leadform" data-track="cta_click" data-cta="header">مشاورهٔ رایگان</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy reveal">
+          <span class="eyebrow"><span class="eyebrow-dot"></span>سایت‌ساز پرتفولیو و برند شخصی برای هنرمندان</span>
+          <h1 class="hero-title">سایتی که فقط آثارتان را نشان نمی‌دهد؛ <span class="hl">مخاطب را به مشتری تبدیل می‌کند.</span></h1>
+          <p class="hero-sub">آرایه برای شما یک خانهٔ دیجیتال حرفه‌ای می‌سازد: گالری نمونه‌کار، صفحهٔ بیو و داستان برند، فروش آثار و رزرو جلسه، دامنه، سرور و درگاه پرداخت. <strong>شما هنرتان را بسازید؛ بقیه با ماست.</strong></p>
+          <div class="hero-cta">
+            <button class="btn btn-primary" type="button" data-action="open-chat" data-track="cta_click" data-cta="hero_demo">
+              <span class="btn-pulse" aria-hidden="true"></span>
+              نمونهٔ زندهٔ پرتفولیو را ببینید
+            </button>
+            <a class="btn btn-ghost" href="#leadform" data-track="cta_click" data-cta="hero_consult">دریافت مشاورهٔ رایگان</a>
+          </div>
+          <form class="hero-lead" data-hero-lead data-goal="consultation" aria-label="دریافت مشاوره سریع برند شخصی">
+            <div class="hero-lead-wrap">
+              <div class="hero-lead-row">
+                <input type="text" id="heroContact" name="contact" inputmode="email" placeholder="ایمیل یا شماره برای مشاوره رایگان پرتفولیو" required />
+                <button type="submit" class="btn btn-primary">ارسال</button>
+              </div>
+              <span class="hero-lead-err" aria-live="polite"></span>
+            </div>
+            <div class="hero-lead-success" hidden>
+              <span class="success-ring" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <p>دریافت شد! کارشناسان آرایه خیلی زود با شما تماس می‌گیرند.</p>
+            </div>
+          </form>
+        </div>
+
+        <div class="hero-visual reveal" data-reveal-delay="120">
+          <div class="composition-grid" aria-hidden="true"></div>
+          <div class="browser" role="img" aria-label="نمونهٔ سایت پرتفولیو و برند شخصی هنرمند">
+            <div class="browser-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="browser-url">studio-artist.ir</span>
+            </div>
+            <div class="browser-body">
+              <div class="mini-site" aria-hidden="true">
+                <div class="ms-nav"><span class="ms-logo"></span><span class="ms-links"></span></div>
+                <div class="ms-hero">
+                  <span class="ms-line w70"></span>
+                  <span class="ms-line w50"></span>
+                  <span class="ms-btn"></span>
+                </div>
+                <div class="ms-cards"><span></span><span></span><span></span></div>
+              </div>
+              <div class="demo-chat" aria-hidden="true">
+                <div class="demo-chat-head">
+                  <span class="demo-avatar">آ</span>
+                  <span class="demo-name">دستیار استودیو<small>آنلاین</small></span>
+                </div>
+                <div class="demo-thread" id="heroThread"></div>
+              </div>
+            </div>
+          </div>
+          <div class="float-chip chip-lead"><span class="chip-dot"></span> سفارش جدید ثبت شد</div>
+          <div class="float-chip chip-rate">رضایت مشتریان آرایه <strong>۹۵٪</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST -->
+    <section class="trust">
+      <div class="container">
+        <p class="trust-label">بخشی از هنرمندان و برندهایی که به آرایه اعتماد کرده‌اند</p>
+        <div class="trust-logos" aria-label="مشتریان">
+          <span class="logo-ph">Ashrafi studio</span>
+          <span class="logo-ph">دکتر پوردست</span>
+          <span class="logo-ph">امروز</span>
+          <span class="logo-ph">Deepin</span>
+          <span class="logo-ph">اپشن ساز</span>
+        </div>
+        <div class="trust-stats">
+          <div class="stat"><span class="stat-num">۹۵٪</span><span class="stat-lbl">رضایت مشتریان آرایه از نتیجهٔ پروژه</span></div>
+          <div class="stat"><span class="stat-num">۲۴/۷</span><span class="stat-lbl">دریافت سفارش حتی بیرون از ساعت کاری</span></div>
+          <div class="stat"><span class="stat-num">۲ روز</span><span class="stat-lbl">میانگین تحویل اولین نسخه</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TURNKEY: we handle everything -->
+    <section class="turnkey">
+      <div class="container">
+        <header class="section-head reveal">
+          <span class="kicker">۰۱ — همه‌چیز با ماست</span>
+          <h2 class="section-title">از طراحی تا انتشار؛ شما <em>هیچ کار فنی</em> انجام نمی‌دهید.</h2>
+          <p class="section-lead">آرایه یک تیم کامل است: ما می‌سازیم، راه می‌اندازیم و نگه می‌داریم. کلید تحویل، تحویل می‌گیرید.</p>
+        </header>
+        <div class="turnkey-grid">
+          <div class="turnkey-card reveal">
+            <span class="turnkey-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 8h18" stroke="currentColor" stroke-width="1.7"/></svg></span>
+            <div><h3>طراحی و ساخت سایت</h3><p>سایت پرتفولیوی اختصاصی، سریع و سئوشده با هویت بصری متناسب با کار شما.</p></div>
+          </div>
+          <div class="turnkey-card reveal" data-reveal-delay="60">
+            <span class="turnkey-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 3z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            <div><h3>چت‌بات هوشمند</h3><p>دستیار پاسخگوی مخاطبان (قیمت سفارش، شرایط همکاری، رزرو جلسه)، ۲۴ساعته.</p></div>
+          </div>
+          <div class="turnkey-card reveal" data-reveal-delay="120">
+            <span class="turnkey-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
+            <div><h3>تهیه و مدیریت دامنه</h3><p>ثبت و تمدید دامنهٔ اختصاصی به نام شما؛ بدون درگیری با تنظیمات فنی.</p></div>
+          </div>
+          <div class="turnkey-card reveal">
+            <span class="turnkey-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="13" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7 7.5h.01M7 16.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+            <div><h3>سرور و هاست پایدار</h3><p>راه‌اندازی روی سرور سریع برای نمایش بی‌نقص تصاویر و آثار، با آپتایم بالا.</p></div>
+          </div>
+          <div class="turnkey-card reveal" data-reveal-delay="60">
+            <span class="turnkey-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2 9h20" stroke="currentColor" stroke-width="1.7"/></svg></span>
+            <div><h3>اتصال درگاه پرداخت</h3><p>فروش آثار و دریافت بیعانهٔ سفارش به‌صورت آنلاین؛ مستقیم و بدون واسطه.</p></div>
+          </div>
+          <div class="turnkey-card reveal" data-reveal-delay="120">
+            <span class="turnkey-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            <div><h3>پشتیبانی و نگهداری</h3><p>به‌روزرسانی گالری، رفع اشکال و پشتیبانی همیشگی؛ سایت‌تان همیشه سرپا می‌ماند.</p></div>
+          </div>
+        </div>
+        <p class="turnkey-note reveal">یک قرارداد، یک تیم، یک فاکتور — بدون نیاز به استخدام فریلنسرهای جداگانه.</p>
+      </div>
+    </section>
+
+    <!-- SERVICES tailored -->
+    <section class="services" id="services">
+      <div class="container">
+        <header class="section-head reveal">
+          <span class="kicker">۰۲ — برای برند شخصی شما</span>
+          <h2 class="section-title">سایتی که مخاطب را از کشف تا سفارش جلو می‌برد</h2>
+        </header>
+        <div class="services-grid">
+          <article class="service-card reveal">
+            <span class="service-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="8.5" cy="9" r="1.6" fill="currentColor"/><path d="M4 17l5-5 4 4 3-3 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <h3>گالری و نمونه‌کار حرفه‌ای</h3>
+            <p>آثارتان با بالاترین کیفیت و چیدمانی چشم‌نواز نمایش داده می‌شوند تا تخصص شما فوری دیده شود.</p>
+            <ul class="service-list">
+              <li>گالری دسته‌بندی‌شده و قابل فیلتر</li>
+              <li>نمایش بهینه روی موبایل و دسکتاپ</li>
+              <li>صفحهٔ اختصاصی برای هر پروژه یا اثر</li>
+            </ul>
+          </article>
+          <article class="service-card service-card--feature reveal" data-reveal-delay="80">
+            <span class="badge-pop">پرتقاضا</span>
+            <span class="service-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+            <h3>برند شخصی و صفحهٔ بیو</h3>
+            <p>هویت بصری، داستان و مسیر حرفه‌ای شما طوری روایت می‌شود که در ذهن مخاطب می‌ماند.</p>
+            <ul class="service-list">
+              <li>صفحهٔ درباره، رزومه و دستاوردها</li>
+              <li>لینک‌این‌بایو و تجمیع شبکه‌های اجتماعی</li>
+              <li>خبرنامه و جمع‌آوری مخاطب وفادار</li>
+            </ul>
+          </article>
+          <article class="service-card reveal" data-reveal-delay="160">
+            <span class="service-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h15l-1.5 8h-12z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6 6L5 3H3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9" cy="19" r="1.3" fill="currentColor"/><circle cx="17" cy="19" r="1.3" fill="currentColor"/></svg></span>
+            <h3>فروش آثار و دریافت سفارش</h3>
+            <p>مخاطب می‌تواند مستقیم از سایت خرید کند، سفارش اختصاصی بدهد یا جلسه رزرو کند.</p>
+            <ul class="service-list">
+              <li>فروشگاه آثار با درگاه پرداخت</li>
+              <li>فرم سفارش اختصاصی (Commission)</li>
+              <li>رزرو جلسه و دریافت بیعانهٔ آنلاین</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BENEFITS -->
+    <section class="benefits" id="benefits">
+      <div class="container benefits-inner">
+        <header class="section-head reveal">
+          <span class="kicker">۰۳ — مته یا سوراخ؟</span>
+          <h2 class="section-title">آنچه می‌خرید، <em>اعتبار و درآمد بیشتر</em> است.</h2>
+        </header>
+        <ul class="benefit-list">
+          <li class="benefit-row reveal">
+            <span class="benefit-feature">گالری حرفه‌ای به‌جای صفحهٔ شلوغ اینستاگرام</span>
+            <svg class="benefit-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="benefit-result">مخاطب آثار شما را جدی‌تر می‌بیند و راحت‌تر اعتماد می‌کند</span>
+          </li>
+          <li class="benefit-row reveal">
+            <span class="benefit-feature">فروش و رزرو مستقیم از سایت</span>
+            <svg class="benefit-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="benefit-result">بدون واسطه و کمیسیون پلتفرم‌ها، درآمدتان مستقیم به خودتان می‌رسد</span>
+          </li>
+          <li class="benefit-row benefit-row--star reveal">
+            <span class="benefit-feature">چت‌بات پاسخگوی ۲۴ساعته</span>
+            <svg class="benefit-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="benefit-result">مخاطب نیمه‌شب هم جواب سؤال سفارش را می‌گیرد و سراغ کس دیگری نمی‌رود</span>
+          </li>
+          <li class="benefit-row reveal">
+            <span class="benefit-feature">مالکیت کامل دامنه و دارایی دیجیتال</span>
+            <svg class="benefit-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="benefit-result">برندتان روی دامنهٔ خودتان است، نه گروگانِ الگوریتم شبکه‌های اجتماعی</span>
+          </li>
+          <li class="benefit-row reveal">
+            <span class="benefit-feature">سئوی نام و آثار شما</span>
+            <svg class="benefit-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="benefit-result">وقتی کسی نام یا تخصص شما را جستجو می‌کند، اول شما را پیدا می‌کند</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- PROOF -->
+    <section class="proof" id="proof">
+      <div class="container">
+        <header class="section-head reveal">
+          <span class="kicker">۰۴ — نمونه‌کار</span>
+          <h2 class="section-title">نمونه‌کارهای ما برای هنرمندان و برندهای شخصی</h2>
+          <p class="section-lead">از گالری نمونه‌کار و فروش آثار تا صفحهٔ بیو و رزرو جلسه — چند نمونه از کارهایی که برای هنرمندان طراحی کرده‌ایم.</p>
+        </header>
+
+        <div class="casestudy">
+          <p class="pf-label"><span class="pf-dot"></span>وب‌سایت پرتفولیو — هنرمند تجسمی و نقاش</p>
+          <figure class="shot shot--mock reveal">
+            <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت پرتفولیوی هنرمند تجسمی — صفحهٔ اصلی و گالری آثار">
+              <div class="np-bar"><i></i><i></i><i></i><em>studio-artist.ir</em></div>
+              <div class="np-site">
+                <div class="np-nav">
+                  <strong>آتلیهٔ مهتا</strong>
+                  <nav>
+                    <a>خانه</a><a>گالری</a><a>دربارهٔ من</a><a class="np-cta-sm">سفارش اثر</a>
+                  </nav>
+                </div>
+                <div class="np-hero">
+                  <div class="np-hero-copy">
+                    <span class="np-eyebrow">● نقاشی و هنر تجسمی</span>
+                    <h4>هنر، روی دیوارِ <span class="am">خانهٔ شما</span></h4>
+                    <p>مجموعه‌ای از آثار اورجینال و سفارشی؛ از پرتره تا انتزاعی. آثار را ببینید، سفارش دهید یا برای کار اختصاصی پیام بگذارید.</p>
+                    <div class="np-hero-cta">
+                      <span class="np-btn">مشاهدهٔ گالری آثار</span>
+                      <span class="np-btn np-btn-ghost">سفارش اثر اختصاصی</span>
+                    </div>
+                  </div>
+                  <div class="np-hero-art" aria-hidden="true">
+                    <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#f0b24a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M30 96l10-30 20 14 14-40 16 56" />
+                      <circle cx="42" cy="34" r="8" fill="#f0b24a" stroke="none"/>
+                      <rect x="20" y="20" width="80" height="80" rx="6" opacity=".45"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="np-gallery">
+                  <h5>گالری آثار</h5>
+                  <div class="np-grid"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                </div>
+              </div>
+            </div>
+            <figcaption>نمونهٔ طراحی: صفحهٔ اصلی و گالری آثار</figcaption>
+          </figure>
+        </div>
+
+        <div class="casestudy" style="margin-top: 2.75rem;">
+          <p class="pf-label"><span class="pf-dot"></span>وب‌سایت برند شخصی — مدرس و کوچ</p>
+          <figure class="shot shot--mock reveal">
+            <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت برند شخصی مدرس و کوچ — صفحهٔ بیو و رزرو جلسه">
+              <div class="np-bar"><i></i><i></i><i></i><em>arman-coach.ir</em></div>
+              <div class="np-site">
+                <div class="np-nav">
+                  <strong>آرمان رضایی</strong>
+                  <nav>
+                    <a>خانه</a><a>دوره‌ها</a><a>سؤالات متداول</a><a class="np-cta-sm">رزرو جلسه</a>
+                  </nav>
+                </div>
+                <div class="np-hero">
+                  <div class="np-hero-copy">
+                    <span class="np-eyebrow">● مدرس و کوچ کسب‌وکار</span>
+                    <h4>مسیرِ رشدت را با <span class="am">یک برنامهٔ روشن</span> بساز</h4>
+                    <p>دوره‌ها، جلسات کوچینگ خصوصی و محتوای رایگان — همه در یک‌جا. جلسهٔ آشنایی رزرو کن و از همین‌جا شروع کن.</p>
+                    <div class="np-hero-cta">
+                      <span class="np-btn">رزرو جلسهٔ آشنایی</span>
+                      <span class="np-btn np-btn-ghost">مشاهدهٔ دوره‌ها</span>
+                    </div>
+                  </div>
+                  <div class="np-hero-art" aria-hidden="true">
+                    <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#f0b24a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M24 92l24-28 18 16 30-44" />
+                      <path d="M84 36h12v12" />
+                      <circle cx="24" cy="92" r="5" fill="#f0b24a" stroke="none"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="np-faq">
+                  <h5>سؤالات متداول</h5>
+                  <div class="np-q"><b>جلسات کوچینگ آنلاین برگزار می‌شوند یا حضوری؟</b><span>+</span></div>
+                  <div class="np-q"><b>برای ثبت‌نام در دوره‌ها چطور پرداخت کنم؟</b><span>+</span></div>
+                  <div class="np-q"><b>آیا جلسهٔ آشنایی اولیه رایگان است؟</b><span>+</span></div>
+                </div>
+              </div>
+            </div>
+            <figcaption>نمونهٔ طراحی: صفحهٔ بیو، رزرو جلسه و سؤالات متداول</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="pricing" id="pricing">
+      <div class="container">
+        <header class="section-head reveal">
+          <span class="kicker">۰۵ — پکیج‌ها</span>
+          <h2 class="section-title">متناسب با مرحلهٔ مسیر حرفه‌ای شما</h2>
+          <p class="section-lead">شفاف و بدون هزینهٔ پنهان. مطمئن نیستید؟ بگذارید دستیار آرایه پیشنهاد دهد.</p>
+        </header>
+        <div class="pricing-grid">
+          <article class="price-card reveal">
+            <span class="price-tier">پرسونال</span>
+            <p class="price-desc">حضور آنلاین حرفه‌ای برای شروع برند شخصی.</p>
+            <ul class="price-feats">
+              <li>صفحهٔ بیوی حرفه‌ای + لینک‌این‌بایو</li>
+              <li>گالری نمونه‌کار پایه</li>
+              <li>دامنه و سرور یک‌سال</li>
+            </ul>
+            <p class="price-amount">تماس با پشتیبانی</p>
+            <button class="btn btn-ghost btn-block" type="button" data-action="goto-form" data-plan="bronze" data-track="cta_click" data-cta="price_personal">انتخاب پکیج پرسونال</button>
+          </article>
+          <article class="price-card price-card--pop reveal" data-reveal-delay="80">
+            <span class="price-flag">پیشنهاد آرایه</span>
+            <span class="price-tier">حرفه‌ای</span>
+            <p class="price-desc">سایت کامل + فروش آثار/رزرو + چت‌بات برای هنرمند فعال.</p>
+            <ul class="price-feats">
+              <li>گالری پیشرفته و صفحهٔ هر اثر</li>
+              <li>فروش آثار و رزرو جلسه با درگاه پرداخت</li>
+              <li>چت‌بات پاسخگوی مخاطبان (RAG)</li>
+              <li>سئوی نام و آثار + پشتیبانی</li>
+            </ul>
+            <p class="price-amount">تماس با پشتیبانی</p>
+            <button class="btn btn-primary btn-block" type="button" data-action="goto-form" data-plan="silver" data-track="cta_click" data-cta="price_pro">انتخاب پکیج حرفه‌ای</button>
+          </article>
+          <article class="price-card reveal" data-reveal-delay="160">
+            <span class="price-tier">استودیو / برند</span>
+            <p class="price-desc">راهکار کامل برای استودیو یا برند با چند عضو و محصول.</p>
+            <ul class="price-feats">
+              <li>تمام امکانات پکیج حرفه‌ای</li>
+              <li>فروشگاه چندمحصولی و مدیریت سفارش</li>
+              <li>صفحهٔ اعضای تیم و خبرنامه</li>
+              <li>مدیر پروژهٔ اختصاصی</li>
+            </ul>
+            <p class="price-amount">تماس با پشتیبانی</p>
+            <button class="btn btn-ghost btn-block" type="button" data-action="goto-form" data-plan="gold" data-track="cta_click" data-cta="price_studio">انتخاب استودیو</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+      <div class="container faq-inner">
+        <header class="section-head reveal">
+          <span class="kicker">۰۶ — سؤالات متداول</span>
+          <h2 class="section-title">هرچه لازم است بدانید</h2>
+        </header>
+        <div class="faq-list">
+          <details class="faq-item reveal">
+            <summary>آیا سایت‌ها از نظر سئو (SEO) و موتورهای جستجو بهینه‌سازی شده‌اند؟</summary>
+            <div class="faq-body"><p>بله، رعایت اصول اولیه سئو تکنیکال، سرعت بالای بارگذاری، کدهای تمیز و ساختار استاندارد در تمامی پروژه‌های ما لحاظ می‌شود تا نام و آثار شما در گوگل به‌خوبی دیده شوند.</p></div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>برای راه‌اندازی باید کار فنی انجام بدهم؟</summary>
+            <div class="faq-body"><p>خیر. طراحی، کدنویسی، تهیهٔ دامنه، راه‌اندازی سرور و اتصال درگاه پرداخت کاملاً به‌عهدهٔ آرایه است. شما فقط آثار، تصاویر و داستان برندتان را در اختیار ما می‌گذارید.</p></div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>دامنه و سرور به نام چه کسی ثبت می‌شود؟</summary>
+            <div class="faq-body"><p>به نام شما. مالکیت دامنه و دارایی دیجیتال برند شخصی شما همیشه متعلق به خودتان است؛ ما فقط مدیریت فنی و تمدید آن را انجام می‌دهیم.</p></div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>می‌توانم آثارم را مستقیم از سایت بفروشم یا سفارش بگیرم؟</summary>
+            <div class="faq-body"><p>بله. امکان فروش آثار، دریافت سفارش اختصاصی (Commission) و رزرو جلسه با اتصال به درگاه پرداخت روی سایت شما فعال می‌شود.</p></div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>اگر فقط یک صفحهٔ بیو و لینک‌این‌بایو بخواهم چطور؟</summary>
+            <div class="faq-body"><p>می‌توانیم با یک صفحهٔ بیوی حرفه‌ای و تجمیع لینک‌های شبکه‌های اجتماعی شروع کنیم و بعداً آن را به یک سایت پرتفولیوی کامل گسترش دهیم.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEAD FORM (tailored) -->
+    <section class="leadform" id="leadform">
+      <div class="container leadform-inner">
+        <div class="leadform-copy reveal">
+          <span class="kicker light">۰۷ — شروع کنیم</span>
+          <h2 class="section-title">۳۰ ثانیه تا پیشنهادِ اختصاصیِ برند شما</h2>
+          <p class="section-lead">چند سؤال کوتاه می‌پرسیم تا دقیقاً نیاز برند و آثارتان را بفهمیم. بدون تعهد، بدون تماس مزاحم.</p>
+          <ul class="leadform-assure">
+            <li><span class="tick" aria-hidden="true"></span>مشاوره و برآورد کاملاً رایگان</li>
+            <li><span class="tick" aria-hidden="true"></span>طراحی + دامنه + سرور + درگاه، همه با ما</li>
+            <li><span class="tick" aria-hidden="true"></span>بدون تماس مزاحم و بدون تعهد</li>
+            <li><span class="tick" aria-hidden="true"></span>اطلاعات شما نزد ما محفوظ است</li>
+          </ul>
+        </div>
+
+        <div class="form-card reveal" data-reveal-delay="100">
+          <div class="form-progress" aria-hidden="true">
+            <div class="form-progress-bar"><span id="progressFill" style="width:25%"></span></div>
+            <span class="form-progress-label" id="progressLabel">گام ۱ از ۴</span>
+          </div>
+          <form id="leadForm" novalidate>
+            <fieldset class="form-step is-active" data-step="1">
+              <legend class="step-q">مهم‌ترین نیاز برند شما چیست؟</legend>
+              <div class="opt-grid" role="radiogroup" aria-label="هدف">
+                <button type="button" class="opt" data-field="goal" data-value="gallery">گالری و نمونه‌کار</button>
+                <button type="button" class="opt" data-field="goal" data-value="sell">فروش آثار / سفارش</button>
+                <button type="button" class="opt" data-field="goal" data-value="booking">رزرو جلسه / کلاس</button>
+                <button type="button" class="opt" data-field="goal" data-value="brand">پرسونال برند و بیو</button>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-step" data-step="2">
+              <legend class="step-q" id="step2Q">بیشتر بگویید…</legend>
+              <div class="opt-grid step2-variant" data-when="gallery sell booking brand" data-q="حوزهٔ کاری شما کدام است؟" role="radiogroup" aria-label="حوزهٔ کاری">
+                <button type="button" class="opt" data-field="field" data-value="visual">هنر تجسمی / عکاسی</button>
+                <button type="button" class="opt" data-field="field" data-value="music">موسیقی / اجرا</button>
+                <button type="button" class="opt" data-field="field" data-value="design">طراحی / دیجیتال</button>
+                <button type="button" class="opt" data-field="field" data-value="coach">مدرس / کوچ / سخنران</button>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-step" data-step="3">
+              <legend class="step-q">بودجهٔ تقریبی شما در چه بازه‌ای است؟</legend>
+              <div class="opt-grid opt-grid--col" role="radiogroup" aria-label="بودجه">
+                <button type="button" class="opt" data-field="budget" data-value="lt15">کمتر از ۱۵ میلیون تومان</button>
+                <button type="button" class="opt" data-field="budget" data-value="15-40">۱۵ تا ۴۰ میلیون تومان</button>
+                <button type="button" class="opt" data-field="budget" data-value="40-100">۴۰ تا ۱۰۰ میلیون تومان</button>
+                <button type="button" class="opt opt--soft" data-field="budget" data-value="unsure">هنوز مطمئن نیستم</button>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-step" data-step="4">
+              <legend class="step-q">عالی! پیشنهاد اختصاصی را کجا بفرستیم؟</legend>
+              <div class="field">
+                <label for="leadName">نام شما</label>
+                <input type="text" id="leadName" name="name" autocomplete="name" placeholder="مثلاً مهتا رضایی" required />
+                <span class="field-err" data-err="name"></span>
+              </div>
+              <div class="field">
+                <label for="leadContact">ایمیل یا شمارهٔ موبایل</label>
+                <input type="text" id="leadContact" name="contact" inputmode="email" placeholder="example@mail.com یا ۰۹۱۲…" required />
+                <span class="field-err" data-err="contact"></span>
+              </div>
+              <label class="check"><input type="checkbox" id="leadConsent" checked /><span>مایلم آرایه برای مشاوره با من تماس بگیرد.</span></label>
+            </fieldset>
+
+            <div class="form-success" data-step="done" hidden>
+              <span class="success-ring" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <h3>دریافت شد! 🎉</h3>
+              <p id="successMsg">پیشنهاد اختصاصی برند شما در حال آماده‌سازی است. کارشناسان آرایه طی کمتر از یک روز کاری با شما تماس می‌گیرند.</p>
+              <button type="button" class="btn btn-ghost" data-action="open-chat">تا آن موقع، با دستیار آرایه گپ بزنید</button>
+            </div>
+
+            <div class="form-nav">
+              <button type="button" class="btn btn-text" id="formBack" hidden>
+                <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                بازگشت
+              </button>
+              <button type="submit" class="btn btn-primary" id="formNext">
+                ادامه
+                <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-name">آرایه</span>
+        <p>سازنده و طراح سایت پرتفولیو و برند شخصی شما — از نمایش آثار تا فروش.</p>
+      </div>
+      <div class="footer-ch">
+        <span class="footer-label">کانال‌های ارتباطی</span>
+        <div class="footer-links">
+          <a href="#leadform" data-track="cta_click" data-cta="footer">مشاورهٔ رایگان</a>
+          <a href="/support">پشتیبانی</a>
+          <a href="/results">داستان موفقیت</a>
+          <a href="#" data-channel="bale">بله</a>
+          <a href="#" data-channel="telegram">تلگرام</a>
+          <a href="index.html">سایت اصلی آرایه</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-base">
+      <span>© ۱۴۰۵ آرایه — همهٔ حقوق محفوظ است.</span>
+      <span class="footer-resil"><span class="chip-dot"></span> طراحی، دامنه، سرور و درگاه پرداخت؛ همه با آرایه.</span>
+    </div>
+  </footer>
+
+  <!-- CHATBOT WIDGET -->
+  <button class="chat-launcher" id="chatLauncher" type="button" aria-label="گفتگو با دستیار آرایه" data-track="chat_open">
+    <span class="chat-launcher-bubble" id="chatNudge" hidden>راهنمایی رایگان برای برند و سایت‌تان؟ بپرسید 👋</span>
+    <svg class="ic-chat" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <svg class="ic-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <span class="launcher-ping" aria-hidden="true"></span>
+  </button>
+
+  <div class="chat-panel" id="chatPanel" role="dialog" aria-label="دستیار آرایه" hidden>
+    <header class="chat-head">
+      <span class="chat-avatar">آ</span>
+      <span class="chat-id"><strong>دستیار آرایه</strong><small><span class="online-dot"></span>معمولاً فوری پاسخ می‌دهد</small></span>
+      <button class="chat-min" type="button" data-action="close-chat" aria-label="بستن گفتگو"><svg viewBox="0 0 24 24"><path d="M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </header>
+    <div class="chat-thread" id="chatThread" aria-live="polite"></div>
+    <div class="chat-quick" id="chatQuick"></div>
+    <form class="chat-input" id="chatInputForm" hidden>
+      <input type="text" id="chatInput" placeholder="پیام‌تان را بنویسید…" autocomplete="off" />
+      <button type="submit" aria-label="ارسال"><svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2z" fill="currentColor"/></svg></button>
+    </form>
+  </div>
+
+  <!-- per-page tailored hero demo + chatbot script -->
+  <script>
+    window.ARAYEH_HERO_DEMO = [
+      { who: "bot", text: "سلام! به استودیوی مهتا خوش آمدید 🎨" },
+      { who: "user", text: "این پرتره رو میشه سفارش داد؟" },
+      { who: "bot", text: "بله، سفارش پرتره فعاله. اندازهٔ دلخواهتون چیه؟" },
+      { who: "user", text: "سایز ۵۰ در ۷۰" },
+      { who: "bot", text: "عالیه! شماره‌تون رو بفرستید تا جزئیات و بیعانه رو هماهنگ کنیم ✅" },
+    ];
+    window.ARAYEH_CHAT = {
+      start: {
+        msgs: ["سلام 👋 من دستیار آرایه‌ام.", "اگر هنرمند هستید یا برند شخصی دارید، در ۳۰ ثانیه کمکتان می‌کنم سایت پرتفولیو و فروش آثار راه بیندازید. چه چیزی برایتان مهم‌تر است؟"],
+        quick: [
+          { t: "گالری و نمونه‌کار", go: "gallery", set: { intent: "gallery" } },
+          { t: "فروش آثار / سفارش", go: "sell", set: { intent: "sell" } },
+          { t: "رزرو جلسه و کلاس", go: "booking", set: { intent: "booking" } },
+          { t: "همه‌چیز را شما انجام می‌دهید؟", go: "turnkey" },
+        ],
+      },
+      gallery: {
+        msgs: ["عالی! یک گالری حرفه‌ای و دسته‌بندی‌شده می‌سازیم تا آثار شما با بالاترین کیفیت و سرعت نمایش داده شوند؛ همراه با صفحهٔ اختصاصی برای هر اثر.", "کل راه‌اندازی (همراه با دامنه و سرور) با ماست. یک راه ارتباطی بدهید تا نمونه و قیمت را بفرستیم."],
+        expects: "contact",
+      },
+      sell: {
+        msgs: ["فروشگاه آثار و فرم سفارش اختصاصی را با اتصال به درگاه پرداخت روی سایت شما فعال می‌کنیم تا مستقیم و بدون واسطه بفروشید.", "یک ایمیل یا شمارهٔ موبایل بدهید تا نمونه‌کارِ هنری و پیشنهاد را بفرستم 🎁"],
+        expects: "contact",
+      },
+      booking: {
+        msgs: ["سیستم رزرو جلسه/کلاس با تقویم و دریافت بیعانهٔ آنلاین می‌گذاریم تا مخاطب خودش زمان خالی را ببیند و رزرو کند.", "شماره یا ایمیل‌تان را بفرستید تا دموی رزرو را برایتان فعال کنیم."],
+        expects: "contact",
+      },
+      turnkey: {
+        msgs: ["بله! آرایه سازنده و طراح سایت شماست و همه‌چیز را انجام می‌دهد: طراحی، گالری، چت‌بات، تهیهٔ دامنه، سرور و هاست، اتصال درگاه پرداخت و پشتیبانی. شما فقط هنرتان را می‌سازید.", "یک راه ارتباطی بدهید تا مشاورهٔ رایگان بفرستیم."],
+        expects: "contact",
+      },
+      thanks: {
+        msgs: ["ممنون! 🙌 اطلاعات شما ثبت شد.", "کارشناس آرایه خیلی زود با شما تماس می‌گیرد. چه کار دیگری انجام دهم؟"],
+        quick: [
+          { t: "اتصال به پشتیبان انسانی", go: "human" },
+          { t: "مشاهدهٔ پکیج‌ها", action: "goto-pricing" },
+          { t: "دیدن فرم مشاوره", action: "goto-form" },
+        ],
+      },
+      human: {
+        msgs: ["در حال بررسی…", "یکی از همکاران ما آنلاین است ✅ گفتگو با کل تاریخچه به ایشان منتقل شد؛ چند لحظه صبر کنید."],
+        quick: [{ t: "از اول شروع کنیم", go: "start" }],
+      },
+    };
+  </script>
+
+  <div class="sticky-cta is-hidden" id="stickyCta" aria-label="دریافت مشاوره رایگان">
+    <a class="btn btn-primary" href="#leadform" data-track="cta_click" data-cta="sticky_cta">دریافت مشاوره رایگان</a>
+  </div>
+
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/form.js" defer></script>
+  <script src="assets/js/chatbot.js" defer></script>
+  <script src="assets/js/heroLead.js" defer></script>
+</body>
+</html>

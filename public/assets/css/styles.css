@@ -456,6 +456,23 @@ body[class*="theme-"] .brand-tag{color:var(--th);background:color-mix(in srgb,va
 }
 .proof-card:hover{transform:translateY(-6px);box-shadow:var(--sh-md)}
 .proof-logo{font-weight:800;font-size:1.2rem;color:var(--navy-700)}
+/* case-study testimonials */
+.proof-cases{display:flex;flex-direction:column;gap:clamp(36px,5vw,60px)}
+.pf-label{display:flex;align-items:center;gap:.55rem;font-weight:700;color:var(--navy-700);margin:0 0 18px;font-size:1.05rem}
+.pf-dot{width:9px;height:9px;border-radius:50%;background:var(--emerald);flex:0 0 auto}
+.casestudy-row{display:grid;grid-template-columns:1.12fr .88fr;gap:24px;align-items:center}
+.casestudy-row--rev .cs-shot{order:2}
+.cs-shot{margin:0;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--card);box-shadow:var(--sh-md);transition:transform .25s,box-shadow .25s}
+.cs-shot:hover{transform:translateY(-5px);box-shadow:var(--sh-lg)}
+.cs-shot img{display:block;width:100%;height:auto}
+.cs-shot figcaption{padding:14px 18px;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);background:var(--paper-2)}
+.casestudy-quote{margin:0;background:var(--card);border:1px solid var(--line);border-right:3px solid var(--emerald);border-radius:var(--r-lg);padding:28px 30px;display:flex;flex-direction:column;gap:14px}
+.casestudy-quote .proof-logo{font-size:1.05rem}
+.casestudy-quote blockquote{margin:0;font-size:1.02rem;line-height:1.95;color:var(--ink);flex:1}
+.casestudy-quote figcaption{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:14px}
+.casestudy-quote figcaption strong{color:var(--navy-700);font-weight:700}
+.casestudy-quote figcaption span{color:var(--muted);font-size:.88rem}
+@media(max-width:768px){.casestudy-row{grid-template-columns:1fr}.casestudy-row--rev .cs-shot{order:0}}
 .proof-card blockquote{font-size:1rem;line-height:1.9;color:var(--ink);position:relative;flex:1}
 .proof-card blockquote::before{content:"”";font-size:2.4rem;color:var(--emerald);opacity:.35;line-height:0;position:relative;top:.4em}
 .proof-card figcaption{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:14px}
@@ -697,6 +714,7 @@ body.chat-open .chat-launcher-badge{display:none}
 body.theme-doctor{--th:#2E83A6;--th-soft:#6FB8D6}      /* medical azure  */
 body.theme-clinic{--th:#B56E86;--th-soft:#D9A2B6}      /* refined rose   */
 body.theme-restaurant{--th:#C2703D;--th-soft:#E3A368}  /* warm terracotta*/
+body.theme-creative{--th:#7C5CC4;--th-soft:#B79BF2}    /* creative violet*/
 
 body[class*="theme-"] .kicker,
 body[class*="theme-"] .eyebrow{color:var(--th)}
