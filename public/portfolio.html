@@ -8,8 +8,8 @@
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="theme-color" content="#0E1A2B" />
   <link rel="canonical" href="https://araaye.com/portfolio" />
-  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/assets/logo-icon.svg" />
+  <link rel="icon" href="/assets/logo-icon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="preload" href="/assets/css/styles.css" as="style" />
   <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
@@ -30,47 +30,46 @@
   <meta name="twitter:image:alt" content="طراحی سایت پرتفولیو و برند شخصی — آرایه" />
   <link rel="stylesheet" href="/assets/css/styles.css" />
   <style>
-    /* ===== CASE STUDY / PORTFOLIO ===== */
-    .casestudy { margin-top: 1.5rem; display: grid; gap: 1.5rem; }
-    .casestudy-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .casestudy .shot {
-      margin: 0;
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-      overflow: hidden;
-      background: var(--surface-1);
-      box-shadow: 0 14px 36px rgba(0,0,0,.16);
-      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    /* ===== TEMPLATE GALLERY / PORTFOLIO ===== */
+    .template-filter { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .tf-tab {
+      font-size: .85rem; font-weight: 700; padding: .55rem 1.1rem;
+      border-radius: var(--r-pill); border: 1.5px solid var(--line);
+      background: var(--card); color: var(--muted);
+      transition: all .2s ease;
     }
-    .casestudy .shot:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 20px 48px rgba(0,0,0,.22); }
-    .casestudy .shot img { display: block; width: 100%; height: auto; }
-    .casestudy .shot figcaption {
-      padding: .85rem 1.1rem;
-      font-size: .85rem;
-      color: var(--txt-med);
-      border-top: 1px solid var(--border);
-      background: var(--surface-0);
-    }
-    .casestudy-quote {
-      margin: 0;
-      background: var(--surface-1);
-      border: 1px solid var(--border);
-      border-right: 3px solid var(--accent);
-      border-radius: 1rem;
-      padding: 1.75rem 2rem;
-    }
-    .casestudy-quote blockquote { margin: 0 0 1rem; font-size: 1.05rem; line-height: 1.9; color: var(--txt-hi); }
-    .casestudy-quote figcaption strong { display: block; color: var(--txt-hi); }
-    .casestudy-quote figcaption span { color: var(--txt-med); font-size: .9rem; }
-    @media (max-width: 768px) { .casestudy-shots { grid-template-columns: 1fr; } }
+    .tf-tab:hover { border-color: var(--th); color: var(--th); }
+    .tf-tab.is-active { background: var(--th); color: #fff; border-color: var(--th); }
 
-    /* portfolio item label */
-    .pf-label { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--txt-hi); margin: 0 0 1.1rem; font-size: 1rem; }
-    .pf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; flex: 0 0 auto; }
+    .template-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .template-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r-md); overflow: hidden;
+      box-shadow: var(--sh-md); display: flex; flex-direction: column;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .template-card:hover { transform: translateY(-5px); border-color: var(--th); box-shadow: 0 22px 52px rgba(14,26,43,.14); }
+    .template-card.is-hidden { display: none; }
+    .template-browser { border-bottom: 1px solid var(--border); }
 
-    /* designed mockup (stands in for a screenshot) */
-    .shot--mock { background: transparent; border: none; box-shadow: none; overflow: visible; }
-    .shot--mock:hover { transform: none; box-shadow: none; border: none; }
+    .template-meta {
+      padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; gap: .6rem; flex: 1;
+    }
+    .template-badge {
+      display: inline-flex; align-self: flex-start; font-size: .72rem; font-weight: 700;
+      padding: .3rem .65rem; border-radius: var(--r-pill); background: var(--surface-0);
+      color: var(--th); border: 1px solid var(--border);
+    }
+    .template-meta h3 { font-size: 1.15rem; font-weight: 800; color: var(--ink); }
+    .template-meta p { font-size: .9rem; color: var(--muted); line-height: 1.7; flex: 1; }
+    .template-meta .btn { margin-top: .6rem; }
+    .template-cta {
+      margin-top: 2.5rem; text-align: center; padding: 1.75rem; background: var(--surface-0);
+      border-radius: var(--r-md); border: 1px solid var(--border);
+    }
+    .template-cta p { color: var(--muted); margin-bottom: .8rem; }
+
+    /* browser mockup shell */
     .np-browser { border: 1px solid var(--border); border-radius: 1rem; overflow: hidden; background: #fff; box-shadow: 0 14px 36px rgba(0,0,0,.18); }
     .np-bar { display: flex; align-items: center; gap: .4rem; padding: .6rem .9rem; background: #0E1A2B; }
     .np-bar i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.35); display: inline-block; }
@@ -90,13 +89,15 @@
     .np-btn { background: #f0b24a; color: #1a1140; font-weight: 700; font-size: .85rem; padding: .6rem 1.1rem; border-radius: .7rem; }
     .np-btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.3); }
     .np-hero-art { display: flex; align-items: center; justify-content: center; }
-    .np-faq { padding: 1.75rem; }
-    .np-faq h5 { font-size: 1.05rem; font-weight: 800; margin: 0 0 1rem; color: #0E1A2B; }
-    .np-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem; border: 1px solid #eef1f4; border-radius: .7rem; margin-bottom: .6rem; font-size: .85rem; color: #33414f; background: #f8fafc; }
-    .np-q b { font-weight: 500; }
-    .np-q span { color: #7C5CC4; font-weight: 800; font-size: 1.1rem; flex: 0 0 auto; }
 
-    /* mock gallery grid for portfolio site mockup */
+    /* mockup variants */
+    .np-hero--cafe { background: linear-gradient(135deg, #4a2c1a 0%, #7a4f3a 100%); }
+    .np-hero--cafe .np-eyebrow, .np-hero--cafe .np-hero-copy h4 .am { color: #e8b45a; }
+    .np-hero--cafe .np-btn { background: #e8b45a; color: #4a2c1a; }
+    .np-hero--photo { background: linear-gradient(135deg, #0e3a4f 0%, #1e6b85 100%); }
+    .np-hero--photo .np-eyebrow, .np-hero--photo .np-hero-copy h4 .am { color: #5fbfa8; }
+    .np-hero--photo .np-btn { background: #5fbfa8; color: #0e3a4f; }
+
     .np-gallery { padding: 1.5rem 1.75rem 2rem; }
     .np-gallery h5 { font-size: 1.05rem; font-weight: 800; margin: 0 0 1rem; color: #0E1A2B; }
     .np-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
@@ -107,7 +108,22 @@
     .np-grid span:nth-child(4) { background: linear-gradient(135deg,#B56E86,#d9a2b6); }
     .np-grid span:nth-child(5) { background: linear-gradient(135deg,#3a2570,#7C5CC4); }
     .np-grid span:nth-child(6) { background: linear-gradient(135deg,#C2703D,#e3a368); }
-    @media (max-width: 600px) { .np-hero { grid-template-columns: 1fr; } .np-hero-art { display: none; } .np-nav nav a:not(.np-cta-sm) { display: none; } }
+
+    .np-menu { padding: 1.5rem 1.75rem 2rem; }
+    .np-menu h5 { font-size: 1.05rem; font-weight: 800; margin: 0 0 1rem; color: #0E1A2B; }
+    .np-menu-items { display: grid; gap: .55rem; }
+    .np-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1rem; border: 1px solid #eef1f4; border-radius: .7rem; background: #f8fafc; font-size: .85rem; color: #33414f; }
+    .np-item b { font-weight: 500; }
+    .np-item span { color: #7C5CC4; font-weight: 800; }
+
+    .np-faq { padding: 1.75rem; }
+    .np-faq h5 { font-size: 1.05rem; font-weight: 800; margin: 0 0 1rem; color: #0E1A2B; }
+    .np-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem; border: 1px solid #eef1f4; border-radius: .7rem; margin-bottom: .6rem; font-size: .85rem; color: #33414f; background: #f8fafc; }
+    .np-q b { font-weight: 500; }
+    .np-q span { color: #7C5CC4; font-weight: 800; font-size: 1.1rem; flex: 0 0 auto; }
+
+    @media (max-width: 900px) { .template-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .np-hero { grid-template-columns: 1fr; } .np-hero-art { display: none; } .np-nav nav a:not(.np-cta-sm) { display: none; } .template-meta { padding: 1.1rem 1.25rem 1.35rem; } }
   </style>
   <script type="application/ld+json">
   {
@@ -171,7 +187,7 @@
   <header class="site-header" id="top">
     <div class="container header-inner">
       <a class="brand" href="index.html" aria-label="آرایه">
-        <img class="brand-mark" src="assets/logo-icon.svg" alt="" width="34" height="34" aria-hidden="true" />
+        <img class="brand-mark" src="assets/logo-icon.png" alt="" width="34" height="34" aria-hidden="true" />
         <span class="brand-name">آرایه</span>
         <span class="brand-tag">ویژهٔ برند شخصی و کسب‌وکار خرد</span>
       </a>
@@ -194,20 +210,20 @@
       <div class="hero-glow" aria-hidden="true"></div>
       <div class="container hero-grid">
         <div class="hero-copy reveal">
-          <span class="eyebrow"><span class="eyebrow-dot"></span>سایت‌ساز پرتفولیو و برند شخصی برای هنرمندان و کسب‌وکار خرد</span>
-          <h1 class="hero-title">سایتی که فقط آثارتان را نشان نمی‌دهد؛ <span class="hl">مخاطب را به مشتری تبدیل می‌کند.</span></h1>
-          <p class="hero-sub">آرایه برای شما یک خانهٔ دیجیتال حرفه‌ای می‌سازد: گالری نمونه‌کار، صفحهٔ بیو و داستان برند، فروش خدمات و رزرو جلسه، دامنه، سرور و درگاه پرداخت. <strong>شما کارتان را بسازید؛ بقیه با ماست.</strong></p>
+          <span class="eyebrow"><span class="eyebrow-dot"></span>خانهٔ دیجیتال برند شخصی و کسب‌وکار خرد</span>
+          <h1 class="hero-title">یک خانهٔ دیجیتال که نه فقط شما را نشان می‌دهد؛ <span class="hl">برایتان مشتری می‌آورد.</span></h1>
+          <p class="hero-sub">آرایه گالری کار، داستان برند و فروش خدماتتان را زیر یک سقف می‌چیند — با رزرو جلسه، دامنه، سرور و درگاه پرداخت. <strong>شما فقط کار بسازید؛ بقیه با ماست.</strong></p>
           <div class="hero-cta">
             <button class="btn btn-primary" type="button" data-action="open-chat" data-track="cta_click" data-cta="hero_demo">
               <span class="btn-pulse" aria-hidden="true"></span>
-              نمونهٔ زندهٔ پرتفولیو را ببینید
+              نمونه زنده پرتفولیو را ببینید
             </button>
-            <a class="btn btn-ghost" href="#leadform" data-track="cta_click" data-cta="hero_consult">دریافت مشاورهٔ رایگان</a>
+            <a class="btn btn-ghost" href="#leadform" data-track="cta_click" data-cta="hero_consult">مشاوره رایگان بگیرید</a>
           </div>
           <form class="hero-lead" data-hero-lead data-goal="consultation" aria-label="دریافت مشاوره سریع برند شخصی">
             <div class="hero-lead-wrap">
               <div class="hero-lead-row">
-                <input type="text" id="heroContact" name="contact" inputmode="email" placeholder="ایمیل یا شماره برای مشاوره رایگان پرتفولیو" required />
+                <input type="text" id="heroContact" name="contact" inputmode="email" placeholder="ایمیل یا شماره موبایل برای مشاوره رایگان" required />
                 <button type="submit" class="btn btn-primary">ارسال</button>
               </div>
               <span class="hero-lead-err" aria-live="polite"></span>
@@ -393,90 +409,203 @@
       <div class="container">
         <header class="section-head reveal">
           <span class="kicker">۰۴ — نمونه‌کار</span>
-          <h2 class="section-title">نمونه‌کارهای ما برای برندهای شخصی و کسب‌وکارهای خرد</h2>
-          <p class="section-lead">از گالری نمونه‌کار و فروش خدمات تا صفحهٔ بیو و رزرو جلسه — چند نمونه از کارهایی که برای برندهای شخصی و کسب‌وکارهای خرد طراحی کرده‌ایم.</p>
+          <h2 class="section-title">قالب‌هایی برای برند شخصی و کسب‌وکار خرد</h2>
+          <p class="section-lead">هر کدام از این نمونه‌ها را می‌توانیم با هویت و محتوای شما شخصی‌سازی کنیم؛ از گالری نمونه‌کار و فروش خدمات تا رزرو جلسه.</p>
         </header>
 
-        <div class="casestudy">
-          <p class="pf-label"><span class="pf-dot"></span>وب‌سایت پرتفولیو — هنرمند تجسمی و نقاش</p>
-          <figure class="shot shot--mock reveal">
-            <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت پرتفولیوی هنرمند تجسمی — صفحهٔ اصلی و گالری آثار">
-              <div class="np-bar"><i></i><i></i><i></i><em>studio-artist.ir</em></div>
-              <div class="np-site">
-                <div class="np-nav">
-                  <strong>آتلیهٔ مهتا</strong>
-                  <nav>
-                    <a>خانه</a><a>گالری</a><a>دربارهٔ من</a><a class="np-cta-sm">سفارش اثر</a>
-                  </nav>
-                </div>
-                <div class="np-hero">
-                  <div class="np-hero-copy">
-                    <span class="np-eyebrow">● نقاشی و هنر تجسمی</span>
-                    <h4>هنر، روی دیوارِ <span class="am">خانهٔ شما</span></h4>
-                    <p>مجموعه‌ای از آثار اورجینال و سفارشی؛ از پرتره تا انتزاعی. آثار را ببینید، سفارش دهید یا برای کار اختصاصی پیام بگذارید.</p>
-                    <div class="np-hero-cta">
-                      <span class="np-btn">مشاهدهٔ گالری آثار</span>
-                      <span class="np-btn np-btn-ghost">سفارش اثر اختصاصی</span>
-                    </div>
-                  </div>
-                  <div class="np-hero-art" aria-hidden="true">
-                    <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#f0b24a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M30 96l10-30 20 14 14-40 16 56" />
-                      <circle cx="42" cy="34" r="8" fill="#f0b24a" stroke="none"/>
-                      <rect x="20" y="20" width="80" height="80" rx="6" opacity=".45"/>
-                    </svg>
-                  </div>
-                </div>
-                <div class="np-gallery">
-                  <h5>گالری آثار</h5>
-                  <div class="np-grid"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                </div>
-              </div>
-            </div>
-            <figcaption>نمونهٔ طراحی: صفحهٔ اصلی و گالری آثار</figcaption>
-          </figure>
+        <div class="template-filter reveal" role="tablist" aria-label="فیلتر نمونه‌کار">
+          <button class="tf-tab is-active" type="button" data-filter="all" role="tab" aria-selected="true">همه</button>
+          <button class="tf-tab" type="button" data-filter="personal" role="tab" aria-selected="false">برند شخصی</button>
+          <button class="tf-tab" type="button" data-filter="business" role="tab" aria-selected="false">کسب‌وکار خرد</button>
         </div>
 
-        <div class="casestudy" style="margin-top: 2.75rem;">
-          <p class="pf-label"><span class="pf-dot"></span>وب‌سایت برند شخصی — مدرس و کوچ</p>
-          <figure class="shot shot--mock reveal">
-            <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت برند شخصی مدرس و کوچ — صفحهٔ بیو و رزرو جلسه">
-              <div class="np-bar"><i></i><i></i><i></i><em>arman-coach.ir</em></div>
-              <div class="np-site">
-                <div class="np-nav">
-                  <strong>آرمان رضایی</strong>
-                  <nav>
-                    <a>خانه</a><a>دوره‌ها</a><a>سؤالات متداول</a><a class="np-cta-sm">رزرو جلسه</a>
-                  </nav>
-                </div>
-                <div class="np-hero">
-                  <div class="np-hero-copy">
-                    <span class="np-eyebrow">● مدرس و کوچ کسب‌وکار</span>
-                    <h4>مسیرِ رشدت را با <span class="am">یک برنامهٔ روشن</span> بساز</h4>
-                    <p>دوره‌ها، جلسات کوچینگ خصوصی و محتوای رایگان — همه در یک‌جا. جلسهٔ آشنایی رزرو کن و از همین‌جا شروع کن.</p>
-                    <div class="np-hero-cta">
-                      <span class="np-btn">رزرو جلسهٔ آشنایی</span>
-                      <span class="np-btn np-btn-ghost">مشاهدهٔ دوره‌ها</span>
+        <div class="template-grid">
+          <!-- Card 1: Artist -->
+          <article class="template-card reveal" data-category="personal">
+            <div class="template-browser">
+              <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت پرتفولیوی هنرمند تجسمی — صفحهٔ اصلی و گالری آثار">
+                <div class="np-bar"><i></i><i></i><i></i><em>studio-artist.ir</em></div>
+                <div class="np-site">
+                  <div class="np-nav">
+                    <strong>آتلیهٔ مهتا</strong>
+                    <nav><a>خانه</a><a>گالری</a><a>دربارهٔ من</a><a class="np-cta-sm">سفارش اثر</a></nav>
+                  </div>
+                  <div class="np-hero">
+                    <div class="np-hero-copy">
+                      <span class="np-eyebrow">● نقاشی و هنر تجسمی</span>
+                      <h4>هنر، روی دیوارِ <span class="am">خانهٔ شما</span></h4>
+                      <p>مجموعه‌ای از آثار اورجینال و سفارشی؛ از پرتره تا انتزاعی. آثار را ببینید، سفارش دهید یا برای کار اختصاصی پیام بگذارید.</p>
+                      <div class="np-hero-cta">
+                        <span class="np-btn">مشاهدهٔ گالری آثار</span>
+                        <span class="np-btn np-btn-ghost">سفارش اثر اختصاصی</span>
+                      </div>
+                    </div>
+                    <div class="np-hero-art" aria-hidden="true">
+                      <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#f0b24a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M30 96l10-30 20 14 14-40 16 56" />
+                        <circle cx="42" cy="34" r="8" fill="#f0b24a" stroke="none"/>
+                        <rect x="20" y="20" width="80" height="80" rx="6" opacity=".45"/>
+                      </svg>
                     </div>
                   </div>
-                  <div class="np-hero-art" aria-hidden="true">
-                    <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#f0b24a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M24 92l24-28 18 16 30-44" />
-                      <path d="M84 36h12v12" />
-                      <circle cx="24" cy="92" r="5" fill="#f0b24a" stroke="none"/>
-                    </svg>
+                  <div class="np-gallery">
+                    <h5>گالری آثار</h5>
+                    <div class="np-grid"><span></span><span></span><span></span><span></span><span></span><span></span></div>
                   </div>
-                </div>
-                <div class="np-faq">
-                  <h5>سؤالات متداول</h5>
-                  <div class="np-q"><b>جلسات کوچینگ آنلاین برگزار می‌شوند یا حضوری؟</b><span>+</span></div>
-                  <div class="np-q"><b>برای ثبت‌نام در دوره‌ها چطور پرداخت کنم؟</b><span>+</span></div>
-                  <div class="np-q"><b>آیا جلسهٔ آشنایی اولیه رایگان است؟</b><span>+</span></div>
                 </div>
               </div>
             </div>
-            <figcaption>نمونهٔ طراحی: صفحهٔ بیو، رزرو جلسه و سؤالات متداول</figcaption>
-          </figure>
+            <div class="template-meta">
+              <span class="template-badge">برند شخصی</span>
+              <h3>وب‌سایت پرتفولیو هنرمند</h3>
+              <p>گالری آثار، صفحهٔ اختصاصی برای هر اثر و فرم سفارش مستقیم برای هنرمندان تجسمی.</p>
+              <button class="btn btn-primary btn-block" type="button" data-action="pick-template" data-goal="gallery" data-field="visual" data-plan="silver">سایت مثل این می‌خواهم</button>
+            </div>
+          </article>
+
+          <!-- Card 2: Photographer -->
+          <article class="template-card reveal" data-category="personal">
+            <div class="template-browser">
+              <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت عکاس — گالری کار و رزرو جلسه">
+                <div class="np-bar"><i></i><i></i><i></i><em>studio-lens.ir</em></div>
+                <div class="np-site">
+                  <div class="np-nav">
+                    <strong>استودیو لنز</strong>
+                    <nav><a>خانه</a><a>نمونه‌کار</a><a>رزرو</a><a class="np-cta-sm">جلسه عکاسی</a></nav>
+                  </div>
+                  <div class="np-hero np-hero--photo">
+                    <div class="np-hero-copy">
+                      <span class="np-eyebrow">● عکاسی پرتره و تبلیغاتی</span>
+                      <h4>لحظه‌ها را <span class="am">ماندگار</span> کنید</h4>
+                      <p>گالری دسته‌بندی‌شده، پکیج‌های عکاسی و رزرو جلسه با پرداخت آنلاین. مخاطب زمان خالی را خودش انتخاب می‌کند.</p>
+                      <div class="np-hero-cta">
+                        <span class="np-btn">مشاهدهٔ نمونه‌کار</span>
+                        <span class="np-btn np-btn-ghost">رزرو جلسه</span>
+                      </div>
+                    </div>
+                    <div class="np-hero-art" aria-hidden="true">
+                      <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#5fbfa8" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="28" y="38" width="64" height="44" rx="6" />
+                        <circle cx="60" cy="60" r="14" />
+                        <path d="M44 38l8-10h16l8 10" />
+                        <circle cx="82" cy="50" r="4" fill="#5fbfa8" stroke="none"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="np-gallery">
+                    <h5>گالری نمونه‌کار</h5>
+                    <div class="np-grid"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="template-meta">
+              <span class="template-badge">برند شخصی</span>
+              <h3>وب‌سایت عکاس و استودیو</h3>
+              <p>نمایش حرفه‌ای نمونه‌کار، پکیج‌های خدمت و رزرو جلسه برای عکاسان و فیلم‌برداران.</p>
+              <button class="btn btn-primary btn-block" type="button" data-action="pick-template" data-goal="gallery" data-field="visual" data-plan="silver">سایت مثل این می‌خواهم</button>
+            </div>
+          </article>
+
+          <!-- Card 3: Coach -->
+          <article class="template-card reveal" data-category="personal">
+            <div class="template-browser">
+              <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت برند شخصی مدرس و کوچ — صفحهٔ بیو و رزرو جلسه">
+                <div class="np-bar"><i></i><i></i><i></i><em>arman-coach.ir</em></div>
+                <div class="np-site">
+                  <div class="np-nav">
+                    <strong>آرمان رضایی</strong>
+                    <nav><a>خانه</a><a>دوره‌ها</a><a>سؤالات</a><a class="np-cta-sm">رزرو جلسه</a></nav>
+                  </div>
+                  <div class="np-hero">
+                    <div class="np-hero-copy">
+                      <span class="np-eyebrow">● مدرس و کوچ کسب‌وکار</span>
+                      <h4>مسیرِ رشدت را با <span class="am">یک برنامهٔ روشن</span> بساز</h4>
+                      <p>دوره‌ها، جلسات کوچینگ خصوصی و محتوای رایگان — همه در یک‌جا. جلسهٔ آشنایی رزرو کن و از همین‌جا شروع کن.</p>
+                      <div class="np-hero-cta">
+                        <span class="np-btn">رزرو جلسهٔ آشنایی</span>
+                        <span class="np-btn np-btn-ghost">مشاهدهٔ دوره‌ها</span>
+                      </div>
+                    </div>
+                    <div class="np-hero-art" aria-hidden="true">
+                      <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#f0b24a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M24 92l24-28 18 16 30-44" />
+                        <path d="M84 36h12v12" />
+                        <circle cx="24" cy="92" r="5" fill="#f0b24a" stroke="none"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="np-faq">
+                    <h5>سؤالات متداول</h5>
+                    <div class="np-q"><b>جلسات کوچینگ آنلاین برگزار می‌شوند یا حضوری؟</b><span>+</span></div>
+                    <div class="np-q"><b>برای ثبت‌نام در دوره‌ها چطور پرداخت کنم؟</b><span>+</span></div>
+                    <div class="np-q"><b>آیا جلسهٔ آشنایی اولیه رایگان است؟</b><span>+</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="template-meta">
+              <span class="template-badge">برند شخصی</span>
+              <h3>وب‌سایت برند شخصی کوچ و مدرس</h3>
+              <p>صفحهٔ بیو، رزرو جلسه، فروش دوره و پاسخ‌گویی خودکار به سؤالات متداول.</p>
+              <button class="btn btn-primary btn-block" type="button" data-action="pick-template" data-goal="booking" data-field="coach" data-plan="silver">سایت مثل این می‌خواهم</button>
+            </div>
+          </article>
+
+          <!-- Card 4: Café -->
+          <article class="template-card reveal" data-category="business">
+            <div class="template-browser">
+              <div class="np-browser" role="img" aria-label="نمونهٔ طراحی وب‌سایت کافی‌شاپ — منوی آنلاین و رزرو میز">
+                <div class="np-bar"><i></i><i></i><i></i><em>cafe-roozane.ir</em></div>
+                <div class="np-site">
+                  <div class="np-nav">
+                    <strong>کافهٔ روزانه</strong>
+                    <nav><a>منو</a><a>رزرو</a><a>درباره</a><a class="np-cta-sm">رزرو میز</a></nav>
+                  </div>
+                  <div class="np-hero np-hero--cafe">
+                    <div class="np-hero-copy">
+                      <span class="np-eyebrow">● کافی‌شاپ و کافه</span>
+                      <h4>قهوهٔ تازه‌دم در <span class="am">قلب محله</span></h4>
+                      <p>منوی آنلاین به‌همراه قیمت‌به‌روز، رزرو میز و سفارش بیرون‌بر. مشتری قبل از رسیدن، همه‌چیز را می‌بیند.</p>
+                      <div class="np-hero-cta">
+                        <span class="np-btn">مشاهدهٔ منو</span>
+                        <span class="np-btn np-btn-ghost">رزرو میز</span>
+                      </div>
+                    </div>
+                    <div class="np-hero-art" aria-hidden="true">
+                      <svg viewBox="0 0 120 120" width="150" height="150" fill="none" stroke="#e8b45a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M34 80h52" />
+                        <path d="M40 80V54c0-8 8-14 20-14s20 6 20 14v26" />
+                        <path d="M80 54h12c0 10-6 18-12 18" />
+                        <path d="M48 36c0-6 5-10 12-10s12 4 12 10" />
+                        <line x1="52" y1="80" x2="52" y2="92" />
+                        <line x1="68" y1="80" x2="68" y2="92" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="np-menu">
+                    <h5>منوی امروز</h5>
+                    <div class="np-menu-items">
+                      <div class="np-item"><b>اسپرسو</b><span>۸۵ تومان</span></div>
+                      <div class="np-item"><b>کاپوچینو</b><span>۱۲۰ تومان</span></div>
+                      <div class="np-item"><b>کروسان کره‌ای</b><span>۹۵ تومان</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="template-meta">
+              <span class="template-badge">کسب‌وکار خرد</span>
+              <h3>وب‌سایت کافی‌شاپ و رستوران</h3>
+              <p>منوی آنلاین، رزرو میز، سفارش بیرون‌بر و نمایش ساعت کار و آدرس روی موبایل.</p>
+              <button class="btn btn-primary btn-block" type="button" data-action="pick-template" data-goal="sell" data-field="cafe" data-plan="silver">سایت مثل این می‌خواهم</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="template-cta reveal">
+          <p>نمونه‌کار بیشتر یا مشاوره رایگان می‌خواهید؟</p>
+          <a class="btn btn-primary" href="#leadform" data-track="cta_click" data-cta="portfolio_more">مشاوره رایگان بگیرید</a>
         </div>
       </div>
     </section>
@@ -600,6 +729,8 @@
                 <button type="button" class="opt" data-field="field" data-value="music">موسیقی / اجرا</button>
                 <button type="button" class="opt" data-field="field" data-value="design">طراحی / دیجیتال</button>
                 <button type="button" class="opt" data-field="field" data-value="coach">مدرس / کوچ / سخنران</button>
+                <button type="button" class="opt" data-field="field" data-value="cafe">کافی‌شاپ / رستوران</button>
+                <button type="button" class="opt" data-field="field" data-value="local">فروشگاه / خدمات محلی</button>
               </div>
             </fieldset>
 
@@ -764,5 +895,63 @@
   <script src="assets/js/form.js" defer></script>
   <script src="assets/js/chatbot.js" defer></script>
   <script src="assets/js/heroLead.js" defer></script>
+  <script>
+  (function () {
+    "use strict";
+    function initTemplateGallery() {
+      const filterWrap = document.querySelector(".template-filter");
+      const cards = document.querySelectorAll(".template-card");
+      if (filterWrap) {
+        filterWrap.addEventListener("click", function (e) {
+          const tab = e.target.closest(".tf-tab");
+          if (!tab) return;
+          const filter = tab.dataset.filter;
+          filterWrap.querySelectorAll(".tf-tab").forEach(function (t) {
+            t.classList.toggle("is-active", t === tab);
+            t.setAttribute("aria-selected", t === tab ? "true" : "false");
+          });
+          cards.forEach(function (card) {
+            const cats = (card.dataset.category || "").split(/\s+/);
+            const show = filter === "all" || cats.includes(filter);
+            card.classList.toggle("is-hidden", !show);
+          });
+        });
+      }
+
+      document.addEventListener("click", function (e) {
+        const btn = e.target.closest('[data-action="pick-template"]');
+        if (!btn) return;
+        e.preventDefault();
+        const goal = btn.dataset.goal;
+        const field = btn.dataset.field;
+        const plan = btn.dataset.plan;
+        const form = document.getElementById("leadform");
+        if (plan && window.Arayeh && window.Arayeh.presetPlan) {
+          window.Arayeh.presetPlan(plan);
+        }
+        if (form) {
+          form.scrollIntoView({ behavior: "smooth", block: "start" });
+          setTimeout(function () {
+            if (goal) {
+              const goalOpt = form.querySelector('.opt[data-field="goal"][data-value="' + goal + '"]');
+              if (goalOpt) goalOpt.click();
+            }
+            if (field) {
+              setTimeout(function () {
+                const fieldOpt = form.querySelector('.opt[data-field="field"][data-value="' + field + '"]');
+                if (fieldOpt) fieldOpt.click();
+              }, 350);
+            }
+          }, 500);
+        }
+      });
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initTemplateGallery);
+    } else {
+      initTemplateGallery();
+    }
+  })();
+  </script>
 </body>
 </html>
