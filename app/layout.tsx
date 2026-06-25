@@ -1,10 +1,4 @@
-import { Analytics } from '@vercel/analytics/next';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'آرایه',
-  description: 'سایت‌ساز تبدیل‌محور برای کسب‌وکارها',
-};
+import { Analytics } from "@vercel/analytics/next";
 
 export default function RootLayout({
   children,
@@ -12,7 +6,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fa" dir="rtl">
+    <html lang="en">
       <body>
         {children}
         <Analytics />
