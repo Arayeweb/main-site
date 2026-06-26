@@ -162,6 +162,8 @@
   /* ---------- projects ---------- */
   function loadProjects() {
     var list = el("projectsList");
+    var newBtn = el("newProjectBtn");
+    if (newBtn) newBtn.hidden = currentRole !== "admin";
     list.innerHTML = '<div class="admin-empty">در حال بارگذاری…</div>';
     api("GET", "/api/admin/projects").then(function (res) {
       if (res.status === 401) { showLogin(); return; }
@@ -185,6 +187,9 @@
     var pwBadge = p.has_password
       ? '<span class="has-pw">رمز فعال</span>'
       : '<span class="no-pw">بدون رمز</span>';
+    var editBtn = currentRole === "admin"
+      ? '<div class="admin-edit-actions" style="margin-top:14px"><button type="button" class="btn btn-ghost btn-sm" data-edit>ویرایش</button></div>'
+      : '';
     return (
       '<div class="admin-card" data-id="' + esc(p.id) + '">' +
         '<div class="admin-card-head">' +
@@ -202,9 +207,7 @@
           '<span>به‌روزرسانی: <b>' + fmtDate(p.updated_at) + '</b></span>' +
         '</div>' +
         (p.last_note ? '<div class="admin-msg">' + esc(p.last_note) + '</div>' : '') +
-        '<div class="admin-edit-actions" style="margin-top:14px">' +
-          '<button type="button" class="btn btn-ghost btn-sm" data-edit>ویرایش</button>' +
-        '</div>' +
+        editBtn +
         '<div class="admin-edit" data-editbox>' +
           '<div class="admin-grid">' +
             '<div class="field"><label>عنوان</label><input type="text" data-f="title" value="' + esc(p.title || "") + '" /></div>' +
@@ -324,6 +327,16 @@
   }
 
   function ticketCard(t) {
+    var canManage = currentRole === "admin" || currentRole === "support";
+    var actions = canManage
+      ? '<div class="admin-row-actions" style="margin-top:14px">' +
+          '<label style="font-size:.82rem;color:var(--muted)">تغییر وضعیت:</label>' +
+          '<select data-tstatus>' + options(TICKET_STATUS, t.status) + '</select>' +
+          '<label style="font-size:.82rem;color:var(--muted)">اولویت:</label>' +
+          '<select data-tpriority>' + options(PRIORITY, t.priority) + '</select>' +
+          '<span class="form-err" data-err style="min-height:0"></span>' +
+        '</div>'
+      : '';
     return (
       '<div class="admin-card" data-id="' + esc(t.id) + '">' +
         '<div class="admin-card-head">' +
@@ -341,13 +354,7 @@
           '<span>ثبت: <b>' + fmtDate(t.created_at) + '</b></span>' +
         '</div>' +
         '<div class="admin-msg">' + esc(t.message) + '</div>' +
-        '<div class="admin-row-actions" style="margin-top:14px">' +
-          '<label style="font-size:.82rem;color:var(--muted)">تغییر وضعیت:</label>' +
-          '<select data-tstatus>' + options(TICKET_STATUS, t.status) + '</select>' +
-          '<label style="font-size:.82rem;color:var(--muted)">اولویت:</label>' +
-          '<select data-tpriority>' + options(PRIORITY, t.priority) + '</select>' +
-          '<span class="form-err" data-err style="min-height:0"></span>' +
-        '</div>' +
+        actions +
       '</div>'
     );
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { ADMIN_COOKIE, getSession, hashPassword, ROLES, type AdminRole } from "@/lib/auth";
+import { getSession, hashPassword, ROLES, type AdminRole } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,10 +9,6 @@ const ROLES_SET = new Set(ROLES);
 
 function unauthorized() {
   return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
-}
-
-function forbidden() {
-  return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
 }
 
 function str(v: unknown, max = 200): string | null {
