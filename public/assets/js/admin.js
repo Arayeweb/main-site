@@ -153,8 +153,10 @@
         panels.forEach(function (p) { p.classList.toggle("is-active", p.id === panelId); });
         // بارگذاری تنبل
         if (name === "leads" && !leadsLoaded) { leadsLoaded = true; loadLeads(0); }
-        if (name === "stats" && !statsLoaded) { statsLoaded = true; loadStats(); }
         if (name === "users" && !usersLoaded) { usersLoaded = true; loadUsers(); }
+        // این تب‌ها هر بار که باز می‌شوند تازه‌سازی می‌شوند تا با دیتابیس هماهنگ بمانند
+        if (name === "stats") { statsLoaded = true; loadStats(); }
+        if (name === "partners") { loadPartners(0, partnersSearch); }
       });
     });
   }
@@ -762,7 +764,7 @@
       '<div class="stats-grid">' +
         '<div class="stats-block"><h3>منبع UTM (بازدید)</h3>' + statsTable(s.by_utm_source, "هنوز بازدیدی با UTM ثبت نشده.") + "</div>" +
         '<div class="stats-block"><h3>کمپین UTM (بازدید)</h3>' + statsTable(s.by_utm_campaign, "هیچ کمپینی یافت نشد.") + "</div>" +
-        '<div class="stats-block"><h3>منبع لید</h3>' + statsTable(s.by_source, "داده‌ای موجود نیست.") + "</div>" +
+        '<div class="stats-block"><h3>منبع لید</h3>' + statsTable((s.by_source || []).map(function (r) { return { key: SOURCE_LABELS[r.key] || r.key, count: r.count }; }), "داده‌ای موجود نیست.") + "</div>" +
         '<div class="stats-block"><h3>صفحه (بازدید)</h3>' + statsTable(s.by_page, "داده‌ای موجود نیست.") + "</div>" +
         '<div class="stats-block" style="grid-column:1/-1"><h3>۷ روز اخیر</h3>' + last7Html + "</div>" +
       "</div>";
