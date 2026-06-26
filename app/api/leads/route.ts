@@ -27,7 +27,7 @@ function clientIp(req: NextRequest): string {
 
 function pageFromPath(p: unknown): string | null {
   const s = String(p || "");
-  const m = s.match(/(index|clinic|doctors|restaurant)/);
+  const m = s.match(/(index|clinic|doctors|restaurant|spaces)/);
   if (m) return m[1];
   if (s === "/" || s === "") return "index";
   return null;
