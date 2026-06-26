@@ -82,6 +82,12 @@
     .src-hero_form{background:rgba(52,120,200,.13);color:#1a5fa8}
     .src-chatbot{background:rgba(140,95,200,.13);color:#6b3a9e}
     .src-telegram_bot{background:rgba(33,150,243,.13);color:#0277bd}
+    .src-partner_signup_form{background:rgba(232,130,50,.15);color:#b85c00}
+
+    /* partner leads */
+    .partner-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--r-pill);font-size:.78rem;font-weight:700;background:rgba(232,130,50,.15);color:#b85c00}
+    .partner-name{font-weight:800;font-size:1.05rem}
+    .partner-contact{font-size:.9rem;color:var(--muted);margin-top:3px}
 
     /* stats */
     .stats-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:28px}
@@ -110,9 +116,13 @@
   <section class="admin-login" id="loginView">
     <form class="admin-login-card" id="loginForm" novalidate>
       <h1>پنل مدیریت آرایه</h1>
-      <p>برای ورود، رمز مدیریت را وارد کنید.</p>
+      <p>برای ورود، ایمیل و رمز خود را وارد کنید.</p>
       <div class="field">
-        <label for="loginPassword">رمز مدیریت</label>
+        <label for="loginEmail">ایمیل</label>
+        <input type="email" id="loginEmail" name="email" autocomplete="email" placeholder="admin" required />
+      </div>
+      <div class="field">
+        <label for="loginPassword">رمز عبور</label>
         <input type="password" id="loginPassword" name="password" autocomplete="current-password" required />
       </div>
       <span class="form-err" id="loginErr" aria-live="polite"></span>
@@ -128,7 +138,10 @@
           <img src="assets/logo-icon.svg" alt="" width="28" height="28" />
           پنل مدیریت آرایه
         </span>
-        <button type="button" class="btn btn-ghost btn-sm" id="logoutBtn">خروج</button>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span id="userInfo" style="font-size:.85rem;opacity:.9"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="logoutBtn">خروج</button>
+        </div>
       </div>
     </header>
 
@@ -138,7 +151,9 @@
           <button class="admin-tab is-active" type="button" data-tab="projects">پروژه‌ها</button>
           <button class="admin-tab" type="button" data-tab="tickets">تیکت‌ها</button>
           <button class="admin-tab" type="button" data-tab="leads">لیدها</button>
+          <button class="admin-tab" type="button" data-tab="partners">همکاران فروش</button>
           <button class="admin-tab" type="button" data-tab="stats">آمار</button>
+          <button class="admin-tab" type="button" data-tab="users" data-role="admin">کاربران</button>
         </div>
 
         <!-- ===== Projects ===== -->
@@ -219,6 +234,7 @@
                 <option value="hero_form">فرم هرو</option>
                 <option value="chatbot">چت‌بات</option>
                 <option value="telegram_bot">ربات تلگرام</option>
+                <option value="partner_signup_form">همکاری در فروش</option>
               </select>
               <select id="leadPageFilter">
                 <option value="">همه صفحات</option>
@@ -237,6 +253,22 @@
           </div>
         </section>
 
+        <!-- ===== Partners ===== -->
+        <section class="admin-panel" id="panelPartners">
+          <div class="admin-toolbar">
+            <h2>همکاران فروش</h2>
+            <div class="admin-filter">
+              <input type="text" id="partnerSearch" placeholder="جستجو نام یا موبایل…" />
+              <button type="button" class="btn btn-ghost btn-sm" id="partnerFilterBtn">جستجو</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="partnerExportBtn">دانلود CSV</button>
+            </div>
+          </div>
+          <div class="admin-list" id="partnersList"></div>
+          <div class="load-more" id="partnersLoadMore" hidden>
+            <button type="button" class="btn btn-ghost btn-sm" id="partnersMoreBtn">بارگذاری بیشتر</button>
+          </div>
+        </section>
+
         <!-- ===== Stats ===== -->
         <section class="admin-panel" id="panelStats">
           <div class="admin-toolbar">
@@ -244,6 +276,38 @@
             <button type="button" class="btn btn-ghost btn-sm" id="statsRefreshBtn">↻ به‌روزرسانی</button>
           </div>
           <div id="statsContent"><div class="admin-empty">در حال بارگذاری…</div></div>
+        </section>
+
+        <!-- ===== Users ===== -->
+        <section class="admin-panel" id="panelUsers">
+          <div class="admin-toolbar">
+            <h2>کاربران پنل</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="newUserBtn">+ کاربر جدید</button>
+          </div>
+
+          <!-- create form -->
+          <div class="admin-card" id="newUserCard" hidden>
+            <div class="admin-card-head"><span class="admin-card-code">ساخت کاربر جدید</span></div>
+            <div class="admin-grid" style="margin-top:14px">
+              <div class="field"><label>ایمیل *</label><input type="email" data-nu="email" placeholder="name@example.com" /></div>
+              <div class="field"><label>نام</label><input type="text" data-nu="name" /></div>
+              <div class="field"><label>نقش *</label>
+                <select data-nu="role">
+                  <option value="sales">فروش</option>
+                  <option value="support">پشتیبانی</option>
+                  <option value="admin">مدیر</option>
+                </select>
+              </div>
+              <div class="field"><label>رمز عبور *</label><input type="text" data-nu="password" placeholder="حداقل ۶ کاراکتر" /></div>
+            </div>
+            <span class="form-err" id="newUserErr"></span>
+            <div class="admin-edit-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="createUserBtn">ساخت کاربر</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="cancelUserBtn">انصراف</button>
+            </div>
+          </div>
+
+          <div class="admin-list" id="usersList"></div>
         </section>
       </div>
     </main>

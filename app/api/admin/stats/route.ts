@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function authed(req: NextRequest): boolean {
-  return verifyAdminToken(req.cookies.get(ADMIN_COOKIE)?.value);
+function requireAny(req: NextRequest) {
+  return getSession(req);
 }
 function unauthorized() {
   return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
@@ -26,7 +26,7 @@ function groupCount(items: Record<string, unknown>[], key: string): { key: strin
 }
 
 export async function GET(req: NextRequest) {
-  if (!authed(req)) return unauthorized();
+  if (!requireAny(req)) return unauthorized();
 
   try {
     const supabase = getSupabaseAdmin();

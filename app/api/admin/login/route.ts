@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   ADMIN_COOKIE,
   checkAdminPassword,
-  signAdminToken,
-  verifyAdminToken,
+  getSession,
+  signUserToken,
+  verifyPassword,
+  type AdminRole,
+  ROLES,
 } from "@/lib/auth";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,7 +42,13 @@ function setSessionCookie(res: NextResponse, token: string) {
   });
 }
 
-// ورود ادمین
+function str(v: unknown, max = 200): string | null {
+  if (v === undefined || v === null) return null;
+  const s = String(v).trim();
+  return s ? s.slice(0, max) : null;
+}
+
+// ورود کاربران پنل
 export async function POST(req: NextRequest) {
   const ip = clientIp(req);
   if (rateLimited(ip)) {
@@ -52,32 +62,80 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "bad_json" }, { status: 400 });
   }
 
-  const password = String(body.password ?? "");
-  if (!password) {
-    return NextResponse.json({ ok: false, error: "missing_password" }, { status: 422 });
+  const email = str(body.email, 200)?.toLowerCase();
+  const password = str(body.password, 200);
+  if (!email || !password) {
+    return NextResponse.json(
+      { ok: false, error: "missing_credentials" },
+      { status: 422 }
+    );
   }
 
-  let ok = false;
+  // ---------- fallback ادمین با ADMIN_PASSWORD ----------
+  if (email === "admin") {
+    try {
+      if (checkAdminPassword(password)) {
+        const res = NextResponse.json({ ok: true, role: "admin" });
+        setSessionCookie(res, signUserToken("admin", "admin"));
+        return res;
+      }
+    } catch (e) {
+      console.error("[api/admin/login] config error:", e);
+      return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    }
+    // اگر رمز نادرست بود، ادامه بده تا پیام یکسان بدهد.
+  }
+
+  // ---------- احراز هویت از جدول admin_users ----------
   try {
-    ok = checkAdminPassword(password);
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from("admin_users")
+      .select("id, role, password_hash, is_active")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[api/admin/login] db error:", error.message);
+      return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    }
+
+    if (!data || !data.is_active || !verifyPassword(password, data.password_hash as string)) {
+      return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });
+    }
+
+    const role = data.role as AdminRole;
+    if (!ROLES.includes(role)) {
+      return NextResponse.json({ ok: false, error: "invalid_role" }, { status: 403 });
+    }
+
+    // به‌روزرسانی آخرین ورود
+    await supabase
+      .from("admin_users")
+      .update({ last_login_at: new Date().toISOString() })
+      .eq("id", data.id);
+
+    const res = NextResponse.json({ ok: true, role });
+    setSessionCookie(res, signUserToken(data.id as string, role));
+    return res;
   } catch (e) {
-    console.error("[api/admin/login] config error:", e);
+    console.error("[api/admin/login] server error:", e);
     return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
   }
-
-  if (!ok) {
-    return NextResponse.json({ ok: false, error: "invalid_password" }, { status: 401 });
-  }
-
-  const res = NextResponse.json({ ok: true });
-  setSessionCookie(res, signAdminToken());
-  return res;
 }
 
-// بررسی نشست فعلی — برای صفحه‌ی ادمین تا بداند لاگین هست یا نه.
+// بررسی نشست فعلی — برای صفحه‌ی ادمین تا بداند لاگین هست یا نه و نقش چیست.
 export async function GET(req: NextRequest) {
-  const authed = verifyAdminToken(req.cookies.get(ADMIN_COOKIE)?.value);
-  return NextResponse.json({ ok: true, authed });
+  const session = getSession(req);
+  if (!session) {
+    return NextResponse.json({ ok: true, authed: false });
+  }
+  return NextResponse.json({
+    ok: true,
+    authed: true,
+    userId: session.userId,
+    role: session.role,
+  });
 }
 
 // خروج

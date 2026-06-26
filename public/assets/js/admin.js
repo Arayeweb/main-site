@@ -6,7 +6,7 @@
   "use strict";
 
   /* ---------- labels ---------- */
-  var SOURCE_LABELS = { multistep_form: "فرم چندمرحله‌ای", hero_form: "فرم هرو", chatbot: "چت‌بات", telegram_bot: "ربات تلگرام" };
+  var SOURCE_LABELS = { multistep_form: "فرم چندمرحله‌ای", hero_form: "فرم هرو", chatbot: "چت‌بات", telegram_bot: "ربات تلگرام", partner_signup_form: "همکار فروش" };
   var BUDGET_LABELS = { lt15: "زیر ۱۵م.ت", "15-40": "۱۵–۴۰م.ت", "40-100": "۴۰–۱۰۰م.ت", gt100: "بالای ۱۰۰م.ت", unsure: "نامشخص" };
   var PLAN_LABELS = { bronze: "برنزی", silver: "نقره‌ای", gold: "طلایی" };
   var PAGE_LABELS = { index: "صفحه اصلی", clinic: "کلینیک", restaurant: "رستوران", doctors: "پزشکان" };
@@ -22,6 +22,7 @@
   var TICKET_STATUS = { open: "باز", in_progress: "در حال بررسی", answered: "پاسخ‌داده‌شده", closed: "بسته" };
   var PRIORITY = { low: "کم", normal: "عادی", high: "زیاد", urgent: "فوری" };
   var CATEGORY = { technical: "فنی", content: "محتوا", billing: "مالی", other: "سایر" };
+  var ROLE_LABELS = { admin: "مدیر", sales: "فروش", support: "پشتیبانی" };
 
   /* ---------- helpers ---------- */
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -61,21 +62,44 @@
   /* ---------- views ---------- */
   var loginView = el("loginView");
   var appView = el("appView");
+  var currentRole = null;
+  var currentUserId = null;
 
-  function showApp() {
+  function applyRoleVisibility() {
+    var tabs = document.querySelectorAll(".admin-tab");
+    tabs.forEach(function (t) {
+      var required = t.dataset.role;
+      if (required && currentRole !== required) {
+        t.hidden = true;
+      } else {
+        t.hidden = false;
+      }
+    });
+  }
+
+  function showApp(role, userId) {
+    currentRole = role || currentRole || "admin";
+    currentUserId = userId || currentUserId;
     loginView.hidden = true;
     appView.hidden = false;
+    el("userInfo").textContent = (ROLE_LABELS[currentRole] || currentRole);
+    applyRoleVisibility();
     loadProjects();
     loadTickets("");
+    loadPartners(0, "");
   }
   function showLogin() {
     appView.hidden = true;
     loginView.hidden = false;
+    currentRole = null;
+    currentUserId = null;
+    el("userInfo").textContent = "";
   }
 
   /* ---------- auth ---------- */
   function initLogin() {
     var form = el("loginForm");
+    var email = el("loginEmail");
     var pw = el("loginPassword");
     var err = el("loginErr");
     var submit = el("loginSubmit");
@@ -83,18 +107,21 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       err.textContent = "";
+      var emailVal = email.value || "";
       var password = pw.value || "";
+      if (!emailVal) { err.textContent = "ایمیل را وارد کنید."; return; }
       if (!password) { err.textContent = "رمز را وارد کنید."; return; }
       submit.disabled = true;
       submit.textContent = "در حال ورود…";
-      api("POST", "/api/admin/login", { password: password }).then(function (res) {
+      api("POST", "/api/admin/login", { email: emailVal, password: password }).then(function (res) {
         if (res.data && res.data.ok) {
+          email.value = "";
           pw.value = "";
-          showApp();
+          showApp(res.data.role);
         } else if (res.status === 429) {
           err.textContent = "تلاش زیاد. کمی بعد دوباره امتحان کنید.";
         } else {
-          err.textContent = "رمز نادرست است.";
+          err.textContent = "ایمیل یا رمز نادرست است.";
         }
       }).catch(function () {
         err.textContent = "ارتباط برقرار نشد.";
@@ -112,12 +139,14 @@
   /* ---------- tabs ---------- */
   var leadsLoaded = false;
   var statsLoaded = false;
+  var usersLoaded = false;
 
   function initTabs() {
     var tabs = document.querySelectorAll(".admin-tab");
     var panels = document.querySelectorAll(".admin-panel");
     tabs.forEach(function (t) {
       t.addEventListener("click", function () {
+        if (t.hidden) return;
         tabs.forEach(function (x) { x.classList.toggle("is-active", x === t); });
         var name = t.dataset.tab;
         var panelId = "panel" + name.charAt(0).toUpperCase() + name.slice(1);
@@ -125,6 +154,7 @@
         // بارگذاری تنبل
         if (name === "leads" && !leadsLoaded) { leadsLoaded = true; loadLeads(0); }
         if (name === "stats" && !statsLoaded) { statsLoaded = true; loadStats(); }
+        if (name === "users" && !usersLoaded) { usersLoaded = true; loadUsers(); }
       });
     });
   }
@@ -435,6 +465,242 @@
     });
   }
 
+  /* ---------- partners ---------- */
+  var partnersPage = 0;
+  var partnersSearch = "";
+
+  function buildPartnersUrl(page, q) {
+    var params = new URLSearchParams();
+    params.set("source", "partner_signup_form");
+    params.set("page_num", String(page));
+    if (q) params.set("q", q);
+    return "/api/admin/leads?" + params.toString();
+  }
+
+  function loadPartners(page, q) {
+    var list = el("partnersList");
+    var moreWrap = el("partnersLoadMore");
+    if (page === 0) {
+      list.innerHTML = '<div class="admin-empty">در حال بارگذاری…</div>';
+      moreWrap.hidden = true;
+    }
+    api("GET", buildPartnersUrl(page, q)).then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (!res.data || !res.data.ok) {
+        list.innerHTML = '<div class="admin-empty">خطا در بارگذاری.</div>';
+        return;
+      }
+      var partners = (res.data.leads || []);
+      if (page === 0) {
+        if (!partners.length) { list.innerHTML = '<div class="admin-empty">هیچ همکاری ثبت نشده است.</div>'; return; }
+        list.innerHTML = partners.map(partnerCard).join("");
+      } else {
+        var tmp = document.createElement("div");
+        tmp.innerHTML = partners.map(partnerCard).join("");
+        while (tmp.firstChild) list.appendChild(tmp.firstChild);
+      }
+      partnersPage = page;
+      moreWrap.hidden = !res.data.has_more;
+    }).catch(function () {
+      list.innerHTML = '<div class="admin-empty">ارتباط برقرار نشد.</div>';
+    });
+  }
+
+  function partnerCard(p) {
+    var utmParts = [p.utm_source, p.utm_medium, p.utm_campaign].filter(Boolean);
+    var utmHtml = utmParts.length
+      ? '<div class="utm-row">منبع: <b>' + utmParts.map(esc).join("</b> / <b>") + "</b></div>"
+      : "";
+    return (
+      '<div class="admin-card">' +
+        '<div class="admin-card-head">' +
+          '<div>' +
+            '<div class="partner-name">' + esc(p.name || "بدون نام") + '</div>' +
+            '<div class="partner-contact">' + esc(p.contact) + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+            '<span class="partner-badge">همکار فروش</span>' +
+            '<span style="color:var(--muted);font-size:.82rem">' + fmtDate(p.created_at) + '</span>' +
+          '</div>' +
+        '</div>' +
+        (utmHtml ? utmHtml : '') +
+      '</div>'
+    );
+  }
+
+  function csvDownloadPartners(rows) {
+    var headers = ["نام", "شماره تماس", "تاریخ ثبت", "utm_source", "utm_medium", "utm_campaign"];
+    var lines = [headers.join(",")];
+    rows.forEach(function (p) {
+      lines.push([
+        '"' + (p.name || "").replace(/"/g, '""') + '"',
+        '"' + (p.contact || "") + '"',
+        '"' + (p.created_at ? p.created_at.slice(0, 10) : "") + '"',
+        '"' + (p.utm_source || "") + '"',
+        '"' + (p.utm_medium || "") + '"',
+        '"' + (p.utm_campaign || "") + '"',
+      ].join(","));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "partners-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.click();
+  }
+
+  function initPartnersPanel() {
+    el("partnerFilterBtn").addEventListener("click", function () {
+      partnersSearch = el("partnerSearch").value.trim();
+      loadPartners(0, partnersSearch);
+    });
+    el("partnerSearch").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") el("partnerFilterBtn").click();
+    });
+    el("partnersMoreBtn").addEventListener("click", function () {
+      loadPartners(partnersPage + 1, partnersSearch);
+    });
+    el("partnerExportBtn").addEventListener("click", function () {
+      // دانلود تمام همکاران (تا صفحه ۱۰)
+      var btn = el("partnerExportBtn");
+      btn.textContent = "در حال دریافت…";
+      btn.disabled = true;
+      var allRows = [];
+      function fetchPage(p) {
+        api("GET", buildPartnersUrl(p, "")).then(function (res) {
+          if (!res.data || !res.data.ok) { btn.textContent = "دانلود CSV"; btn.disabled = false; return; }
+          allRows = allRows.concat(res.data.leads || []);
+          if (res.data.has_more && p < 9) { fetchPage(p + 1); }
+          else { csvDownloadPartners(allRows); btn.textContent = "دانلود CSV"; btn.disabled = false; }
+        }).catch(function () { btn.textContent = "دانلود CSV"; btn.disabled = false; });
+      }
+      fetchPage(0);
+    });
+  }
+
+  /* ---------- users ---------- */
+  function loadUsers() {
+    var list = el("usersList");
+    list.innerHTML = '<div class="admin-empty">در حال بارگذاری…</div>';
+    api("GET", "/api/admin/users").then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (!res.data || !res.data.ok) { list.innerHTML = '<div class="admin-empty">خطا در بارگذاری.</div>'; return; }
+      renderUsers(res.data.users || []);
+    }).catch(function () {
+      list.innerHTML = '<div class="admin-empty">ارتباط برقرار نشد.</div>';
+    });
+  }
+
+  function renderUsers(users) {
+    var list = el("usersList");
+    if (!users.length) {
+      list.innerHTML = '<div class="admin-empty">هیچ کاربری ثبت نشده است.</div>';
+      return;
+    }
+    list.innerHTML = users.map(userCard).join("");
+  }
+
+  function userCard(u) {
+    var activeBadge = u.is_active
+      ? '<span class="pill st-answered">فعال</span>'
+      : '<span class="pill st-closed">غیرفعال</span>';
+    return (
+      '<div class="admin-card" data-id="' + esc(u.id) + '">' +
+        '<div class="admin-card-head">' +
+          '<div>' +
+            '<span class="admin-card-code">' + esc(u.email) + '</span>' +
+            '<div class="admin-card-sub">' + esc(u.name || "—") + ' · ' + esc(ROLE_LABELS[u.role] || u.role) + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' + activeBadge + '</div>' +
+        '</div>' +
+        '<div class="admin-meta">' +
+          '<span>آخرین ورود: <b>' + fmtDate(u.last_login_at) + '</b></span>' +
+          '<span>ثبت: <b>' + fmtDate(u.created_at) + '</b></span>' +
+        '</div>' +
+        '<div class="admin-edit-actions" style="margin-top:14px">' +
+          '<button type="button" class="btn btn-ghost btn-sm" data-edit>ویرایش</button>' +
+        '</div>' +
+        '<div class="admin-edit" data-editbox>' +
+          '<div class="admin-grid">' +
+            '<div class="field"><label>نام</label><input type="text" data-f="name" value="' + esc(u.name || "") + '" /></div>' +
+            '<div class="field"><label>نقش</label><select data-f="role">' + options(ROLE_LABELS, u.role) + '</select></div>' +
+            '<div class="field"><label>وضعیت</label><select data-f="is_active"><option value="true"' + (u.is_active ? " selected" : "") + '>فعال</option><option value="false"' + (u.is_active ? "" : " selected") + '>غیرفعال</option></select></div>' +
+            '<div class="field"><label>رمز جدید (خالی = بدون تغییر)</label><input type="text" data-f="password" placeholder="برای تغییر رمز وارد کنید" /></div>' +
+          '</div>' +
+          '<span class="form-err" data-err></span>' +
+          '<div class="admin-edit-actions">' +
+            '<button type="button" class="btn btn-primary btn-sm" data-save>ذخیره</button>' +
+            '<button type="button" class="btn btn-ghost btn-sm" data-cancel>بستن</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function initUsersPanel() {
+    var list = el("usersList");
+
+    list.addEventListener("click", function (e) {
+      var card = e.target.closest(".admin-card");
+      if (!card) return;
+      var box = $("[data-editbox]", card);
+
+      if (e.target.matches("[data-edit]")) { box.classList.add("is-open"); }
+      else if (e.target.matches("[data-cancel]")) { box.classList.remove("is-open"); }
+      else if (e.target.matches("[data-save]")) { saveUser(card, box, e.target); }
+    });
+
+    var newCard = el("newUserCard");
+    el("newUserBtn").addEventListener("click", function () { newCard.hidden = false; });
+    el("cancelUserBtn").addEventListener("click", function () {
+      newCard.hidden = true;
+      el("newUserErr").textContent = "";
+      newCard.querySelectorAll("[data-nu]").forEach(function (i) {
+        if (i.tagName === "SELECT") i.selectedIndex = 0; else i.value = "";
+      });
+    });
+    el("createUserBtn").addEventListener("click", createUser);
+  }
+
+  function createUser() {
+    var card = el("newUserCard");
+    var err = el("newUserErr");
+    var btn = el("createUserBtn");
+    err.textContent = "";
+    var body = readFields(card, "data-nu");
+    if (!body.email || !body.email.trim()) { err.textContent = "ایمیل را وارد کنید."; return; }
+    if (!body.password || !body.password.trim()) { err.textContent = "رمز را وارد کنید."; return; }
+    if (!ROLE_LABELS[body.role]) { err.textContent = "نقش نامعتبر است."; return; }
+    btn.disabled = true; btn.textContent = "در حال ساخت…";
+    api("POST", "/api/admin/users", body).then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (res.data && res.data.ok) {
+        el("cancelUserBtn").click();
+        loadUsers();
+      } else if (res.data && res.data.error === "duplicate_email") {
+        err.textContent = "این ایمیل قبلاً ثبت شده است.";
+      } else {
+        err.textContent = "ثبت کاربر ناموفق بود.";
+      }
+    }).catch(function () { err.textContent = "ارتباط برقرار نشد."; })
+      .finally(function () { btn.disabled = false; btn.textContent = "ساخت کاربر"; });
+  }
+
+  function saveUser(card, box, btn) {
+    var err = $("[data-err]", box);
+    err.textContent = "";
+    var body = readFields(box, "data-f");
+    body.id = card.dataset.id;
+    if (body.is_active) body.is_active = body.is_active === "true";
+    if (body.password === "") delete body.password;
+    btn.disabled = true; btn.textContent = "در حال ذخیره…";
+    api("PATCH", "/api/admin/users", body).then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (res.data && res.data.ok) { loadUsers(); }
+      else { err.textContent = "ذخیره ناموفق بود."; }
+    }).catch(function () { err.textContent = "ارتباط برقرار نشد."; })
+      .finally(function () { btn.disabled = false; btn.textContent = "ذخیره"; });
+  }
+
   /* ---------- stats ---------- */
   function loadStats() {
     var content = el("statsContent");
@@ -508,11 +774,16 @@
   initProjectsPanel();
   initTicketsPanel();
   initLeadsPanel();
+  initPartnersPanel();
+  initUsersPanel();
   initStatsPanel();
 
   // اگر نشست معتبر بود مستقیم وارد پنل شو.
   api("GET", "/api/admin/login").then(function (res) {
-    if (res.data && res.data.authed) showApp();
-    else showLogin();
+    if (res.data && res.data.authed && res.data.role) {
+      showApp(res.data.role, res.data.userId);
+    } else {
+      showLogin();
+    }
   }).catch(showLogin);
 })();

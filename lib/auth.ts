@@ -4,9 +4,10 @@ import {
   timingSafeEqual,
   createHmac,
 } from "crypto";
+import { NextRequest } from "next/server";
 
 // =========================================================
-// رمز عبور پروژه‌ها (scrypt) + توکن نشست ادمین (HMAC)
+// رمز عبور پروژه‌ها (scrypt) + توکن نشست کاربران پنل (HMAC)
 // همه با crypto داخلی Node؛ بدون وابستگی نیتیو.
 // =========================================================
 
@@ -34,8 +35,17 @@ export function verifyPassword(plain: string, stored: string): boolean {
   }
 }
 
-// ---------- توکن نشست ادمین ----------
-// قالب: base64url(payloadJSON).hmacHex ؛ payload شامل exp (ms).
+// ---------- توکن نشست کاربران پنل ----------
+// قالب: base64url(payloadJSON).hmacHex ؛ payload شامل sub، role، exp (ms).
+
+export type AdminRole = "admin" | "sales" | "support";
+export const ROLES: AdminRole[] = ["admin", "sales", "support"];
+
+export interface AdminSession {
+  userId: string;
+  role: AdminRole;
+  exp: number;
+}
 
 function adminSecret(): string {
   const s = process.env.ADMIN_SESSION_SECRET;
@@ -57,39 +67,88 @@ function b64url(buf: Buffer): string {
 
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // ۱۲ ساعت
 
-/** توکن نشست امضاشده برای ادمین می‌سازد. */
-export function signAdminToken(ttlMs: number = SESSION_TTL_MS): string {
-  const payload = JSON.stringify({ role: "admin", exp: Date.now() + ttlMs });
+/** توکن نشست امضاشده برای کاربر پنل می‌سازد. */
+export function signUserToken(
+  userId: string,
+  role: AdminRole,
+  ttlMs: number = SESSION_TTL_MS
+): string {
+  const payload = JSON.stringify({
+    sub: userId,
+    role,
+    exp: Date.now() + ttlMs,
+  });
   const body = b64url(Buffer.from(payload, "utf8"));
   const sig = createHmac("sha256", adminSecret()).update(body).digest("hex");
   return `${body}.${sig}`;
 }
 
-/** صحت و انقضای توکن نشست ادمین را بررسی می‌کند. */
-export function verifyAdminToken(token: string | undefined | null): boolean {
-  if (!token) return false;
+/** صحت، انقضا و نقش توکن نشست را بررسی می‌کند. */
+export function verifyUserToken(
+  token: string | undefined | null
+): AdminSession | null {
+  if (!token) return null;
   const dot = token.lastIndexOf(".");
-  if (dot <= 0) return false;
+  if (dot <= 0) return null;
   const body = token.slice(0, dot);
   const sig = token.slice(dot + 1);
   let expected: string;
   try {
     expected = createHmac("sha256", adminSecret()).update(body).digest("hex");
   } catch {
-    return false;
+    return null;
   }
   const a = Buffer.from(sig, "hex");
   const b = Buffer.from(expected, "hex");
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
-    const payload = JSON.parse(Buffer.from(body, "base64").toString("utf8"));
-    return payload.role === "admin" && typeof payload.exp === "number" && payload.exp > Date.now();
+    const payload = JSON.parse(
+      Buffer.from(body, "base64").toString("utf8")
+    ) as Record<string, unknown>;
+    if (
+      typeof payload.sub !== "string" ||
+      !ROLES.includes(payload.role as AdminRole) ||
+      typeof payload.exp !== "number" ||
+      payload.exp <= Date.now()
+    ) {
+      return null;
+    }
+    return { userId: payload.sub, role: payload.role as AdminRole, exp: payload.exp };
   } catch {
-    return false;
+    return null;
   }
 }
 
-/** رمز ادمین را با ADMIN_PASSWORD (به‌صورت timing-safe) چک می‌کند. */
+/** نشست فعلی را از کوکی می‌خواند. */
+export function getSession(req: NextRequest): AdminSession | null {
+  return verifyUserToken(req.cookies.get(ADMIN_COOKIE)?.value);
+}
+
+/** آیا نشست حداقل یکی از نقش‌های مورد نظر را دارد؟ */
+export function hasRole(
+  session: AdminSession | null,
+  roles: AdminRole[]
+): boolean {
+  if (!session) return false;
+  return roles.includes(session.role);
+}
+
+/** نشست را می‌خواند؛ اگر مجوز نداشت 401 برمی‌گرداند. */
+export function requireRole(
+  req: NextRequest,
+  roles: AdminRole[]
+): AdminSession | Response {
+  const session = getSession(req);
+  if (!session || !roles.includes(session.role)) {
+    return new Response(JSON.stringify({ ok: false, error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  return session;
+}
+
+/** رمز ادمین fallback را با ADMIN_PASSWORD (به‌صورت timing-safe) چک می‌کند. */
 export function checkAdminPassword(plain: string): boolean {
   const expected = process.env.ADMIN_PASSWORD;
   if (!expected) {

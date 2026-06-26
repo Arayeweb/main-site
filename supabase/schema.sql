@@ -28,6 +28,8 @@ create table if not exists public.leads (
 
 create index if not exists leads_created_at_idx on public.leads (created_at desc);
 create index if not exists leads_source_idx on public.leads (source);
+-- منابع معتبر source: 'multistep_form' | 'chatbot' | 'hero_form' | 'telegram_bot' | 'partner_signup_form'
+-- partner_signup_form: لیدهای صفحه همکاری در فروش (/hamkari)
 create index if not exists leads_utm_source_idx on public.leads (utm_source);
 
 -- مهاجرت ستون‌های UTM برای جداول موجود:
@@ -117,3 +119,21 @@ create index if not exists support_tickets_project_idx on public.support_tickets
 -- RLS فعال و بدون policy عمومی: فقط service_role (API سمت سرور) دسترسی دارد.
 alter table public.support_projects enable row level security;
 alter table public.support_tickets enable row level security;
+
+-- =========================================================
+-- نقش‌بندی کاربران پنل مدیریت
+-- =========================================================
+
+create table if not exists public.admin_users (
+  id            uuid primary key default gen_random_uuid(),
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+  email         text not null unique,
+  name          text,
+  role          text not null default 'sales', -- admin | sales | support
+  password_hash text not null,                 -- scrypt$...$...
+  is_active     boolean not null default true,
+  last_login_at timestamptz
+);
+
+alter table public.admin_users enable row level security;

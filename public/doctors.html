@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <!-- Google Tag Manager -->
   <script src="/assets/js/gtm.js" async></script>
+  <!-- Yektanet -->
+  <script>!function(t,e,n){t.yektanetAnalyticsObject=n,t[n]=t[n]||function(){t[n].q.push(arguments)},t[n].q=t[n].q||[];var a=new Date,r=a.getFullYear().toString()+"0"+a.getMonth()+"0"+a.getDate()+"0"+a.getHours(),c=e.getElementsByTagName("script")[0],s=e.createElement("script");s.id="ua-script-FvFIqbVH";s.dataset.analyticsobject=n;s.async=1;s.type="text/javascript";s.src="https://cdn.yektanet.com/rg_woebegone/scripts_v3/FvFIqbVH/rg.complete.js?v="+r,c.parentNode.insertBefore(s,c)}(window,document,"yektanet");</script>
   <!-- End Google Tag Manager -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>آرایه | طراحی سایت و نوبت‌دهی آنلاین برای پزشکان و مطب‌ها</title>
@@ -177,7 +179,7 @@
           {
             "@type": "Question",
             "name": "چت‌بات ممکن است به بیمار اطلاعات غلط بدهد؟",
-            "acceptedAnswer": { "@type": "Answer", "text": "خیر. چت‌بات فقط بر اساس اطلاعاتی که شما تأیید کرده‌اید پاسخ می‌دهد (RAG) و موارد تشخیصی/درمانی را به خود پزشک یا منشی ارجاع می‌دهد." }
+            "acceptedAnswer": { "@type": "Answer", "text": "خیر. چت‌بات فقط بر اساس اطلاعاتی که شما تأیید کرده‌اید پاسخ می‌دهد و موارد تشخیصی/درمانی را به خود پزشک یا منشی ارجاع می‌دهد." }
           },
           {
             "@type": "Question",
@@ -197,7 +199,7 @@
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
   <div class="grain" aria-hidden="true"></div>
-  <a class="skip-link" href="#leadform">پرش به فرم مشاوره</a>
+  <a class="skip-link" href="#leadform">پرش به فرم</a>
 
   <!-- HEADER -->
   <header class="site-header" id="top">
@@ -216,7 +218,7 @@
         <a href="/about">درباره ما</a>
         <a href="/support">پشتیبانی</a>
       </nav>
-      <a class="btn btn-primary header-cta" href="#leadform" data-track="cta_click" data-cta="header">مشاورهٔ رایگان</a>
+      <a class="btn btn-primary header-cta" href="#leadform" data-track="cta_click" data-cta="header">قیمت مطب من را بگیر</a>
     </div>
   </header>
 
@@ -228,18 +230,18 @@
         <div class="hero-copy reveal">
           <span class="eyebrow"><span class="eyebrow-dot"></span>سایت‌ساز بیمارمحور برای پزشکان و مطب‌ها</span>
           <h1 class="hero-title">وب‌سایت تخصصی مطب که فقط معرفی نمی‌کند؛ <span class="hl">بیمار نوبت می‌گیرد.</span></h1>
-          <p class="hero-sub">آرایه برای مطب شما سایتی می‌سازد که مسیر بیمار را کامل می‌کند: معرفی تخصص، نوبت‌دهی آنلاین، چت‌بات پاسخگوی بیماران، دامنه، سرور و درگاه پرداخت. <strong>شما فقط طبابت کنید؛ بقیه با ماست.</strong></p>
+          <p class="hero-sub">وب‌سایت مطب شما از معرفی تخصص تا نوبت‌دهی آنلاین، چت‌بات پاسخگوی بیماران، دامنه، سرور و درگاه پرداخت — همه آمادهٔ تحویل. <strong>شما فقط طبابت کنید؛ بقیه‌اش با ماست.</strong></p>
           <div class="hero-cta">
-            <button class="btn btn-primary" type="button" data-action="open-chat" data-track="cta_click" data-cta="hero_demo">
+            <a class="btn btn-primary" href="#leadform" data-track="cta_click" data-cta="hero_price">
               <span class="btn-pulse" aria-hidden="true"></span>
-              دموی زندهٔ نوبت‌دهی را ببینید
-            </button>
-            <a class="btn btn-ghost" href="#leadform" data-track="cta_click" data-cta="hero_consult">دریافت مشاورهٔ رایگان</a>
+              قیمت مطب من را بگیر
+            </a>
+            <button class="btn btn-ghost" type="button" data-action="open-chat" data-track="cta_click" data-cta="hero_demo">دموی زندهٔ نوبت‌دهی را ببینید</button>
           </div>
-          <form class="hero-lead" data-hero-lead data-goal="consultation" aria-label="دریافت مشاوره سریع مطب">
+          <form class="hero-lead" data-hero-lead data-goal="consultation" aria-label="دریافت قیمت اختصاصی مطب">
             <div class="hero-lead-wrap">
               <div class="hero-lead-row">
-                <input type="text" id="heroContact" name="contact" inputmode="email" placeholder="ایمیل یا شماره برای مشاوره رایگان مطب" required />
+                <input type="text" id="heroContact" name="contact" inputmode="email" placeholder="ایمیل یا شماره برای قیمت اختصاصی مطب" required />
                 <button type="submit" class="btn btn-primary">ارسال</button>
               </div>
               <span class="hero-lead-err" aria-live="polite"></span>
@@ -278,7 +280,7 @@
             </div>
           </div>
           <div class="float-chip chip-lead"><span class="chip-dot"></span> نوبت جدید ثبت شد</div>
-          <div class="float-chip chip-rate">رضایت مشتریان آرایه <strong>۹۵٪</strong></div>
+          <div class="float-chip chip-rate">تحویل اولین نسخه <strong>۲ روز</strong></div>
         </div>
       </div>
     </section>
@@ -288,14 +290,10 @@
       <div class="container">
         <p class="trust-label">بخشی از کسب‌وکارهایی که به آرایه اعتماد کرده‌اند</p>
         <div class="trust-logos" aria-label="مشتریان">
-          <span class="logo-ph">دکتر پوردست</span>
-          <span class="logo-ph">Ashrafi studio</span>
-          <span class="logo-ph">امروز</span>
-          <span class="logo-ph">Deepin</span>
-          <span class="logo-ph">اپشن ساز</span>
+          <span class="logo-ph">دکتر عالیه پوردست — بیماری‌های عفونی</span>
+          <span class="logo-ph">دکتر اشرفی‌وند — شنوایی‌سنجی</span>
         </div>
         <div class="trust-stats">
-          <div class="stat"><span class="stat-num">۹۵٪</span><span class="stat-lbl">رضایت مشتریان آرایه از نتیجهٔ پروژه</span></div>
           <div class="stat"><span class="stat-num">۲۴/۷</span><span class="stat-lbl">ثبت نوبت حتی بیرون از ساعت کاری</span></div>
           <div class="stat"><span class="stat-num">۲ روز</span><span class="stat-lbl">میانگین تحویل اولین نسخه</span></div>
         </div>
@@ -308,7 +306,7 @@
         <header class="section-head reveal">
           <span class="kicker">۰۱ — همه‌چیز با ماست</span>
           <h2 class="section-title">از طراحی تا انتشار؛ شما <em>هیچ کار فنی</em> انجام نمی‌دهید.</h2>
-          <p class="section-lead">آرایه یک تیم کامل است: ما می‌سازیم، راه می‌اندازیم و نگه می‌داریم. کلید تحویل، تحویل می‌گیرید.</p>
+          <p class="section-lead">شما فقط طبابت می‌کنید. ساخت، راه‌اندازی و نگهداری سایت، دیگر دغدغهٔ شما نیست.</p>
         </header>
         <div class="turnkey-grid">
           <div class="turnkey-card reveal">
@@ -321,7 +319,7 @@
           </div>
           <div class="turnkey-card reveal" data-reveal-delay="120">
             <span class="turnkey-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
-            <div><h3>تهیه و مدیریت دامنه</h3><p>ثبت و تمدید دامنهٔ اختصا��ی به نام شما؛ بدون درگیری با تنظیمات فنی.</p></div>
+            <div><h3>تهیه و مدیریت دامنه</h3><p>ثبت و تمدید دامنهٔ اختصاصی به نام شما؛ بدون درگیری با تنظیمات فنی.</p></div>
           </div>
           <div class="turnkey-card reveal">
             <span class="turnkey-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="13" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7 7.5h.01M7 16.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
@@ -336,7 +334,7 @@
             <div><h3>پشتیبانی و نگهداری</h3><p>به‌روزرسانی، رفع اشکال و پشتیبانی همیشگی؛ سایت‌تان همیشه سرپا می‌ماند.</p></div>
           </div>
         </div>
-        <p class="turnkey-note reveal">یک قرارداد، یک تیم، یک فاکتور — بدون نیاز به استخدام فریلنسرهای جداگانه.</p>
+        <p class="turnkey-note reveal">یک قرارداد، یک فاکتور — بدون درگیری با چند پیمانکار جداگانه.</p>
       </div>
     </section>
 
@@ -346,6 +344,7 @@
         <header class="section-head reveal">
           <span class="kicker">۰۲ — برای مطب شما</span>
           <h2 class="section-title">سایتی که بیمار را از جستجو تا نوبت جلو می‌برد</h2>
+          <p class="section-lead">برای هر تخصصی — از پوست تا ارتوپدی — سایت اختصاصی می‌سازیم.</p>
         </header>
         <div class="services-grid">
           <article class="service-card reveal">
@@ -388,18 +387,18 @@
       <div class="container benefits-inner">
         <header class="section-head reveal">
           <span class="kicker">۰۳ — مته یا سوراخ؟</span>
-          <h2 class="section-title">آنچه می‌خرید، <em>آرامش و وقت بیشتر</em> است.</h2>
+          <h2 class="section-title">آنچه می‌خرید، <em>آرامش و درآمد بیشتر</em> است.</h2>
         </header>
         <ul class="benefit-list">
           <li class="benefit-row reveal">
             <span class="benefit-feature">نوبت‌دهی آنلاین + یادآوری خودکار</span>
             <svg class="benefit-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="benefit-result">منشیِ شما به‌جای تلفن، به بیمارِ حاضر در مطب می‌رسد</span>
+            <span class="benefit-result">منشیِ شما به‌جای تلفن، به بیمارِ حاضر در مطب می‌رسد = ظرفیت ویزیت بیشتر</span>
           </li>
           <li class="benefit-row reveal">
             <span class="benefit-feature">چت‌بات پاسخگوی ۲۴ساعته</span>
             <svg class="benefit-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="benefit-result">بیمار نیمه‌شب هم جواب می‌گیرد و سراغ مطب دیگری نمی‌رود</span>
+            <span class="benefit-result">بیمار نیمه‌شب هم جواب می‌گیرد و سراغ مطب دیگری نمی‌رود = نوبت‌های جاماندنی کم می‌شه = درآمد بیشتر</span>
           </li>
           <li class="benefit-row benefit-row--star reveal">
             <span class="benefit-feature">تجمیع کانال‌های ارتباطی</span>
@@ -407,7 +406,7 @@
             <span class="benefit-result">مدیریت پیام‌های سایت، تلگرام و بله در یک پنل مرکزی</span>
           </li>
           <li class="benefit-row reveal">
-            <span class="benefit-feature">مدیریت کامل دامنه، سرور و درگاه پرداخت با ما</span>
+            <span class="benefit-feature">مدیریت کامل دامنه، سرور و درگاه پرداخت</span>
             <svg class="benefit-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="benefit-result">شما حتی یک‌بار هم درگیر تنظیمات فنی نمی‌شوید</span>
           </li>
@@ -425,8 +424,8 @@
       <div class="container">
         <header class="section-head reveal">
           <span class="kicker">۰۴ — نمونه‌کار</span>
-          <h2 class="section-title">نمونه‌کارهای ما برای پزشکان</h2>
-          <p class="section-lead">از سایت تخصصی و نوبت‌دهی آنلاین تا معرفی خدمات و سؤالات متداول — چند نمونه از کارهایی که برای پزشکان طراحی کرده‌ایم.</p>
+          <h2 class="section-title">سایت‌هایی که برای پزشکان ساخته‌ایم</h2>
+          <p class="section-lead">از سایت تخصصی و نوبت‌دهی آنلاین تا معرفی خدمات و سؤالات متداول — ببینید چه چیزی برای مطب همکاران شما ساخته‌ایم.</p>
         </header>
         <div class="casestudy">
           <p class="pf-label"><span class="pf-dot"></span>وب‌سایت دکتر عالیه پوردست — متخصص بیماری‌های عفونی</p>
@@ -549,7 +548,7 @@
             <p class="price-desc">سایت کامل + چت‌بات + نوبت‌دهی پیشرفته برای چند پزشک.</p>
             <ul class="price-feats">
               <li>چندپزشکه با تقویم مجزا</li>
-              <li>چت‌بات پاسخگوی بیماران (RAG)</li>
+              <li>چت‌بات پاسخگوی بیماران، بدون پاسخ غلط</li>
               <li>درگاه پرداخت و پیش‌پرداخت ویزیت</li>
               <li>سئوی تخصصی + پشتیبانی</li>
             </ul>
@@ -594,7 +593,7 @@
           </details>
           <details class="faq-item reveal">
             <summary>چت‌بات ممکن است به بیمار اطلاعات غلط بدهد؟</summary>
-            <div class="faq-body"><p>خیر. چت‌بات فقط بر اساس اطلاعاتی که شما تأیید کرده‌اید پاسخ می‌دهد (RAG) و موارد تشخیصی/درمانی را به خود پزشک یا منشی ارجاع می‌دهد.</p></div>
+            <div class="faq-body"><p>خیر. چت‌بات فقط بر اساس اطلاعاتی که شما تأیید کرده‌اید پاسخ می‌دهد و موارد تشخیصی/درمانی را به خود پزشک یا منشی ارجاع می‌دهد.</p></div>
           </details>
           <details class="faq-item reveal">
             <summary>پیش‌پرداخت ویزیت چطور کار می‌کند؟</summary>
@@ -612,7 +611,7 @@
           <h2 class="section-title">۳۰ ثانیه تا پیشنهادِ اختصاصیِ مطب شما</h2>
           <p class="section-lead">چند سؤال کوتاه می‌پرسیم تا دقیقاً نیاز مطب‌تان را بفهمیم. بدون تعهد، بدون تماس مزاحم.</p>
           <ul class="leadform-assure">
-            <li><span class="tick" aria-hidden="true"></span>مشاوره و برآورد کاملاً رایگان</li>
+            <li><span class="tick" aria-hidden="true"></span>پیشنهاد قیمت اختصاصی مطب، رایگان</li>
             <li><span class="tick" aria-hidden="true"></span>طراحی + دامنه + سرور + درگاه، همه با ما</li>
             <li><span class="tick" aria-hidden="true"></span>بدون تماس مزاحم و بدون تعهد</li>
             <li><span class="tick" aria-hidden="true"></span>اطلاعات شما نزد ما محفوظ است</li>
@@ -673,7 +672,7 @@
                 <input type="text" id="leadContact" name="contact" inputmode="email" placeholder="example@mail.com یا ۰۹۱۲…" required />
                 <span class="field-err" data-err="contact"></span>
               </div>
-              <label class="check"><input type="checkbox" id="leadConsent" checked /><span>مایلم آرایه برای مشاوره با من تماس بگیرد.</span></label>
+              <label class="check"><input type="checkbox" id="leadConsent" checked /><span>مایلم آرایه برای ارسال پیشنهاد قیمت با من تماس بگیرد.</span></label>
             </fieldset>
 
             <div class="form-success" data-step="done" hidden>
@@ -708,7 +707,7 @@
       <div class="footer-ch">
         <span class="footer-label">کانال‌های ارتباطی</span>
         <div class="footer-links">
-          <a href="#leadform" data-track="cta_click" data-cta="footer">مشاورهٔ رایگان</a>
+          <a href="#leadform" data-track="cta_click" data-cta="footer">قیمت مطب من را بگیر</a>
           <a href="/support">پشتیبانی</a>
           <a href="/results">داستان موفقیت</a>
           <a href="#" data-channel="bale">بله</a>
@@ -734,7 +733,7 @@
 
   <!-- CHATBOT WIDGET -->
   <button class="chat-launcher" id="chatLauncher" type="button" aria-label="گفتگو با دستیار آرایه" data-track="chat_open">
-    <span class="chat-launcher-bubble" id="chatNudge" hidden>راهنمایی رایگان برای مطب‌تان؟ بپرسید 👋</span>
+    <span class="chat-launcher-bubble" id="chatNudge" hidden>قیمت مطب‌تان را بپرسید 👋</span>
     <svg class="ic-chat" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
     <svg class="ic-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     <span class="launcher-ping" aria-hidden="true"></span>
@@ -778,7 +777,7 @@
         expects: "contact",
       },
       site: {
-        msgs: ["سایت تخصصی شما را با صفحهٔ تخصص، خدمات و رزومه طراحی و سئو می‌کنیم تا بیماران در گوگل شما را پیدا کنند.", "یک ایمیل یا شمارهٔ موبایل بدهید تا نمونه‌کارِ پزشکی و پیشنهاد را بفرستم 🎁"],
+        msgs: ["سایت تخصصی شما را با صفحهٔ تخصص، خدمات و رزومه طراحی و سئو می‌کنیم تا بیماران در گوگل شما را پیدا کنند.", "یک ایمیل یا شمارهٔ موبایل بدهید تا نمونه‌کارِ پزشکی و پیشنهاد قیمت را بفرستم 🎁"],
         expects: "contact",
       },
       bot: {
@@ -786,7 +785,7 @@
         expects: "contact",
       },
       turnkey: {
-        msgs: ["بله! آرایه سازنده و طراح سایت شماست و همه‌چیز را انجام می‌دهد: طراحی، چت‌بات، تهیهٔ دامنه، سرور و هاست، اتصال درگاه پرداخت و پشتیبانی. شما فقط طبابت می‌کنید.", "یک راه ارتباطی بدهید تا مشاورهٔ رایگان بفرستیم."],
+        msgs: ["بله! طراحی، چت‌بات، تهیهٔ دامنه، سرور و هاست، اتصال درگاه پرداخت و پشتیبانی — همه‌اش با ماست. شما فقط طبابت می‌کنید.", "یک راه ارتباطی بدهید تا قیمت اختصاصی مطب را بفرستیم."],
         expects: "contact",
       },
       thanks: {
@@ -794,7 +793,7 @@
         quick: [
           { t: "اتصال به پشتیبان انسانی", go: "human" },
           { t: "مشاهدهٔ پکیج‌ها", action: "goto-pricing" },
-          { t: "دیدن فرم مشاوره", action: "goto-form" },
+          { t: "دیدن فرم و قیمت", action: "goto-form" },
         ],
       },
       human: {
@@ -804,8 +803,8 @@
     };
   </script>
 
-  <div class="sticky-cta is-hidden" id="stickyCta" aria-label="دریافت مشاوره رایگان">
-    <a class="btn btn-primary" href="#leadform" data-track="cta_click" data-cta="sticky_cta">دریافت مشاوره رایگان</a>
+  <div class="sticky-cta is-hidden" id="stickyCta" aria-label="الان شروع کن">
+    <a class="btn btn-primary" href="#leadform" data-track="cta_click" data-cta="sticky_cta">الان شروع کن — ۲ روزه</a>
   </div>
 
   <script src="assets/js/main.js" defer></script>

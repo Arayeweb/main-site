@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,11 +8,18 @@ export const dynamic = "force-dynamic";
 const STATUSES = new Set(["open", "in_progress", "answered", "closed"]);
 const PRIORITIES = new Set(["low", "normal", "high", "urgent"]);
 
-function authed(req: NextRequest): boolean {
-  return verifyAdminToken(req.cookies.get(ADMIN_COOKIE)?.value);
+function requireAny(req: NextRequest) {
+  return getSession(req);
+}
+function requireSupportOrAdmin(req: NextRequest) {
+  const s = getSession(req);
+  return s && (s.role === "admin" || s.role === "support") ? s : null;
 }
 function unauthorized() {
   return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+}
+function forbidden() {
+  return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
 }
 
 function str(v: unknown, max = 2000): string | null {
@@ -23,7 +30,7 @@ function str(v: unknown, max = 2000): string | null {
 
 // لیست تیکت‌ها — فیلتر اختیاری با ?status= .
 export async function GET(req: NextRequest) {
-  if (!authed(req)) return unauthorized();
+  if (!requireAny(req)) return unauthorized();
 
   const statusFilter = req.nextUrl.searchParams.get("status");
 
@@ -53,9 +60,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// تغییر وضعیت/اولویت تیکت (با id).
+// تغییر وضعیت/اولویت تیکت (با id). (admin یا support)
 export async function PATCH(req: NextRequest) {
-  if (!authed(req)) return unauthorized();
+  if (!requireSupportOrAdmin(req)) return forbidden();
 
   let body: Record<string, unknown>;
   try {

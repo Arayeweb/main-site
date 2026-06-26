@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { ADMIN_COOKIE, verifyAdminToken, hashPassword } from "@/lib/auth";
+import { getSession, hashPassword } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,11 +15,18 @@ const STATUSES = new Set([
 ]);
 const SERVICE_TYPES = new Set(["website", "landing", "chatbot", "other"]);
 
-function authed(req: NextRequest): boolean {
-  return verifyAdminToken(req.cookies.get(ADMIN_COOKIE)?.value);
+function requireAny(req: NextRequest) {
+  return getSession(req);
+}
+function requireAdmin(req: NextRequest) {
+  const s = getSession(req);
+  return s && s.role === "admin" ? s : null;
 }
 function unauthorized() {
   return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+}
+function forbidden() {
+  return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
 }
 
 function str(v: unknown, max = 2000): string | null {
@@ -42,7 +49,7 @@ function genProjectCode(): string {
 
 // لیست همه‌ی پروژه‌ها (رمز هرگز برنمی‌گردد؛ فقط has_password).
 export async function GET(req: NextRequest) {
-  if (!authed(req)) return unauthorized();
+  if (!requireAny(req)) return unauthorized();
   try {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -69,9 +76,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ساخت پروژه‌ی جدید.
+// ساخت پروژه‌ی جدید (فقط admin).
 export async function POST(req: NextRequest) {
-  if (!authed(req)) return unauthorized();
+  if (!requireAdmin(req)) return forbidden();
 
   let body: Record<string, unknown>;
   try {
@@ -136,9 +143,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ویرایش پروژه (با id). فیلدهای ارسالی به‌روزرسانی می‌شوند.
+// ویرایش پروژه (با id). فیلدهای ارسالی به‌روزرسانی می‌شوند. (فقط admin)
 export async function PATCH(req: NextRequest) {
-  if (!authed(req)) return unauthorized();
+  if (!requireAdmin(req)) return forbidden();
 
   let body: Record<string, unknown>;
   try {
