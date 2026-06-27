@@ -12,6 +12,29 @@ function unauthorized() {
   return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
 }
 
+// Supabase به‌صورت پیش‌فرض حداکثر ۱۰۰۰ ردیف برمی‌گرداند؛
+// برای آمار صحیح باید همهٔ ردیف‌ها صفحه‌به‌صفحه خوانده شوند.
+async function fetchAll(
+  table: string,
+  columns: string,
+  supabase: ReturnType<typeof getSupabaseAdmin>
+): Promise<{ data: Record<string, unknown>[]; error: string | null }> {
+  const PAGE = 1000;
+  const all: Record<string, unknown>[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(columns)
+      .order("created_at", { ascending: false })
+      .range(from, from + PAGE - 1);
+    if (error) return { data: all, error: error.message };
+    const batch = (data || []) as unknown as Record<string, unknown>[];
+    all.push(...batch);
+    if (batch.length < PAGE) break;
+  }
+  return { data: all, error: null };
+}
+
 function groupCount(items: Record<string, unknown>[], key: string): { key: string; count: number }[] {
   const map = new Map<string, number>();
   for (const item of items) {
@@ -31,17 +54,20 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
     const [leadsRes, pvRes] = await Promise.all([
-      supabase.from("leads").select("source, page, utm_source, utm_medium, utm_campaign, created_at"),
-      supabase.from("page_views").select("page, utm_source, utm_medium, utm_campaign, created_at"),
+      fetchAll("leads", "source, page, utm_source, utm_medium, utm_campaign, created_at", supabase),
+      fetchAll("page_views", "page, utm_source, utm_medium, utm_campaign, created_at", supabase),
     ]);
 
     if (leadsRes.error) {
-      console.error("[api/admin/stats] leads error:", leadsRes.error.message);
+      console.error("[api/admin/stats] leads error:", leadsRes.error);
       return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
     }
+    if (pvRes.error) {
+      console.error("[api/admin/stats] page_views error:", pvRes.error);
+    }
 
-    const leads = (leadsRes.data || []) as Record<string, unknown>[];
-    const views = (pvRes.data || []) as Record<string, unknown>[];
+    const leads = leadsRes.data;
+    const views = pvRes.data;
     const now = Date.now();
     const weekMs = 7 * 24 * 60 * 60 * 1000;
     const monthMs = 30 * 24 * 60 * 60 * 1000;

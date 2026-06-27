@@ -77,6 +77,14 @@
     .has-pw{color:var(--emerald);font-weight:700}
     .no-pw{color:#c0392b;font-weight:700}
 
+    .btn-danger{background:#c0392b;color:#fff;border:1.5px solid #c0392b}
+    .btn-danger:hover{background:#a93226;transform:translateY(-2px)}
+
+    .link-short{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .link-short a{font-family:var(--font-mono,monospace);font-size:.92rem;font-weight:700;color:var(--emerald);text-decoration:none;word-break:break-all}
+    .link-short a:hover{text-decoration:underline}
+    .link-target{font-size:.82rem;color:var(--muted-2);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;text-align:left}
+
     /* lead source badges */
     .src-multistep_form{background:rgba(46,125,107,.15);color:var(--emerald)}
     .src-hero_form{background:rgba(52,120,200,.13);color:#1a5fa8}
@@ -140,6 +148,7 @@
         </span>
         <div style="display:flex;align-items:center;gap:12px">
           <span id="userInfo" style="font-size:.85rem;opacity:.9"></span>
+          <a href="/sales" id="salesLink" class="btn btn-ghost btn-sm" hidden>پنل فروش ↗</a>
           <button type="button" class="btn btn-ghost btn-sm" id="logoutBtn">خروج</button>
         </div>
       </div>
@@ -152,6 +161,7 @@
           <button class="admin-tab" type="button" data-tab="tickets">تیکت‌ها</button>
           <button class="admin-tab" type="button" data-tab="leads">لیدها</button>
           <button class="admin-tab" type="button" data-tab="partners">همکاران فروش</button>
+          <button class="admin-tab" type="button" data-tab="links">لینک کوتاه</button>
           <button class="admin-tab" type="button" data-tab="stats">آمار</button>
           <button class="admin-tab" type="button" data-tab="users" data-role="admin">کاربران</button>
         </div>
@@ -243,6 +253,7 @@
                 <option value="restaurant">رستوران</option>
                 <option value="doctors">پزشکان</option>
                 <option value="spaces">فضاها (Spaces)</option>
+                <option value="googlesabt">ثبت در گوگل</option>
               </select>
               <input type="text" id="leadUtmFilter" placeholder="utm_source…" />
               <button type="button" class="btn btn-ghost btn-sm" id="leadFilterBtn">اعمال</button>
@@ -268,6 +279,31 @@
           <div class="load-more" id="partnersLoadMore" hidden>
             <button type="button" class="btn btn-ghost btn-sm" id="partnersMoreBtn">بارگذاری بیشتر</button>
           </div>
+        </section>
+
+        <!-- ===== Short Links ===== -->
+        <section class="admin-panel" id="panelLinks">
+          <div class="admin-toolbar">
+            <h2>لینک‌های کوتاه</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="newLinkBtn">+ لینک جدید</button>
+          </div>
+
+          <!-- create form -->
+          <div class="admin-card" id="newLinkCard" hidden>
+            <div class="admin-card-head"><span class="admin-card-code">ساخت لینک کوتاه</span></div>
+            <div class="admin-grid" style="margin-top:14px">
+              <div class="field col-full"><label>لینک مقصد (کامل با UTM) *</label><input type="text" data-nl="target_url" placeholder="https://araaye.com/spaces?utm_source=instagram&utm_medium=bio&utm_campaign=spring" dir="ltr" /></div>
+              <div class="field"><label>کد دلخواه (خالی = خودکار)</label><input type="text" data-nl="slug" placeholder="ig-spring" dir="ltr" /></div>
+              <div class="field"><label>یادداشت (اختیاری)</label><input type="text" data-nl="title" placeholder="مثلاً کمپین بهار اینستاگرام" /></div>
+            </div>
+            <span class="form-err" id="newLinkErr"></span>
+            <div class="admin-edit-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="createLinkBtn">ساخت لینک</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="cancelLinkBtn">انصراف</button>
+            </div>
+          </div>
+
+          <div class="admin-list" id="linksList"></div>
         </section>
 
         <!-- ===== Stats ===== -->

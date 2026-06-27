@@ -137,3 +137,57 @@ create table if not exists public.admin_users (
 );
 
 alter table public.admin_users enable row level security;
+
+-- =========================================================
+-- CRM فروش: وضعیت پایپ‌لاین، مالک لید و فعالیت‌ها
+-- =========================================================
+
+-- ستون‌های CRM روی جدول leads (برای جدول‌های موجود اضافه می‌شوند):
+-- crm_status: new | contacted | qualified | proposal | won | lost
+alter table public.leads add column if not exists crm_status text not null default 'new';
+alter table public.leads add column if not exists owner_id uuid references public.admin_users (id) on delete set null;
+alter table public.leads add column if not exists next_followup_at timestamptz;
+alter table public.leads add column if not exists crm_note text;            -- آخرین یادداشت کوتاه
+alter table public.leads add column if not exists crm_updated_at timestamptz;
+alter table public.leads add column if not exists company text;             -- نام کسب‌وکار مشتری (ورود دستی)
+
+create index if not exists leads_crm_status_idx on public.leads (crm_status);
+create index if not exists leads_owner_idx on public.leads (owner_id);
+create index if not exists leads_followup_idx on public.leads (next_followup_at);
+-- منبع 'manual_entry': لیدهایی که تیم فروش دستی از منابع مختلف وارد می‌کند.
+
+-- تاریخچهٔ فعالیت روی هر لید (یادداشت، تماس، تغییر وضعیت)
+create table if not exists public.lead_activities (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  lead_id     uuid not null references public.leads (id) on delete cascade,
+  author_id   uuid references public.admin_users (id) on delete set null,
+  author_name text,                                  -- اسنپ‌شات نام نویسنده برای نمایش
+  kind        text not null default 'note',          -- note | call | status_change | followup
+  body        text
+);
+
+create index if not exists lead_activities_lead_idx on public.lead_activities (lead_id, created_at desc);
+
+alter table public.lead_activities enable row level security;
+
+-- =========================================================
+-- لینک‌کوتاه‌کن (URL shortener) برای لینک‌های UTM‌دار طولانی
+-- =========================================================
+-- لینک کامل با UTM در target_url ذخیره می‌شود؛ کاربر فقط /s/<slug> را به اشتراک می‌گذارد.
+-- مسیر /s/<slug> به مقصد ریدایرکت و شمارنده‌ی کلیک را یکی زیاد می‌کند.
+create table if not exists public.short_links (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  slug        text not null unique,        -- کد کوتاه (a-z 0-9 - _)
+  target_url  text not null,               -- لینک کامل مقصد (همراه UTM)
+  title       text,                        -- یادداشت کوتاه برای شناسایی در پنل
+  clicks      int not null default 0,
+  is_active   boolean not null default true,
+  created_by  uuid references public.admin_users (id) on delete set null
+);
+
+create index if not exists short_links_slug_idx on public.short_links (slug);
+
+-- RLS فعال و بدون policy عمومی: فقط service_role (API سمت سرور) دسترسی دارد.
+alter table public.short_links enable row level security;

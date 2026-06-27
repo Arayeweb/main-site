@@ -9,7 +9,7 @@
   var SOURCE_LABELS = { multistep_form: "فرم چندمرحله‌ای", hero_form: "فرم هرو", chatbot: "چت‌بات", telegram_bot: "ربات تلگرام", partner_signup_form: "همکار فروش" };
   var BUDGET_LABELS = { lt15: "زیر ۱۵م.ت", "15-40": "۱۵–۴۰م.ت", "40-100": "۴۰–۱۰۰م.ت", gt100: "بالای ۱۰۰م.ت", unsure: "نامشخص" };
   var PLAN_LABELS = { bronze: "برنزی", silver: "نقره‌ای", gold: "طلایی" };
-  var PAGE_LABELS = { index: "صفحه اصلی", clinic: "کلینیک", restaurant: "رستوران", doctors: "پزشکان", spaces: "فضاها (Spaces)" };
+  var PAGE_LABELS = { index: "صفحه اصلی", clinic: "کلینیک", restaurant: "رستوران", doctors: "پزشکان", spaces: "فضاها (Spaces)", googlesabt: "ثبت در گوگل" };
   var PROJECT_STATUS = {
     intake: "دریافت اطلاعات",
     design: "طراحی",
@@ -66,6 +66,8 @@
   var currentUserId = null;
 
   function applyRoleVisibility() {
+    var salesLink = el("salesLink");
+    if (salesLink) salesLink.hidden = !(currentRole === "sales" || currentRole === "admin");
     var tabs = document.querySelectorAll(".admin-tab");
     tabs.forEach(function (t) {
       var required = t.dataset.role;
@@ -138,6 +140,7 @@
 
   /* ---------- tabs ---------- */
   var leadsLoaded = false;
+  var linksLoaded = false;
   var statsLoaded = false;
   var usersLoaded = false;
 
@@ -153,10 +156,12 @@
         panels.forEach(function (p) { p.classList.toggle("is-active", p.id === panelId); });
         // بارگذاری تنبل
         if (name === "leads" && !leadsLoaded) { leadsLoaded = true; loadLeads(0); }
+        if (name === "links" && !linksLoaded) { linksLoaded = true; loadLinks(); }
         if (name === "users" && !usersLoaded) { usersLoaded = true; loadUsers(); }
         // این تب‌ها هر بار که باز می‌شوند تازه‌سازی می‌شوند تا با دیتابیس هماهنگ بمانند
         if (name === "stats") { statsLoaded = true; loadStats(); }
         if (name === "partners") { loadPartners(0, partnersSearch); }
+        if (name === "links") { loadLinks(); }
       });
     });
   }
@@ -474,6 +479,152 @@
     });
   }
 
+  /* ---------- short links ---------- */
+  function loadLinks() {
+    var list = el("linksList");
+    list.innerHTML = '<div class="admin-empty">در حال بارگذاری…</div>';
+    api("GET", "/api/admin/links").then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (!res.data || !res.data.ok) { list.innerHTML = '<div class="admin-empty">خطا در بارگذاری.</div>'; return; }
+      renderLinks(res.data.links || []);
+    }).catch(function () {
+      list.innerHTML = '<div class="admin-empty">ارتباط برقرار نشد.</div>';
+    });
+  }
+
+  function renderLinks(links) {
+    var list = el("linksList");
+    if (!links.length) {
+      list.innerHTML = '<div class="admin-empty">هنوز لینک کوتاهی ثبت نشده است.</div>';
+      return;
+    }
+    list.innerHTML = links.map(linkCard).join("");
+  }
+
+  function linkCard(l) {
+    var shortUrl = location.origin + "/s/" + esc(l.slug);
+    var active = l.is_active;
+    var activeBadge = active
+      ? '<span class="pill st-answered">فعال</span>'
+      : '<span class="pill st-closed">غیرفعال</span>';
+    return (
+      '<div class="admin-card" data-id="' + esc(l.id) + '">' +
+        '<div class="admin-card-head">' +
+          '<div>' +
+            '<span class="admin-card-code">' + esc(l.title || "بدون عنوان") + '</span>' +
+            '<div class="admin-card-sub">' + esc(l.slug) + ' · ' + fmtDate(l.created_at) + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' + activeBadge + '</div>' +
+        '</div>' +
+        '<div class="link-short">' +
+          '<a href="/s/' + esc(l.slug) + '" target="_blank" rel="noopener" dir="ltr">' + shortUrl + '</a>' +
+          '<button type="button" class="btn btn-ghost btn-sm" data-copy="' + shortUrl + '">کپی</button>' +
+        '</div>' +
+        '<div class="link-target" dir="ltr" title="' + esc(l.target_url) + '">' + esc(l.target_url) + '</div>' +
+        '<div class="admin-meta" style="margin-top:10px">' +
+          '<span>کلیک: <b>' + toFa(l.clicks || 0) + '</b></span>' +
+          '<span>مقصد: <b>' + esc(l.target_url.replace(/^https?:\/\//, "").split("/")[0]) + '</b></span>' +
+        '</div>' +
+        '<div class="admin-edit-actions" style="margin-top:14px">' +
+          '<button type="button" class="btn btn-ghost btn-sm" data-edit>ویرایش</button>' +
+          '<button type="button" class="btn btn-danger btn-sm" data-delete>حذف</button>' +
+        '</div>' +
+        '<div class="admin-edit" data-editbox>' +
+          '<div class="admin-grid">' +
+            '<div class="field col-full"><label>لینک مقصد (کامل)</label><input type="text" data-f="target_url" value="' + esc(l.target_url) + '" dir="ltr" /></div>' +
+            '<div class="field"><label>عنوان / یادداشت</label><input type="text" data-f="title" value="' + esc(l.title || "") + '" /></div>' +
+            '<div class="field"><label>وضعیت</label><select data-f="is_active"><option value="true"' + (active ? " selected" : "") + '>فعال</option><option value="false"' + (active ? "" : " selected") + '>غیرفعال</option></select></div>' +
+          '</div>' +
+          '<span class="form-err" data-err></span>' +
+          '<div class="admin-edit-actions">' +
+            '<button type="button" class="btn btn-primary btn-sm" data-save>ذخیره</button>' +
+            '<button type="button" class="btn btn-ghost btn-sm" data-cancel>بستن</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function initLinksPanel() {
+    var list = el("linksList");
+
+    list.addEventListener("click", function (e) {
+      var card = e.target.closest(".admin-card");
+      if (!card) return;
+      var box = $("[data-editbox]", card);
+      if (e.target.matches("[data-edit]")) { box.classList.add("is-open"); }
+      else if (e.target.matches("[data-cancel]")) { box.classList.remove("is-open"); }
+      else if (e.target.matches("[data-save]")) { saveLink(card, box, e.target); }
+      else if (e.target.matches("[data-delete]")) { deleteLink(card); }
+      else if (e.target.matches("[data-copy]")) {
+        var text = e.target.getAttribute("data-copy");
+        navigator.clipboard.writeText(text).then(function () {
+          var old = e.target.textContent;
+          e.target.textContent = "کپی شد";
+          setTimeout(function () { e.target.textContent = old; }, 1200);
+        }).catch(function () {});
+      }
+    });
+
+    var newCard = el("newLinkCard");
+    el("newLinkBtn").addEventListener("click", function () { newCard.hidden = false; });
+    el("cancelLinkBtn").addEventListener("click", function () {
+      newCard.hidden = true;
+      el("newLinkErr").textContent = "";
+      newCard.querySelectorAll("[data-nl]").forEach(function (i) { i.value = ""; });
+    });
+    el("createLinkBtn").addEventListener("click", createLink);
+  }
+
+  function createLink() {
+    var card = el("newLinkCard");
+    var err = el("newLinkErr");
+    var btn = el("createLinkBtn");
+    err.textContent = "";
+    var body = readFields(card, "data-nl");
+    if (!body.target_url || !body.target_url.trim()) { err.textContent = "لینک مقصد را وارد کنید."; return; }
+    btn.disabled = true; btn.textContent = "در حال ساخت…";
+    api("POST", "/api/admin/links", body).then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (res.data && res.data.ok) {
+        el("cancelLinkBtn").click();
+        loadLinks();
+      } else if (res.data && res.data.error === "duplicate_slug") {
+        err.textContent = "این کد کوتاه قبلاً استفاده شده است.";
+      } else if (res.data && res.data.error === "invalid_target") {
+        err.textContent = "لینک مقصد باید با http:// یا https:// شروع شود.";
+      } else {
+        err.textContent = "ساخت لینک ناموفق بود.";
+      }
+    }).catch(function () { err.textContent = "ارتباط برقرار نشد."; })
+      .finally(function () { btn.disabled = false; btn.textContent = "ساخت لینک"; });
+  }
+
+  function saveLink(card, box, btn) {
+    var err = $("[data-err]", box);
+    err.textContent = "";
+    var body = readFields(box, "data-f");
+    body.id = card.dataset.id;
+    if ("is_active" in body) body.is_active = body.is_active === "true";
+    btn.disabled = true; btn.textContent = "در حال ذخیره…";
+    api("PATCH", "/api/admin/links", body).then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (res.data && res.data.ok) { loadLinks(); }
+      else if (res.data && res.data.error === "invalid_target") { err.textContent = "لینک مقصد نامعتبر است."; }
+      else { err.textContent = "ذخیره ناموفق بود."; }
+    }).catch(function () { err.textContent = "ارتباط برقرار نشد."; })
+      .finally(function () { btn.disabled = false; btn.textContent = "ذخیره"; });
+  }
+
+  function deleteLink(card) {
+    if (!confirm("این لینک کوتاه حذف شود؟")) return;
+    api("DELETE", "/api/admin/links?id=" + encodeURIComponent(card.dataset.id)).then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (res.data && res.data.ok) { loadLinks(); }
+      else { alert("حذف ناموفق بود."); }
+    }).catch(function () { alert("ارتباط برقرار نشد."); });
+  }
+
   /* ---------- partners ---------- */
   var partnersPage = 0;
   var partnersSearch = "";
@@ -785,6 +936,7 @@
   initLeadsPanel();
   initPartnersPanel();
   initUsersPanel();
+  initLinksPanel();
   initStatsPanel();
 
   // اگر نشست معتبر بود مستقیم وارد پنل شو.

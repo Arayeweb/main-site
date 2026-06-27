@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>پنل فروش | آرایه</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0E1A2B" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <style>
+    .admin-shell{min-height:100vh;background:var(--paper-2)}
+    .admin-bar{background:var(--navy-800);color:#fff}
+    .admin-bar .container{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:16px}
+    .admin-bar-title{font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:10px;color:#fff}
+    .admin-bar .btn-ghost{border-color:rgba(255,255,255,.25);color:#fff}
+    .admin-bar .btn-ghost:hover{border-color:var(--emerald-soft);color:var(--emerald-soft)}
+    .admin-main{padding-block:clamp(24px,4vw,40px)}
+
+    /* gate */
+    .gate{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--navy-800)}
+    .gate-card{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-lg);padding:clamp(26px,4vw,40px);width:min(420px,100%);text-align:center}
+    .gate-card h1{font-size:1.35rem;font-weight:800;margin-bottom:8px}
+    .gate-card p{color:var(--muted);font-size:.95rem;margin-bottom:22px;line-height:1.8}
+
+    .admin-tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+    .admin-tab{padding:10px 22px;border-radius:var(--r-pill);font-weight:700;font-size:.95rem;color:var(--muted);background:var(--card);border:1.5px solid var(--line);cursor:pointer;transition:all .2s}
+    .admin-tab.is-active{background:var(--emerald);color:#fff;border-color:var(--emerald);box-shadow:var(--sh-emerald)}
+    .admin-panel{display:none}
+    .admin-panel.is-active{display:block}
+
+    .admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+    .admin-toolbar h2{font-size:1.25rem;font-weight:800}
+    .admin-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .admin-filter select,.admin-filter input[type=text]{padding:9px 14px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:#fff;font-family:inherit;font-size:.9rem}
+    .admin-filter input[type=text]{width:170px}
+
+    .admin-list{display:grid;gap:14px}
+    .admin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:18px 20px}
+    .admin-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .admin-card-code{font-weight:800;font-size:1.05rem}
+    .admin-card-sub{color:var(--muted);font-size:.88rem;margin-top:3px}
+    .admin-meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;color:var(--muted);font-size:.85rem}
+    .admin-meta b{color:var(--ink);font-weight:700}
+    .admin-empty{text-align:center;color:var(--muted);padding:40px 20px}
+    .form-err{color:#d9534f;font-weight:600;font-size:.88rem;min-height:18px;display:block}
+    .form-ok{color:var(--emerald);font-weight:700;font-size:.88rem}
+    .btn-sm{padding:9px 18px;font-size:.85rem}
+    .load-more{text-align:center;margin-top:16px}
+
+    .admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+    .admin-grid .field{margin:0}
+    .admin-grid label{display:block;font-weight:700;font-size:.85rem;margin-bottom:6px}
+    .admin-grid input,.admin-grid select,.admin-grid textarea{width:100%;padding:11px 13px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:#fff;font-family:inherit;font-size:.92rem}
+    .admin-grid textarea{min-height:80px;resize:vertical;line-height:1.7}
+    .admin-grid .col-full{grid-column:1/-1}
+    .admin-edit-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
+
+    /* status pills */
+    .pill{display:inline-flex;align-items:center;padding:4px 12px;border-radius:var(--r-pill);font-size:.78rem;font-weight:700}
+    .st-new{background:rgba(52,120,200,.13);color:#1a5fa8}
+    .st-contacted{background:rgba(232,180,90,.18);color:#a9791f}
+    .st-qualified{background:rgba(140,95,200,.13);color:#6b3a9e}
+    .st-proposal{background:rgba(46,125,107,.16);color:var(--emerald)}
+    .st-won{background:rgba(63,160,138,.18);color:var(--emerald-bright)}
+    .st-lost{background:rgba(217,83,79,.14);color:#c0392b}
+
+    .src-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--r-pill);font-size:.74rem;font-weight:700;background:rgba(91,107,123,.12);color:var(--muted)}
+    .src-manual_entry{background:rgba(232,130,50,.15);color:#b85c00}
+
+    /* dashboard */
+    .stats-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+    .stat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:20px 18px;text-align:center}
+    .stat-num{font-size:2rem;font-weight:800;color:var(--emerald);line-height:1;font-variant-numeric:tabular-nums}
+    .stat-num.warn{color:#c0392b}
+    .stat-label{font-size:.82rem;color:var(--muted);margin-top:6px}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+    .stats-block{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:18px 20px}
+    .stats-block h3{font-size:.95rem;font-weight:800;margin-bottom:14px}
+    .pipe-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:.88rem}
+    .pipe-row .pipe-label{width:120px;color:var(--muted)}
+    .pipe-bar-wrap{flex:1;background:var(--paper-2);border-radius:6px;height:14px;overflow:hidden}
+    .pipe-bar{height:100%;border-radius:6px;background:var(--emerald);min-width:2px}
+    .pipe-row b{width:34px;text-align:left;font-variant-numeric:tabular-nums}
+    .spark{display:flex;align-items:flex-end;gap:6px;height:90px}
+    .spark-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end}
+    .spark-bar{width:100%;background:var(--emerald);border-radius:4px 4px 0 0;min-height:3px;opacity:.85}
+    .spark-day{font-size:.68rem;color:var(--muted-2)}
+
+    /* lead detail / activity */
+    .lead-detail{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);display:none}
+    .lead-detail.is-open{display:block}
+    .activity-list{display:grid;gap:8px;margin-top:12px}
+    .activity-item{background:var(--paper-2);border-radius:var(--r-sm);padding:10px 12px;font-size:.86rem;line-height:1.7}
+    .activity-meta{font-size:.74rem;color:var(--muted-2);margin-top:4px}
+    .followup-due{color:#c0392b;font-weight:700}
+
+    .tab-badge{background:#c0392b;color:#fff;border-radius:var(--r-pill);padding:1px 8px;font-size:.72rem;margin-right:-6px;margin-left:6px;font-variant-numeric:tabular-nums}
+    .admin-tab.is-active .tab-badge{background:#fff;color:#c0392b}
+
+    .team-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+    .team-table th,.team-table td{padding:14px 16px;text-align:right;font-size:.88rem;border-bottom:1px solid var(--line)}
+    .team-table th{background:var(--paper-2);font-weight:800;color:var(--muted)}
+    .team-table tr:last-child td{border-bottom:0}
+    .team-table .rank{font-weight:800;color:var(--emerald)}
+    .team-table .zero{color:var(--muted)}
+  </style>
+  <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+</head>
+<body>
+  <!-- ============ GATE (نیاز به ورود از پنل ادمین) ============ -->
+  <section class="gate" id="gateView">
+    <div class="gate-card">
+      <h1>پنل فروش آرایه</h1>
+      <p id="gateMsg">در حال بررسی دسترسی…</p>
+      <a href="/admin" class="btn btn-primary btn-block" id="gateLogin" hidden>ورود از پنل مدیریت</a>
+    </div>
+  </section>
+
+  <!-- ============ APP ============ -->
+  <div class="admin-shell" id="appView" hidden>
+    <header class="admin-bar">
+      <div class="container">
+        <span class="admin-bar-title">
+          <img src="assets/logo-icon.svg" alt="" width="28" height="28" />
+          پنل فروش آرایه
+        </span>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span id="userInfo" style="font-size:.85rem;opacity:.9"></span>
+          <a href="/admin" class="btn btn-ghost btn-sm">پنل مدیریت</a>
+          <button type="button" class="btn btn-ghost btn-sm" id="logoutBtn">خروج</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <div class="container">
+        <div class="admin-tabs" role="tablist">
+          <button class="admin-tab is-active" type="button" data-tab="dashboard">داشبورد</button>
+          <button class="admin-tab" type="button" data-tab="leads">لیدها (CRM)</button>
+          <button class="admin-tab" type="button" data-tab="followups">پیگیری‌ها <span class="tab-badge" id="followBadge" hidden>۰</span></button>
+          <button class="admin-tab" type="button" data-tab="add">افزودن دستی</button>
+          <button class="admin-tab" type="button" data-tab="team">عملکرد تیم</button>
+        </div>
+
+        <!-- ===== Dashboard ===== -->
+        <section class="admin-panel is-active" id="panelDashboard">
+          <div class="admin-toolbar">
+            <h2>داشبورد فروش</h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="dashRefreshBtn">↻ به‌روزرسانی</button>
+          </div>
+          <div id="dashContent"><div class="admin-empty">در حال بارگذاری…</div></div>
+        </section>
+
+        <!-- ===== Leads CRM ===== -->
+        <section class="admin-panel" id="panelLeads">
+          <div class="admin-toolbar">
+            <h2>لیدها</h2>
+            <div class="admin-filter">
+              <select id="fStatus">
+                <option value="">همه وضعیت‌ها</option>
+                <option value="new">جدید</option>
+                <option value="contacted">تماس گرفته شد</option>
+                <option value="qualified">واجد شرایط</option>
+                <option value="proposal">پیشنهاد ارسال شد</option>
+                <option value="won">موفق</option>
+                <option value="lost">ناموفق</option>
+              </select>
+              <select id="fOwner">
+                <option value="">همه مالک‌ها</option>
+                <option value="me">لیدهای من</option>
+                <option value="unassigned">بدون مالک</option>
+              </select>
+              <input type="text" id="fQ" placeholder="جستجو نام/تماس/کسب‌وکار…" />
+              <button type="button" class="btn btn-ghost btn-sm" id="fApplyBtn">اعمال</button>
+            </div>
+          </div>
+          <div class="admin-list" id="leadsList"></div>
+          <div class="load-more" id="leadsLoadMore" hidden>
+            <button type="button" class="btn btn-ghost btn-sm" id="leadsMoreBtn">بارگذاری بیشتر</button>
+          </div>
+        </section>
+
+        <!-- ===== Follow-ups ===== -->
+        <section class="admin-panel" id="panelFollowups">
+          <div class="admin-toolbar">
+            <h2>پیگیری‌های امروز و سررسیدشده</h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="followRefreshBtn">↻ به‌روزرسانی</button>
+          </div>
+          <p class="admin-card-sub" style="margin-bottom:16px">لیدهایی که تاریخ پیگیری بعدی‌شان امروز یا گذشته است (و هنوز به نتیجه نرسیده‌اند). با ثبت یادداشت یا تغییر وضعیت، آن‌ها را پیش ببرید.</p>
+          <div class="admin-list" id="followList"></div>
+        </section>
+
+        <!-- ===== Manual add ===== -->
+        <section class="admin-panel" id="panelAdd">
+          <div class="admin-toolbar"><h2>افزودن لید دستی</h2></div>
+          <div class="admin-card">
+            <p class="admin-card-sub" style="margin-bottom:16px">مشتری‌هایی که از اینستاگرام، معرفی، نمایشگاه یا هر منبع دیگری پیدا می‌کنید را اینجا ثبت کنید تا وارد پایپ‌لاین فروش شوند.</p>
+            <div class="admin-grid">
+              <div class="field"><label>نام مشتری</label><input type="text" data-add="name" placeholder="نام و نام خانوادگی" /></div>
+              <div class="field"><label>نام کسب‌وکار</label><input type="text" data-add="company" placeholder="مثلاً کلینیک پارسیان" /></div>
+              <div class="field"><label>راه ارتباطی *</label><input type="text" data-add="contact" placeholder="09xxxxxxxxx یا ایمیل" /></div>
+              <div class="field"><label>از کجا پیدا شد؟</label><input type="text" data-add="channel" placeholder="اینستاگرام، معرفی، نمایشگاه…" /></div>
+              <div class="field"><label>بودجه (اختیاری)</label><input type="text" data-add="budget" placeholder="مثلاً ۴۰–۱۰۰م.ت" /></div>
+              <div class="field"><label>وضعیت اولیه</label>
+                <select data-add="crm_status">
+                  <option value="new">جدید</option>
+                  <option value="contacted">تماس گرفته شد</option>
+                  <option value="qualified">واجد شرایط</option>
+                </select>
+              </div>
+              <div class="field"><label>مالک</label>
+                <select data-add="owner_id" id="addOwner"><option value="">— انتساب به خودم —</option></select>
+              </div>
+              <div class="field"><label>پیگیری بعدی (اختیاری)</label><input type="date" data-add="next_followup_at" /></div>
+              <div class="field col-full"><label>توضیحات / نیاز مشتری</label><textarea data-add="goal" placeholder="چه چیزی می‌خواهد؟ یادداشت اولیه…"></textarea></div>
+            </div>
+            <span class="form-err" id="addErr"></span>
+            <div class="admin-edit-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="addSubmitBtn">ثبت لید</button>
+              <span class="form-ok" id="addOk"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== Team performance ===== -->
+        <section class="admin-panel" id="panelTeam">
+          <div class="admin-toolbar">
+            <h2>عملکرد کارشناس‌های فروش</h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="teamRefreshBtn">↻ به‌روزرسانی</button>
+          </div>
+          <div id="teamContent"><div class="admin-empty">در حال بارگذاری…</div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/sales.js" defer></script>
+</body>
+</html>
