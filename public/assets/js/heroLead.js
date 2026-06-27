@@ -59,12 +59,14 @@
     const success = form.querySelector(".hero-lead-success");
     const wrap = form.querySelector(".hero-lead-wrap");
 
+    const phoneOnly = form.hasAttribute("data-phone-only");
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       const raw = input.value.trim();
       const contact = normalizeContact(raw);
-      if (contact.kind === "invalid") {
-        if (err) err.textContent = "ایمیل یا شمارهٔ موبایل معتبر وارد کنید.";
+      if (contact.kind === "invalid" || (phoneOnly && contact.kind !== "phone")) {
+        if (err) err.textContent = phoneOnly ? "شماره موبایل معتبر وارد کنید (مثلاً ۰۹۱۲۱۲۳۴۵۶۷)." : "ایمیل یا شمارهٔ موبایل معتبر وارد کنید.";
         input.classList.add("is-invalid");
         track("hero_form_error", { type: "invalid_contact" });
         return;
@@ -79,7 +81,11 @@
         page: location.pathname,
       }).then(function (r) {
         if (!r.ok) throw new Error("lead http " + r.status);
+        return r.json();
+      }).then(function (data) {
+        if (!data || data.ok !== true) throw new Error("lead not saved");
         track("lead_captured", { source: "hero_form", kind: contact.kind });
+        input.value = "";
         if (wrap) wrap.hidden = true;
         if (success) {
           success.hidden = false;
