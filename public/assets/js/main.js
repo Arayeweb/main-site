@@ -93,6 +93,10 @@
     const target = document.querySelector(hash);
     if (!target) return;
     target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    const input = target.querySelector("input, textarea, select");
+    if (input) {
+      setTimeout(function () { input.focus(); }, reduceMotion ? 0 : 400);
+    }
   }
   document.addEventListener("click", function (e) {
     const a = e.target.closest('a[href^="#"]');
