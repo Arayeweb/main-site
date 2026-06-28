@@ -143,6 +143,7 @@
   var linksLoaded = false;
   var statsLoaded = false;
   var usersLoaded = false;
+  var invLoaded = false;
 
   function initTabs() {
     var tabs = document.querySelectorAll(".admin-tab");
@@ -162,6 +163,7 @@
         if (name === "stats") { statsLoaded = true; loadStats(); }
         if (name === "partners") { loadPartners(0, partnersSearch); }
         if (name === "links") { loadLinks(); }
+        if (name === "invoices" && !invLoaded) { invLoaded = true; loadInvoices(true); }
       });
     });
   }
@@ -928,6 +930,395 @@
     });
   }
 
+  /* =========================================================
+     فاکتور و پیش‌فاکتور
+     ========================================================= */
+  var INV_KIND_LABELS = { invoice: "فاکتور", proforma: "پیش‌فاکتور" };
+  var INV_STATUS_LABELS = { draft: "پیش‌نویس", sent: "ارسال‌شده", paid: "پرداخت‌شده", cancelled: "لغو‌شده" };
+  var invPage = 0;
+  var invItems = []; // آرایه‌ی ردیف‌های فعلی builder
+
+  /* --- helpers --- */
+  function fmtMoney(n, currency) {
+    var num = Number(n) || 0;
+    var formatted;
+    try {
+      formatted = num.toLocaleString("fa-IR");
+    } catch (e) {
+      formatted = toFa(String(num));
+    }
+    return formatted + (currency === "USD" ? " $" : " تومان");
+  }
+
+  function invCalcTotals() {
+    var subtotal = 0, discTotal = 0, taxTotal = 0;
+    invItems.forEach(function (it) {
+      var base = (Number(it.qty) || 0) * (Number(it.unit_price) || 0);
+      var disc = Math.round(base * ((Number(it.discount) || 0) / 100));
+      var afterDisc = base - disc;
+      var tax = Math.round(afterDisc * ((Number(it.tax) || 0) / 100));
+      subtotal += base;
+      discTotal += disc;
+      taxTotal += tax;
+    });
+    var grand = subtotal - discTotal + taxTotal;
+    var cur = (el("invCurrency") || {}).value || "IRR";
+    el("totSubtotal").textContent = fmtMoney(subtotal, cur);
+    el("totDiscount").textContent = fmtMoney(discTotal, cur);
+    el("totTax").textContent = fmtMoney(taxTotal, cur);
+    el("totGrand").textContent = fmtMoney(grand, cur);
+    return { subtotal: subtotal, discount_total: discTotal, tax_total: taxTotal, grand_total: grand };
+  }
+
+  function invAddRow(data) {
+    var idx = invItems.length;
+    var it = data || { title: "", qty: 1, unit_price: 0, discount: 0, tax: 9 };
+    invItems.push(it);
+    var tr = document.createElement("tr");
+    tr.dataset.idx = idx;
+    tr.innerHTML =
+      '<td class="col-title"><input type="text" placeholder="شرح خدمت…" value="' + esc(it.title) + '" data-f="title" /></td>' +
+      '<td class="col-num"><input type="number" min="1" value="' + esc(it.qty) + '" data-f="qty" /></td>' +
+      '<td class="col-num"><input type="number" min="0" value="' + esc(it.unit_price) + '" data-f="unit_price" /></td>' +
+      '<td class="col-num"><input type="number" min="0" max="100" value="' + esc(it.discount) + '" data-f="discount" /></td>' +
+      '<td class="col-num"><input type="number" min="0" max="100" value="' + esc(it.tax) + '" data-f="tax" /></td>' +
+      '<td class="col-del"><button type="button" class="inv-del-row" title="حذف ردیف">✕</button></td>';
+    tr.querySelectorAll("input").forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        invItems[idx][inp.dataset.f] = inp.type === "number" ? (Number(inp.value) || 0) : inp.value;
+        invCalcTotals();
+      });
+    });
+    tr.querySelector(".inv-del-row").addEventListener("click", function () {
+      invItems.splice(idx, 1);
+      tr.remove();
+      // re-index
+      var rows = el("invItemsBody").querySelectorAll("tr");
+      rows.forEach(function (r, i) { r.dataset.idx = i; });
+      invCalcTotals();
+    });
+    el("invItemsBody").appendChild(tr);
+    invCalcTotals();
+  }
+
+  function invResetBuilder() {
+    el("invEditId").value = "";
+    el("invBuilderTitle").textContent = "فاکتور جدید";
+    el("invKind").value = "invoice";
+    el("invStatus").value = "draft";
+    el("invNumber").value = "";
+    el("invCurrency").value = "IRR";
+    el("invIssueDate").value = new Date().toISOString().split("T")[0];
+    el("invDueDate").value = "";
+    el("invCustName").value = "";
+    el("invCustContact").value = "";
+    el("invCustAddr").value = "";
+    el("invNote").value = "";
+    el("invTerms").value = "";
+    el("invErr").textContent = "";
+    invItems = [];
+    el("invItemsBody").innerHTML = "";
+    invAddRow();
+    invCalcTotals();
+  }
+
+  function invFillBuilder(inv) {
+    el("invEditId").value = inv.id;
+    el("invBuilderTitle").textContent = (INV_KIND_LABELS[inv.kind] || "سند") + " — " + esc(inv.invoice_number);
+    el("invKind").value = inv.kind || "invoice";
+    el("invStatus").value = inv.status || "draft";
+    el("invNumber").value = inv.invoice_number || "";
+    el("invCurrency").value = inv.currency || "IRR";
+    el("invIssueDate").value = inv.issue_date ? inv.issue_date.split("T")[0] : "";
+    el("invDueDate").value = inv.due_date ? inv.due_date.split("T")[0] : "";
+    el("invCustName").value = inv.customer_name || "";
+    el("invCustContact").value = inv.customer_contact || "";
+    el("invCustAddr").value = inv.customer_address || "";
+    el("invNote").value = inv.note || "";
+    el("invTerms").value = inv.terms || "";
+    el("invErr").textContent = "";
+    invItems = [];
+    el("invItemsBody").innerHTML = "";
+    var rows = Array.isArray(inv.items) ? inv.items : [];
+    if (rows.length === 0) { invAddRow(); } else {
+      rows.forEach(function (r) { invAddRow(r); });
+    }
+    invCalcTotals();
+  }
+
+  function invCollectPayload() {
+    return {
+      kind: el("invKind").value,
+      status: el("invStatus").value,
+      invoice_number: el("invNumber").value.trim() || null,
+      currency: el("invCurrency").value,
+      issue_date: el("invIssueDate").value || null,
+      due_date: el("invDueDate").value || null,
+      customer_name: el("invCustName").value.trim(),
+      customer_contact: el("invCustContact").value.trim() || null,
+      customer_address: el("invCustAddr").value.trim() || null,
+      items: invItems,
+      note: el("invNote").value.trim() || null,
+      terms: el("invTerms").value.trim() || null,
+    };
+  }
+
+  /* --- PDF print --- */
+  function invPrint(inv) {
+    var cur = inv.currency || "IRR";
+    var items = Array.isArray(inv.items) ? inv.items : [];
+    var itemsHtml = items.map(function (it, i) {
+      var base = (Number(it.qty) || 0) * (Number(it.unit_price) || 0);
+      var disc = Math.round(base * ((Number(it.discount) || 0) / 100));
+      var afterDisc = base - disc;
+      var tax = Math.round(afterDisc * ((Number(it.tax) || 0) / 100));
+      var total = afterDisc + tax;
+      return "<tr>" +
+        "<td>" + toFa(String(i + 1)) + "</td>" +
+        "<td>" + esc(it.title) + "</td>" +
+        "<td>" + toFa(String(Number(it.qty) || 1)) + "</td>" +
+        "<td>" + fmtMoney(it.unit_price, cur) + "</td>" +
+        "<td>" + (Number(it.discount) ? toFa(String(it.discount)) + "٪" : "—") + "</td>" +
+        "<td>" + (Number(it.tax) ? toFa(String(it.tax)) + "٪" : "—") + "</td>" +
+        "<td>" + fmtMoney(total, cur) + "</td>" +
+        "</tr>";
+    }).join("");
+
+    var kindLabel = INV_KIND_LABELS[inv.kind] || "سند";
+    var statusLabel = INV_STATUS_LABELS[inv.status] || inv.status;
+
+    var html = "<!DOCTYPE html><html lang='fa' dir='rtl'><head><meta charset='UTF-8'/>" +
+      "<title>" + esc(kindLabel) + " " + esc(inv.invoice_number) + "</title>" +
+      "<style>" +
+      "@font-face{font-family:'Vazirmatn';src:url('/assets/fonts/Vazirmatn-Regular.woff2') format('woff2');font-weight:400}" +
+      "@font-face{font-family:'Vazirmatn';src:url('/assets/fonts/Vazirmatn-Bold.woff2') format('woff2');font-weight:700}" +
+      "@font-face{font-family:'Vazirmatn';src:url('/assets/fonts/Vazirmatn-ExtraBold.woff2') format('woff2');font-weight:800}" +
+      "*{box-sizing:border-box;margin:0;padding:0}" +
+      "body{font-family:'Vazirmatn',Tahoma,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:32px 36px;direction:rtl}" +
+      ".inv-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #2E7D6B;padding-bottom:18px;margin-bottom:24px}" +
+      ".inv-brand{font-size:22px;font-weight:800;color:#2E7D6B;letter-spacing:.02em}" +
+      ".inv-brand small{display:block;font-size:12px;font-weight:400;color:#666;margin-top:4px}" +
+      ".inv-meta{text-align:left}" +
+      ".inv-meta h1{font-size:18px;font-weight:800;color:#0E1A2B;margin-bottom:8px}" +
+      ".inv-meta-row{font-size:12px;color:#555;margin-bottom:4px}" +
+      ".inv-meta-row b{color:#1a1a1a}" +
+      ".inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;padding:16px 18px;background:#f6f8fa;border-radius:8px}" +
+      ".inv-party-label{font-size:10px;font-weight:800;color:#2E7D6B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}" +
+      ".inv-party-name{font-size:15px;font-weight:700;margin-bottom:4px}" +
+      ".inv-party-sub{font-size:12px;color:#666}" +
+      "table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12.5px}" +
+      "thead tr{background:#0E1A2B;color:#fff}" +
+      "thead th{padding:9px 10px;text-align:right;font-weight:700;white-space:nowrap}" +
+      "tbody tr:nth-child(even){background:#f6f8fa}" +
+      "tbody td{padding:8px 10px;border-bottom:1px solid #e2e8ee}" +
+      ".totals-section{display:flex;flex-direction:column;align-items:flex-end;gap:5px;margin-bottom:24px}" +
+      ".totals-row{display:flex;gap:32px;font-size:13px}" +
+      ".totals-row span:first-child{color:#666;min-width:110px;text-align:right}" +
+      ".totals-row span:last-child{font-weight:700;min-width:120px;text-align:left;font-variant-numeric:tabular-nums}" +
+      ".totals-grand{font-size:15px;font-weight:800;color:#2E7D6B;border-top:2px solid #2E7D6B;padding-top:8px;margin-top:4px}" +
+      ".inv-footer{border-top:1px solid #e2e8ee;padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px}" +
+      ".inv-footer-label{font-size:10px;font-weight:800;color:#2E7D6B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}" +
+      ".inv-footer-val{font-size:12px;color:#444;line-height:1.7;white-space:pre-wrap}" +
+      ".inv-sig{border:1px dashed #ccc;border-radius:6px;height:60px;margin-top:10px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px}" +
+      ".status-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#e8f5f2;color:#2E7D6B;margin-right:8px}" +
+      "@media print{body{padding:20px 24px}}" +
+      "</style></head><body>" +
+      "<div class='inv-header'>" +
+        "<div class='inv-brand'>آرایه وب<small>Araaye.com</small></div>" +
+        "<div class='inv-meta'>" +
+          "<h1>" + esc(kindLabel) + " <span class='status-badge'>" + esc(statusLabel) + "</span></h1>" +
+          "<div class='inv-meta-row'><b>شماره سند:</b> " + esc(inv.invoice_number) + "</div>" +
+          "<div class='inv-meta-row'><b>تاریخ صدور:</b> " + fmtDate(inv.issue_date) + "</div>" +
+          (inv.due_date ? "<div class='inv-meta-row'><b>تاریخ سررسید:</b> " + fmtDate(inv.due_date) + "</div>" : "") +
+        "</div>" +
+      "</div>" +
+      "<div class='inv-parties'>" +
+        "<div><div class='inv-party-label'>صادرکننده</div><div class='inv-party-name'>آرایه وب</div><div class='inv-party-sub'>araaye.com</div></div>" +
+        "<div><div class='inv-party-label'>مشتری</div><div class='inv-party-name'>" + esc(inv.customer_name) + "</div>" +
+          (inv.customer_contact ? "<div class='inv-party-sub'>" + esc(inv.customer_contact) + "</div>" : "") +
+          (inv.customer_address ? "<div class='inv-party-sub'>" + esc(inv.customer_address) + "</div>" : "") +
+        "</div>" +
+      "</div>" +
+      "<table><thead><tr>" +
+        "<th>#</th><th>شرح خدمت / کالا</th><th>تعداد</th><th>قیمت واحد</th><th>تخفیف</th><th>مالیات</th><th>جمع ردیف</th>" +
+      "</tr></thead><tbody>" + itemsHtml + "</tbody></table>" +
+      "<div class='totals-section'>" +
+        "<div class='totals-row'><span>جمع کل:</span><span>" + fmtMoney(inv.subtotal, cur) + "</span></div>" +
+        "<div class='totals-row'><span>تخفیف:</span><span>" + fmtMoney(inv.discount_total, cur) + "</span></div>" +
+        "<div class='totals-row'><span>مالیات:</span><span>" + fmtMoney(inv.tax_total, cur) + "</span></div>" +
+        "<div class='totals-row totals-grand'><span>مبلغ قابل پرداخت:</span><span>" + fmtMoney(inv.grand_total, cur) + "</span></div>" +
+      "</div>" +
+      "<div class='inv-footer'>" +
+        "<div><div class='inv-footer-label'>توضیحات</div><div class='inv-footer-val'>" + esc(inv.note || "—") + "</div></div>" +
+        "<div><div class='inv-footer-label'>شرایط و مقررات</div><div class='inv-footer-val'>" + esc(inv.terms || "—") + "</div>" +
+          "<div class='inv-sig'>امضا و مهر</div></div>" +
+      "</div>" +
+      "</body></html>";
+
+    var frame = el("invPrintFrame");
+    frame.innerHTML = html;
+    window.print();
+    setTimeout(function () { frame.innerHTML = ""; }, 2000);
+  }
+
+  /* --- render list --- */
+  function invRenderCard(inv) {
+    var cur = inv.currency || "IRR";
+    return '<div class="admin-card" id="inv-' + esc(inv.id) + '">' +
+      '<div class="admin-card-head">' +
+        '<div>' +
+          '<div class="admin-card-code">' +
+            '<span class="pill inv-kind-' + esc(inv.kind) + '" style="margin-left:6px">' + esc(INV_KIND_LABELS[inv.kind] || inv.kind) + '</span>' +
+            esc(inv.invoice_number) +
+          '</div>' +
+          '<div class="admin-card-sub">' + esc(inv.customer_name) + (inv.customer_contact ? ' — ' + esc(inv.customer_contact) : '') + '</div>' +
+        '</div>' +
+        '<div class="admin-row-actions">' +
+          '<span class="pill inv-st-' + esc(inv.status) + '">' + esc(INV_STATUS_LABELS[inv.status] || inv.status) + '</span>' +
+          '<button type="button" class="btn btn-ghost btn-sm inv-print-btn" data-id="' + esc(inv.id) + '">🖨 چاپ / PDF</button>' +
+          '<button type="button" class="btn btn-ghost btn-sm inv-edit-btn" data-id="' + esc(inv.id) + '">ویرایش</button>' +
+          '<button type="button" class="btn btn-danger btn-sm inv-del-btn" data-id="' + esc(inv.id) + '">حذف</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="admin-meta">' +
+        '<span><b>تاریخ صدور:</b> ' + fmtDate(inv.issue_date) + '</span>' +
+        (inv.due_date ? '<span><b>سررسید:</b> ' + fmtDate(inv.due_date) + '</span>' : '') +
+        '<span><b>مبلغ:</b> ' + fmtMoney(inv.grand_total, cur) + '</span>' +
+        (inv.paid_at ? '<span><b>پرداخت:</b> ' + fmtDate(inv.paid_at) + '</span>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  var invCache = {};
+
+  function invLoadFull(id, cb) {
+    if (invCache[id]) { cb(invCache[id]); return; }
+    api("GET", "/api/admin/invoices?id=" + encodeURIComponent(id) + "&full=1").then(function (res) {
+      if (res.ok && res.data && res.data.invoice) {
+        invCache[id] = res.data.invoice;
+        cb(res.data.invoice);
+      }
+    });
+  }
+
+  function invBindCard(card) {
+    var printBtn = card.querySelector(".inv-print-btn");
+    var editBtn = card.querySelector(".inv-edit-btn");
+    var delBtn = card.querySelector(".inv-del-btn");
+    if (printBtn) printBtn.addEventListener("click", function () {
+      var id = printBtn.dataset.id;
+      invLoadFull(id, function (inv) { invPrint(inv); });
+    });
+    if (editBtn) editBtn.addEventListener("click", function () {
+      var id = editBtn.dataset.id;
+      invLoadFull(id, function (inv) {
+        invFillBuilder(inv);
+        el("invBuilderWrap").hidden = false;
+        el("invBuilderWrap").scrollIntoView({ behavior: "smooth" });
+      });
+    });
+    if (delBtn) delBtn.addEventListener("click", function () {
+      if (!confirm("فاکتور " + (card.querySelector(".admin-card-code") || {}).textContent + " حذف شود؟")) return;
+      var id = delBtn.dataset.id;
+      api("DELETE", "/api/admin/invoices?id=" + encodeURIComponent(id)).then(function (res) {
+        if (res.ok) {
+          var c = el("inv-" + id);
+          if (c) c.remove();
+          delete invCache[id];
+        } else { alert("خطا در حذف فاکتور"); }
+      });
+    });
+  }
+
+  function loadInvoices(reset) {
+    if (reset) { invPage = 0; el("invList").innerHTML = ""; }
+    var kind = el("invKindFilter").value;
+    var status = el("invStatusFilter").value;
+    var url = "/api/admin/invoices?page=" + invPage + (kind ? "&kind=" + encodeURIComponent(kind) : "") + (status ? "&status=" + encodeURIComponent(status) : "");
+    api("GET", url).then(function (res) {
+      if (!res.ok || !res.data) return;
+      var list = res.data.invoices || [];
+      if (list.length === 0 && invPage === 0) {
+        el("invList").innerHTML = '<div class="admin-empty">هیچ فاکتوری یافت نشد.</div>';
+      } else {
+        list.forEach(function (inv) {
+          invCache[inv.id] = inv;
+          var div = document.createElement("div");
+          div.innerHTML = invRenderCard(inv);
+          var card = div.firstElementChild;
+          invBindCard(card);
+          el("invList").appendChild(card);
+        });
+      }
+      el("invLoadMore").hidden = list.length < 30;
+    });
+  }
+
+  function initInvoicesPanel() {
+    el("newInvBtn").addEventListener("click", function () {
+      invResetBuilder();
+      el("invBuilderWrap").hidden = false;
+      el("invBuilderWrap").scrollIntoView({ behavior: "smooth" });
+    });
+    el("invCancelBtn").addEventListener("click", function () {
+      el("invBuilderWrap").hidden = true;
+      invItems = [];
+    });
+    el("invAddRowBtn").addEventListener("click", function () { invAddRow(); });
+    el("invCurrency").addEventListener("change", function () { invCalcTotals(); });
+
+    el("invSaveBtn").addEventListener("click", function () {
+      var payload = invCollectPayload();
+      if (!payload.customer_name) { el("invErr").textContent = "نام مشتری الزامی است."; return; }
+      el("invErr").textContent = "";
+      el("invSaveBtn").disabled = true;
+      var editId = el("invEditId").value;
+      if (editId) {
+        payload.id = editId;
+        api("PATCH", "/api/admin/invoices", payload).then(function (res) {
+          el("invSaveBtn").disabled = false;
+          if (res.ok && res.data && res.data.invoice) {
+            var inv = res.data.invoice;
+            invCache[inv.id] = inv;
+            var old = el("inv-" + inv.id);
+            if (old) {
+              var div = document.createElement("div");
+              div.innerHTML = invRenderCard(inv);
+              var card = div.firstElementChild;
+              invBindCard(card);
+              old.replaceWith(card);
+            }
+            el("invBuilderWrap").hidden = true;
+          } else { el("invErr").textContent = "خطا در ذخیره‌سازی."; }
+        }).catch(function () { el("invSaveBtn").disabled = false; el("invErr").textContent = "خطا در ارتباط با سرور."; });
+      } else {
+        api("POST", "/api/admin/invoices", payload).then(function (res) {
+          el("invSaveBtn").disabled = false;
+          if (res.ok && res.data && res.data.invoice) {
+            var inv = res.data.invoice;
+            invCache[inv.id] = inv;
+            el("invBuilderWrap").hidden = true;
+            var div = document.createElement("div");
+            div.innerHTML = invRenderCard(inv);
+            var card = div.firstElementChild;
+            invBindCard(card);
+            var list = el("invList");
+            if (list.firstElementChild && list.firstElementChild.classList.contains("admin-empty")) {
+              list.innerHTML = "";
+            }
+            list.insertBefore(card, list.firstElementChild);
+          } else {
+            var errMsg = (res.data && res.data.error) === "duplicate_number" ? "این شماره فاکتور قبلاً ثبت شده." : "خطا در ذخیره‌سازی.";
+            el("invErr").textContent = errMsg;
+          }
+        }).catch(function () { el("invSaveBtn").disabled = false; el("invErr").textContent = "خطا در ارتباط با سرور."; });
+      }
+    });
+
+    el("invFilterBtn").addEventListener("click", function () { loadInvoices(true); });
+    el("invMoreBtn").addEventListener("click", function () { invPage++; loadInvoices(false); });
+  }
+
   /* ---------- boot ---------- */
   initLogin();
   initTabs();
@@ -938,6 +1329,7 @@
   initUsersPanel();
   initLinksPanel();
   initStatsPanel();
+  initInvoicesPanel();
 
   // اگر نشست معتبر بود مستقیم وارد پنل شو.
   api("GET", "/api/admin/login").then(function (res) {

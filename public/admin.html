@@ -116,6 +116,43 @@
     .utm-row{font-size:.8rem;color:var(--muted-2);margin-top:6px}
     .utm-row b{color:var(--ink)}
     .load-more{text-align:center;margin-top:16px}
+
+    /* ===== Invoices ===== */
+    .inv-kind-invoice{background:rgba(46,125,107,.14);color:var(--emerald)}
+    .inv-kind-proforma{background:rgba(232,180,90,.18);color:#a9791f}
+    .inv-st-draft{background:rgba(91,107,123,.12);color:var(--muted)}
+    .inv-st-sent{background:rgba(52,120,200,.13);color:#1a5fa8}
+    .inv-st-paid{background:rgba(46,125,107,.14);color:var(--emerald)}
+    .inv-st-cancelled{background:rgba(217,83,79,.14);color:#c0392b}
+
+    .inv-builder{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:24px}
+    .inv-builder-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .inv-builder-head h3{font-size:1.1rem;font-weight:800}
+    .inv-section{margin-bottom:18px}
+    .inv-section-title{font-size:.82rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+
+    .inv-items-table{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:.88rem}
+    .inv-items-table th{text-align:right;padding:8px 10px;background:var(--paper-2);border-bottom:1.5px solid var(--line);font-weight:800;white-space:nowrap}
+    .inv-items-table td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+    .inv-items-table td input{width:100%;min-width:60px;padding:7px 9px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:#fff;font-family:inherit;font-size:.88rem;box-sizing:border-box}
+    .inv-items-table td input:focus{border-color:var(--emerald);outline:none}
+    .inv-items-table .col-title{min-width:180px}
+    .inv-items-table .col-num{width:80px}
+    .inv-items-table .col-del{width:36px;text-align:center}
+    .inv-del-row{background:none;border:none;cursor:pointer;color:#c0392b;font-size:1.1rem;padding:4px 8px;border-radius:var(--r-sm)}
+    .inv-del-row:hover{background:rgba(217,83,79,.1)}
+    .inv-totals{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-top:8px}
+    .inv-totals-row{display:flex;gap:24px;font-size:.9rem}
+    .inv-totals-row span:first-child{color:var(--muted);min-width:100px;text-align:right}
+    .inv-totals-row span:last-child{font-weight:700;min-width:110px;text-align:left;font-variant-numeric:tabular-nums}
+    .inv-grand{font-size:1.1rem;font-weight:800;color:var(--emerald)}
+
+    /* PDF Print Preview */
+    #invPrintFrame{display:none}
+    @media print{
+      body > *{display:none!important}
+      #invPrintFrame{display:block!important;position:fixed;inset:0;width:100%;height:100%;background:#fff;z-index:99999}
+    }
   </style>
   <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
@@ -162,6 +199,7 @@
           <button class="admin-tab" type="button" data-tab="leads">لیدها</button>
           <button class="admin-tab" type="button" data-tab="partners">همکاران فروش</button>
           <button class="admin-tab" type="button" data-tab="links">لینک کوتاه</button>
+          <button class="admin-tab" type="button" data-tab="invoices">فاکتورها</button>
           <button class="admin-tab" type="button" data-tab="stats">آمار</button>
           <button class="admin-tab" type="button" data-tab="users" data-role="admin">کاربران</button>
         </div>
@@ -306,7 +344,134 @@
           <div class="admin-list" id="linksList"></div>
         </section>
 
-        <!-- ===== Stats ===== -->
+        <!-- ===== Invoices ===== -->
+        <section class="admin-panel" id="panelInvoices">
+          <div class="admin-toolbar">
+            <h2>فاکتورها و پیش‌فاکتورها</h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <select id="invKindFilter">
+                <option value="">همه انواع</option>
+                <option value="invoice">فاکتور</option>
+                <option value="proforma">پیش‌فاکتور</option>
+              </select>
+              <select id="invStatusFilter">
+                <option value="">همه وضعیت‌ها</option>
+                <option value="draft">پیش‌نویس</option>
+                <option value="sent">ارسال‌شده</option>
+                <option value="paid">پرداخت‌شده</option>
+                <option value="cancelled">لغو‌شده</option>
+              </select>
+              <button type="button" class="btn btn-ghost btn-sm" id="invFilterBtn">اعمال</button>
+              <button type="button" class="btn btn-primary btn-sm" id="newInvBtn">+ فاکتور جدید</button>
+            </div>
+          </div>
+
+          <!-- builder -->
+          <div id="invBuilderWrap" hidden>
+            <div class="inv-builder">
+              <div class="inv-builder-head">
+                <h3 id="invBuilderTitle">فاکتور جدید</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button type="button" class="btn btn-ghost btn-sm" id="invCancelBtn">انصراف</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="invSaveBtn">ذخیره</button>
+                </div>
+              </div>
+              <input type="hidden" id="invEditId" />
+
+              <!-- row 1: نوع + وضعیت + شماره -->
+              <div class="admin-grid" style="margin-bottom:14px">
+                <div class="field">
+                  <label>نوع سند</label>
+                  <select id="invKind">
+                    <option value="invoice">فاکتور</option>
+                    <option value="proforma">پیش‌فاکتور</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>وضعیت</label>
+                  <select id="invStatus">
+                    <option value="draft">پیش‌نویس</option>
+                    <option value="sent">ارسال‌شده</option>
+                    <option value="paid">پرداخت‌شده</option>
+                    <option value="cancelled">لغو‌شده</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>شماره سند (خالی = خودکار)</label>
+                  <input type="text" id="invNumber" placeholder="INV-1001" dir="ltr" />
+                </div>
+                <div class="field">
+                  <label>ارز</label>
+                  <select id="invCurrency">
+                    <option value="IRR">تومان (IRR)</option>
+                    <option value="USD">دلار (USD)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>تاریخ صدور</label>
+                  <input type="date" id="invIssueDate" />
+                </div>
+                <div class="field">
+                  <label>تاریخ سررسید</label>
+                  <input type="date" id="invDueDate" />
+                </div>
+              </div>
+
+              <!-- مشتری -->
+              <div class="inv-section">
+                <div class="inv-section-title">اطلاعات مشتری</div>
+                <div class="admin-grid">
+                  <div class="field"><label>نام مشتری *</label><input type="text" id="invCustName" /></div>
+                  <div class="field"><label>موبایل / ایمیل</label><input type="text" id="invCustContact" /></div>
+                  <div class="field col-full"><label>آدرس</label><input type="text" id="invCustAddr" /></div>
+                </div>
+              </div>
+
+              <!-- ردیف‌های خدمت -->
+              <div class="inv-section">
+                <div class="inv-section-title">ردیف‌های خدمت / کالا</div>
+                <div style="overflow-x:auto">
+                  <table class="inv-items-table" id="invItemsTable">
+                    <thead>
+                      <tr>
+                        <th class="col-title">شرح خدمت / کالا</th>
+                        <th class="col-num">تعداد</th>
+                        <th class="col-num">قیمت واحد</th>
+                        <th class="col-num">تخفیف٪</th>
+                        <th class="col-num">مالیات٪</th>
+                        <th class="col-del"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="invItemsBody"></tbody>
+                  </table>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm" id="invAddRowBtn" style="margin-top:6px">+ افزودن ردیف</button>
+                <div class="inv-totals" id="invTotals">
+                  <div class="inv-totals-row"><span>جمع کل:</span><span id="totSubtotal">۰</span></div>
+                  <div class="inv-totals-row"><span>تخفیف:</span><span id="totDiscount">۰</span></div>
+                  <div class="inv-totals-row"><span>مالیات:</span><span id="totTax">۰</span></div>
+                  <div class="inv-totals-row inv-grand"><span>مبلغ قابل پرداخت:</span><span id="totGrand">۰</span></div>
+                </div>
+              </div>
+
+              <!-- توضیحات و شرایط -->
+              <div class="admin-grid">
+                <div class="field"><label>توضیحات</label><textarea id="invNote" rows="3" style="width:100%;padding:10px;border-radius:var(--r-sm);border:1.5px solid var(--line);font-family:inherit;font-size:.9rem;resize:vertical;line-height:1.7"></textarea></div>
+                <div class="field"><label>شرایط و مقررات</label><textarea id="invTerms" rows="3" style="width:100%;padding:10px;border-radius:var(--r-sm);border:1.5px solid var(--line);font-family:inherit;font-size:.9rem;resize:vertical;line-height:1.7"></textarea></div>
+              </div>
+
+              <span class="form-err" id="invErr" style="margin-top:10px;display:block"></span>
+            </div>
+          </div>
+
+          <!-- لیست فاکتورها -->
+          <div class="admin-list" id="invList" style="margin-top:18px"></div>
+          <div class="load-more" id="invLoadMore" hidden>
+            <button type="button" class="btn btn-ghost btn-sm" id="invMoreBtn">بارگذاری بیشتر</button>
+          </div>
+        </section>
+
+        <!-- Stats ===== -->
         <section class="admin-panel" id="panelStats">
           <div class="admin-toolbar">
             <h2>آمار و UTM</h2>
@@ -350,6 +515,7 @@
     </main>
   </div>
 
+  <div id="invPrintFrame"></div>
   <script src="assets/js/admin.js" defer></script>
 </body>
 </html>

@@ -191,3 +191,39 @@ create index if not exists short_links_slug_idx on public.short_links (slug);
 
 -- RLS فعال و بدون policy عمومی: فقط service_role (API سمت سرور) دسترسی دارد.
 alter table public.short_links enable row level security;
+
+-- =========================================================
+-- فاکتور و پیش‌فاکتور
+-- =========================================================
+create table if not exists public.invoices (
+  id              uuid primary key default gen_random_uuid(),
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now(),
+  invoice_number  text not null unique,              -- شماره فاکتور، مثلاً INV-1001 یا PRO-1001
+  kind            text not null default 'invoice',   -- invoice | proforma
+  status          text not null default 'draft',     -- draft | sent | paid | cancelled
+  issue_date      date not null default current_date,
+  due_date        date,
+  customer_name   text not null,
+  customer_contact text,                             -- موبایل یا ایمیل
+  customer_address text,
+  project_id      uuid references public.support_projects (id) on delete set null,
+  items           jsonb not null default '[]',       -- [{title,qty,unit_price,discount,tax}]
+  discount_total  numeric(14,0) not null default 0,
+  tax_total       numeric(14,0) not null default 0,
+  subtotal        numeric(14,0) not null default 0,
+  grand_total     numeric(14,0) not null default 0,
+  currency        text not null default 'IRR',       -- IRR | USD
+  note            text,
+  terms           text,
+  created_by      uuid references public.admin_users (id) on delete set null,
+  paid_at         timestamptz,
+  raw             jsonb
+);
+
+create index if not exists invoices_created_at_idx on public.invoices (created_at desc);
+create index if not exists invoices_kind_idx on public.invoices (kind);
+create index if not exists invoices_status_idx on public.invoices (status);
+create index if not exists invoices_project_idx on public.invoices (project_id);
+
+alter table public.invoices enable row level security;
