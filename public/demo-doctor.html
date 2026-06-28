@@ -11,14 +11,16 @@
   <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
   <style>
     :root{
-      --navy-900:#0A1422; --navy-800:#0E1A2B; --navy-700:#13243B; --navy-600:#1B3450;
-      --emerald:#2E7D6B; --emerald-bright:#3FA08A; --emerald-soft:#5FBFA8;
+      --navy-900:#0A1628; --navy-800:#0E1A2B; --navy-700:#13243B; --navy-600:#1B3450;
+      --blue:#2563EB; --blue-bright:#3B82F6; --blue-soft:#93C5FD;
+      --green:#16A34A; --green-bright:#22C55E; --green-soft:#86EFAC;
+      --emerald:#2563EB; --emerald-bright:#3B82F6; --emerald-soft:#93C5FD;
       --amber:#E8B45A; --amber-soft:#F4D9A0;
       --paper:#F6F8FA; --paper-2:#EEF2F6; --ink:#0E1A2B; --muted:#5B6B7B; --muted-2:#8A99A8;
       --line:#E2E8EE; --card:#FFFFFF; --bg:#F6F8FA;
       --r-sm:10px; --r-md:16px; --r-lg:22px; --r-xl:30px; --r-pill:999px;
       --sh-sm:0 2px 8px rgba(14,26,43,.06); --sh-md:0 12px 34px rgba(14,26,43,.10);
-      --sh-lg:0 30px 70px rgba(10,20,34,.30); --sh-emerald:0 16px 40px rgba(46,125,107,.30);
+      --sh-lg:0 30px 70px rgba(10,20,34,.30); --sh-emerald:0 16px 40px rgba(37,99,235,.30);
       --font:"Vazirmatn",system-ui,"Segoe UI",Tahoma,sans-serif;
       --maxw:1120px; --gutter:clamp(18px,4vw,40px);
     }
@@ -46,51 +48,51 @@
     .site-header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:35px;z-index:90;box-shadow:var(--sh-sm)}
     .header-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
     .brand{display:flex;align-items:center;gap:10px}
-    .brand-mark{width:40px;height:40px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--emerald),var(--emerald-bright));display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px}
+    .brand-mark{width:40px;height:40px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--blue),var(--green));display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px}
     .brand-name{font-size:17px;font-weight:800;color:var(--ink)}
     .brand-tag{font-size:12px;color:var(--muted);font-weight:400;display:block;margin-top:-2px}
     .header-nav{display:flex;align-items:center;gap:24px}
     .header-nav a{font-size:14px;color:var(--muted);font-weight:500;transition:color .2s}
-    .header-nav a:hover{color:var(--emerald)}
-    .header-cta{background:var(--emerald);color:#fff;padding:10px 20px;border-radius:var(--r-pill);font-size:14px;font-weight:700;transition:background .2s,transform .15s}
-    .header-cta:hover{background:var(--emerald-bright);transform:translateY(-1px)}
+    .header-nav a:hover{color:var(--blue)}
+    .header-cta{background:var(--blue);color:#fff;padding:10px 20px;border-radius:var(--r-pill);font-size:14px;font-weight:700;transition:background .2s,transform .15s}
+    .header-cta:hover{background:var(--blue-bright);transform:translateY(-1px)}
     .menu-toggle{display:none;width:40px;height:40px;border-radius:var(--r-sm);background:var(--paper-2);place-items:center}
     .menu-toggle svg{width:22px;height:22px;color:var(--ink)}
 
     /* ===== Hero ===== */
     .hero{background:linear-gradient(135deg,var(--navy-800) 0%,var(--navy-600) 100%);color:#fff;padding:60px 0 50px;overflow:hidden;position:relative}
-    .hero::before{content:"";position:absolute;top:-50%;left:-10%;width:50%;height:120%;background:radial-gradient(ellipse at center,rgba(46,125,107,.15),transparent 70%);pointer-events:none}
+    .hero::before{content:"";position:absolute;top:-50%;left:-10%;width:50%;height:120%;background:radial-gradient(ellipse at center,rgba(37,99,235,.18),transparent 70%);pointer-events:none}
     .hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center;position:relative}
-    .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--amber);margin-bottom:16px}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--green-soft);margin-bottom:16px}
     .hero-eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 2s ease infinite}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
     .hero h1{font-size:clamp(26px,4.5vw,42px);font-weight:800;line-height:1.3;margin-bottom:18px}
-    .hero h1 .hl{color:var(--emerald-soft)}
+    .hero h1 .hl{color:var(--green-soft)}
     .hero-sub{font-size:16px;color:rgba(255,255,255,.82);line-height:1.85;max-width:48ch;margin-bottom:28px}
     .hero-cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
-    .btn-primary{background:var(--emerald);color:#fff;padding:14px 28px;border-radius:var(--r-pill);font-size:15px;font-weight:700;display:inline-flex;align-items:center;gap:8px;transition:background .2s,transform .15s;box-shadow:var(--sh-emerald)}
-    .btn-primary:hover{background:var(--emerald-bright);transform:translateY(-2px)}
+    .btn-primary{background:var(--blue);color:#fff;padding:14px 28px;border-radius:var(--r-pill);font-size:15px;font-weight:700;display:inline-flex;align-items:center;gap:8px;transition:background .2s,transform .15s;box-shadow:var(--sh-emerald)}
+    .btn-primary:hover{background:var(--blue-bright);transform:translateY(-2px)}
     .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);padding:13px 26px;border-radius:var(--r-pill);font-size:15px;font-weight:700;transition:background .2s}
     .btn-ghost:hover{background:rgba(255,255,255,.08)}
     .hero-pills{display:flex;gap:10px;flex-wrap:wrap}
     .hero-pills span{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-pill);padding:7px 14px;font-size:13px;color:rgba(255,255,255,.85)}
-    .hero-pills svg{width:16px;height:16px;color:var(--emerald-soft)}
+    .hero-pills svg{width:16px;height:16px;color:var(--green-soft)}
 
     /* Hero visual — doctor card */
     .hero-visual{position:relative}
     .doc-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-lg);padding:28px;backdrop-filter:blur(12px);text-align:center}
-    .doc-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--emerald-soft),var(--emerald));margin:0 auto 18px;display:grid;place-items:center;font-size:48px;font-weight:800;color:#fff;box-shadow:0 12px 30px rgba(46,125,107,.4)}
+    .doc-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--blue-soft),var(--blue));margin:0 auto 18px;display:grid;place-items:center;font-size:48px;font-weight:800;color:#fff;box-shadow:0 12px 30px rgba(37,99,235,.4)}
     .doc-card h3{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px}
-    .doc-card .spec{font-size:14px;color:var(--amber);margin-bottom:16px}
+    .doc-card .spec{font-size:14px;color:var(--green-soft);margin-bottom:16px}
     .doc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
     .doc-stat{background:rgba(255,255,255,.05);border-radius:var(--r-sm);padding:12px 8px}
-    .doc-stat b{display:block;font-size:22px;font-weight:800;color:var(--emerald-soft)}
+    .doc-stat b{display:block;font-size:22px;font-weight:800;color:var(--green-soft)}
     .doc-stat span{font-size:11px;color:rgba(255,255,255,.6)}
 
     /* ===== Section common ===== */
     .section-pad{padding:60px 0}
     .section-head{text-align:center;margin-bottom:40px}
-    .section-head .kicker{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--emerald);margin-bottom:10px}
+    .section-head .kicker{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px}
     .section-head h2{font-size:clamp(24px,3.5vw,34px);font-weight:800;color:var(--ink);margin-bottom:10px}
     .section-head p{font-size:16px;color:var(--muted);max-width:52ch;margin-inline:auto}
 
@@ -98,8 +100,8 @@
     .services{background:var(--card)}
     .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
     .service-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:28px;transition:transform .25s,box-shadow .25s,border-color .25s}
-    .service-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:var(--emerald-soft)}
-    .service-ic{width:52px;height:52px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--emerald),var(--emerald-bright));display:grid;place-items:center;color:#fff;margin-bottom:18px}
+    .service-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:var(--blue-soft)}
+    .service-ic{width:52px;height:52px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--blue),var(--green));display:grid;place-items:center;color:#fff;margin-bottom:18px}
     .service-ic svg{width:26px;height:26px}
     .service-card h3{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:8px}
     .service-card p{font-size:14px;color:var(--muted);line-height:1.8}
@@ -111,16 +113,16 @@
     .about-photo .ph-silhouette{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:70%;height:auto;color:#9ab0bf}
     .about-photo-cap{position:relative;z-index:2;width:100%;padding:20px 18px 16px;background:linear-gradient(180deg,transparent,rgba(14,26,43,.85));color:#fff}
     .about-photo-cap strong{display:block;font-size:18px;font-weight:800}
-    .about-photo-cap span{font-size:13px;color:var(--amber)}
+    .about-photo-cap span{font-size:13px;color:var(--blue-soft)}
     .about-badge{position:absolute;top:16px;right:16px;z-index:3;background:#fff;border-radius:var(--r-sm);padding:10px 14px;box-shadow:var(--sh-md);display:flex;align-items:center;gap:10px}
-    .about-badge i{width:36px;height:36px;border-radius:var(--r-sm);background:#e6f3f0;display:grid;place-items:center;color:var(--emerald)}
+    .about-badge i{width:36px;height:36px;border-radius:var(--r-sm);background:#eff6ff;display:grid;place-items:center;color:var(--blue)}
     .about-badge b{font-size:13px;color:var(--ink);font-weight:800;display:block}
     .about-badge em{font-size:11px;color:var(--muted);font-style:normal}
     .about-copy h2{font-size:clamp(22px,3vw,30px);font-weight:800;margin-bottom:16px;line-height:1.35}
     .about-copy p{font-size:15px;color:var(--muted);line-height:1.9;margin-bottom:16px}
     .about-creds{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
     .cred-item{display:flex;align-items:flex-start;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px}
-    .cred-item .tick{width:24px;height:24px;border-radius:50%;background:var(--emerald);color:#fff;display:grid;place-items:center;flex:0 0 auto;font-size:14px;font-weight:800;margin-top:2px}
+    .cred-item .tick{width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;flex:0 0 auto;font-size:14px;font-weight:800;margin-top:2px}
     .cred-item b{font-size:14px;font-weight:700;color:var(--ink);display:block}
     .cred-item span{font-size:12px;color:var(--muted)}
 
@@ -128,11 +130,11 @@
     .booking{background:linear-gradient(180deg,var(--navy-800),var(--navy-700));color:#fff}
     .booking .section-head h2{color:#fff}
     .booking .section-head p{color:rgba(255,255,255,.7)}
-    .booking .section-head .kicker{color:var(--amber)}
+    .booking .section-head .kicker{color:var(--green-soft)}
     .booking-card{max-width:680px;margin:0 auto;background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg)}
     .booking-tabs{display:flex;border-bottom:1px solid var(--line)}
     .booking-tab{flex:1;padding:16px;text-align:center;font-size:14px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;transition:color .2s,border-color .2s}
-    .booking-tab.active{color:var(--emerald);border-bottom-color:var(--emerald)}
+    .booking-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
     .booking-body{padding:28px}
     .booking-panel{display:none}
     .booking-panel.active{display:block;animation:fadeIn .3s ease}
@@ -150,15 +152,15 @@
     .cal-day{text-align:center;font-size:14px;font-weight:600;padding:10px 0;border-radius:var(--r-sm);cursor:pointer;transition:background .15s,color .15s;color:var(--ink)}
     .cal-day:hover{background:var(--paper-2)}
     .cal-day.disabled{color:var(--muted-2);opacity:.4;cursor:not-allowed}
-    .cal-day.selected{background:var(--emerald);color:#fff}
-    .cal-day.today{border:2px solid var(--emerald-soft)}
+    .cal-day.selected{background:var(--blue);color:#fff}
+    .cal-day.today{border:2px solid var(--blue-soft)}
 
     /* Time slots */
     .slots-label{font-size:13px;font-weight:700;color:var(--muted);margin:20px 0 12px}
     .slots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
     .slot{padding:12px 8px;text-align:center;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:all .15s}
-    .slot:hover{border-color:var(--emerald-soft);background:var(--paper)}
-    .slot.selected{background:var(--emerald);border-color:var(--emerald);color:#fff}
+    .slot:hover{border-color:var(--blue-soft);background:var(--paper)}
+    .slot.selected{background:var(--blue);border-color:var(--blue);color:#fff}
     .slot.full{opacity:.35;cursor:not-allowed;text-decoration:line-through}
 
     /* Booking form */
@@ -167,17 +169,17 @@
     .bf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
     .bf-field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--ink)}
     .bf-field input, .bf-field select{width:100%;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;font-size:15px;outline:0;transition:border-color .2s}
-    .bf-field input:focus, .bf-field select:focus{border-color:var(--emerald)}
+    .bf-field input:focus, .bf-field select:focus{border-color:var(--blue)}
     .booking-summary{background:var(--paper);border-radius:var(--r-md);padding:16px;margin:20px 0;display:none}
     .booking-summary.show{display:block;animation:fadeIn .3s ease}
     .booking-summary .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
-    .booking-summary .row.total{font-weight:800;font-size:16px;color:var(--emerald);border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+    .booking-summary .row.total{font-weight:800;font-size:16px;color:var(--green);border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
     .booking-success{text-align:center;padding:20px 0;display:none}
     .booking-success.show{display:block;animation:fadeIn .3s ease}
-    .booking-success .check{width:64px;height:64px;border-radius:50%;background:#e6f3f0;color:var(--emerald);display:grid;place-items:center;margin:0 auto 16px;animation:popIn .4s ease}
+    .booking-success .check{width:64px;height:64px;border-radius:50%;background:#dcfce7;color:var(--green);display:grid;place-items:center;margin:0 auto 16px;animation:popIn .4s ease}
     .booking-success .check svg{width:32px;height:32px}
     @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
-    .booking-success h3{font-size:20px;font-weight:800;color:var(--emerald);margin-bottom:8px}
+    .booking-success h3{font-size:20px;font-weight:800;color:var(--green);margin-bottom:8px}
     .booking-success p{color:var(--muted);font-size:14px}
 
     /* ===== FAQ ===== */
@@ -187,7 +189,7 @@
     .faq-item[open]{box-shadow:var(--sh-sm)}
     .faq-item summary{cursor:pointer;font-weight:700;padding:18px 22px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:15px;color:var(--ink)}
     .faq-item summary::-webkit-details-marker{display:none}
-    .faq-item summary::after{content:"+";font-size:22px;color:var(--emerald);transition:transform .2s;flex:0 0 auto}
+    .faq-item summary::after{content:"+";font-size:22px;color:var(--blue);transition:transform .2s;flex:0 0 auto}
     .faq-item[open] summary::after{transform:rotate(45deg)}
     .faq-item .faq-body{padding:0 22px 18px;color:var(--muted);font-size:14px;line-height:1.85}
 
@@ -196,9 +198,9 @@
     .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
     .contact-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:24px}
     .contact-card h3{font-size:18px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-    .contact-card h3 svg{width:22px;height:22px;color:var(--emerald)}
+    .contact-card h3 svg{width:22px;height:22px;color:var(--blue)}
     .contact-info-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
-    .contact-info-item .ic{width:40px;height:40px;border-radius:var(--r-sm);background:var(--paper-2);display:grid;place-items:center;flex:0 0 auto;color:var(--emerald)}
+    .contact-info-item .ic{width:40px;height:40px;border-radius:var(--r-sm);background:var(--paper-2);display:grid;place-items:center;flex:0 0 auto;color:var(--blue)}
     .contact-info-item .ic svg{width:20px;height:20px}
     .contact-info-item b{font-size:14px;font-weight:700;display:block;margin-bottom:2px}
     .contact-info-item span{font-size:13px;color:var(--muted);line-height:1.7}
@@ -217,19 +219,19 @@
     .footer-brand p{font-size:13px;margin-top:8px;max-width:30ch}
     .footer-links{display:flex;gap:20px;flex-wrap:wrap}
     .footer-links a{font-size:13px;color:rgba(255,255,255,.6);transition:color .2s}
-    .footer-links a:hover{color:var(--emerald-soft)}
+    .footer-links a:hover{color:var(--blue-soft)}
     .footer-base{margin-top:30px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px}
-    .footer-araaye{text-align:center;padding:14px;background:var(--amber);color:var(--navy-900);font-size:13px;font-weight:700}
-    .footer-araaye a{font-weight:800;text-decoration:underline}
+    .footer-araaye{text-align:center;padding:14px;background:linear-gradient(90deg,var(--blue),var(--green));color:#fff;font-size:13px;font-weight:700}
+    .footer-araaye a{font-weight:800;text-decoration:underline;color:#fff}
 
     /* ===== Chatbot ===== */
-    .chat-launcher{position:fixed;bottom:24px;left:24px;z-index:200;width:56px;height:56px;border-radius:50%;background:var(--emerald);color:#fff;display:grid;place-items:center;box-shadow:var(--sh-emerald);transition:transform .2s}
+    .chat-launcher{position:fixed;bottom:24px;left:24px;z-index:200;width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;box-shadow:var(--sh-emerald);transition:transform .2s}
     .chat-launcher:hover{transform:scale(1.08)}
     .chat-launcher svg{width:26px;height:26px}
-    .chat-launcher .ping{position:absolute;inset:0;border-radius:50%;border:2px solid var(--emerald);animation:ping 2s ease infinite}
+    .chat-launcher .ping{position:absolute;inset:0;border-radius:50%;border:2px solid var(--blue);animation:ping 2s ease infinite}
     @keyframes ping{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.6);opacity:0}}
     .chat-panel{position:fixed;bottom:90px;left:24px;z-index:201;width:360px;max-width:calc(100vw - 48px);background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-lg);overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column;max-height:480px}
-    .chat-head{display:flex;align-items:center;gap:10px;padding:16px;background:var(--emerald);color:#fff}
+    .chat-head{display:flex;align-items:center;gap:10px;padding:16px;background:var(--blue);color:#fff}
     .chat-head .av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;font-weight:800;font-size:16px}
     .chat-head strong{font-size:15px;display:block}
     .chat-head small{font-size:12px;opacity:.8;display:flex;align-items:center;gap:5px}
@@ -239,14 +241,14 @@
     .chat-thread{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
     .chat-msg{max-width:80%;padding:10px 14px;border-radius:var(--r-md);font-size:14px;line-height:1.7}
     .chat-msg.bot{background:var(--card);border:1px solid var(--line);border-bottom-right-radius:4px;align-self:flex-start}
-    .chat-msg.user{background:var(--emerald);color:#fff;border-bottom-left-radius:4px;align-self:flex-end}
+    .chat-msg.user{background:var(--blue);color:#fff;border-bottom-left-radius:4px;align-self:flex-end}
     .chat-quick{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line);background:var(--card)}
     .chat-quick button{font-size:13px;padding:8px 14px;border-radius:var(--r-pill);background:var(--paper-2);color:var(--ink);font-weight:600;transition:background .15s}
-    .chat-quick button:hover{background:var(--emerald);color:#fff}
+    .chat-quick button:hover{background:var(--blue);color:#fff}
     .chat-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:var(--card)}
     .chat-input input{flex:1;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px;font-size:14px;outline:0}
-    .chat-input input:focus{border-color:var(--emerald)}
-    .chat-input button{width:40px;height:40px;border-radius:var(--r-sm);background:var(--emerald);color:#fff;display:grid;place-items:center;flex:0 0 auto}
+    .chat-input input:focus{border-color:var(--blue)}
+    .chat-input button{width:40px;height:40px;border-radius:var(--r-sm);background:var(--blue);color:#fff;display:grid;place-items:center;flex:0 0 auto}
     .chat-input button svg{width:20px;height:20px}
 
     /* ===== Responsive ===== */
@@ -396,7 +398,7 @@
           </div>
         </div>
         <div class="about-copy">
-          <span class="kicker" style="color:var(--emerald);font-size:13px;font-weight:700">● درباره دکتر</span>
+          <span class="kicker" style="color:var(--blue);font-size:13px;font-weight:700">● درباره دکتر</span>
           <h2>تخصص، تجربه و تعهد به پوست سالم شما</h2>
           <p>دکتر مریم سلامت با بیش از ۱۲ سال تجربه بالینی در زمینه بیماری‌های پوست، مو و زیبایی، از دانشگاه علوم پزشکی تهران فارغ‌التحصیل شده است. ایشان با بهره‌گیری از جدیدترین روش‌های تشخیصی و درمانی و تجهیزات روز دنیا، بهترین نتیجه را برای بیماران خود رقم می‌زنند.</p>
           <p>رویکرد دکتر سلامت، ترکیب علم و تجربه برای ارائه درمانی اختصاصی و متناسب با نوع پوست و نیاز هر بیمار است.</p>
@@ -509,7 +511,7 @@
                 </div>
                 <div style="margin-top:20px;display:flex;gap:10px">
                   <button style="border:1px solid var(--line);color:var(--ink);padding:11px 22px;border-radius:var(--r-pill);font-weight:700" onclick="bookingTab('time')">بازگشت</button>
-                  <button class="btn-primary" style="background:var(--emerald);color:#fff;border:0;padding:13px 28px;border-radius:var(--r-pill);font-weight:700;font-size:15px;box-shadow:var(--sh-emerald)" onclick="submitBooking()">ثبت نهایی نوبت</button>
+                  <button class="btn-primary" style="background:var(--blue);color:#fff;border:0;padding:13px 28px;border-radius:var(--r-pill);font-weight:700;font-size:15px;box-shadow:var(--sh-emerald)" onclick="submitBooking()">ثبت نهایی نوبت</button>
                 </div>
               </div>
             </div>
