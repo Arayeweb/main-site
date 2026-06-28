@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const LEAD_BACKUP_KEY = "__araaye_academy_pending_leads";
+  const LEAD_BACKUP_KEY = "__araaye_konkour_pending_leads";
 
   function toLatin(s) {
     return String(s || "")
@@ -18,10 +18,8 @@
     return "0" + digits.replace(/^(\+98|0098|0)?/, "");
   }
 
-  function toPersianNumber(n) {
-    return String(n).replace(/\d/g, function (d) {
-      return "۰۱۲۳۴۵۶۷۸۹"[parseInt(d, 10)];
-    });
+  function toPersian(n) {
+    return String(n).replace(/\d/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹"[parseInt(d, 10)]; });
   }
 
   function getUtmParams() {
@@ -60,7 +58,7 @@
       body: JSON.stringify(enriched),
       keepalive: true,
     }).then(function (r) {
-      if (!r.ok) throw new Error("lead http " + r.status);
+      if (!r.ok) throw new Error("http " + r.status);
       return r;
     }).catch(function (err) {
       backupLead(enriched);
@@ -84,16 +82,12 @@
   }
 
   function leadPayload(source, data) {
-    const planNames = {
-      prompt: "دوره پرامپت‌نویسی",
-      pro: "بسته AI Pro",
-      team: "بسته AI Team",
-    };
+    var planNames = { basic: "پکیج پرامپت کنکور", pro: "پکیج کامل کنکور با AI" };
     return {
       source: source,
       contact: data.contact,
       name: data.name || null,
-      goal: "آرایه AI - خرید دوره یا بسته AI",
+      goal: "خرید دوره کنکور با AI",
       plan: planNames[data.plan] || data.plan || null,
       budget: data.price || null,
       intent: "purchase",
@@ -103,34 +97,31 @@
   }
 
   function getDeadline() {
-    const stored = localStorage.getItem("__academy_deadline");
+    var stored = localStorage.getItem("__konkour_deadline");
     if (stored) {
-      const t = parseInt(stored, 10);
+      var t = parseInt(stored, 10);
       if (t > Date.now()) return t;
     }
-    const deadline = Date.now() + (24 * 60 * 60 * 1000); // 24 hours from first visit
-    try { localStorage.setItem("__academy_deadline", String(deadline)); } catch (_) {}
+    var deadline = Date.now() + 48 * 60 * 60 * 1000;
+    try { localStorage.setItem("__konkour_deadline", String(deadline)); } catch (_) {}
     return deadline;
   }
 
   function updateCountdown() {
-    const deadline = getDeadline();
-    const diff = Math.max(0, deadline - Date.now());
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    var diff = Math.max(0, getDeadline() - Date.now());
+    var hours   = Math.floor(diff / (1000 * 60 * 60));
+    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    const h1 = document.getElementById("hoursLeft");
-    const m1 = document.getElementById("minutesLeft");
-    const fh = document.getElementById("finalHours");
-    const fm = document.getElementById("finalMinutes");
-    const fs = document.getElementById("finalSeconds");
-
-    if (h1) h1.textContent = toPersianNumber(hours.toString().padStart(2, "0"));
-    if (m1) m1.textContent = toPersianNumber(minutes.toString().padStart(2, "0"));
-    if (fh) fh.textContent = toPersianNumber(hours.toString().padStart(2, "0"));
-    if (fm) fm.textContent = toPersianNumber(minutes.toString().padStart(2, "0"));
-    if (fs) fs.textContent = toPersianNumber(seconds.toString().padStart(2, "0"));
+    function set(id, val) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = toPersian(String(val).padStart(2, "0"));
+    }
+    set("kHours", hours);
+    set("kMinutes", minutes);
+    set("kFinalHours", hours);
+    set("kFinalMinutes", minutes);
+    set("kFinalSeconds", seconds);
   }
 
   function initCountdown() {
@@ -139,36 +130,35 @@
   }
 
   function initSeats() {
-    const stored = localStorage.getItem("__academy_seats");
+    var stored = localStorage.getItem("__konkour_seats");
     if (stored) {
       try {
-        const seats = JSON.parse(stored);
+        var seats = JSON.parse(stored);
         document.querySelectorAll("[data-seats]").forEach(function (el) {
-          const key = el.dataset.seats;
+          var key = el.dataset.seats;
           if (seats[key] !== undefined) {
             el.dataset.seats = String(seats[key]);
-            el.textContent = toPersianNumber(seats[key]);
+            el.textContent = toPersian(seats[key]);
           }
         });
         return;
       } catch (_) {}
     }
-
-    const seats = {};
+    var newSeats = {};
     document.querySelectorAll("[data-seats]").forEach(function (el) {
-      const val = parseInt(el.dataset.seats, 10);
-      const key = el.dataset.seats;
+      var val = parseInt(el.dataset.seats, 10);
+      var key = el.dataset.seats;
       if (!isNaN(val)) {
-        const jitter = Math.floor(Math.random() * 3); // 0-2 seats randomly consumed
-        seats[key] = Math.max(1, val - jitter);
+        var jitter = Math.floor(Math.random() * 3);
+        newSeats[key] = Math.max(1, val - jitter);
       }
     });
-    try { localStorage.setItem("__academy_seats", JSON.stringify(seats)); } catch (_) {}
+    try { localStorage.setItem("__konkour_seats", JSON.stringify(newSeats)); } catch (_) {}
     document.querySelectorAll("[data-seats]").forEach(function (el) {
-      const key = el.dataset.seats;
-      if (seats[key] !== undefined) {
-        el.dataset.seats = String(seats[key]);
-        el.textContent = toPersianNumber(seats[key]);
+      var key = el.dataset.seats;
+      if (newSeats[key] !== undefined) {
+        el.dataset.seats = String(newSeats[key]);
+        el.textContent = toPersian(newSeats[key]);
       }
     });
   }
@@ -176,57 +166,49 @@
   function initBuyButtons() {
     document.querySelectorAll("[data-buy]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        const plan = btn.dataset.buy;
-        const name = btn.dataset.name || "";
-        const select = document.querySelector("select[name='plan']");
-        if (select) {
-          select.value = plan;
-        }
-        document.getElementById("offer").scrollIntoView({ behavior: "smooth" });
-        const contactInput = document.querySelector("input[name='contact']");
-        if (contactInput) contactInput.focus();
+        var plan = btn.dataset.buy;
+        var select = document.querySelector("select[name='plan']");
+        if (select) select.value = plan;
+        var registerSection = document.getElementById("register");
+        if (registerSection) registerSection.scrollIntoView({ behavior: "smooth" });
         setTimeout(function () {
-          alert("برای تکمیل خرید " + name + "، فرم زیر را با شماره تماس پر کنید تا همکاران ما با شما تماس بگیرند.");
-        }, 400);
+          var contactInput = document.querySelector("input[name='contact']");
+          if (contactInput) contactInput.focus();
+        }, 450);
       });
     });
   }
 
   function initForm() {
-    const form = document.getElementById("academyForm");
+    var form = document.getElementById("konkourForm");
     if (!form) return;
-    const status = document.getElementById("formStatus");
-    const submit = form.querySelector("button[type='submit']");
+    var status = document.getElementById("formStatus");
+    var submit = form.querySelector("button[type='submit']");
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(form).entries());
+      var data = Object.fromEntries(new FormData(form).entries());
       if (data.company) return;
 
-      const contactInput = form.querySelector("input[name='contact']");
+      var contactInput = form.querySelector("input[name='contact']");
       if (!isPhone(data.contact)) {
         setStatus(status, "شماره موبایل معتبر وارد کنید.", "error");
         contactInput.classList.add("is-invalid");
         return;
       }
       contactInput.classList.remove("is-invalid");
-
       data.contact = normalizePhone(data.contact);
+
+      var planPrices = { basic: "۴۹۰,۰۰۰ تومان", pro: "۷۹۰,۰۰۰ تومان" };
+      data.price = planPrices[data.plan] || null;
+
       submit.disabled = true;
       setStatus(status, "در حال ثبت درخواست...", "loading");
 
-      const planPrices = {
-        prompt: "۱,۳۹۰,۰۰۰ تومان",
-        pro: "۲,۷۹۰,۰۰۰ تومان",
-        team: "۴,۱۹۰,۰۰۰ تومان",
-      };
-      data.price = planPrices[data.plan] || null;
-
-      sendLead(leadPayload("academy_form", data)).then(function () {
-        if (window.track) track("lead_captured", { source: "academy_form", page: "academy", plan: data.plan });
+      sendLead(leadPayload("konkour_form", data)).then(function () {
         window.location.replace("/tashakor");
       }).catch(function () {
-        setStatus(status, "ارسال کامل نشد؛ اطلاعات ذخیره شد و در اولین اتصال دوباره ارسال می‌شود.", "error");
+        setStatus(status, "مشکل در ارسال — می‌تونید از واتساپ هم اقدام کنید.", "error");
       }).finally(function () {
         submit.disabled = false;
       });
@@ -234,11 +216,10 @@
   }
 
   function initFaq() {
-    const details = document.querySelectorAll(".faq-list details");
-    details.forEach(function (detail) {
+    document.querySelectorAll(".faq-list details").forEach(function (detail) {
       detail.addEventListener("toggle", function () {
         if (detail.open) {
-          details.forEach(function (d) {
+          document.querySelectorAll(".faq-list details").forEach(function (d) {
             if (d !== detail) d.open = false;
           });
         }
@@ -247,8 +228,8 @@
   }
 
   function initMobileNav() {
-    const toggle = document.getElementById("navToggle");
-    const nav = document.getElementById("mainNav");
+    var toggle = document.getElementById("navToggle");
+    var nav = document.getElementById("mainNav");
     if (!toggle || !nav) return;
 
     function setOpen(isOpen) {
@@ -258,21 +239,22 @@
       toggle.setAttribute("aria-label", isOpen ? "بستن منو" : "باز کردن منو");
     }
 
-    toggle.addEventListener("click", function () {
-      setOpen(!nav.classList.contains("is-open"));
-    });
-
-    nav.querySelectorAll("a").forEach(function (link) {
-      link.addEventListener("click", function () {
-        setOpen(false);
-      });
-    });
-
+    toggle.addEventListener("click", function () { setOpen(!nav.classList.contains("is-open")); });
+    nav.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { setOpen(false); }); });
     document.addEventListener("click", function (e) {
-      if (!nav.contains(e.target) && !toggle.contains(e.target)) {
-        setOpen(false);
-      }
+      if (!nav.contains(e.target) && !toggle.contains(e.target)) setOpen(false);
     });
+  }
+
+  function initStickyBar() {
+    var hero = document.querySelector(".hero");
+    var bar = document.getElementById("stickyCta");
+    if (!hero || !bar || !window.IntersectionObserver) return;
+
+    var obs = new IntersectionObserver(function (entries) {
+      bar.classList.toggle("is-visible", !entries[0].isIntersecting);
+    }, { threshold: 0 });
+    obs.observe(hero);
   }
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -283,5 +265,6 @@
     initForm();
     initFaq();
     initMobileNav();
+    initStickyBar();
   });
 })();

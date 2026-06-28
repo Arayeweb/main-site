@@ -163,9 +163,8 @@
         intent: "initial_consultation",
         services: "مشاوره اولیه طراحی فضا",
       })).then(function () {
-        setStatus(status, "ثبت شد. برای بررسی اولیه با شما تماس می‌گیریم.", "success");
-        form.reset();
         track("lead_captured", { source: "hero_form", page: "spaces" });
+        window.location.replace("/tashakor");
       }).catch(function () {
         setStatus(status, "فعلاً ارسال آنلاین کامل نشد؛ شماره شما برای ارسال مجدد نگه داشته شد.", "error");
       });
@@ -191,9 +190,8 @@
       submit.disabled = true;
       setStatus(status, "در حال ثبت لید...", "loading");
       sendLead(leadPayload("multistep_form", data)).then(function () {
-        setStatus(status, "درخواست ثبت شد. تیم آرایه Spaces کمتر از یک روز کاری تماس می‌گیرد. اگر عکس دارید، از دکمه واتساپ هم ارسال کنید.", "success");
-        form.reset();
         track("lead_captured", { source: "multistep_form", page: "spaces", sitetype: data.spaceType });
+        window.location.replace("/tashakor");
       }).catch(function () {
         setStatus(status, "ارسال کامل نشد؛ اطلاعات به صف ذخیره شد و در اولین اتصال دوباره ارسال می‌شود.", "error");
       }).finally(function () {

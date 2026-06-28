@@ -87,12 +87,9 @@
       }).then(function (data) {
         if (!data || data.ok !== true) throw new Error("lead not saved");
         track("lead_captured", { source: "hero_form", kind: contact.kind });
-        input.value = "";
-        if (wrap) wrap.hidden = true;
-        if (success) {
-          success.hidden = false;
-          success.classList.add("is-shown");
-        }
+        if (typeof window.yektanet === "function") window.yektanet("lead");
+        (window.dataLayer = window.dataLayer || []).push({ event: "generate_lead", source: "hero_form" });
+        window.location.replace("/tashakor");
       }).catch(function () {
         if (err) err.textContent = "مشکلی در ارسال پیش آمد. لطفاً دوباره تلاش کنید.";
         track("hero_form_error", { type: "submit_failed" });

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager -->
+  <script src="/assets/js/gtm.js" async></script>
+  <!-- End Google Tag Manager -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>ثبت شد — آرایه</title>
+  <meta name="theme-color" content="#0E1A2B" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <style>
+    @font-face { font-family: Vazirmatn; src: url('/assets/fonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: Vazirmatn; src: url('/assets/fonts/Vazirmatn-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Vazirmatn, system-ui, sans-serif;
+      background: #0E1A2B;
+      color: #e8edf2;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .card {
+      background: #162336;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      max-width: 480px;
+      width: 100%;
+    }
+
+    .icon {
+      width: 72px;
+      height: 72px;
+      background: rgba(52, 199, 89, 0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+
+    .icon svg { width: 36px; height: 36px; }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #94a3b8;
+      line-height: 1.7;
+      margin-bottom: 0.5rem;
+    }
+
+    .ticket {
+      margin-top: 1.25rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    .ticket strong {
+      color: #fff;
+      font-size: 1.05rem;
+      letter-spacing: 1px;
+    }
+
+    .home-link {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.7rem 1.75rem;
+      background: #1a6ef3;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: background 0.2s;
+    }
+
+    .home-link:hover { background: #1558c8; }
+
+    @media (max-width: 480px) {
+      .card { padding: 2rem 1.25rem; }
+      h1 { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PHW3CH86"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<div class="card">
+  <div class="icon">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="12" fill="#34C759" fill-opacity="0.2"/>
+      <path d="M7 12.5L10.5 16L17 9" stroke="#34C759" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h1>درخواست شما ثبت شد</h1>
+  <p>ممنون از اینکه با ما در تماس گرفتید.<br>تیم آرایه کمتر از یک روز کاری با شما تماس می‌گیرد.</p>
+
+  <div id="ticketWrap" class="ticket" style="display:none">
+    کد پیگیری: <strong id="ticketCode"></strong>
+  </div>
+
+  <a href="/" class="home-link">بازگشت به صفحه اصلی</a>
+</div>
+
+<script>
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get("ticket");
+  if (code) {
+    document.getElementById("ticketCode").textContent = code;
+    document.getElementById("ticketWrap").style.display = "block";
+  }
+</script>
+</body>
+</html>

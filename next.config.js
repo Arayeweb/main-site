@@ -19,7 +19,11 @@ const nextConfig = {
       { source: "/spaces", destination: "/spaces.html" },
       { source: "/googlesabt", destination: "/googlesabt.html" },
       { source: "/google-sabt", destination: "/googlesabt.html" },
+      { source: "/googlesabt-simple", destination: "/googlesabt-simple.html" },
+      { source: "/bizcard-gen", destination: "/bizcard-gen.html" },
+      { source: "/konkour", destination: "/konkour.html" },
       { source: "/privacy", destination: "/privacy.html" },
+      { source: "/tashakor", destination: "/tashakor.html" },
       // بلاگ (قابل سرو روی subdomain یا مسیر /blog)
       { source: "/blog", destination: "/blog/index.html" },
       { source: "/blog/posts/:slug", destination: "/blog/posts/:slug.html" },

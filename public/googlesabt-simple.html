@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager -->
+  <script src="/assets/js/gtm.js" async></script>
+  <!-- Yektanet -->
+  <script>!function(t,e,n){t.yektanetAnalyticsObject=n,t[n]=t[n]||function(){t[n].q.push(arguments)},t[n].q=t[n].q||[];var a=new Date,r=a.getFullYear().toString()+"0"+a.getMonth()+"0"+a.getDate()+"0"+a.getHours(),c=e.getElementsByTagName("script")[0],s=e.createElement("script");s.id="ua-script-FvFIqbVH";s.dataset.analyticsobject=n;s.async=1;s.type="text/javascript";s.src="https://cdn.yektanet.com/rg_woebegone/scripts_v3/FvFIqbVH/rg.complete.js?v="+r,c.parentNode.insertBefore(s,c)}(window,document,"yektanet");</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>ثبت گوگل مپ — فقط شماره بده، ما انجام می‌دیم</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="canonical" href="https://araaye.com/googlesabt-simple" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <style>
+    :root {
+      --blue: #4285F4;
+      --blue-dark: #1b6ef3;
+      --green: #34A853;
+      --red: #EA4335;
+      --yellow: #FBBC05;
+      --ink: #202124;
+      --grey: #5f6368;
+      --line: #e3e6ea;
+      --soft: #f1f3f4;
+      --bg: #ffffff;
+      --radius: 16px;
+    }
+    @font-face { font-family: "Vazirmatn"; src: url("/assets/fonts/Vazirmatn-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+    @font-face { font-family: "Vazirmatn"; src: url("/assets/fonts/Vazirmatn-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+    [hidden] { display: none !important; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Vazirmatn", sans-serif; color: var(--ink); background: var(--bg); line-height: 1.75; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 680px; margin-inline: auto; padding-inline: 20px; }
+
+    /* ── header ── */
+    header { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,.95); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+    .bar-in { display: flex; align-items: center; justify-content: space-between; height: 58px; }
+    .logo { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; }
+    .logo svg { width: 26px; height: 26px; }
+    .header-cta { font-family: "Vazirmatn"; font-weight: 700; font-size: 14px; background: var(--blue); color: #fff; border: 0; border-radius: 999px; padding: 9px 20px; cursor: pointer; }
+
+    /* ── hero ── */
+    .hero { padding: 32px 0 28px; background: linear-gradient(180deg, #fff 0%, #f4f7ff 100%); }
+    .eyebrow { display: inline-flex; align-items: center; gap: 6px; background: #e8f0fe; color: var(--blue); font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 999px; margin-bottom: 16px; }
+    .hero h1 { font-size: clamp(24px, 6vw, 42px); font-weight: 700; line-height: 1.35; margin-bottom: 14px; }
+    .hero h1 em { font-style: normal; color: var(--blue); }
+    .hero .sub { color: var(--grey); font-size: clamp(15px, 2.5vw, 17px); line-height: 1.8; max-width: 44ch; margin-bottom: 22px; }
+
+    /* form row */
+    .input-row { display: flex; gap: 10px; align-items: stretch; }
+    .input-row input[type="tel"] {
+      flex: 1; min-width: 0; font-family: "Vazirmatn"; font-size: 16px; direction: ltr; text-align: right;
+      border: 2px solid var(--line); border-radius: 14px; padding: 13px 16px;
+      outline: 0; transition: border-color .2s, box-shadow .2s;
+    }
+    .input-row input[type="tel"]:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(66,133,244,.14); }
+    .input-row input[type="tel"].is-invalid { border-color: var(--red); }
+    .submit-btn {
+      font-family: "Vazirmatn"; font-weight: 700; font-size: 16px; white-space: nowrap;
+      background: var(--blue); color: #fff; border: 0; border-radius: 14px;
+      padding: 13px 22px; cursor: pointer;
+      box-shadow: 0 2px 6px rgba(66,133,244,.35), 0 6px 18px rgba(66,133,244,.22);
+      transition: background .15s, transform .15s, box-shadow .15s;
+    }
+    .submit-btn:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(66,133,244,.45), 0 10px 24px rgba(66,133,244,.28); }
+    .hero-lead-err { font-size: 13px; color: var(--red); font-weight: 700; min-height: 20px; margin-top: 8px; }
+
+    /* success state */
+    .hero-lead-success { display: flex; align-items: center; gap: 14px; background: #e6f4ea; border-radius: 16px; padding: 18px 20px; margin-top: 4px; }
+    .hero-lead-success .check { font-size: 28px; color: var(--green); flex-shrink: 0; }
+    .hero-lead-success strong { display: block; font-size: 17px; color: var(--green); }
+    .hero-lead-success p { font-size: 14px; color: #2d6a40; margin-top: 2px; }
+
+    /* trust pills */
+    .trust-list { display: flex; gap: 8px; flex-wrap: wrap; list-style: none; margin-top: 16px; }
+    .trust-list li { font-size: 13px; color: var(--grey); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+
+    /* ── proof bar ── */
+    .proof-bar { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 20px 0; background: var(--soft); }
+    .proof-grid { display: flex; justify-content: space-around; gap: 16px; text-align: center; }
+    .stat strong { display: block; font-size: 22px; font-weight: 700; color: var(--ink); }
+    .stat span { font-size: 12px; color: var(--grey); margin-top: 2px; display: block; }
+
+    /* ── testimonials ── */
+    .testimonials { padding: 44px 0; }
+    .testimonials h2 { font-size: 22px; text-align: center; margin-bottom: 24px; }
+    .testi-grid { display: grid; gap: 16px; }
+    .testi-card { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: 0 2px 8px rgba(60,64,67,.07); }
+    .testi-stars { color: var(--yellow); font-size: 15px; letter-spacing: 2px; margin-bottom: 10px; }
+    .testi-text { font-size: 14px; color: var(--ink); line-height: 1.8; margin-bottom: 14px; }
+    .testi-meta { display: flex; align-items: center; gap: 10px; }
+    .testi-avatar { width: 38px; height: 38px; border-radius: 50%; background: #e8f0fe; display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
+    .testi-name { font-size: 13px; font-weight: 700; }
+    .testi-biz { font-size: 12px; color: var(--grey); }
+
+    /* ── steps ── */
+    .steps { padding: 44px 0; background: linear-gradient(180deg, var(--soft) 0%, #fff 100%); }
+    .steps h2 { font-size: 22px; text-align: center; margin-bottom: 28px; }
+    .steps-grid { display: grid; gap: 20px; }
+    .step-card { display: flex; gap: 16px; align-items: flex-start; }
+    .step-num { width: 44px; height: 44px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 18px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; }
+    .step-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .step-card p { font-size: 14px; color: var(--grey); line-height: 1.7; }
+
+    /* ── faq ── */
+    .faq { padding: 40px 0; }
+    .faq h2 { font-size: 22px; text-align: center; margin-bottom: 20px; }
+    details { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 4px 18px; margin-bottom: 10px; }
+    summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 14px 0; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-size: 20px; color: var(--blue); transition: transform .2s; }
+    details[open] summary::after { transform: rotate(45deg); }
+    details p { color: var(--grey); padding-bottom: 16px; font-size: 14px; line-height: 1.75; }
+
+    /* ── footer ── */
+    footer { border-top: 1px solid var(--line); padding: 24px 0; color: var(--grey); font-size: 13px; }
+    .ft-in { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .ft-links { display: flex; gap: 16px; }
+    .ft-links a:hover { color: var(--blue); }
+
+    /* ── sticky CTA ── */
+    .sticky { position: fixed; inset: auto 0 0 0; z-index: 50; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); border-top: 1px solid var(--line); box-shadow: 0 -4px 20px rgba(32,33,36,.08); padding: 12px 20px; transform: translateY(110%); transition: transform .3s ease; }
+    .sticky.show { transform: none; }
+    .sticky-in { max-width: 680px; margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .sticky-txt { font-size: 14px; font-weight: 700; }
+    .sticky-txt b { color: var(--red); }
+    .sticky-btn { font-family: "Vazirmatn"; font-weight: 700; font-size: 15px; background: var(--blue); color: #fff; border: 0; border-radius: 999px; padding: 11px 24px; cursor: pointer; white-space: nowrap; }
+
+    /* ── responsive ── */
+    @media (max-width: 480px) {
+      .hero { padding: 24px 0 20px; }
+      .submit-btn { padding: 13px 16px; font-size: 15px; }
+      .proof-grid { gap: 8px; }
+      .stat strong { font-size: 18px; }
+      .sticky-txt { display: none; }
+      .sticky-in { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PHW3CH86" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <header>
+    <div class="wrap bar-in">
+      <a class="logo" href="/" aria-label="آرایه">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span>ثبت گوگل</span>
+      </a>
+      <button class="header-cta" onclick="document.getElementById('heroInput').focus(); document.getElementById('heroInput').scrollIntoView({behavior:'smooth',block:'center'})">شروع رایگان</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ── HERO ── -->
+    <section class="hero">
+      <div class="wrap">
+        <span class="eyebrow">✦ بدون دردسر — ما انجام می‌دیم</span>
+        <h1>کسب‌وکارت رو در<br><em>گوگل مپ</em> پیدا کنن</h1>
+        <p class="sub">فقط شماره‌ات رو بده. کارشناس ما در کمتر از ۲ ساعت تماس می‌گیره، اطلاعات رو می‌گیره و ثبت رو انجام می‌ده — بدون اینکه کاری داشته باشی.</p>
+
+        <form data-hero-lead data-phone-only data-goal="map_register">
+          <div class="hero-lead-wrap">
+            <div class="input-row">
+              <input id="heroInput" type="tel" name="contact" placeholder="۰۹۱۲ ..." autocomplete="tel" inputmode="numeric" aria-label="شماره موبایل" />
+              <button type="submit" class="submit-btn">مشاوره رایگان ←</button>
+            </div>
+            <p class="hero-lead-err" role="alert"></p>
+          </div>
+          <div class="hero-lead-success" hidden>
+            <span class="check">✓</span>
+            <div>
+              <strong>ثبت شد!</strong>
+              <p>کارشناس ما در کمتر از ۲ ساعت باهات تماس می‌گیره.</p>
+            </div>
+          </div>
+        </form>
+
+        <ul class="trust-list" aria-label="ضمانت‌ها">
+          <li>✓ بدون پیش‌پرداخت</li>
+          <li>✓ ثبت در ۵ نقشه</li>
+          <li>✓ ضمانت بازگشت وجه</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── PROOF BAR ── -->
+    <div class="proof-bar">
+      <div class="wrap proof-grid">
+        <div class="stat"><strong>+۵۰۰</strong><span>کسب‌وکار ثبت‌شده</span></div>
+        <div class="stat"><strong>۱.۲ ساعت</strong><span>میانگین تحویل</span></div>
+        <div class="stat"><strong>★ ۴.۹</strong><span>امتیاز مشتریان</span></div>
+      </div>
+    </div>
+
+    <!-- ── TESTIMONIALS ── -->
+    <!-- TODO: جایگزین با testimonial‌های واقعی از مشتریان -->
+    <section class="testimonials">
+      <div class="wrap">
+        <h2>مشتریان می‌گویند</h2>
+        <div class="testi-grid">
+
+          <div class="testi-card">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">«از وقتی روی گوگل مپ ثبت شدیم، هر هفته ۱۵ تا ۲۰ تماس جدید داریم. کار تیم آرایه خیلی سریع بود — یک ساعته تموم شد.»</p>
+            <div class="testi-meta">
+              <div class="testi-avatar">🍽️</div>
+              <div>
+                <div class="testi-name">علی محمدی</div>
+                <div class="testi-biz">رستوران میلاد — تهران</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="testi-card">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">«بیماران جدید از گوگل مپ پیدامون می‌کنن. نمایه‌مون با عکس و ساعت کاری کامل شد. خیلی ممنون.»</p>
+            <div class="testi-meta">
+              <div class="testi-avatar">🦷</div>
+              <div>
+                <div class="testi-name">دکتر سارا کریمی</div>
+                <div class="testi-biz">کلینیک دندانپزشکی — مشهد</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="testi-card">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">«انتظار نداشتم اینقدر راحت باشه. شماره دادم، زنگ زدن، همه کارا رو کردن. الان مشتریا از نقشه پیدام می‌کنن.»</p>
+            <div class="testi-meta">
+              <div class="testi-avatar">🔧</div>
+              <div>
+                <div class="testi-name">احمد رضایی</div>
+                <div class="testi-biz">تعمیرگاه خودرو — اصفهان</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── HOW IT WORKS ── -->
+    <section class="steps">
+      <div class="wrap">
+        <h2>چطور کار می‌کند؟</h2>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-num">۱</div>
+            <div>
+              <h3>شماره‌ات رو می‌دی</h3>
+              <p>همین — ۱۰ ثانیه. بقیه با ماست.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">۲</div>
+            <div>
+              <h3>کارشناس زنگ می‌زنه</h3>
+              <p>در کمتر از ۲ ساعت، یکی از تیم ما باهات تماس می‌گیره، اطلاعات کسب‌وکارت رو می‌گیره و شروع می‌کنه.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">۳</div>
+            <div>
+              <h3>نمایه‌ات آماده‌ست</h3>
+              <p>ثبت، تأیید و بهینه‌سازی نمایه در گوگل مپ، نشان، بلد، اسنپ و OpenStreetMap — کمتر از یک روز.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FAQ ── -->
+    <section class="faq">
+      <div class="wrap">
+        <h2>سؤالات متداول</h2>
+        <details>
+          <summary>آیا قبل از ثبت باید پول بدهم؟</summary>
+          <p>نه. کارشناس ما اول تماس می‌گیره، همه چیز رو توضیح می‌ده و بعد از توافق، هزینه پرداخت می‌شه. بدون پیش‌پرداخت.</p>
+        </details>
+        <details>
+          <summary>اگر قبلاً ثبت شده‌ام ولی اطلاعاتم اشتباه است چه؟</summary>
+          <p>مالکیت نمایه‌ی موجود رو ادعا (Claim) می‌کنیم و آدرس، شماره، ساعت کاری و عکس‌ها رو اصلاح و بهینه می‌کنیم.</p>
+        </details>
+        <details>
+          <summary>چه اطلاعاتی لازم است؟</summary>
+          <p>نام کسب‌وکار، آدرس دقیق، شماره تماس، ساعت کاری و چند عکس. بقیه‌ی مراحل فنی با ماست.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap ft-in">
+      <span>ثبت گوگل — خدمتی از آرایه</span>
+      <nav class="ft-links" aria-label="لینک‌های سریع">
+        <a href="/">آرایه</a>
+        <a href="/support">پشتیبانی</a>
+        <a href="/googlesabt">مشاهده پکیج‌ها</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- ── STICKY BOTTOM CTA ── -->
+  <div class="sticky" id="sticky" aria-hidden="true">
+    <div class="sticky-in">
+      <span class="sticky-txt">🔥 ثبت رایگان — <b>همین الان</b></span>
+      <button class="sticky-btn" onclick="document.getElementById('heroInput').focus(); window.scrollTo({top:0,behavior:'smooth'})">شروع کن ←</button>
+    </div>
+  </div>
+
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/heroLead.js" defer></script>
+  <script>
+    (function () {
+      var sticky = document.getElementById("sticky");
+      window.addEventListener("scroll", function () {
+        sticky.classList.toggle("show", window.scrollY > 300);
+        sticky.setAttribute("aria-hidden", window.scrollY <= 300);
+      }, { passive: true });
+    })();
+  </script>
+</body>
+</html>

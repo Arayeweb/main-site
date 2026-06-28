@@ -265,11 +265,9 @@
             err.textContent = "ثبت تیکت ناموفق بود. لطفاً دوباره تلاش کنید.";
             return;
           }
-          document.getElementById("ticketCodeOut").textContent = res.data.ticketCode || "—";
-          form.hidden = true;
-          success.hidden = false;
-          success.classList.add("is-shown");
           track("support_ticket_created", {});
+          var code = res.data.ticketCode || "";
+          window.location.replace("/tashakor" + (code ? "?ticket=" + encodeURIComponent(code) : ""));
         })
         .catch(function () {
           err.textContent = "ارتباط برقرار نشد. اتصال اینترنت را بررسی کنید.";

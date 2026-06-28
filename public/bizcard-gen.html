@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ساخت کارت ویزیت — آرایه</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <style>
+    @font-face{font-family:"Vazirmatn";src:url("/assets/fonts/Vazirmatn-Regular.woff2") format("woff2");font-weight:400;font-display:swap;}
+    @font-face{font-family:"Vazirmatn";src:url("/assets/fonts/Vazirmatn-Bold.woff2") format("woff2");font-weight:700;font-display:swap;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"Vazirmatn",Tahoma,sans-serif;background:#f0f2f5;color:#202124;line-height:1.75;min-height:100vh;}
+    a{color:#4285F4;text-decoration:none;}
+
+    .header{background:#fff;border-bottom:1px solid #e3e6ea;padding:0 24px;}
+    .header-in{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px;}
+    .logo{font-size:18px;font-weight:700;}
+
+    .wrap{max-width:760px;margin:32px auto;padding:0 16px;}
+    h1{font-size:22px;font-weight:700;margin-bottom:6px;}
+    .sub{font-size:14px;color:#5f6368;margin-bottom:24px;}
+
+    /* form card */
+    .card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:24px;}
+    .card h2{font-size:16px;font-weight:700;margin-bottom:18px;color:#4285F4;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .full{grid-column:1/-1;}
+    label{display:block;font-size:13px;font-weight:700;margin-bottom:5px;}
+    input,textarea{
+      width:100%;border:1.5px solid #e3e6ea;border-radius:10px;
+      padding:11px 14px;font-family:"Vazirmatn",Tahoma;font-size:14px;
+      outline:0;transition:border-color .2s;
+    }
+    input:focus,textarea:focus{border-color:#4285F4;box-shadow:0 0 0 3px rgba(66,133,244,.12);}
+    textarea{resize:vertical;min-height:70px;}
+    .hint{font-size:12px;color:#9aa0a6;margin-top:4px;}
+
+    .btn-submit{
+      font-family:"Vazirmatn",Tahoma;font-weight:700;font-size:16px;
+      background:#4285F4;color:#fff;border:0;border-radius:12px;
+      padding:14px 32px;cursor:pointer;width:100%;margin-top:6px;
+      transition:background .15s;
+    }
+    .btn-submit:hover{background:#1b6ef3;}
+    .btn-submit:disabled{background:#9aa0a6;cursor:not-allowed;}
+
+    .err{color:#EA4335;font-size:13px;font-weight:700;margin-top:10px;min-height:20px;}
+
+    /* result */
+    .result{display:none;background:#e6f4ea;border-radius:14px;padding:20px;margin-top:16px;}
+    .result.show{display:block;}
+    .result h3{color:#34A853;font-size:16px;font-weight:700;margin-bottom:12px;}
+    .result-url{font-size:15px;font-weight:700;word-break:break-all;margin-bottom:16px;}
+    .result-url a{color:#1b6ef3;}
+    .qr-wrap{text-align:center;}
+    .qr-wrap img{border-radius:10px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+    .qr-dl{display:inline-block;margin-top:8px;font-size:13px;color:#34A853;font-weight:700;cursor:pointer;}
+
+    /* list */
+    .list-table{width:100%;border-collapse:collapse;font-size:14px;}
+    .list-table th{text-align:right;padding:10px 12px;background:#f1f3f4;font-weight:700;border-bottom:2px solid #e3e6ea;}
+    .list-table td{padding:10px 12px;border-bottom:1px solid #f0f2f5;vertical-align:middle;}
+    .list-table tr:hover td{background:#fafbfc;}
+    .tag{font-size:11px;background:#e8f0fe;color:#4285F4;padding:3px 8px;border-radius:999px;font-weight:700;}
+    .empty{text-align:center;padding:32px;color:#9aa0a6;}
+
+    @media(max-width:560px){
+      .grid{grid-template-columns:1fr;}
+      .full{grid-column:1;}
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-in">
+      <span class="logo">🗂️ کارت ویزیت آنلاین</span>
+      <a href="/admin">← پنل ادمین</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <h1>ساخت کارت ویزیت جدید</h1>
+    <p class="sub">پس از ثبت، لینک و QR کد آماده می‌شود — به مشتری بده.</p>
+
+    <div class="card">
+      <h2>اطلاعات کسب‌وکار</h2>
+      <form id="form">
+        <div class="grid">
+          <div class="full">
+            <label for="business_name">نام کسب‌وکار *</label>
+            <input id="business_name" name="business_name" type="text" placeholder="مثلاً رستوران میلاد" required />
+          </div>
+          <div>
+            <label for="slug">شناسه URL (اختیاری)</label>
+            <input id="slug" name="slug" type="text" placeholder="milad-restaurant" />
+            <p class="hint">فقط حروف انگلیسی، عدد و خط‌تیره — اگر خالی بماند خودکار ساخته می‌شود</p>
+          </div>
+          <div>
+            <label for="category">دسته‌بندی</label>
+            <input id="category" name="category" type="text" placeholder="رستوران / دندانپزشک / تعمیرگاه" />
+          </div>
+          <div>
+            <label for="phone">شماره تماس</label>
+            <input id="phone" name="phone" type="tel" placeholder="09121234567" />
+          </div>
+          <div>
+            <label for="maps_url">لینک گوگل مپ</label>
+            <input id="maps_url" name="maps_url" type="url" placeholder="https://maps.google.com/..." />
+          </div>
+          <div class="full">
+            <label for="address">آدرس</label>
+            <input id="address" name="address" type="text" placeholder="تهران، خیابان ولیعصر، پلاک ۱۲" />
+          </div>
+          <div class="full">
+            <label for="hours">ساعت کاری</label>
+            <input id="hours" name="hours" type="text" placeholder="شنبه تا پنجشنبه: ۹ صبح — ۱۰ شب" />
+          </div>
+          <div>
+            <label for="instagram">اینستاگرام</label>
+            <input id="instagram" name="instagram" type="text" placeholder="@username" />
+          </div>
+          <div>
+            <label for="telegram">تلگرام</label>
+            <input id="telegram" name="telegram" type="text" placeholder="@username" />
+          </div>
+          <div class="full">
+            <label for="website">وب‌سایت</label>
+            <input id="website" name="website" type="url" placeholder="https://example.com" />
+          </div>
+        </div>
+        <div class="err" id="err"></div>
+        <button type="submit" class="btn-submit" id="submitBtn">ساخت کارت ویزیت ←</button>
+      </form>
+
+      <div class="result" id="result">
+        <h3>✓ کارت ویزیت ساخته شد!</h3>
+        <div class="result-url">
+          لینک مشتری: <a id="cardLink" href="#" target="_blank"></a>
+        </div>
+        <div class="qr-wrap">
+          <img id="qrImg" src="" alt="QR Code" width="200" height="200" />
+          <br/>
+          <a class="qr-dl" id="qrDl" download="qr.png">⬇ دانلود QR کد</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- list of existing cards -->
+    <div class="card">
+      <h2>کارت‌های موجود</h2>
+      <div id="listWrap"><p class="empty">در حال بارگذاری...</p></div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    var BASE = window.location.origin;
+
+    // ── form submit ──
+    document.getElementById("form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      var btn = document.getElementById("submitBtn");
+      var err = document.getElementById("err");
+      err.textContent = "";
+      btn.disabled = true;
+      btn.textContent = "در حال ثبت...";
+
+      var body = {};
+      ["business_name","slug","category","phone","maps_url","address","hours","instagram","telegram","website"]
+        .forEach(function(k) {
+          var v = document.getElementById(k).value.trim();
+          if (v) body[k] = v;
+        });
+
+      fetch("/api/bizcards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        btn.disabled = false;
+        btn.textContent = "ساخت کارت ویزیت ←";
+        if (!data.ok) {
+          if (data.error === "unauthorized") { location.href = "/admin"; return; }
+          if (data.error === "duplicate_slug") { err.textContent = "این شناسه URL قبلاً استفاده شده — یکی دیگر انتخاب کن."; return; }
+          err.textContent = "خطا: " + (data.error || "نامشخص");
+          return;
+        }
+        showResult(data.card);
+        loadList();
+        document.getElementById("form").reset();
+      })
+      .catch(function() {
+        btn.disabled = false;
+        btn.textContent = "ساخت کارت ویزیت ←";
+        err.textContent = "خطا در اتصال — دوباره تلاش کن";
+      });
+    });
+
+    function showResult(card) {
+      var url = BASE + "/b/" + card.slug;
+      var link = document.getElementById("cardLink");
+      link.href = url;
+      link.textContent = url;
+
+      var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(url);
+      var qrImg = document.getElementById("qrImg");
+      qrImg.src = qrUrl;
+
+      var qrDl = document.getElementById("qrDl");
+      qrDl.href = qrUrl + "&format=png";
+      qrDl.download = card.slug + "-qr.png";
+
+      document.getElementById("result").classList.add("show");
+      document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    // ── load existing cards ──
+    function loadList() {
+      fetch("/api/bizcards?list=1&slug=__all__", { credentials: "include" })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          // fallback: load all by fetching admin-only endpoint
+        })
+        .catch(function() {});
+
+      // Since GET /api/bizcards requires slug, we use a small trick:
+      // call /api/admin/bizcards (we'll create this) or just show the form result.
+      // For now, fetch via the list endpoint we'll add.
+      fetchList();
+    }
+
+    function fetchList() {
+      fetch("/api/bizcards/list", { credentials: "include" })
+        .then(function(r) { return r.ok ? r.json() : { ok: false }; })
+        .then(function(data) {
+          var wrap = document.getElementById("listWrap");
+          if (!data.ok || !data.cards || !data.cards.length) {
+            wrap.innerHTML = '<p class="empty">هنوز کارتی ساخته نشده</p>';
+            return;
+          }
+          var rows = data.cards.map(function(c) {
+            return '<tr>'
+              + '<td><strong>' + esc(c.business_name) + '</strong></td>'
+              + '<td>' + (c.category ? '<span class="tag">' + esc(c.category) + '</span>' : '—') + '</td>'
+              + '<td><a href="/b/' + esc(c.slug) + '" target="_blank">/b/' + esc(c.slug) + '</a></td>'
+              + '<td><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.origin + '/b/' + c.slug) + '" target="_blank" download="' + esc(c.slug) + '-qr.png">QR ⬇</a></td>'
+              + '</tr>';
+          }).join("");
+          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>لینک</th><th>QR</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        })
+        .catch(function() {
+          document.getElementById("listWrap").innerHTML = '<p class="empty">خطا در بارگذاری لیست</p>';
+        });
+    }
+
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    fetchList();
+  })();
+  </script>
+</body>
+</html>
