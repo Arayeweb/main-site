@@ -1096,8 +1096,8 @@
       "*{box-sizing:border-box;margin:0;padding:0}" +
       "body{font-family:'Vazirmatn',Tahoma,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:32px 36px;direction:rtl}" +
       ".inv-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #2E7D6B;padding-bottom:18px;margin-bottom:24px}" +
-      ".inv-brand{font-size:22px;font-weight:800;color:#2E7D6B;letter-spacing:.02em}" +
-      ".inv-brand small{display:block;font-size:12px;font-weight:400;color:#666;margin-top:4px}" +
+      ".inv-brand{display:flex;flex-direction:column;align-items:flex-start;font-size:16px;font-weight:800;color:#1a1a1a;letter-spacing:.01em}" +
+      ".inv-brand small{display:block;font-size:11px;font-weight:400;color:#888;margin-top:2px}" +
       ".inv-meta{text-align:left}" +
       ".inv-meta h1{font-size:18px;font-weight:800;color:#0E1A2B;margin-bottom:8px}" +
       ".inv-meta-row{font-size:12px;color:#555;margin-bottom:4px}" +
@@ -1124,7 +1124,13 @@
       "@media print{body{padding:20px 24px}}" +
       "</style></head><body>" +
       "<div class='inv-header'>" +
-        "<div class='inv-brand'>هوش آرایه پارس<small>Araaye.com</small></div>" +
+        "<div class='inv-brand'>" +
+          "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 130' width='54' height='58' style='display:block;margin-bottom:6px'>" +
+            "<path d='M 22 108 L 60 28 L 98 108' fill='none' stroke='#1a1a1a' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/>" +
+            "<path d='M 38 78 L 82 78' fill='none' stroke='#1a1a1a' stroke-width='14' stroke-linecap='round'/>" +
+          "</svg>" +
+          "هوش آرایه پارس<small>Araaye.com</small>" +
+        "</div>" +
         "<div class='inv-meta'>" +
           "<h1>" + esc(kindLabel) + " <span class='status-badge'>" + esc(statusLabel) + "</span></h1>" +
           "<div class='inv-meta-row'><b>شماره سند:</b> " + esc(inv.invoice_number) + "</div>" +
