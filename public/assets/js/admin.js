@@ -6,10 +6,10 @@
   "use strict";
 
   /* ---------- labels ---------- */
-  var SOURCE_LABELS = { multistep_form: "فرم چندمرحله‌ای", hero_form: "فرم هرو", chatbot: "چت‌بات", telegram_bot: "ربات تلگرام", partner_signup_form: "همکار فروش" };
+  var SOURCE_LABELS = { multistep_form: "فرم چندمرحله‌ای", hero_form: "فرم هرو", chatbot: "چت‌بات", telegram_bot: "ربات تلگرام", partner_signup_form: "همکار فروش", manual_entry: "ورود دستی", spaces_hero: "فرم هرو فضاها", spaces_form: "فرم کامل فضاها", spaces_chatbot: "چت‌بات فضاها" };
   var BUDGET_LABELS = { lt15: "زیر ۱۵م.ت", "15-40": "۱۵–۴۰م.ت", "40-100": "۴۰–۱۰۰م.ت", gt100: "بالای ۱۰۰م.ت", unsure: "نامشخص" };
   var PLAN_LABELS = { bronze: "برنزی", silver: "نقره‌ای", gold: "طلایی" };
-  var PAGE_LABELS = { index: "صفحه اصلی", clinic: "کلینیک", restaurant: "رستوران", doctors: "پزشکان", spaces: "فضاها (Spaces)", googlesabt: "ثبت در گوگل" };
+  var PAGE_LABELS = { index: "صفحه اصلی", clinic: "کلینیک", restaurant: "رستوران", doctors: "پزشکان", spaces: "فضاها (Spaces)", googlesabt: "ثبت در گوگل", academy: "آکادمی", konkour: "کنکور" };
   var PROJECT_STATUS = {
     intake: "دریافت اطلاعات",
     design: "طراحی",
@@ -56,7 +56,7 @@
     return fetch(url, opts).then(function (r) {
       return r.json().then(function (data) { return { status: r.status, data: data }; })
         .catch(function () { return { status: r.status, data: null }; });
-    });
+    }).catch(function () { return { status: 0, data: null }; });
   }
 
   /* ---------- views ---------- */
