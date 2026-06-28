@@ -420,6 +420,7 @@
         card.querySelector(".select-btn").classList.add("btn-primary");
         current = card.dataset.package;
         document.getElementById("step1Next").disabled = false;
+        setStep(2);
       };
 
       document.getElementById("step1Next").addEventListener("click", function(){ if(current) setStep(2); });
