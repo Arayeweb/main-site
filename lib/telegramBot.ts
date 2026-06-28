@@ -3,7 +3,7 @@
 // دستیار آرایه — مشاور فروش هوشمند تلگرام (OpenRouter)
 // =====================================================
 
-import { normalizeContact } from "@/lib/validateContact";
+import { normalizeContact, toLatin } from "@/lib/validateContact";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
@@ -27,14 +27,26 @@ async function callTelegram(method: string, body: Record<string, unknown>) {
   return res.json();
 }
 
+// متن AI ممکن است < > & داشته باشد که با parse_mode HTML باعث خطای ۴۰۰ و عدم ارسال می‌شود.
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 async function sendMessage(chatId: number, text: string, extra: Record<string, unknown> = {}) {
   return callTelegram("sendMessage", {
     chat_id: chatId,
-    text,
+    text: escapeHtml(text),
     parse_mode: "HTML",
     ...extra,
   });
 }
+
+// دکمهٔ «ارسال شمارهٔ من» — کاربر با یک لمس شماره‌اش را می‌فرستد (نرخ گرفتن لید بالاتر).
+const SHARE_CONTACT_KEYBOARD = {
+  keyboard: [[{ text: "📱 ارسال شمارهٔ من", request_contact: true }]],
+  resize_keyboard: true,
+  one_time_keyboard: true,
+};
 
 // ---------- OpenRouter / conversation ----------
 
@@ -180,8 +192,18 @@ async function callOpenRouter(messages: ChatMessage[]): Promise<string | null> {
 // ---------- Lightweight extraction helpers ----------
 
 function extractPhone(text: string): string | null {
-  const contact = normalizeContact(text);
-  return contact.kind === "invalid" ? null : contact.value;
+  // اول کل متن (ممکن است ایمیل/آیدی تلگرام هم باشد)
+  const whole = normalizeContact(text);
+  if (whole.kind !== "invalid") return whole.value;
+
+  // اگر کاربر شماره را داخل جمله نوشت («شماره‌م ۰۹۱۲... زنگ بزنید»)، آن را بیرون بکش
+  const latin = toLatin(text).replace(/[\s\-()]/g, "");
+  const m = latin.match(/(?:\+98|0098|0)?9\d{9}/);
+  if (m) {
+    const c = normalizeContact(m[0]);
+    if (c.kind === "phone") return c.value;
+  }
+  return null;
 }
 
 function extractSpecialty(text: string): string | null {
@@ -365,15 +387,22 @@ export async function handleUpdate(update: TelegramUpdate) {
     return;
   }
 
-  session.messages.push({ role: "user", content: text });
+  // اگر کاربر دکمهٔ «ارسال شمارهٔ من» را زد، شماره داخل contact می‌آید (مطمئن‌ترین حالت)
+  const sharedPhone = msg.contact?.phone_number
+    ? normalizeContact(msg.contact.phone_number).value
+    : null;
+
+  session.messages.push({ role: "user", content: text || (sharedPhone ? `شماره‌ام: ${sharedPhone}` : "") });
   extractFields(session, text);
 
-  const phone = extractPhone(text);
+  const phone = sharedPhone || extractPhone(text);
   if (phone) {
     session.phone = phone;
     session.done = true;
-    session.messages.push({ role: "assistant", content: "ممنون! شمارهٔ شما ثبت شد. همکار انسانی آرایه به‌زودی با شما تماس می‌گیرد. 🌟" });
-    await sendMessage(chatId, "ممنون! شمارهٔ شما ثبت شد. همکار انسانی آرایه به‌زودی با شما تماس می‌گیرد. 🌟");
+    const confirm = "ممنون! شمارهٔ شما ثبت شد. همکار انسانی آرایه به‌زودی با شما تماس می‌گیرد. 🌟";
+    session.messages.push({ role: "assistant", content: confirm });
+    // حذف کیبورد دکمه پس از گرفتن شماره
+    await sendMessage(chatId, confirm, { reply_markup: { remove_keyboard: true } });
     await saveLeadAndNotifyAdmin(chatId, session, phone);
     return;
   }
@@ -381,7 +410,9 @@ export async function handleUpdate(update: TelegramUpdate) {
   const reply = await callOpenRouter(session.messages);
   if (reply) {
     session.messages.push({ role: "assistant", content: reply });
-    await sendMessage(chatId, reply);
+    // وقتی دستیار شماره می‌خواهد، دکمهٔ ارسال شماره را هم نشان بده تا کاربر راحت بفرستد
+    const asksForPhone = /شماره|تماس بگیر|زنگ/.test(reply);
+    await sendMessage(chatId, reply, asksForPhone ? { reply_markup: SHARE_CONTACT_KEYBOARD } : {});
   } else {
     await sendMessage(chatId, "مشکلی در ارتباط با دستیار پیش آمده. لطفاً چند لحظه دیگر امتحان کنید یا شماره‌تان را بفرستید تا همکارم با شما تماس بگیرد. 📱");
   }

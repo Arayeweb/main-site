@@ -1127,10 +1127,7 @@
       "</style></head><body>" +
       "<div class='inv-header'>" +
         "<div class='inv-brand'>" +
-          "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 130' width='54' height='58' style='display:block;margin-bottom:6px'>" +
-            "<path d='M 22 108 L 60 28 L 98 108' fill='none' stroke='#1a1a1a' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/>" +
-            "<path d='M 38 78 L 82 78' fill='none' stroke='#1a1a1a' stroke-width='14' stroke-linecap='round'/>" +
-          "</svg>" +
+          "<img src='/assets/logo-icon.svg' width='48' height='48' alt='logo' style='display:block;margin-bottom:6px' />" +
           "هوش آرایه پارس<small>Araaye.com</small>" +
         "</div>" +
         "<div class='inv-meta'>" +

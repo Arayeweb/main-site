@@ -23,6 +23,19 @@
     chatbot: "چت‌بات",
     telegram_bot: "ربات تلگرام",
     partner_signup_form: "همکار فروش",
+    spaces_hero: "فرم هرو فضاها",
+    spaces_form: "فرم کامل فضاها",
+    spaces_chatbot: "چت‌بات فضاها",
+  };
+  var PAGE_LABELS = {
+    index: "صفحه اصلی",
+    clinic: "کلینیک",
+    doctors: "پزشکان",
+    restaurant: "رستوران",
+    spaces: "فضاها",
+    googlesabt: "ثبت در گوگل",
+    academy: "آکادمی",
+    konkour: "کنکور",
   };
 
   /* ---------- helpers ---------- */
@@ -239,6 +252,7 @@
       '</div>' +
       '<div class="admin-meta">' +
         '<span class="src-tag src-' + esc(l.source) + '">' + esc(SOURCE_LABELS[l.source] || l.source) + '</span>' +
+        (l.page ? '<span>صفحه: <b>' + esc(PAGE_LABELS[l.page] || l.page) + '</b></span>' : '') +
         '<span>مالک: <b>' + esc(ownerName(l.owner_id)) + '</b></span>' +
         '<span>ثبت: <b>' + fmtDate(l.created_at) + '</b></span>' +
         (l.next_followup_at ? '<span class="' + (due ? "followup-due" : "") + '">پیگیری: <b>' + fmtDate(l.next_followup_at) + '</b></span>' : "") +

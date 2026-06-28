@@ -64,8 +64,8 @@ export async function GET(req: NextRequest) {
         .order("next_followup_at", { ascending: true });
     } else {
       query = query
-        .order("crm_updated_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .order("crm_updated_at", { ascending: false, nullsFirst: false });
     }
 
     if (status && CRM_STATUSES.has(status)) query = query.eq("crm_status", status);
