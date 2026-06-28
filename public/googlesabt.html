@@ -147,14 +147,18 @@
     .order-summary .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
     .order-summary .row.total{font-weight:700;font-size:17px;color:var(--g-green);border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
 
-    /* sample profile */
-    .profile-demo{max-width:720px;margin:40px auto 0;background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow-sm);text-align:right;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
-    .profile-demo img{width:120px;height:120px;border-radius:14px;object-fit:cover;background:var(--soft)}
-    .profile-demo h4{font-size:16px;font-weight:700}
-    .profile-demo p{font-size:13px;color:var(--grey);margin-top:6px}
-    .profile-demo .stars{color:var(--g-yellow);font-size:14px;letter-spacing:1px}
-    .profile-demo .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .profile-demo .tags span{font-size:12px;background:#e8f0fe;color:var(--g-blue);padding:4px 10px;border-radius:999px}
+    /* testimonials */
+    .testimonials{max-width:760px;margin:40px auto 0}
+    .testimonials h3{text-align:center;font-size:20px;font-weight:700;margin-bottom:18px}
+    .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .testi{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);text-align:right;transition:transform .2s,box-shadow .2s}
+    .testi:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+    .testi .quote{font-size:14px;line-height:1.8;color:var(--ink);margin-bottom:12px}
+    .testi .author{display:flex;align-items:center;gap:10px;margin-top:auto}
+    .testi .avatar{width:40px;height:40px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;color:var(--g-blue);font-size:14px}
+    .testi .name{font-size:13px;font-weight:700}
+    .testi .role{font-size:12px;color:var(--grey)}
+    .testi .stars{color:var(--g-yellow);font-size:13px;letter-spacing:1px;margin-bottom:8px}
 
     /* guarantee bar */
     .guarantee{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:30px;font-size:13px;color:var(--grey)}
@@ -191,8 +195,7 @@
       .pkg-card .price{text-align:right}
       .form-actions{flex-direction:column-reverse}
       .form-actions .btn{width:100%}
-      .profile-demo{grid-template-columns:1fr;text-align:center}
-      .profile-demo img{margin:0 auto}
+      .testi-grid{grid-template-columns:1fr}
       .sticky .txt{display:none}
       .sticky-in{justify-content:center}
     }
@@ -330,18 +333,42 @@
           </form>
         </div>
 
-        <!-- sample profile -->
-        <div class="profile-demo">
-          <img src="/assets/map-sample.png" alt="نمونه نمایه ثبت‌شده در گوگل مپ" onerror="this.style.display='none'" />
-          <div>
-            <h4>نمونهٔ نمایهٔ ثبت‌شده</h4>
-            <p>نمایهٔ کامل با عکس، ساعت کاری، شماره تماس، لینک مستقیم و امتیاز مشتری.</p>
-            <div class="stars">★★★★★</div>
-            <div class="tags">
-              <span>گوگل مپ</span>
-              <span>نشان</span>
-              <span>بلد</span>
-              <span>اسنپ</span>
+        <!-- testimonials -->
+        <div class="testimonials">
+          <h3>نظرات مشتریان ثبت‌شده</h3>
+          <div class="testi-grid">
+            <div class="testi">
+              <div class="stars">★★★★★</div>
+              <p class="quote">"بعد از ثبت، مشتری‌های نزدیک‌مان ما را روی گوگل مپ پیدا می‌کنند. نمایه کامل با عکس، ساعت کاری و شماره تماس است."</p>
+              <div class="author">
+                <div class="avatar">م</div>
+                <div>
+                  <div class="name">مریم رضایی</div>
+                  <div class="role">آرایشگاه زیبا</div>
+                </div>
+              </div>
+            </div>
+            <div class="testi">
+              <div class="stars">★★★★★</div>
+              <p class="quote">"کمتر از یک روز نمایه رستوران‌مان روی گوگل، نشان، بلد و اسنپ فعال شد. تیم بسیار حرفه‌ای و سریع است."</p>
+              <div class="author">
+                <div class="avatar">ع</div>
+                <div>
+                  <div class="name">علی محمدی</div>
+                  <div class="role">رستوران سنتی</div>
+                </div>
+              </div>
+            </div>
+            <div class="testi">
+              <div class="stars">★★★★★</div>
+              <p class="quote">"لینک مستقیم و QR کد به ما کمک کرده در شبکه‌های اجتماعی و کارت ویزیت راحت‌تر دیده شویم."</p>
+              <div class="author">
+                <div class="avatar">س</div>
+                <div>
+                  <div class="name">سارا کریمی</div>
+                  <div class="role">فروشگاه پوشاک</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -412,7 +439,7 @@
         }
       }
 
-      window.selectPkg = function(card){
+      function markSelected(card){
         document.querySelectorAll(".pkg-card").forEach(function(c){ c.classList.remove("selected"); c.querySelector(".select-btn").textContent = "انتخاب"; c.querySelector(".select-btn").classList.remove("btn-primary"); c.querySelector(".select-btn").classList.add("btn-ghost"); });
         card.classList.add("selected");
         card.querySelector(".select-btn").textContent = "انتخاب شد";
@@ -420,6 +447,10 @@
         card.querySelector(".select-btn").classList.add("btn-primary");
         current = card.dataset.package;
         document.getElementById("step1Next").disabled = false;
+      }
+
+      window.selectPkg = function(card){
+        markSelected(card);
         setStep(2);
       };
 
@@ -492,6 +523,8 @@
           document.getElementById("summaryPrice").textContent = formatToman(pkg.new) + " تومان";
           document.getElementById("summaryTotal").textContent = formatToman(pkg.new) + " تومان";
           setStep(3);
+          if (typeof window.yektanet === "function") window.yektanet("lead");
+          (window.dataLayer = window.dataLayer || []).push({ event: "generate_lead", source: "googlesabt_multistep", plan: current });
           if (window.track) window.track("lead_captured", { source: "googlesabt_multistep", plan: current, kind: contact.kind });
         }).catch(function(){
           err.textContent = "مشکلی در ارسال پیش آمد. لطفاً دوباره تلاش کنید یا از تلگرام ارتباط بگیرید.";
@@ -503,9 +536,9 @@
       var sticky = document.getElementById("sticky");
       window.addEventListener("scroll", function(){ sticky.classList.toggle("show", window.scrollY > 420); }, {passive:true});
 
-      // pre-select popular package
+      // pre-select popular package visually but stay on step 1
       var popularCard = document.querySelector(".pkg-card.popular");
-      if (popularCard) selectPkg(popularCard);
+      if (popularCard) markSelected(popularCard);
     })();
   </script>
 </body>
