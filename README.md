@@ -18,6 +18,9 @@
      - `SUPABASE_URL` و `SUPABASE_SERVICE_ROLE_KEY` از داشبورد Supabase (**Settings → API**).
      - `ADMIN_PASSWORD` — رمز ورود به پنل مدیریت `/admin`.
      - `ADMIN_SESSION_SECRET` — کلید امضای نشست ادمین؛ یک رشتهٔ تصادفی ≥۳۲ کاراکتری (`openssl rand -hex 32`).
+     - `NEXT_PUBLIC_SITE_URL` — آدرس سایت (مثلاً `http://localhost:3000`).
+     - (اختیاری) `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`, `TELEGRAM_WEBHOOK_SECRET` — برای ربات تلگرام.
+     - (اختیاری) `OPENROUTER_API_KEY` و `OPENROUTER_MODEL` — برای هوش مصنوعی مکالمه‌ای ربات تلگرام.
 
 4. **اجرا**
    ```bash
@@ -38,7 +41,26 @@
 | `POST /api/support/tickets` | ثبت تیکت پشتیبانی |
 | `POST/GET/DELETE /api/admin/login` | ورود/بررسی نشست/خروج ادمین |
 | `GET/POST/PATCH /api/admin/projects` | لیست/ساخت/ویرایش پروژه‌ها (محافظت‌شده) |
+| `POST /api/telegram` | webhook ربات تلگرام (دستیار مشاورهٔ آرایه) |
 | `GET/PATCH /api/admin/tickets` | لیست/تغییر وضعیت تیکت‌ها (محافظت‌شده) |
+
+## ربات تلگرام (دستیار آرایه)
+
+ربات در `lib/telegramBot.ts` پیاده‌سازی شده و با OpenRouter به یک مدل زبانی متصل می‌شود (`OPENROUTER_MODEL`، پیش‌فرض `openai/gpt-4o`). نقش آن مشاورهٔ فروش هوشمند برای پزشکان و مطب‌ها است:
+
+- خوشامد گرم و پرسیدن دردسر اصلی مطب.
+- توضیح راه‌حل آرایه بر اساس درد پزشک (نوبت‌دهی، جذب بیمار، سایت، پاسخگویی ۲۴ساعته).
+- قیمت دقیق نمی‌دهد؛ آن را بهانه‌ای برای وصل کردن به همکار انسانی می‌کند.
+- شماره تماس را می‌گیرد و یک خلاصهٔ لید داغ (`🔴 لید داغ`) برای `TELEGRAM_ADMIN_CHAT_ID` می‌فرستد.
+- لید همچنین در جدول `leads` با `source=telegram_bot` ذخیره می‌شود.
+
+برای راه‌اندازی webhook:
+
+```bash
+curl -F "url=https://YOUR_SITE/api/telegram" \
+     -F "secret_token=YOUR_TELEGRAM_WEBHOOK_SECRET" \
+     https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook
+```
 
 ## پنل پشتیبانی
 

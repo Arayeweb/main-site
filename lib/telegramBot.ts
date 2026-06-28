@@ -1,12 +1,15 @@
 // =====================================================
 // lib/telegramBot.ts
-// دستیار آرایه — مشاور فروش هوشمند تلگرام برای پزشکان
+// دستیار آرایه — مشاور فروش هوشمند تلگرام (OpenRouter)
 // =====================================================
 
 import { normalizeContact } from "@/lib/validateContact";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "openai/gpt-4o";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 const LEADS_API_URL = process.env.NEXT_PUBLIC_SITE_URL
   ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/leads`
   : null;
@@ -33,13 +36,12 @@ async function sendMessage(chatId: number, text: string, extra: Record<string, u
   });
 }
 
-// ---------- Conversation state ----------
-// در production با Redis/Supabase جایگزین شود
+// ---------- OpenRouter / conversation ----------
 
-type Step = "greeting" | "ask_pain" | "explore" | "ask_phone" | "done";
+type Role = "system" | "user" | "assistant";
+interface ChatMessage { role: Role; content: string; }
 
 interface Session {
-  step: Step;
   name?: string;
   phone?: string;
   specialty?: string;
@@ -47,8 +49,8 @@ interface Session {
   pain?: string;
   role?: string;
   urgency?: string;
-  summary?: string;
-  history: string[];
+  done: boolean;
+  messages: ChatMessage[];
   startedAt: number;
 }
 
@@ -59,86 +61,118 @@ function getSession(chatId: number): Session {
   if (existing && Date.now() - existing.startedAt < 30 * 60 * 1000) {
     return existing;
   }
-  const fresh: Session = { step: "greeting", startedAt: Date.now(), history: [] };
+  const fresh: Session = {
+    done: false,
+    messages: [{ role: "system", content: SYSTEM_PROMPT }],
+    startedAt: Date.now(),
+  };
   sessions.set(chatId, fresh);
   return fresh;
 }
 
 function resetSession(chatId: number) {
-  sessions.set(chatId, { step: "greeting", startedAt: Date.now(), history: [] });
+  sessions.set(chatId, {
+    done: false,
+    messages: [{ role: "system", content: SYSTEM_PROMPT }],
+    startedAt: Date.now(),
+  });
 }
 
-function pushHistory(session: Session, text: string) {
-  session.history.push(text);
-  if (session.history.length > 6) session.history.shift();
-}
+const SYSTEM_PROMPT = `تو «دستیار آرایه» هستی: مشاور فروش هوشمند و سطح CMO تیم آرایه در تلگرام. آرایه به پزشکان و مطب‌ها سایت بیمارآور می‌فروشد (araaye.com/doctors).
 
-// ---------- Persian keyword classifiers ----------
+== محصول آرایه ==
+- وب‌سایت تخصصی مطب + نوبت‌دهی آنلاین
+- چت‌بات پاسخگوی بیماران ۲۴ساعته (هزینه، آدرس، بیمه، نوبت)
+- دامنه، سرور، درگاه پرداخت — همه با آرایه، به نام خود پزشک
+- تحویل اولین نسخه: ۲ روز کاری
+- پزشک هیچ کار فنی انجام نمی‌دهد
+- نمونه‌کار: دکتر عالیه پوردست (عفونی)، دکتر اشرفی‌وند (شنوایی)
+- ارزش اصلی: بیمار حتی نیمه‌شب نوبت می‌گیرد و سراغ مطب دیگر نمی‌رود = نوبت جاماندنی کمتر = درآمد بیشتر
+- پکیج‌ها: مطب (تک‌پزشک) / کلینیک (چندپزشک) / مرکز درمانی
 
-const PAIN_KEYWORDS: Record<string, string[]> = {
-  appointment: ["نوبت", "نوبت دهی", "نوبت‌دهی", "جذب بیمار", "بیمار کم", "وقت"],
-  site: ["سایت", "وبسایت", "وب‌سایت", "سایت ندارم", "سایت ندار"],
-  visibility: ["دیده نشدن", "دیده نمیشم", "گوگل", "سئو", "معرفی", "آنلاین"],
-  support: ["چت", "چت‌بات", "چتبات", "پاسخگویی", "سوالات بیمار", "پشتیبانی"],
-  domain: ["دامنه", "سرور", "درگاه", "پرداخت", "هاست", "فنی"],
-};
+== نقش تو ==
+- مشاوره بده، سوال جواب بده، اعتماد بساز، پزشک را گرم کن، و وقتی آماده شد، شماره‌اش را بگیر و به همکار انسانی پاس بده.
+- نمی‌فروشی، نمی‌بندی. صادقانه و حرفه‌ای حرف بزن.
 
-const BUYING_SIGNALS = [
-  "قیمت", "چقدر میشه", "هزینه", "شروع", "سفارش", "سفارش بدم", "ثبت", "نمونه", "دمو",
-  "تماس بگیرید", "تماس بگیر", "با من تماس", "مشاوره", "راهنمایی", "خرید", "می‌خوام",
-  "میخوام", "علاقه", "آماده‌ام", "آماده ام", "باشه", "بفرست", "تماس",
-];
+== جریان مکالمه ==
+1. خوشامد گرم و کوتاه. بپرس بزرگ‌ترین دردسر مطبش چیست (نوبت‌دهی؟ جذب بیمار؟ نبود سایت؟ پاسخگویی شبانه؟).
+2. بر اساس دردش، راه‌حل آرایه را ساده و مرتبط توضیح بده. اغراق نکن.
+3. اگر شک داشت، نمونه‌کار را مثال بزن و تحویل ۲ روزه را بگو.
+4. ضمن مکالمه نرم بفهم (بدون اینکه بگویی داری می‌سنجی): تخصص و شهر، مشکل اصلی، آیا تصمیم‌گیرنده است، چقدر فوری نیاز دارد.
 
-const HUMAN_HANDOFF_QUESTIONS = [
-  "با انسان", "با آدم", "کارشناس", "همکار", "با خودت", "انسان", "آدم", "مدیری",
-];
+== قوانین ==
+- قیمت دقیق نده. اگر پرسید بگو: «قیمت به نیاز دقیق مطبتون بستگی داره؛ همکارم دقیق و شفاف می‌گه و حتی یه دموی رایگان نشونتون می‌ده.»
+- وقتی پزشک علاقه واقعی نشان داد (قیمت پرسید، گفت کی شروع می‌شه، گفت چطور سفارش بدم، یا گفت نمونه می‌خوام): بگو «عالیه دکتر! شماره‌تون رو بدید تا همکارم همین امروز باهاتون تماس بگیره و دقیق راهنماییتون کنه.»
+- بعد از گرفتن شماره، تأیید کن و بگو به‌زودی تماس می‌گیرند.
+- لحن محترمانه و حرفه‌ای. مخاطب پزشک است. صمیمی ولی نه بازاری. حداکثر یک ایموجی در هر پیام. پاسخ‌ها کوتاه (۲-۴ خط).
+- هیچ‌وقت اطلاعات غلط نده؛ اگر چیزی را نمی‌دانی بگو «همکارم دقیق می‌گه». اگر پرسید آیا رباتی، بگو: «من دستیار هوشمند آرایه هستم و همکار انسانی برای جزئیات نهایی تماس می‌گیرد.»
+- هیچ‌وقت خروجی فرم یا خلاصهٔ لید برای تیم چاپ نکن. فقط با پزشک مکالمه کن.`;
 
-const BOT_QUESTIONS = [
-  "رباتی", "ربات", "هوش مصنوعی", "بطی", "دستیار هوشمند", "خودت کی هستی", "تو کی هستی",
-];
-
-function detectPain(text: string): string | null {
-  const t = text.toLowerCase();
-  for (const [key, words] of Object.entries(PAIN_KEYWORDS)) {
-    if (words.some((w) => t.includes(w))) return key;
+async function callOpenRouter(messages: ChatMessage[]): Promise<string | null> {
+  if (!OPENROUTER_API_KEY) {
+    console.error("[openrouter] missing OPENROUTER_API_KEY");
+    return null;
   }
-  return null;
+
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": SITE_URL,
+        "X-Title": "Araye Telegram Assistant",
+      },
+      body: JSON.stringify({
+        model: OPENROUTER_MODEL,
+        messages,
+        temperature: 0.7,
+        max_tokens: 500,
+      }),
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data) {
+      console.error("[openrouter] error", res.status, data);
+      return null;
+    }
+
+    const content = data.choices?.[0]?.message?.content;
+    return typeof content === "string" ? content.trim() : null;
+  } catch (e) {
+    console.error("[openrouter] exception", e);
+    return null;
+  }
 }
 
-function hasBuyingSignal(text: string): boolean {
-  const t = text.toLowerCase();
-  return BUYING_SIGNALS.some((w) => t.includes(w.toLowerCase()));
-}
+// ---------- Lightweight extraction helpers ----------
 
-function asksForHuman(text: string): boolean {
-  const t = text.toLowerCase();
-  return HUMAN_HANDOFF_QUESTIONS.some((w) => t.includes(w.toLowerCase()));
-}
-
-function asksIfBot(text: string): boolean {
-  const t = text.toLowerCase();
-  if (/\bai\b/i.test(text)) return true;
-  return BOT_QUESTIONS.some((w) => t.includes(w.toLowerCase()));
+function extractPhone(text: string): string | null {
+  const contact = normalizeContact(text);
+  return contact.kind === "invalid" ? null : contact.value;
 }
 
 function extractSpecialty(text: string): string | null {
-  const match = text.match(/(?:متخصص|دکتر|فellowship|فوق تخصص|تخصص|پزشک|رزیدنت)\s+([\u0600-\u06FF\s]+?)(?:در|هستم|بودم|هستند|م\.)/);
+  const match = text.match(/(?:متخصص|دکتر|فوق تخصص|تخصص|پزشک|رزیدنت)\s+([\u0600-\u06FF\s]+?)(?:در|هستم|بودم|هستند|م\.|است|هستند)/);
   return match ? match[1].trim() : null;
 }
 
 function extractCity(text: string): string | null {
-  const match = text.match(/(?:شهر|در|مطب)\s+([\u0600-\u06FF\s]+?)(?:هستم|هست|میکنم|م\.|زندگی|کار)/);
+  const match = text.match(/(?:شهر|در|مطب)\s+([\u0600-\u06FF\s]+?)(?:هستم|هست|میکنم|م\.|زندگی|کار|دارم)/);
   return match ? match[1].trim() : null;
 }
 
-function extractRole(text: string): string | null {
+function detectPain(text: string): string | null {
   const t = text.toLowerCase();
-  if (t.includes("مدیر") || t.includes("مسئول") || t.includes("منشی") || t.includes("مسئول مطب")) return "decider_no";
-  if (t.includes("خودم پزشک") || t.includes("دکتر هستم") || t.includes("من پزشک") || t.includes("خودم هستم")) return "decider_yes";
+  if (t.includes("نوبت") || t.includes("جذب بیمار") || t.includes("وقت")) return "نوبت‌دهی / جذب بیمار";
+  if (t.includes("سایت") || t.includes("وبسایت") || t.includes("وب‌سایت")) return "نبود سایت";
+  if (t.includes("گوگل") || t.includes("سئو") || t.includes("دیده") || t.includes("آنلاین")) return "دیده‌شدن آنلاین";
+  if (t.includes("چت") || t.includes("چت‌بات") || t.includes("پاسخگویی") || t.includes("پشتیبانی")) return "پاسخگویی بیمار";
+  if (t.includes("دامنه") || t.includes("سرور") || t.includes("درگاه") || t.includes("هاست")) return "زیرساخت فنی";
   return null;
 }
 
-function extractUrgency(text: string): string | null {
+function detectUrgency(text: string): string | null {
   const t = text.toLowerCase();
   if (t.includes("فوری") || t.includes("همین") || t.includes("امروز") || t.includes("این هفته") || t.includes("زود")) return "فوری";
   if (t.includes("آینده") || t.includes("ماه") || t.includes("بعد")) return "متوسط";
@@ -146,163 +180,55 @@ function extractUrgency(text: string): string | null {
   return null;
 }
 
-// ---------- Response snippets ----------
-
-const RESPONSES: Record<string, string> = {
-  welcome: "سلام دکتر عزیز، روزتون بخیر. 🌿\n\nمن دستیار مشاورهٔ آرایه هستم. اگر اجازه بدید یه سوال کوچک بپرسم: بزرگ‌ترین دردسر مطب یا مرکز درمانی شما الان چیه؟ نوبت‌دهی، جذب بیمار، نبود سایت، یا پاسخگویی شبانه؟",
-
-  pain_appointment: "مشکل رزرو نوبت و جذب بیمار واقعاً دردآور است. با سایت و چت‌بات آرایه، بیمار حتی نیمه‌شب نوبت می‌گیرد و به مطب دیگر نمی‌رود. در نتیجه نوبت جامانده کمتر و درآمد مطب بیشتر می‌شود. 🩺",
-
-  pain_site: "سایت تخصصی مطب یعنی اعتماد بیمار از اولین سرچ. ما وب‌سایت کامل، دامنه، سرور و درگاه پرداخت را به نام خود پزشک تحویل می‌دهیم و پزشک هیچ کار فنی انجام نمی‌دهد. 🌐",
-
-  pain_visibility: "اگر بیمار در گوگل شما را نبیند، سراغ رقیب می‌رود. سایت آرایه برای جستجوی نام پزشک و تخصص بهینه می‌شود تا بیمار راحت‌تر پیدایتان کند. 📍",
-
-  pain_support: "چت‌بات ۲۴ساعتهٔ آرایه به سوال‌های رایج بیمار (هزینه، آدرس، بیمه، نوبت) پاسخ می‌دهد و بار تماس‌های تکراری را کم می‌کند. 🤖",
-
-  pain_domain: "تمام زیرساخت‌ها (دامنه، سرور، درگاه پرداخت) به نام خود پزشک ثبت می‌شود. تحویل اولین نسخه ۲ روز کاری است و هیچ کار فنی از سمت پزشک نیست. ⚙️",
-
-  pain_general: "ممنون که گفتید. ما بسته به نیاز مطب، پکیج‌های مطب (تک‌پزشک)، کلینیک (چندپزشک) و مرکز درمانی داریم. راه‌حل دقیق بستگی به تخصص و شهر شما دارد. 💼",
-
-  samples: "نمونه‌کارهای ما: سایت دکتر عالیه پوردست (عفونی) و دکتر اشرفی‌وند (شنوایی). هر دو ظرف ۲ روز تحویل شدند و بیماران‌شان آنلاین نوبت می‌گیرند. 🏥",
-
-  samples_plus_delivery: "تحویل اولین نسخه ۲ روز کاری است. بعد از تایید نهایی، سایت آمادهٔ استفاده می‌شود. اگر بخواهید همکارم نمونه واقعی را دقیق‌تر نشانتان می‌دهد. ✅",
-
-  pricing: "قیمت دقیق به نیاز دقیق مطبتان بستگی دارد. همکارم می‌تواند دقیق و شفاف بگوید و حتی یک دموی رایگان نشانتان بدهد. 📞",
-
-  human_handoff: "عالیه دکتر! شماره‌تان را بدید تا همکارم همین امروز با شما تماس بگیرد و دقیق راهنمایتان کند. 🙏",
-
-  ask_phone: "لطفاً شماره موبایلتان را بفرستید تا همکارم با شما تماس بگیرد. ☎️",
-
-  invalid_phone: "این شماره معتبر نیست. لطفاً شماره موبایل ایرانی معتبر بفرستید، مثلاً 09123456789. ⚠️",
-
-  phone_confirm: "ممنون دکتر! شمارهٔ شما ثبت شد. همکار انسانی آرایه به‌زودی با شما تماس می‌گیرد. 🌟",
-
-  honesty: "بله، من دستیار هوشمند آرایه هستم. برای جزئیات نهایی و انتخاب پکیج مناسب، همکار انسانی با شما تماس می‌گیرد. 🤖",
-
-  unknown: "حتماً. بگذارید همکار انسانی بهتر راهنمایتان کند. اگر شماره موبایلتان را بفرستید، همین امروز با شما تماس می‌گیرند. 📱",
-};
-
-// ---------- Conversation flow ----------
-
-async function greet(chatId: number, session: Session) {
-  session.step = "ask_pain";
-  await sendMessage(chatId, RESPONSES.welcome);
+function detectRole(text: string): string | null {
+  const t = text.toLowerCase();
+  if (t.includes("مدیر") || t.includes("مسئول") || t.includes("منشی") || t.includes("کادر")) return "غیرپزشک/نیاز به تایید";
+  if (t.includes("خودم پزشک") || t.includes("دکتر هستم") || t.includes("من پزشک") || t.includes("خودم هستم")) return "خود پزشک/تصمیم‌گیرنده";
+  return null;
 }
 
-async function handlePain(chatId: number, session: Session, text: string) {
-  pushHistory(session, text);
-  const pain = detectPain(text);
-  session.pain = pain || "عمومی";
+function extractFields(session: Session, text: string) {
+  const userTexts = session.messages.filter((m) => m.role === "user").map((m) => m.content);
+  const allText = userTexts.join(" ") + " " + text;
 
-  if (pain === "appointment") await sendMessage(chatId, RESPONSES.pain_appointment);
-  else if (pain === "site") await sendMessage(chatId, RESPONSES.pain_site);
-  else if (pain === "visibility") await sendMessage(chatId, RESPONSES.pain_visibility);
-  else if (pain === "support") await sendMessage(chatId, RESPONSES.pain_support);
-  else if (pain === "domain") await sendMessage(chatId, RESPONSES.pain_domain);
-  else await sendMessage(chatId, RESPONSES.pain_general);
-
-  const specialty = extractSpecialty(text);
-  if (specialty) session.specialty = specialty;
-  const city = extractCity(text);
-  if (city) session.city = city;
-
-  if (hasBuyingSignal(text)) {
-    session.step = "ask_phone";
-    await sendMessage(chatId, RESPONSES.human_handoff);
-    return;
-  }
-
-  session.step = "explore";
-  await sendMessage(chatId, "برای راهنمایی دقیق‌تر، چه تخصصی و در چه شهری فعال هستید؟");
-}
-
-async function handleExplore(chatId: number, session: Session, text: string) {
-  pushHistory(session, text);
-
-  const specialty = extractSpecialty(text) || session.specialty;
+  const specialty = extractSpecialty(allText) || extractSpecialty(text);
   if (specialty) session.specialty = specialty;
 
-  const city = extractCity(text) || session.city;
+  const city = extractCity(allText) || extractCity(text);
   if (city) session.city = city;
 
-  const role = extractRole(text);
-  if (role) session.role = role === "decider_yes" ? "خود پزشک/تصمیم‌گیرنده" : "غیرپزشک/نیاز به تایید";
+  const pain = detectPain(allText) || detectPain(text);
+  if (pain) session.pain = pain;
 
-  const urgency = extractUrgency(text);
+  const urgency = detectUrgency(allText) || detectUrgency(text);
   if (urgency) session.urgency = urgency;
 
-  if (asksIfBot(text)) {
-    await sendMessage(chatId, RESPONSES.honesty);
-    return;
-  }
-
-  if (asksForHuman(text) || hasBuyingSignal(text)) {
-    session.step = "ask_phone";
-    await sendMessage(chatId, RESPONSES.human_handoff);
-    return;
-  }
-
-  const t = text.toLowerCase();
-  if (t.includes("نمونه") || t.includes("دمو") || t.includes("نمونه کار") || t.includes("نمونه‌کار")) {
-    await sendMessage(chatId, RESPONSES.samples);
-    await sendMessage(chatId, RESPONSES.samples_plus_delivery);
-    return;
-  }
-
-  if (t.includes("قیمت") || t.includes("هزینه") || t.includes("چقدر")) {
-    await sendMessage(chatId, RESPONSES.pricing);
-    session.step = "ask_phone";
-    await sendMessage(chatId, RESPONSES.ask_phone);
-    return;
-  }
-
-  if (t.includes("تحویل") || t.includes("چند روز") || t.includes("۲ روز") || t.includes("دو روز")) {
-    await sendMessage(chatId, RESPONSES.samples_plus_delivery);
-    return;
-  }
-
-  if (t.includes("شک") || t.includes("مطمئن") || t.includes("فکر کنم") || t.includes("نیاز دارم")) {
-    await sendMessage(chatId, "کاملاً طبیعی است. نمونه‌کارهای ما و تحویل ۲ روزه کمک می‌کند با خیال راحت‌تر تصمیم بگیرید. اگر بخواهید همکارم دموی رایگان می‌دهد. 🏥");
-    return;
-  }
-
-  // Soft probe if we still lack info
-  if (!session.specialty || !session.city) {
-    await sendMessage(chatId, "برای پیشنهاد دقیق‌تر، تخصص و شهر مطبتان را بفرمایید؟");
-    return;
-  }
-
-  if (!session.urgency) {
-    await sendMessage(chatId, "این نیازتان چقدر فوری است؟ همین ماه، چند هفتهٔ آینده، یا هنوز در حال بررسی؟");
-    return;
-  }
-
-  await sendMessage(chatId, "ممنون از توضیحات. اگر مایل به مشاورهٔ دقیق‌تر هستید، شماره موبایلتان را بفرستید تا همکارم تماس بگیرد. 📞");
+  const role = detectRole(allText) || detectRole(text);
+  if (role) session.role = role;
 }
 
-async function askPhone(chatId: number, session: Session, text: string) {
-  const contact = normalizeContact(text);
+// ---------- Lead saving and team summary ----------
 
-  if (contact.kind === "invalid") {
-    await sendMessage(chatId, RESPONSES.invalid_phone);
-    return;
-  }
-
-  session.phone = contact.value;
-  session.step = "done";
-
-  await sendMessage(chatId, RESPONSES.phone_confirm);
-
-  await saveLeadAndNotifyAdmin(chatId, session);
+interface LeadSession extends Session {
+  specialty?: string;
+  city?: string;
+  pain?: string;
+  role?: string;
+  urgency?: string;
 }
 
-async function saveLeadAndNotifyAdmin(chatId: number, session: Session) {
-  const detail = `دردسر اصلی: ${session.pain || "نامشخص"}. تخصص و شهر: ${session.specialty || "نامشخص"} / ${session.city || "نامشخص"}. نقش: ${session.role || "نامشخص"}. فوریت: ${session.urgency || "نامشخص"}. تاریخچه: ${session.history.join(" | ")}`;
+async function saveLeadAndNotifyAdmin(chatId: number, session: LeadSession, phone: string) {
+  const history = session.messages
+    .filter((m) => m.role !== "system")
+    .map((m) => `${m.role === "user" ? "پزشک" : "دستیار"}: ${m.content}`)
+    .join(" | ");
+
+  const detail = `مشکل اصلی: ${session.pain || "نامشخص"}. تخصص و شهر: ${session.specialty || "نامشخص"} / ${session.city || "نامشخص"}. نقش: ${session.role || "نامشخص"}. فوریت: ${session.urgency || "نامشخص"}. تاریخچه: ${history}`;
 
   const payload = {
     source: "telegram_bot",
     name: session.name || "پزشک/مدیر مطب",
-    contact: session.phone,
+    contact: phone,
     page: "telegram",
     goal: "مشاوره و فروش سایت پزشکی",
     intent: session.pain || "مشاوره عمومی",
@@ -332,7 +258,7 @@ async function saveLeadAndNotifyAdmin(chatId: number, session: Session) {
       const { error } = await supabase.from("leads").insert({
         source: "telegram_bot",
         name: session.name || "پزشک/مدیر مطب",
-        contact: session.phone,
+        contact: phone,
         page: "telegram",
         goal: "مشاوره و فروش سایت پزشکی",
         intent: session.pain || "مشاوره عمومی",
@@ -351,20 +277,16 @@ async function saveLeadAndNotifyAdmin(chatId: number, session: Session) {
   }
 
   if (ADMIN_CHAT_ID) {
-    const teamSummary = buildTeamSummary(session);
-    await sendMessage(Number(ADMIN_CHAT_ID), teamSummary);
-  }
-}
-
-function buildTeamSummary(session: Session): string {
-  return `🔴 لید داغ
+    const summary = `🔴 لید داغ
 ` +
-    `نام: ${session.name || "نامشخص"}\n` +
-    `تخصص و شهر: ${session.specialty || "نامشخص"} / ${session.city || "نامشخص"}\n` +
-    `مشکل اصلی: ${session.pain || "نامشخص"}\n` +
-    `سطح فوریت: ${session.urgency || "نامشخص"}\n` +
-    `شماره: ${session.phone || "نامشخص"}\n` +
-    `خلاصهٔ مکالمه: ${session.history.join(" | ")}`;
+      `نام: ${session.name || "نامشخص"}\n` +
+      `تخصص و شهر: ${session.specialty || "نامشخص"} / ${session.city || "نامشخص"}\n` +
+      `مشکل اصلی: ${session.pain || "نامشخص"}\n` +
+      `سطح فوریت: ${session.urgency || "نامشخص"}\n` +
+      `شماره: ${phone}\n` +
+      `خلاصهٔ مکالمه: ${history}`;
+    await sendMessage(Number(ADMIN_CHAT_ID), summary);
+  }
 }
 
 // ---------- Public handler ----------
@@ -384,7 +306,7 @@ export async function handleUpdate(update: TelegramUpdate) {
   const msg = update.message;
   const chatId = msg.chat.id;
   const text = msg.text?.trim() || "";
-  const session = getSession(chatId);
+  const session = getSession(chatId) as LeadSession;
 
   if (!session.name && msg.chat.first_name) {
     session.name = msg.chat.first_name;
@@ -392,9 +314,11 @@ export async function handleUpdate(update: TelegramUpdate) {
 
   if (text === "/start" || text.startsWith("/start ")) {
     resetSession(chatId);
-    const fresh = getSession(chatId);
+    const fresh = getSession(chatId) as LeadSession;
     if (msg.chat.first_name) fresh.name = msg.chat.first_name;
-    await greet(chatId, fresh);
+    const reply = await callOpenRouter([...fresh.messages, { role: "user", content: "سلام" }]);
+    if (reply) fresh.messages.push({ role: "assistant", content: reply });
+    await sendMessage(chatId, reply || "سلام دکتر عزیز. روزتون بخیر. 🌿");
     return;
   }
 
@@ -404,28 +328,29 @@ export async function handleUpdate(update: TelegramUpdate) {
     return;
   }
 
-  if (session.step === "done") {
+  if (session.done) {
     await sendMessage(chatId, "ثبت شما کامل شده. برای مشاورهٔ جدید /start بزنید. 🌟");
     return;
   }
 
-  if (session.step === "greeting") {
-    await greet(chatId, session);
+  session.messages.push({ role: "user", content: text });
+  extractFields(session, text);
+
+  const phone = extractPhone(text);
+  if (phone) {
+    session.phone = phone;
+    session.done = true;
+    session.messages.push({ role: "assistant", content: "ممنون دکتر! شمارهٔ شما ثبت شد. همکار انسانی آرایه به‌زودی با شما تماس می‌گیرد. 🌟" });
+    await sendMessage(chatId, "ممنون دکتر! شمارهٔ شما ثبت شد. همکار انسانی آرایه به‌زودی با شما تماس می‌گیرد. 🌟");
+    await saveLeadAndNotifyAdmin(chatId, session, phone);
     return;
   }
 
-  if (session.step === "ask_pain") {
-    await handlePain(chatId, session, text);
-    return;
-  }
-
-  if (session.step === "explore") {
-    await handleExplore(chatId, session, text);
-    return;
-  }
-
-  if (session.step === "ask_phone") {
-    await askPhone(chatId, session, text);
-    return;
+  const reply = await callOpenRouter(session.messages);
+  if (reply) {
+    session.messages.push({ role: "assistant", content: reply });
+    await sendMessage(chatId, reply);
+  } else {
+    await sendMessage(chatId, "مشکلی در ارتباط با دستیار پیش آمده. لطفاً چند لحظه دیگر امتحان کنید یا شماره‌تان را بفرستید تا همکارم با شما تماس بگیرد. 📱");
   }
 }
