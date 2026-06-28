@@ -95,10 +95,10 @@ const SYSTEM_PROMPT = `تو «دستیار آرایه» هستی — مشاور 
 شخصیت تو: مثل یک مشاور فروش با تجربه و خوش‌مشرب که سال‌ها در حوزهٔ دیجیتال کار کرده. گرم، بااعتمادبه‌نفس، صادق و دلسوز. هیچ‌وقت ربات‌وار یا فرمالیستی حرف نزن. مثل یک انسان واقعی که دغدغهٔ مشتری را درک می‌کند صحبت کن.
 
 == شرکت آرایه ==
-آرایه به کسب‌وکارها سایت و بستر آنلاین حرفه‌ای می‌فروشد:
-- پزشکان، مطب‌ها و کلینیک‌ها → سایت بیمارآور + نوبت‌دهی آنلاین + چت‌بات پاسخگوی بیمار ۲۴ساعته
-- کسب‌وکارهای خرد و متوسط → سایت حرفه‌ای، فروشگاه آنلاین، رزرو آنلاین، درگاه پرداخت
-- رستوران‌ها، سالن‌های زیبایی، آموزشگاه‌ها و هر کسب‌وکاری که به حضور آنلاین نیاز دارد
+آرایه به هر نوع کسب‌وکاری سایت و بستر آنلاین حرفه‌ای می‌فروشد:
+- کسب‌وکارهای خرد و متوسط → سایت حرفه‌ای، فروشگاه آنلاین، رزرو/نوبت‌دهی آنلاین، درگاه پرداخت
+- فروشگاه‌ها، رستوران‌ها، سالن‌های زیبایی، آموزشگاه‌ها، مطب‌ها و کلینیک‌ها، و هر کسب‌وکاری که به حضور آنلاین نیاز دارد
+- بسته به حوزه: جذب مشتری، فروش آنلاین، رزرو/نوبت‌دهی، چت‌بات پاسخگوی ۲۴ساعته
 
 == محصول آرایه ==
 - وب‌سایت تخصصی متناسب با نوع کسب‌وکار
@@ -106,9 +106,9 @@ const SYSTEM_PROMPT = `تو «دستیار آرایه» هستی — مشاور 
 - دامنه، سرور، درگاه پرداخت — همه به نام خود مشتری
 - تحویل اولین نسخه: ۲ روز کاری
 - مشتری هیچ کار فنی انجام نمی‌دهد — همه‌چیز را تیم آرایه انجام می‌دهد
-- نمونه‌کار: دکتر عالیه پوردست (عفونی)، دکتر اشفی‌وند (شنوایی)، و چند کسب‌وکار خرد
+- نمونه‌کار: چند کسب‌وکار خرد و متوسط در حوزه‌های مختلف
 - ارزش اصلی: مشتری حتی نیمه‌شب به شما می‌رسد و جامانده نمی‌شود = درآمد بیشتر و دردسر کمتر
-- پکیج‌ها: مطب / کلینیک / مرکز درمانی / کسب‌وکار خرد / فروشگاه
+- پکیج‌ها: کسب‌وکار خرد / فروشگاه آنلاین / رزرو و نوبت‌دهی / سفارشی
 
 == نقش تو ==
 - مشاوره بده، سوال جواب بده، اعتماد بساز.
@@ -206,22 +206,23 @@ function extractPhone(text: string): string | null {
   return null;
 }
 
-function extractSpecialty(text: string): string | null {
-  const match = text.match(/(?:متخصص|دکتر|فوق تخصص|تخصص|پزشک|رزیدنت)\s+([\u0600-\u06FF\s]+?)(?:در|هستم|بودم|هستند|م\.|است|هستند)/);
+function extractBusinessType(text: string): string | null {
+  const match = text.match(/(?:فروشگاه|مغازه|رستوران|کافه|سالن|آرایشگاه|آموزشگاه|شرکت|کلینیک|مطب|دفتر|برند)\s+([\u0600-\u06FF\s]+?)(?:در|هستم|بودم|هستند|م\.|است|هستند)/);
   return match ? match[1].trim() : null;
 }
 
 function extractCity(text: string): string | null {
-  const match = text.match(/(?:شهر|در|مطب)\s+([\u0600-\u06FF\s]+?)(?:هستم|هست|میکنم|م\.|زندگی|کار|دارم)/);
+  const match = text.match(/(?:شهر|در|واحد)\s+([\u0600-\u06FF\s]+?)(?:هستم|هست|میکنم|م\.|زندگی|کار|دارم)/);
   return match ? match[1].trim() : null;
 }
 
 function detectPain(text: string): string | null {
   const t = text.toLowerCase();
-  if (t.includes("نوبت") || t.includes("جذب بیمار") || t.includes("وقت")) return "نوبت‌دهی / جذب بیمار";
+  if (t.includes("نوبت") || t.includes("رزرو") || t.includes("جذب مشتری") || t.includes("جذب بیمار") || t.includes("وقت")) return "رزرو/نوبت‌دهی و جذب مشتری";
   if (t.includes("سایت") || t.includes("وبسایت") || t.includes("وب‌سایت")) return "نبود سایت";
   if (t.includes("گوگل") || t.includes("سئو") || t.includes("دیده") || t.includes("آنلاین")) return "دیده‌شدن آنلاین";
-  if (t.includes("چت") || t.includes("چت‌بات") || t.includes("پاسخگویی") || t.includes("پشتیبانی")) return "پاسخگویی بیمار";
+  if (t.includes("فروش") || t.includes("فروشگاه") || t.includes("درگاه پرداخت")) return "فروش آنلاین";
+  if (t.includes("چت") || t.includes("چت‌بات") || t.includes("پاسخگویی") || t.includes("پشتیبانی")) return "پاسخگویی مشتری";
   if (t.includes("دامنه") || t.includes("سرور") || t.includes("درگاه") || t.includes("هاست")) return "زیرساخت فنی";
   return null;
 }
@@ -236,8 +237,8 @@ function detectUrgency(text: string): string | null {
 
 function detectRole(text: string): string | null {
   const t = text.toLowerCase();
-  if (t.includes("مدیر") || t.includes("مسئول") || t.includes("منشی") || t.includes("کادر")) return "غیرپزشک/نیاز به تایید";
-  if (t.includes("خودم پزشک") || t.includes("دکتر هستم") || t.includes("من پزشک") || t.includes("خودم هستم")) return "خود پزشک/تصمیم‌گیرنده";
+  if (t.includes("کارمند") || t.includes("مسئول") || t.includes("منشی") || t.includes("کادر")) return "کارمند/نیاز به تایید مدیر";
+  if (t.includes("مدیر") || t.includes("صاحب") || t.includes("مالک") || t.includes("خودم هستم") || t.includes("خودم صاحب")) return "مدیر/صاحب کسب‌وکار (تصمیم‌گیرنده)";
   return null;
 }
 
@@ -245,7 +246,7 @@ function extractFields(session: Session, text: string) {
   const userTexts = session.messages.filter((m) => m.role === "user").map((m) => m.content);
   const allText = userTexts.join(" ") + " " + text;
 
-  const specialty = extractSpecialty(allText) || extractSpecialty(text);
+  const specialty = extractBusinessType(allText) || extractBusinessType(text);
   if (specialty) session.specialty = specialty;
 
   const city = extractCity(allText) || extractCity(text);
@@ -274,19 +275,19 @@ interface LeadSession extends Session {
 async function saveLeadAndNotifyAdmin(chatId: number, session: LeadSession, phone: string) {
   const history = session.messages
     .filter((m) => m.role !== "system")
-    .map((m) => `${m.role === "user" ? "پزشک" : "دستیار"}: ${m.content}`)
+    .map((m) => `${m.role === "user" ? "مشتری" : "دستیار"}: ${m.content}`)
     .join(" | ");
 
-  const detail = `مشکل اصلی: ${session.pain || "نامشخص"}. تخصص و شهر: ${session.specialty || "نامشخص"} / ${session.city || "نامشخص"}. نقش: ${session.role || "نامشخص"}. فوریت: ${session.urgency || "نامشخص"}. تاریخچه: ${history}`;
+  const detail = `مشکل اصلی: ${session.pain || "نامشخص"}. نوع کسب‌وکار و شهر: ${session.specialty || "نامشخص"} / ${session.city || "نامشخص"}. نقش: ${session.role || "نامشخص"}. فوریت: ${session.urgency || "نامشخص"}. تاریخچه: ${history}`;
 
   const payload = {
     source: "telegram_bot",
-    name: session.name || "پزشک/مدیر مطب",
+    name: session.name || "مدیر کسب‌وکار",
     contact: phone,
     page: "telegram",
-    goal: "مشاوره و فروش سایت پزشکی",
+    goal: "مشاوره و فروش سایت/حضور آنلاین",
     intent: session.pain || "مشاوره عمومی",
-    sitetype: "مطب/کلینیک/مرکز درمانی",
+    sitetype: session.specialty || "کسب‌وکار",
     detail,
     raw: { ...session, chatId },
   };
@@ -311,12 +312,12 @@ async function saveLeadAndNotifyAdmin(chatId: number, session: LeadSession, phon
       const supabase = getSupabaseAdmin();
       const { error } = await supabase.from("leads").insert({
         source: "telegram_bot",
-        name: session.name || "پزشک/مدیر مطب",
+        name: session.name || "مدیر کسب‌وکار",
         contact: phone,
         page: "telegram",
-        goal: "مشاوره و فروش سایت پزشکی",
+        goal: "مشاوره و فروش سایت/حضور آنلاین",
         intent: session.pain || "مشاوره عمومی",
-        sitetype: "مطب/کلینیک/مرکز درمانی",
+        sitetype: session.specialty || "کسب‌وکار",
         detail,
         raw: payload,
       });

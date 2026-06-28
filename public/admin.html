@@ -12,26 +12,77 @@
   <link rel="stylesheet" href="/assets/css/styles.css" />
   <style>
     .admin-shell{min-height:100vh;background:var(--paper-2)}
-    .admin-bar{background:var(--navy-800);color:#fff}
-    .admin-bar .container{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:16px}
+    .admin-bar{background:var(--navy-800);color:#fff;position:sticky;top:0;z-index:40}
+    .admin-bar .container{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px;max-width:none;padding-inline:clamp(16px,3vw,28px)}
     .admin-bar .brand-name{color:#fff}
     .admin-bar-title{font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:10px}
     .admin-bar .btn-ghost{border-color:rgba(255,255,255,.25);color:#fff}
     .admin-bar .btn-ghost:hover{border-color:var(--emerald-soft);color:var(--emerald-soft)}
-    .admin-main{padding-block:clamp(24px,4vw,40px)}
+    .hamburger{display:none;background:rgba(255,255,255,.12);border:0;color:#fff;width:38px;height:38px;border-radius:var(--r-sm);font-size:1.2rem;cursor:pointer;line-height:1}
+    .hamburger:hover{background:rgba(255,255,255,.22)}
+
+    /* ===== layout: sidebar + content ===== */
+    .admin-body{display:flex;align-items:flex-start;min-height:calc(100vh - 66px)}
+    .admin-main{flex:1;min-width:0;padding:clamp(18px,3vw,30px) clamp(16px,3vw,30px)}
+    .admin-sidebar{flex:0 0 244px;width:244px;background:var(--navy-800);color:#fff;align-self:stretch;padding:16px 12px;position:sticky;top:66px;height:calc(100vh - 66px);overflow-y:auto}
+    .nav-group{margin-bottom:18px}
+    .nav-group-title{font-size:.72rem;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.4);padding:0 12px 8px;text-transform:uppercase}
+    .admin-sidebar .admin-tab{display:flex;align-items:center;gap:11px;width:100%;text-align:right;padding:11px 12px;border-radius:var(--r-sm);font-weight:700;font-size:.92rem;color:rgba(255,255,255,.78);background:transparent;border:0;cursor:pointer;transition:background .15s,color .15s;margin-bottom:2px}
+    .admin-sidebar .admin-tab:hover{background:rgba(255,255,255,.08);color:#fff}
+    .admin-sidebar .admin-tab.is-active{background:var(--emerald);color:#fff;box-shadow:var(--sh-emerald)}
+    .admin-sidebar .admin-tab svg{width:19px;height:19px;flex:none;opacity:.9}
+    .nav-badge{margin-inline-start:auto;background:#c0392b;color:#fff;border-radius:var(--r-pill);padding:1px 8px;font-size:.72rem;font-weight:800;font-variant-numeric:tabular-nums}
+    .admin-tab.is-active .nav-badge{background:rgba(255,255,255,.25)}
+    .sidebar-backdrop{display:none}
+
+    .admin-panel{display:none}
+    .admin-panel.is-active{display:block}
+
+    /* ===== overview ===== */
+    .ov-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+    .ov-hero h2{font-size:1.4rem;font-weight:800}
+    .ov-hero p{color:var(--muted);font-size:.92rem;margin-top:4px}
+    .ov-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+    .ov-kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:18px;box-shadow:var(--sh-sm);position:relative;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
+    .ov-kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+    .ov-kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--emerald)}
+    .ov-kpi.warn::before{background:#d9534f}
+    .ov-kpi .ico{font-size:1.1rem;opacity:.6;margin-bottom:8px}
+    .ov-kpi .num{font-size:1.9rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+    .ov-kpi.warn .num{color:#c0392b}
+    .ov-kpi .lbl{font-size:.82rem;color:var(--muted);margin-top:6px}
+    .ov-cols{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+    .ov-block{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:18px 20px}
+    .ov-block h3{font-size:.95rem;font-weight:800;margin-bottom:14px}
+    .ov-spark{display:flex;align-items:flex-end;gap:8px;height:120px}
+    .ov-spark-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;justify-content:flex-end}
+    .ov-spark-bars{width:100%;display:flex;gap:3px;align-items:flex-end;justify-content:center;flex:1}
+    .ov-spark-bar{flex:1;border-radius:4px 4px 0 0;min-height:3px}
+    .ov-spark-bar.v{background:rgba(52,120,200,.45)}
+    .ov-spark-bar.l{background:var(--emerald)}
+    .ov-spark-day{font-size:.68rem;color:var(--muted-2)}
+    .ov-legend{display:flex;gap:14px;font-size:.78rem;color:var(--muted);margin-bottom:12px}
+    .ov-legend span{display:inline-flex;align-items:center;gap:5px}
+    .ov-dot{width:9px;height:9px;border-radius:3px}
+    .ov-quick{display:grid;gap:8px}
+    .ov-quick button{display:flex;align-items:center;gap:10px;text-align:right;padding:12px 14px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:var(--paper);font-family:inherit;font-weight:700;font-size:.9rem;color:var(--ink);cursor:pointer;transition:all .15s}
+    .ov-quick button:hover{border-color:var(--emerald);color:var(--emerald);background:#fff}
+    .ov-quick button .q-ico{font-size:1.05rem}
+    .ov-quick button .q-arrow{margin-inline-start:auto;color:var(--muted-2)}
+
+    @media(max-width:900px){
+      .hamburger{display:inline-flex;align-items:center;justify-content:center}
+      .admin-sidebar{position:fixed;top:0;bottom:0;right:0;height:100vh;z-index:60;transform:translateX(100%);transition:transform .25s;width:260px;box-shadow:var(--sh-lg)}
+      .admin-sidebar.is-open{transform:translateX(0)}
+      .sidebar-backdrop.is-open{display:block;position:fixed;inset:0;background:rgba(10,20,34,.5);z-index:55}
+      .ov-cols{grid-template-columns:1fr}
+    }
 
     /* login */
     .admin-login{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--navy-800)}
     .admin-login-card{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-lg);padding:clamp(26px,4vw,40px);width:min(420px,100%)}
     .admin-login-card h1{font-size:1.4rem;font-weight:800;margin-bottom:6px}
     .admin-login-card p{color:var(--muted);font-size:.95rem;margin-bottom:22px}
-
-    /* tabs */
-    .admin-tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
-    .admin-tab{padding:10px 22px;border-radius:var(--r-pill);font-weight:700;font-size:.95rem;color:var(--muted);background:var(--card);border:1.5px solid var(--line);cursor:pointer;transition:all .2s}
-    .admin-tab.is-active{background:var(--emerald);color:#fff;border-color:var(--emerald);box-shadow:var(--sh-emerald)}
-    .admin-panel{display:none}
-    .admin-panel.is-active{display:block}
 
     .admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
     .admin-toolbar h2{font-size:1.25rem;font-weight:800}
@@ -205,6 +256,7 @@
     <header class="admin-bar">
       <div class="container">
         <span class="admin-bar-title">
+          <button type="button" class="hamburger" id="sidebarToggle" aria-label="منو">☰</button>
           <img src="assets/logo-icon.svg" alt="" width="28" height="28" />
           پنل مدیریت آرایه
         </span>
