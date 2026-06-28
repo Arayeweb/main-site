@@ -18,6 +18,7 @@
 
   function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
   function isPhone(v) { return /^(\+98|0098|0)?9\d{9}$/.test(toLatin(v).replace(/[\s\-()]/g, "")); }
+  function isTelegram(v) { return /^@[a-zA-Z0-9_]{5,32}$/.test(v.trim()); }
   function normalizeContact(v) {
     const raw = String(v || "").trim();
     if (isPhone(raw)) {
@@ -25,6 +26,7 @@
       return { kind: "phone", value: "0" + digits.replace(/^(\+98|0098|0)?/, "") };
     }
     if (isEmail(raw)) return { kind: "email", value: raw.toLowerCase() };
+    if (isTelegram(raw)) return { kind: "telegram", value: raw.toLowerCase() };
     return { kind: "invalid", value: raw };
   }
 

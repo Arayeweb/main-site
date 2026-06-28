@@ -17,7 +17,12 @@ export function isPhone(v: string): boolean {
   return /^(\+98|0098|0)?9\d{9}$/.test(toLatin(v).replace(/[\s\-()]/g, ""));
 }
 
-export type ContactKind = "phone" | "email" | "invalid";
+/** آیدی تلگرام: @ و حداقل ۵ کاراکتر (a-z, 0-9, _). */
+export function isTelegram(v: string): boolean {
+  return /^@[a-zA-Z0-9_]{5,32}$/.test(v.trim());
+}
+
+export type ContactKind = "phone" | "email" | "telegram" | "invalid";
 
 /**
  * مقدار تماس را اعتبارسنجی و نرمال می‌کند.
@@ -39,6 +44,10 @@ export function normalizeContact(rawInput: string): {
 
   if (isEmail(raw)) {
     return { kind: "email", value: raw.toLowerCase() };
+  }
+
+  if (isTelegram(raw)) {
+    return { kind: "telegram", value: raw.toLowerCase() };
   }
 
   return { kind: "invalid", value: raw };
