@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     target_url,
     title: str(body.title, 200),
     is_active: true,
-    created_by: session.userId,
+    created_by: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(session.userId) ? session.userId : null,
   };
 
   try {

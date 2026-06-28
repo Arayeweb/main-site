@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
         currency: str(body.currency, 10) || "IRR",
         note: str(body.note, 1000),
         terms: str(body.terms, 1000),
-        created_by: session.userId,
+        created_by: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(session.userId) ? session.userId : null,
         ...totals,
       })
       .select()
