@@ -37,11 +37,6 @@
     academy: "آکادمی",
     konkour: "کنکور",
   };
-  var PLAN_LABELS = {
-    basic: "پکیج دیده شو",
-    popular: "پکیج محبوب",
-    vip: "پکیج کامل",
-  };
 
   /* ---------- helpers ---------- */
   function el(id) { return document.getElementById(id); }
@@ -59,16 +54,6 @@
     catch (e) { return "—"; }
   }
   function todayStr() { return new Date().toISOString().slice(0, 10); }
-  function fmtDateTime(iso) {
-    if (!iso) return "—";
-    var d = new Date(iso);
-    if (isNaN(d.getTime())) return "—";
-    try {
-      var date = toFa(d.toLocaleDateString("fa-IR", { month: "long", day: "numeric" }));
-      var time = toFa(d.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit", hour12: false }));
-      return date + "، " + time;
-    } catch (e) { return "—"; }
-  }
   function options(map, selected) {
     return Object.keys(map).map(function (k) {
       return '<option value="' + k + '"' + (k === selected ? " selected" : "") + ">" + esc(map[k]) + "</option>";
@@ -269,8 +254,7 @@
         '<span class="src-tag src-' + esc(l.source) + '">' + esc(SOURCE_LABELS[l.source] || l.source) + '</span>' +
         (l.page ? '<span>صفحه: <b>' + esc(PAGE_LABELS[l.page] || l.page) + '</b></span>' : '') +
         '<span>مالک: <b>' + esc(ownerName(l.owner_id)) + '</b></span>' +
-        (l.plan ? '<span>پکیج: <b>' + esc(PLAN_LABELS[l.plan] || l.plan) + '</b></span>' : '') +
-        '<span>ثبت: <b>' + fmtDateTime(l.created_at) + '</b></span>' +
+        '<span>ثبت: <b>' + fmtDate(l.created_at) + '</b></span>' +
         (l.next_followup_at ? '<span class="' + (due ? "followup-due" : "") + '">پیگیری: <b>' + fmtDate(l.next_followup_at) + '</b></span>' : "") +
       '</div>' +
       (l.crm_note ? '<div class="admin-meta"><span>📝 ' + esc(l.crm_note) + '</span></div>' : "") +
@@ -339,7 +323,7 @@
       var card = e.target.closest("[data-lead]");
       if (!card) return;
       var leadId = card.dataset.lead;
-      var detail = card.querySelector(".lead-detail");
+      var detail = card.querySelector("[data-detail='" + leadId + "']");
       var act = btn.dataset.act;
 
       if (act === "toggle") {
@@ -359,23 +343,16 @@
       if (act === "save") {
         var patch = { id: leadId };
         detail.querySelectorAll("[data-f]").forEach(function (f) { patch[f.dataset.f] = f.value; });
-        console.log("[sales] save patch", patch);
         btn.disabled = true;
         api("PATCH", "/api/sales/leads", patch).then(function (res) {
           btn.disabled = false;
           var ok = detail.querySelector("[data-saveok]");
-          console.log("[sales] save response", res.status, res.data);
           if (res.data && res.data.ok) {
             ok.textContent = "ذخیره شد ✓";
             setTimeout(function () { onRefresh(); }, 600);
-          } else {
-            var err = (res.data && res.data.error) || (res.status ? "خطای " + res.status : "خطا");
-            ok.textContent = err;
-            ok.style.color = "#d9534f";
-          }
-        }).catch(function (e) {
+          } else { ok.textContent = "خطا"; ok.style.color = "#d9534f"; }
+        }).catch(function () {
           btn.disabled = false;
-          console.error("[sales] save error", e);
           var ok = detail.querySelector("[data-saveok]");
           if (ok) { ok.textContent = "خطا"; ok.style.color = "#d9534f"; }
         });
@@ -421,9 +398,8 @@
       '</div>' +
       '<div class="admin-meta">' +
         '<span>مالک: <b>' + esc(ownerName(l.owner_id)) + '</b></span>' +
-        (l.plan ? '<span>پکیج: <b>' + esc(PLAN_LABELS[l.plan] || l.plan) + '</b></span>' : '') +
         '<span class="followup-due">پیگیری تا: <b>' + fmtDate(l.next_followup_at) + '</b></span>' +
-        '<span>ثبت: <b>' + fmtDateTime(l.created_at) + '</b></span>' +
+        '<span>ثبت: <b>' + fmtDate(l.created_at) + '</b></span>' +
       '</div>' +
       '<div class="admin-edit-actions">' +
         '<button type="button" class="btn btn-ghost btn-sm" data-act="toggle">مدیریت ▾</button>' +

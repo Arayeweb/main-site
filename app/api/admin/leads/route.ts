@@ -5,8 +5,8 @@ import { getSession } from "@/lib/auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SOURCES = new Set(["multistep_form", "chatbot", "hero_form", "telegram_bot", "partner_signup_form", "manual_entry", "spaces_hero", "spaces_form", "spaces_chatbot"]);
-const PAGES = new Set(["index", "clinic", "doctors", "restaurant", "spaces", "googlesabt", "academy", "konkour"]);
+const SOURCES = new Set(["multistep_form", "chatbot", "hero_form", "telegram_bot", "partner_signup_form"]);
+const PAGES = new Set(["index", "clinic", "doctors", "restaurant", "spaces", "googlesabt"]);
 const PAGE_SIZE = 50;
 
 function requireAny(req: NextRequest) {

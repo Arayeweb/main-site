@@ -204,9 +204,7 @@ export async function PATCH(req: NextRequest) {
     }
   }
   if ("next_followup_at" in body) {
-    const d = str(body.next_followup_at, 40);
-    // ورودی <input type="date"> فقط YYYY-MM-DD است؛ ستون timestamptz به زمان نیاز دارد.
-    patch.next_followup_at = d ? d + "T00:00:00+00:00" : null;
+    patch.next_followup_at = str(body.next_followup_at, 40) || null;
   }
   if ("crm_note" in body) {
     patch.crm_note = str(body.crm_note, 1000);
@@ -220,13 +218,6 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
-    // وضعیت قبلی را برای ثبت فعالیت تغییر وضعیت می‌خوانیم.
-    const { data: oldLead } = await supabase
-      .from("leads")
-      .select("crm_status")
-      .eq("id", id)
-      .maybeSingle();
-
     const { data, error } = await supabase
       .from("leads")
       .update(patch)
@@ -244,7 +235,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
     }
 
-    if (statusChange && statusChange !== oldLead?.crm_status) {
+    if (statusChange) {
       await supabase.from("lead_activities").insert({
         lead_id: id,
         author_id: session.userId === "admin" ? null : session.userId,
