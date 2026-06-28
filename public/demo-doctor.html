@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>دکتر مریم سلامت — متخصص پوست و مو | نمونه سایت آرایه</title>
+  <meta name="description" content="نمونه سایت پزشک طراحی‌شده توسط آرایه — دکتر مریم سلامت، متخصص پوست و مو. نوبت‌دهی آنلاین، معرفی تخصص، چت‌بات پاسخگوی بیماران." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <style>
+    :root{
+      --navy-900:#0A1422; --navy-800:#0E1A2B; --navy-700:#13243B; --navy-600:#1B3450;
+      --emerald:#2E7D6B; --emerald-bright:#3FA08A; --emerald-soft:#5FBFA8;
+      --amber:#E8B45A; --amber-soft:#F4D9A0;
+      --paper:#F6F8FA; --paper-2:#EEF2F6; --ink:#0E1A2B; --muted:#5B6B7B; --muted-2:#8A99A8;
+      --line:#E2E8EE; --card:#FFFFFF; --bg:#F6F8FA;
+      --r-sm:10px; --r-md:16px; --r-lg:22px; --r-xl:30px; --r-pill:999px;
+      --sh-sm:0 2px 8px rgba(14,26,43,.06); --sh-md:0 12px 34px rgba(14,26,43,.10);
+      --sh-lg:0 30px 70px rgba(10,20,34,.30); --sh-emerald:0 16px 40px rgba(46,125,107,.30);
+      --font:"Vazirmatn",system-ui,"Segoe UI",Tahoma,sans-serif;
+      --maxw:1120px; --gutter:clamp(18px,4vw,40px);
+    }
+    @font-face{font-family:"Vazirmatn";font-style:normal;font-weight:400;font-display:swap;src:url("/assets/fonts/Vazirmatn-Regular.woff2") format("woff2");}
+    @font-face{font-family:"Vazirmatn";font-style:normal;font-weight:700;font-display:swap;src:url("/assets/fonts/Vazirmatn-Bold.woff2") format("woff2");}
+    @font-face{font-family:"Vazirmatn";font-style:normal;font-weight:800;font-display:swap;src:url("/assets/fonts/Vazirmatn-ExtraBold.woff2") format("woff2");}
+    *,*::before,*::after{box-sizing:border-box}
+    *{margin:0}
+    html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+    body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.75;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    img,svg{display:block;max-width:100%}
+    button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+    input,textarea{font-family:inherit}
+    a{color:inherit;text-decoration:none}
+    ul{list-style:none;padding:0}
+    [hidden]{display:none!important}
+    .container{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gutter)}
+    section{position:relative}
+
+    /* ===== Demo Banner ===== */
+    .demo-banner{background:var(--amber);color:var(--navy-900);text-align:center;font-size:13px;font-weight:700;padding:8px 14px;position:sticky;top:0;z-index:100}
+    .demo-banner a{color:var(--navy-800);text-decoration:underline;font-weight:800}
+
+    /* ===== Header ===== */
+    .site-header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:35px;z-index:90;box-shadow:var(--sh-sm)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand-mark{width:40px;height:40px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--emerald),var(--emerald-bright));display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px}
+    .brand-name{font-size:17px;font-weight:800;color:var(--ink)}
+    .brand-tag{font-size:12px;color:var(--muted);font-weight:400;display:block;margin-top:-2px}
+    .header-nav{display:flex;align-items:center;gap:24px}
+    .header-nav a{font-size:14px;color:var(--muted);font-weight:500;transition:color .2s}
+    .header-nav a:hover{color:var(--emerald)}
+    .header-cta{background:var(--emerald);color:#fff;padding:10px 20px;border-radius:var(--r-pill);font-size:14px;font-weight:700;transition:background .2s,transform .15s}
+    .header-cta:hover{background:var(--emerald-bright);transform:translateY(-1px)}
+    .menu-toggle{display:none;width:40px;height:40px;border-radius:var(--r-sm);background:var(--paper-2);place-items:center}
+    .menu-toggle svg{width:22px;height:22px;color:var(--ink)}
+
+    /* ===== Hero ===== */
+    .hero{background:linear-gradient(135deg,var(--navy-800) 0%,var(--navy-600) 100%);color:#fff;padding:60px 0 50px;overflow:hidden;position:relative}
+    .hero::before{content:"";position:absolute;top:-50%;left:-10%;width:50%;height:120%;background:radial-gradient(ellipse at center,rgba(46,125,107,.15),transparent 70%);pointer-events:none}
+    .hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center;position:relative}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--amber);margin-bottom:16px}
+    .hero-eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 2s ease infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .hero h1{font-size:clamp(26px,4.5vw,42px);font-weight:800;line-height:1.3;margin-bottom:18px}
+    .hero h1 .hl{color:var(--emerald-soft)}
+    .hero-sub{font-size:16px;color:rgba(255,255,255,.82);line-height:1.85;max-width:48ch;margin-bottom:28px}
+    .hero-cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+    .btn-primary{background:var(--emerald);color:#fff;padding:14px 28px;border-radius:var(--r-pill);font-size:15px;font-weight:700;display:inline-flex;align-items:center;gap:8px;transition:background .2s,transform .15s;box-shadow:var(--sh-emerald)}
+    .btn-primary:hover{background:var(--emerald-bright);transform:translateY(-2px)}
+    .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);padding:13px 26px;border-radius:var(--r-pill);font-size:15px;font-weight:700;transition:background .2s}
+    .btn-ghost:hover{background:rgba(255,255,255,.08)}
+    .hero-pills{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-pills span{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-pill);padding:7px 14px;font-size:13px;color:rgba(255,255,255,.85)}
+    .hero-pills svg{width:16px;height:16px;color:var(--emerald-soft)}
+
+    /* Hero visual — doctor card */
+    .hero-visual{position:relative}
+    .doc-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-lg);padding:28px;backdrop-filter:blur(12px);text-align:center}
+    .doc-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--emerald-soft),var(--emerald));margin:0 auto 18px;display:grid;place-items:center;font-size:48px;font-weight:800;color:#fff;box-shadow:0 12px 30px rgba(46,125,107,.4)}
+    .doc-card h3{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px}
+    .doc-card .spec{font-size:14px;color:var(--amber);margin-bottom:16px}
+    .doc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+    .doc-stat{background:rgba(255,255,255,.05);border-radius:var(--r-sm);padding:12px 8px}
+    .doc-stat b{display:block;font-size:22px;font-weight:800;color:var(--emerald-soft)}
+    .doc-stat span{font-size:11px;color:rgba(255,255,255,.6)}
+
+    /* ===== Section common ===== */
+    .section-pad{padding:60px 0}
+    .section-head{text-align:center;margin-bottom:40px}
+    .section-head .kicker{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--emerald);margin-bottom:10px}
+    .section-head h2{font-size:clamp(24px,3.5vw,34px);font-weight:800;color:var(--ink);margin-bottom:10px}
+    .section-head p{font-size:16px;color:var(--muted);max-width:52ch;margin-inline:auto}
+
+    /* ===== Services ===== */
+    .services{background:var(--card)}
+    .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .service-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:28px;transition:transform .25s,box-shadow .25s,border-color .25s}
+    .service-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:var(--emerald-soft)}
+    .service-ic{width:52px;height:52px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--emerald),var(--emerald-bright));display:grid;place-items:center;color:#fff;margin-bottom:18px}
+    .service-ic svg{width:26px;height:26px}
+    .service-card h3{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:8px}
+    .service-card p{font-size:14px;color:var(--muted);line-height:1.8}
+
+    /* ===== About ===== */
+    .about{background:var(--paper)}
+    .about-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:40px;align-items:center}
+    .about-photo{position:relative;border-radius:var(--r-lg);overflow:hidden;background:linear-gradient(160deg,#d8e3ea,#b8c8d4);aspect-ratio:4/5;display:flex;align-items:flex-end}
+    .about-photo .ph-silhouette{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:70%;height:auto;color:#9ab0bf}
+    .about-photo-cap{position:relative;z-index:2;width:100%;padding:20px 18px 16px;background:linear-gradient(180deg,transparent,rgba(14,26,43,.85));color:#fff}
+    .about-photo-cap strong{display:block;font-size:18px;font-weight:800}
+    .about-photo-cap span{font-size:13px;color:var(--amber)}
+    .about-badge{position:absolute;top:16px;right:16px;z-index:3;background:#fff;border-radius:var(--r-sm);padding:10px 14px;box-shadow:var(--sh-md);display:flex;align-items:center;gap:10px}
+    .about-badge i{width:36px;height:36px;border-radius:var(--r-sm);background:#e6f3f0;display:grid;place-items:center;color:var(--emerald)}
+    .about-badge b{font-size:13px;color:var(--ink);font-weight:800;display:block}
+    .about-badge em{font-size:11px;color:var(--muted);font-style:normal}
+    .about-copy h2{font-size:clamp(22px,3vw,30px);font-weight:800;margin-bottom:16px;line-height:1.35}
+    .about-copy p{font-size:15px;color:var(--muted);line-height:1.9;margin-bottom:16px}
+    .about-creds{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+    .cred-item{display:flex;align-items:flex-start;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px}
+    .cred-item .tick{width:24px;height:24px;border-radius:50%;background:var(--emerald);color:#fff;display:grid;place-items:center;flex:0 0 auto;font-size:14px;font-weight:800;margin-top:2px}
+    .cred-item b{font-size:14px;font-weight:700;color:var(--ink);display:block}
+    .cred-item span{font-size:12px;color:var(--muted)}
+
+    /* ===== Booking ===== */
+    .booking{background:linear-gradient(180deg,var(--navy-800),var(--navy-700));color:#fff}
+    .booking .section-head h2{color:#fff}
+    .booking .section-head p{color:rgba(255,255,255,.7)}
+    .booking .section-head .kicker{color:var(--amber)}
+    .booking-card{max-width:680px;margin:0 auto;background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg)}
+    .booking-tabs{display:flex;border-bottom:1px solid var(--line)}
+    .booking-tab{flex:1;padding:16px;text-align:center;font-size:14px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;transition:color .2s,border-color .2s}
+    .booking-tab.active{color:var(--emerald);border-bottom-color:var(--emerald)}
+    .booking-body{padding:28px}
+    .booking-panel{display:none}
+    .booking-panel.active{display:block;animation:fadeIn .3s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    /* Calendar */
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .cal-header h4{font-size:16px;font-weight:800;color:var(--ink)}
+    .cal-nav{display:flex;gap:8px}
+    .cal-nav button{width:36px;height:36px;border-radius:var(--r-sm);background:var(--paper-2);display:grid;place-items:center;transition:background .2s}
+    .cal-nav button:hover{background:var(--line)}
+    .cal-nav svg{width:18px;height:18px;color:var(--ink)}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px}
+    .cal-dow{text-align:center;font-size:11px;font-weight:700;color:var(--muted-2);padding:6px 0}
+    .cal-day{text-align:center;font-size:14px;font-weight:600;padding:10px 0;border-radius:var(--r-sm);cursor:pointer;transition:background .15s,color .15s;color:var(--ink)}
+    .cal-day:hover{background:var(--paper-2)}
+    .cal-day.disabled{color:var(--muted-2);opacity:.4;cursor:not-allowed}
+    .cal-day.selected{background:var(--emerald);color:#fff}
+    .cal-day.today{border:2px solid var(--emerald-soft)}
+
+    /* Time slots */
+    .slots-label{font-size:13px;font-weight:700;color:var(--muted);margin:20px 0 12px}
+    .slots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .slot{padding:12px 8px;text-align:center;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:all .15s}
+    .slot:hover{border-color:var(--emerald-soft);background:var(--paper)}
+    .slot.selected{background:var(--emerald);border-color:var(--emerald);color:#fff}
+    .slot.full{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+
+    /* Booking form */
+    .booking-form{margin-top:24px;border-top:1px solid var(--line);padding-top:24px}
+    .booking-form h4{font-size:16px;font-weight:800;margin-bottom:16px}
+    .bf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .bf-field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--ink)}
+    .bf-field input, .bf-field select{width:100%;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;font-size:15px;outline:0;transition:border-color .2s}
+    .bf-field input:focus, .bf-field select:focus{border-color:var(--emerald)}
+    .booking-summary{background:var(--paper);border-radius:var(--r-md);padding:16px;margin:20px 0;display:none}
+    .booking-summary.show{display:block;animation:fadeIn .3s ease}
+    .booking-summary .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
+    .booking-summary .row.total{font-weight:800;font-size:16px;color:var(--emerald);border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+    .booking-success{text-align:center;padding:20px 0;display:none}
+    .booking-success.show{display:block;animation:fadeIn .3s ease}
+    .booking-success .check{width:64px;height:64px;border-radius:50%;background:#e6f3f0;color:var(--emerald);display:grid;place-items:center;margin:0 auto 16px;animation:popIn .4s ease}
+    .booking-success .check svg{width:32px;height:32px}
+    @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+    .booking-success h3{font-size:20px;font-weight:800;color:var(--emerald);margin-bottom:8px}
+    .booking-success p{color:var(--muted);font-size:14px}
+
+    /* ===== FAQ ===== */
+    .faq{background:var(--card)}
+    .faq-list{max-width:760px;margin:0 auto}
+    .faq-item{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:12px;overflow:hidden;transition:box-shadow .2s}
+    .faq-item[open]{box-shadow:var(--sh-sm)}
+    .faq-item summary{cursor:pointer;font-weight:700;padding:18px 22px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:15px;color:var(--ink)}
+    .faq-item summary::-webkit-details-marker{display:none}
+    .faq-item summary::after{content:"+";font-size:22px;color:var(--emerald);transition:transform .2s;flex:0 0 auto}
+    .faq-item[open] summary::after{transform:rotate(45deg)}
+    .faq-item .faq-body{padding:0 22px 18px;color:var(--muted);font-size:14px;line-height:1.85}
+
+    /* ===== Contact ===== */
+    .contact{background:var(--paper)}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .contact-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:24px}
+    .contact-card h3{font-size:18px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .contact-card h3 svg{width:22px;height:22px;color:var(--emerald)}
+    .contact-info-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+    .contact-info-item .ic{width:40px;height:40px;border-radius:var(--r-sm);background:var(--paper-2);display:grid;place-items:center;flex:0 0 auto;color:var(--emerald)}
+    .contact-info-item .ic svg{width:20px;height:20px}
+    .contact-info-item b{font-size:14px;font-weight:700;display:block;margin-bottom:2px}
+    .contact-info-item span{font-size:13px;color:var(--muted);line-height:1.7}
+    .contact-map{border-radius:var(--r-md);overflow:hidden;min-height:260px;position:relative;border:1px solid var(--line);
+      background:repeating-linear-gradient(0deg,#eef2f5 0 22px,#e6ebef 22px 23px),repeating-linear-gradient(90deg,#eef2f5 0 22px,#e6ebef 22px 23px)}
+    .contact-map::before{content:"";position:absolute;top:20%;left:-10%;width:60%;height:14px;background:#dfe7ec;transform:rotate(18deg)}
+    .contact-map::after{content:"";position:absolute;bottom:25%;right:-5%;width:70%;height:16px;background:#d7e6e0;transform:rotate(-10deg)}
+    .map-pin{position:absolute;top:44%;left:46%;z-index:2;color:#e2483d;transform:translate(-50%,-100%);animation:bounce 2s ease infinite}
+    @keyframes bounce{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-115%)}}
+    .map-pin svg{width:32px;height:32px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))}
+
+    /* ===== Footer ===== */
+    .site-footer{background:var(--navy-900);color:rgba(255,255,255,.7);padding:40px 0 30px}
+    .footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:30px;flex-wrap:wrap}
+    .footer-brand .brand-name{color:#fff;font-size:18px}
+    .footer-brand p{font-size:13px;margin-top:8px;max-width:30ch}
+    .footer-links{display:flex;gap:20px;flex-wrap:wrap}
+    .footer-links a{font-size:13px;color:rgba(255,255,255,.6);transition:color .2s}
+    .footer-links a:hover{color:var(--emerald-soft)}
+    .footer-base{margin-top:30px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px}
+    .footer-araaye{text-align:center;padding:14px;background:var(--amber);color:var(--navy-900);font-size:13px;font-weight:700}
+    .footer-araaye a{font-weight:800;text-decoration:underline}
+
+    /* ===== Chatbot ===== */
+    .chat-launcher{position:fixed;bottom:24px;left:24px;z-index:200;width:56px;height:56px;border-radius:50%;background:var(--emerald);color:#fff;display:grid;place-items:center;box-shadow:var(--sh-emerald);transition:transform .2s}
+    .chat-launcher:hover{transform:scale(1.08)}
+    .chat-launcher svg{width:26px;height:26px}
+    .chat-launcher .ping{position:absolute;inset:0;border-radius:50%;border:2px solid var(--emerald);animation:ping 2s ease infinite}
+    @keyframes ping{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+    .chat-panel{position:fixed;bottom:90px;left:24px;z-index:201;width:360px;max-width:calc(100vw - 48px);background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-lg);overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column;max-height:480px}
+    .chat-head{display:flex;align-items:center;gap:10px;padding:16px;background:var(--emerald);color:#fff}
+    .chat-head .av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;font-weight:800;font-size:16px}
+    .chat-head strong{font-size:15px;display:block}
+    .chat-head small{font-size:12px;opacity:.8;display:flex;align-items:center;gap:5px}
+    .chat-head .online{width:8px;height:8px;border-radius:50%;background:#4ade80}
+    .chat-head .close{margin-inline-start:auto;width:32px;height:32px;border-radius:var(--r-sm);background:rgba(255,255,255,.1);display:grid;place-items:center}
+    .chat-head .close svg{width:18px;height:18px}
+    .chat-thread{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
+    .chat-msg{max-width:80%;padding:10px 14px;border-radius:var(--r-md);font-size:14px;line-height:1.7}
+    .chat-msg.bot{background:var(--card);border:1px solid var(--line);border-bottom-right-radius:4px;align-self:flex-start}
+    .chat-msg.user{background:var(--emerald);color:#fff;border-bottom-left-radius:4px;align-self:flex-end}
+    .chat-quick{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line);background:var(--card)}
+    .chat-quick button{font-size:13px;padding:8px 14px;border-radius:var(--r-pill);background:var(--paper-2);color:var(--ink);font-weight:600;transition:background .15s}
+    .chat-quick button:hover{background:var(--emerald);color:#fff}
+    .chat-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:var(--card)}
+    .chat-input input{flex:1;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px;font-size:14px;outline:0}
+    .chat-input input:focus{border-color:var(--emerald)}
+    .chat-input button{width:40px;height:40px;border-radius:var(--r-sm);background:var(--emerald);color:#fff;display:grid;place-items:center;flex:0 0 auto}
+    .chat-input button svg{width:20px;height:20px}
+
+    /* ===== Responsive ===== */
+    @media(max-width:860px){
+      .header-nav{display:none}
+      .menu-toggle{display:grid}
+      .hero-grid{grid-template-columns:1fr;gap:30px}
+      .hero-visual{max-width:380px;margin-inline:auto}
+      .services-grid{grid-template-columns:1fr}
+      .about-grid{grid-template-columns:1fr;gap:28px}
+      .about-photo{max-width:320px;margin-inline:auto}
+      .contact-grid{grid-template-columns:1fr}
+      .bf-row{grid-template-columns:1fr}
+      .slots-grid{grid-template-columns:repeat(3,1fr)}
+      .footer-inner{flex-direction:column}
+    }
+    @media(max-width:480px){
+      .slots-grid{grid-template-columns:repeat(2,1fr)}
+      .cal-day{font-size:13px;padding:8px 0}
+      .chat-panel{bottom:80px;left:12px;right:12px;width:auto}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Demo Banner -->
+  <div class="demo-banner">
+    این یک نمونه سایت است — طراحی‌شده توسط <a href="https://araaye.com/doctors">آرایه</a> برای نمایش امکانات سایت پزشکان
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark">م</span>
+        <div>
+          <span class="brand-name">دکتر مریم سلامت</span>
+          <span class="brand-tag">متخصص پوست و مو</span>
+        </div>
+      </a>
+      <nav class="header-nav">
+        <a href="#services">خدمات</a>
+        <a href="#about">درباره دکتر</a>
+        <a href="#booking">نوبت‌دهی</a>
+        <a href="#faq">سؤالات</a>
+        <a href="#contact">تماس</a>
+      </nav>
+      <a class="header-cta" href="#booking">رزرو نوبت</a>
+      <button class="menu-toggle" aria-label="منو" onclick="document.querySelector('.header-nav').classList.toggle('show')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="hero-eyebrow"><span class="dot"></span>مطب دکتر مریم سلامت — تهران</span>
+          <h1>پوست سالم، <span class="hl">زیبایی طبیعی</span> — با تخصص و علم روز</h1>
+          <p class="hero-sub">درمان تخصصی مشکلات پوستی، مو و زیبایی با جدیدترین روش‌ها و تجهیزات روز دنیا. از مشاوره تا درمان، همراه شما هستیم.</p>
+          <div class="hero-cta-row">
+            <a class="btn-primary" href="#booking">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4" stroke-linecap="round"/></svg>
+              رزرو نوبت آنلاین
+            </a>
+            <a class="btn-ghost" href="#services">مشاهده خدمات</a>
+          </div>
+          <div class="hero-pills">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg> ۱۲ سال تجربه</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> شنبه تا چهارشنبه</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> بیمه‌های طرف قرارداد</span>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="doc-card">
+            <div class="doc-avatar">م.س</div>
+            <h3>دکتر مریم سلامت</h3>
+            <div class="spec">متخصص پوست و مو</div>
+            <div class="doc-stats">
+              <div class="doc-stat"><b>۱۲+</b><span>سال تجربه</span></div>
+              <div class="doc-stat"><b>۵۰۰۰+</b><span>بیمار درمان‌شده</span></div>
+              <div class="doc-stat"><b>۴.۹</b><span>رضایت بیماران</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section class="services section-pad" id="services">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">● خدمات تخصصی</span>
+          <h2>درمان‌های ارائه‌شده در مطب</h2>
+          <p>از مشاوره و تشخیص تا درمان‌های تخصصی پوست و مو — همه در یک مکان</p>
+        </div>
+        <div class="services-grid">
+          <div class="service-card">
+            <span class="service-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M8 12c1-2 3-2 4 0s3 2 4 0"/></svg></span>
+            <h3>تشخیص و درمان جوش</h3>
+            <p>تشخیص دقیق نوع جوش و طراحی برنامه درمانی اختصاصی شامل دارو، لایه‌برداری و مراقبت پوستی.</p>
+          </div>
+          <div class="service-card">
+            <span class="service-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2v6M9 5l3-3 3 3M5 22V12a7 7 0 0 1 14 0v10M5 16h14"/></svg></span>
+            <h3>تزریق بوتاکس و فیلر</h3>
+            <p>رفع چین و چروک، خطوط پوستی و فرم‌دهی صورت با مواد مصوب و تکنیک تخصصی، نتیجه طبیعی.</p>
+          </div>
+          <div class="service-card">
+            <span class="service-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 3v18"/></svg></span>
+            <h3>لیزر پوست و مو</h3>
+            <p>لیزر موهای زائد، لیزر جوش، لیزر رنگدانه و اسکار با دستگاه‌های روز و ایمن برای انواع پوست.</p>
+          </div>
+          <div class="service-card">
+            <span class="service-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12c2-4 6-4 9 0s7 4 9 0"/><path d="M3 18c2-4 6-4 9 0s7 4 9 0"/></svg></span>
+            <h3>درمان ریزش مو</h3>
+            <p>تشخیص علت ریزش مو، درمان‌های دارویی، مزوتراپی و PRP برای تقویت و رویش مجدد موها.</p>
+          </div>
+          <div class="service-card">
+            <span class="service-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M8 12l2 2 4-4"/></svg></span>
+            <h3>مشاوره پوست و زیبایی</h3>
+            <p>بررسی وضعیت پوست، طراحی روتین مراقبتی اختصاصی و توصیه‌های علمی برای پوست سالم.</p>
+          </div>
+          <div class="service-card">
+            <span class="service-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2l3 6 3-6M15 2l3 6 3-6M3 22V10h18v12M3 16h18"/></svg></span>
+            <h3>پیلینگ و لایه‌برداری</h3>
+            <p>پیلینگ شیمیایی، میکرونیدلینگ و هایفو برای جوان‌سازی، روشن‌سازی و بهبود بافت پوست.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="about section-pad" id="about">
+      <div class="container about-grid">
+        <div class="about-photo">
+          <div class="about-badge">
+            <i><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></i>
+            <div><b>بورد تخصص</b><em>پوست و مو</em></div>
+          </div>
+          <svg class="ph-silhouette" viewBox="0 0 200 250" fill="currentColor"><circle cx="100" cy="70" r="42"/><path d="M100 120c-38 0-65 30-65 70v60h130v-60c0-40-27-70-65-70z"/></svg>
+          <div class="about-photo-cap">
+            <strong>دکتر مریم سلامت</strong>
+            <span>متخصص پوست و مو</span>
+          </div>
+        </div>
+        <div class="about-copy">
+          <span class="kicker" style="color:var(--emerald);font-size:13px;font-weight:700">● درباره دکتر</span>
+          <h2>تخصص، تجربه و تعهد به پوست سالم شما</h2>
+          <p>دکتر مریم سلامت با بیش از ۱۲ سال تجربه بالینی در زمینه بیماری‌های پوست، مو و زیبایی، از دانشگاه علوم پزشکی تهران فارغ‌التحصیل شده است. ایشان با بهره‌گیری از جدیدترین روش‌های تشخیصی و درمانی و تجهیزات روز دنیا، بهترین نتیجه را برای بیماران خود رقم می‌زنند.</p>
+          <p>رویکرد دکتر سلامت، ترکیب علم و تجربه برای ارائه درمانی اختصاصی و متناسب با نوع پوست و نیاز هر بیمار است.</p>
+          <div class="about-creds">
+            <div class="cred-item">
+              <span class="tick">✓</span>
+              <div><b>فوق تخصص پوست</b><span>دانشگاه علوم پزشکی تهران</span></div>
+            </div>
+            <div class="cred-item">
+              <span class="tick">✓</span>
+              <div><b>بورد تخصصی زیبایی</b><span>انجمن متخصصین پوست ایران</span></div>
+            </div>
+            <div class="cred-item">
+              <span class="tick">✓</span>
+              <div><b>عضو هیئت علمی</b><span>دانشگاه علوم پزشکی</span></div>
+            </div>
+            <div class="cred-item">
+              <span class="tick">✓</span>
+              <div><b>بیمه‌های طرف قرارداد</b><span>تأمین اجتماعی، نیروهای مسلح</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Booking -->
+    <section class="booking section-pad" id="booking">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">● نوبت‌دهی آنلاین</span>
+          <h2>در ۳ مرحله نوبت بگیرید</h2>
+          <p>تاریخ و ساعت مناسب خود را انتخاب کنید — بدون نیاز به تماس تلفنی</p>
+        </div>
+
+        <div class="booking-card">
+          <div class="booking-tabs">
+            <button class="booking-tab active" data-tab="calendar">۱. انتخاب تاریخ</button>
+            <button class="booking-tab" data-tab="time">۲. انتخاب ساعت</button>
+            <button class="booking-tab" data-tab="info">۳. اطلاعات</button>
+          </div>
+
+          <div class="booking-body">
+            <!-- Step 1: Calendar -->
+            <div class="booking-panel active" data-panel="calendar">
+              <div class="cal-header">
+                <h4 id="calMonth">شهریور ۱۴۰۴</h4>
+                <div class="cal-nav">
+                  <button onclick="calNav(-1)" aria-label="قبلی"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+                  <button onclick="calNav(1)" aria-label="بعدی"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></button>
+                </div>
+              </div>
+              <div class="cal-grid">
+                <div class="cal-dow">ش</div><div class="cal-dow">ی</div><div class="cal-dow">د</div><div class="cal-dow">س</div><div class="cal-dow">چ</div><div class="cal-dow">پ</div><div class="cal-dow">ج</div>
+              </div>
+              <div class="cal-grid" id="calDays"></div>
+            </div>
+
+            <!-- Step 2: Time slots -->
+            <div class="booking-panel" data-panel="time">
+              <div class="slots-label">ساعت‌های خالی روز انتخاب‌شده:</div>
+              <div class="slots-grid" id="slotsGrid"></div>
+              <div style="margin-top:20px;display:flex;gap:10px">
+                <button class="btn-ghost" style="border:1px solid var(--line);color:var(--ink);padding:11px 22px;border-radius:var(--r-pill);font-weight:700" onclick="bookingTab('calendar')">بازگشت</button>
+              </div>
+            </div>
+
+            <!-- Step 3: Info form -->
+            <div class="booking-panel" data-panel="info">
+              <div class="booking-form">
+                <h4>اطلاعات خود را وارد کنید</h4>
+                <div class="bf-row">
+                  <div class="bf-field">
+                    <label>نام و نام خانوادگی</label>
+                    <input type="text" id="bkName" placeholder="مثلاً علی رضایی" />
+                  </div>
+                  <div class="bf-field">
+                    <label>شماره موبایل</label>
+                    <input type="text" id="bkPhone" placeholder="۰۹۱۲۱۲۳۴۵۶۷" />
+                  </div>
+                </div>
+                <div class="bf-row">
+                  <div class="bf-field">
+                    <label>نوع مراجعه</label>
+                    <select id="bkType">
+                      <option value="consult">مشاوره و معاینه</option>
+                      <option value="acne">درمان جوش</option>
+                      <option value="laser">لیزر</option>
+                      <option value="botox">بوتاکس / فیلر</option>
+                      <option value="hair">درمان ریزش مو</option>
+                    </select>
+                  </div>
+                  <div class="bf-field">
+                    <label>یادآوری پیامکی</label>
+                    <select id="bkReminder">
+                      <option value="yes">بله، پیامک بزنید</option>
+                      <option value="no">نیاز نیست</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="booking-summary" id="bkSummary">
+                  <div class="row"><span>تاریخ</span><span id="smDate">-</span></div>
+                  <div class="row"><span>ساعت</span><span id="smTime">-</span></div>
+                  <div class="row"><span>نوع مراجعه</span><span id="smType">-</span></div>
+                  <div class="row total"><span>هزینه ویزیت</span><span>۱۵۰,۰۰۰ تومان</span></div>
+                </div>
+                <div class="booking-success" id="bkSuccess">
+                  <div class="check"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <h3>نوبت شما ثبت شد!</h3>
+                  <p id="bkSuccessMsg">جزئیات نوبت برایتان پیامک شد. منتظر دیدنتان هستیم.</p>
+                </div>
+                <div style="margin-top:20px;display:flex;gap:10px">
+                  <button style="border:1px solid var(--line);color:var(--ink);padding:11px 22px;border-radius:var(--r-pill);font-weight:700" onclick="bookingTab('time')">بازگشت</button>
+                  <button class="btn-primary" style="background:var(--emerald);color:#fff;border:0;padding:13px 28px;border-radius:var(--r-pill);font-weight:700;font-size:15px;box-shadow:var(--sh-emerald)" onclick="submitBooking()">ثبت نهایی نوبت</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq section-pad" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">● سؤالات متداول</span>
+          <h2>پاسخ سؤال‌های پرتکرار</h2>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>ساعات کاری مطب چه زمانی است؟</summary>
+            <div class="faq-body"><p>مطب دکتر سلامت شنبه تا چهارشنبه، از ساعت ۱۶ تا ۲۰ پذیرای مراجعین است. پنجشنبه‌ها و جمعه‌ها مطب تعطیل است. نوبت‌دهی آنلاین ۲۴ ساعته فعال است.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>برای اولین ویزیت چه چیزی همراه داشته باشم؟</summary>
+            <div class="faq-body"><p>کارت ملی، بیمه (در صورت داشتن بیمه طرف قرارداد) و لیست داروهایی که در حال مصرف هستید کافی است. اگر آزمایش یا عکس پوست قبلی دارید، همراهتان بیاورید.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>آیا بیمه‌های تأمین اجتماعی و نیروهای مسلح پذیرفته می‌شود؟</summary>
+            <div class="faq-body"><p>بله، مطب با بیمه تأمین اجتماعی و نیروهای مسلح طرف قرارداد است. بخشی از هزینه ویزیت و درمان‌های پوشش‌دار توسط بیمه تأمین می‌شود.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>تزریق بوتاکس و فیلر چه عوارضی دارد؟</summary>
+            <div class="faq-body"><p>در صورت انجام توسط متخصص پوست، عوارض بسیار نادر و موقتی است (مانند کبودی خفیف). دکتر سلامت از مواد مصوب و تکنیک مناسب نوع پوست شما استفاده می‌کند تا نتیجه طبیعی باشد.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>چند جلسه برای درمان جوش لازم است؟</summary>
+            <div class="faq-body"><p>تعداد جلسات بسته به نوع و شدت جوش متفاوت است. پس از معاینه اولیه، دکتر سلامت برنامه درمانی اختصاصی شما را مشخص می‌کند — معمولاً بین ۴ تا ۸ جلسه.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="contact section-pad" id="contact">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">● اطلاعات تماس</span>
+          <h2>ما را پیدا کنید</h2>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-card">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> آدرس و راه‌های ارتباطی</h3>
+            <div class="contact-info-item">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>
+              <div><b>آدرس مطب</b><span>تهران، خیابان ولیعصر، بالاتر از میدان ونک، ساختمان پزشکان سینا، طبقهٔ چهارم، واحد ۴۰۲</span></div>
+            </div>
+            <div class="contact-info-item">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h4l2 5-3 2a13 13 0 0 0 6 6l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 2 6a2 2 0 0 1 2-2z"/></svg></span>
+              <div><b>شماره تماس</b><span>۰۲۱-۸۸۸۷۶۵۴۳ — ۰۹۱۲-۳۴۵۶۷۸۹</span></div>
+            </div>
+            <div class="contact-info-item">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+              <div><b>ساعات کاری</b><span>شنبه تا چهارشنبه: ۱۶ تا ۲۰<br>پنجشنبه و جمعه: تعطیل</span></div>
+            </div>
+            <div class="contact-info-item">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+              <div><b>ایمیل</b><span>info@dr-salamat.ir</span></div>
+            </div>
+          </div>
+          <div class="contact-card" style="padding:0;overflow:hidden">
+            <div class="contact-map">
+              <div class="map-pin">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="brand-name" style="color:#fff">دکتر مریم سلامت</span>
+          <p>متخصص پوست و مو — تهران</p>
+        </div>
+        <div class="footer-links">
+          <a href="#services">خدمات</a>
+          <a href="#about">درباره دکتر</a>
+          <a href="#booking">نوبت‌دهی</a>
+          <a href="#faq">سؤالات</a>
+          <a href="#contact">تماس</a>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>© ۱۴۰۴ مطب دکتر مریم سلامت — تمام حقوق محفوظ است.</span>
+        <span>طراحی و توسعه: آرایه</span>
+      </div>
+    </div>
+  </footer>
+  <div class="footer-araaye">
+    این سایت نمونه توسط <a href="https://araaye.com/doctors">آرایه</a> طراحی شده — سایت شما هم می‌تواند همین‌قدر حرفه‌ای باشد. برای قیمت اختصاصی کلیک کنید.
+  </div>
+
+  <!-- Chatbot -->
+  <button class="chat-launcher" id="chatLauncher" aria-label="گفتگو با دستیار مطب">
+    <span class="ping"></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 3z"/></svg>
+  </button>
+  <div class="chat-panel" id="chatPanel" hidden>
+    <header class="chat-head">
+      <span class="av">د</span>
+      <div><strong>دستیار مطب</strong><small><span class="online"></span> آنلاین — فوری پاسخ می‌دهد</small></div>
+      <button class="close" onclick="toggleChat()" aria-label="بستن"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </header>
+    <div class="chat-thread" id="chatThread"></div>
+    <div class="chat-quick" id="chatQuick"></div>
+    <form class="chat-input" id="chatForm">
+      <input type="text" id="chatInput" placeholder="پیام خود را بنویسید…" autocomplete="off" />
+      <button type="submit" aria-label="ارسال"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l16-7-7 16-2-7-7-2z"/></svg></button>
+    </form>
+  </div>
+
+  <script>
+    (function(){
+      var FA = function(n){return String(n).replace(/[0-9]/g,function(d){return "۰۱۲۳۴۵۶۷۸۹"[d];});};
+
+      /* ===== Booking ===== */
+      var months = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+      var daysInMonth = [31,31,31,31,31,31,30,30,30,30,30,29];
+      var calMonth = 5; // شهریور (0-indexed)
+      var calYear = 1404;
+      var selectedDay = null;
+      var selectedTime = null;
+
+      function renderCal(){
+        document.getElementById("calMonth").textContent = months[calMonth] + " " + FA(calYear);
+        var grid = document.getElementById("calDays");
+        grid.innerHTML = "";
+        var firstDow = 0; // simplified — start from Saturday
+        for(var i=0;i<firstDow;i++){ var e=document.createElement("div"); e.className="cal-day disabled"; grid.appendChild(e); }
+        for(var d=1; d<=daysInMonth[calMonth]; d++){
+          (function(day){
+            var el = document.createElement("div");
+            el.className = "cal-day";
+            el.textContent = FA(day);
+            // disable Fridays (day 7 from sat = jomeh) — simplified: every 7th
+            var dow = (firstDow + day - 1) % 7;
+            if(dow === 6) el.classList.add("disabled"); // Friday
+            if(dow !== 6){
+              el.addEventListener("click", function(){
+                document.querySelectorAll(".cal-day").forEach(function(c){ c.classList.remove("selected"); });
+                el.classList.add("selected");
+                selectedDay = day;
+                renderSlots();
+                bookingTab("time");
+              });
+            }
+            grid.appendChild(el);
+          })(d);
+        }
+      }
+
+      function renderSlots(){
+        var slots = ["۱۶:۰۰","۱۶:۳۰","۱۷:۰۰","۱۷:۳۰","۱۸:۰۰","۱۸:۳۰","۱۹:۰۰","۱۹:۳۰"];
+        var full = [1, 4]; // indices that are "full"
+        var grid = document.getElementById("slotsGrid");
+        grid.innerHTML = "";
+        slots.forEach(function(s, i){
+          var el = document.createElement("div");
+          el.className = "slot";
+          if(full.indexOf(i) !== -1){ el.classList.add("full"); }
+          else {
+            el.addEventListener("click", function(){
+              document.querySelectorAll(".slot").forEach(function(c){ c.classList.remove("selected"); });
+              el.classList.add("selected");
+              selectedTime = s;
+              updateSummary();
+              bookingTab("info");
+            });
+          }
+          el.textContent = s;
+          grid.appendChild(el);
+        });
+      }
+
+      function updateSummary(){
+        document.getElementById("smDate").textContent = FA(selectedDay) + " " + months[calMonth] + " " + FA(calYear);
+        document.getElementById("smTime").textContent = selectedTime;
+        var sel = document.getElementById("bkType");
+        document.getElementById("smType").textContent = sel.options[sel.selectedIndex].text;
+        document.getElementById("bkSummary").classList.add("show");
+      }
+
+      window.bookingTab = function(name){
+        document.querySelectorAll(".booking-tab").forEach(function(t){ t.classList.remove("active"); });
+        document.querySelectorAll(".booking-panel").forEach(function(p){ p.classList.remove("active"); });
+        document.querySelector('.booking-tab[data-tab="'+name+'"]').classList.add("active");
+        document.querySelector('.booking-panel[data-panel="'+name+'"]').classList.add("active");
+        if(name === "info") updateSummary();
+      };
+
+      window.calNav = function(dir){
+        calMonth += dir;
+        if(calMonth < 0){ calMonth = 11; calYear--; }
+        if(calMonth > 11){ calMonth = 0; calYear++; }
+        renderCal();
+      };
+
+      window.submitBooking = function(){
+        var name = document.getElementById("bkName").value.trim();
+        var phone = document.getElementById("bkPhone").value.trim();
+        if(!name || !phone){
+          alert("لطفاً نام و شماره موبایل را وارد کنید.");
+          return;
+        }
+        document.getElementById("bkSummary").classList.remove("show");
+        document.querySelectorAll(".booking-panel").forEach(function(p){ p.classList.remove("active"); });
+        document.getElementById("bkSuccess").classList.add("show");
+        document.getElementById("bkSuccessMsg").textContent =
+          "نوبت شما در " + FA(selectedDay) + " " + months[calMonth] + " ساعت " + selectedTime + " ثبت شد. جزئیات برایتان پیامک شد.";
+      };
+
+      renderCal();
+
+      /* ===== Chatbot ===== */
+      var chatState = "start";
+      var chatThread = document.getElementById("chatThread");
+      var chatQuick = document.getElementById("chatQuick");
+      var chatPanel = document.getElementById("chatPanel");
+      var chatLauncher = document.getElementById("chatLauncher");
+
+      var CHAT = {
+        start: {
+          msgs: ["سلام 👋 به مطب دکتر سلامت خوش آمدید.", "چه کمکی از دست من برمی‌آید؟"],
+          quick: [
+            { t: "رزرو نوبت", go: "booking" },
+            { t: "ساعات کاری", go: "hours" },
+            { t: "آدرس مطب", go: "address" },
+            { t: "هزینه ویزیت", go: "cost" },
+          ],
+        },
+        booking: {
+          msgs: ["برای رزرو نوبت کافیست روی دکمهٔ «رزرو نوبت» در بالای صفحه کلیک کنید و تاریخ و ساعت مناسب خود را انتخاب کنید.", "یا شماره‌تان را بفرستید تا منشی تماس بگیرد."],
+          expects: "contact",
+        },
+        hours: {
+          msgs: ["مطب دکتر سلامت شنبه تا چهارشنبه از ساعت ۱۶ تا ۲۰ فعال است.", "پنجشنبه و جمعه تعطیل است. نوبت‌دهی آنلاین ۲۴ ساعته در دسترس است."],
+          quick: [{ t: "رزرو نوبت", go: "booking" }, { t: "سؤال دیگری دارم", go: "start" }],
+        },
+        address: {
+          msgs: ["آدرس مطب: تهران، خیابان ولیعصر، بالاتر از میدان ونک، ساختمان پزشکان سینا، طبقهٔ چهارم، واحد ۴۰۲.", "شماره تماس: ۰۲۱-۸۸۸۷۶۵۴۳"],
+          quick: [{ t: "رزرو نوبت", go: "booking" }, { t: "سؤال دیگری دارم", go: "start" }],
+        },
+        cost: {
+          msgs: ["هزینه ویزیت ۱۵۰,۰۰۰ تومان است.", "در صورت داشتن بیمه تأمین اجتماعی یا نیروهای مسلح، بخشی از هزینه پوشش داده می‌شود."],
+          quick: [{ t: "رزرو نوبت", go: "booking" }, { t: "سؤال دیگری دارم", go: "start" }],
+        },
+        thanks: {
+          msgs: ["ممنون! 🙌 شماره‌تان را ثبت کردم. منشی مطب خیلی زود با شما تماس می‌گیرد.", "چه کار دیگری انجام دهم؟"],
+          quick: [{ t: "سؤال دیگری دارم", go: "start" }, { t: "رزرو نوبت", go: "booking" }],
+        },
+      };
+
+      function addMsg(who, text){
+        var el = document.createElement("div");
+        el.className = "chat-msg " + who;
+        el.textContent = text;
+        chatThread.appendChild(el);
+        chatThread.scrollTop = chatThread.scrollHeight;
+      }
+
+      function renderState(key){
+        var s = CHAT[key];
+        if(!s) return;
+        chatState = key;
+        chatQuick.innerHTML = "";
+        s.msgs.forEach(function(m, i){
+          setTimeout(function(){ addMsg("bot", m); }, i * 600);
+        });
+        if(s.quick){
+          setTimeout(function(){
+            s.quick.forEach(function(q){
+              var b = document.createElement("button");
+              b.textContent = q.t;
+              b.addEventListener("click", function(){
+                addMsg("user", q.t);
+                renderState(q.go);
+              });
+              chatQuick.appendChild(b);
+            });
+          }, s.msgs.length * 600);
+        }
+        if(s.expects === "contact"){
+          document.getElementById("chatInput").placeholder = "شماره موبایل خود را بفرستید…";
+        } else {
+          document.getElementById("chatInput").placeholder = "پیام خود را بنویسید…";
+        }
+      }
+
+      window.toggleChat = function(){
+        var isOpen = !chatPanel.hidden;
+        if(isOpen){
+          chatPanel.hidden = true;
+        } else {
+          chatPanel.hidden = false;
+          if(chatThread.children.length === 0) renderState("start");
+        }
+      };
+
+      chatLauncher.addEventListener("click", toggleChat);
+
+      document.getElementById("chatForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        var input = document.getElementById("chatInput");
+        var val = input.value.trim();
+        if(!val) return;
+        addMsg("user", val);
+        input.value = "";
+        var cur = CHAT[chatState];
+        if(cur && cur.expects === "contact"){
+          setTimeout(function(){ renderState("thanks"); }, 800);
+        } else {
+          setTimeout(function(){
+            addMsg("bot", "برای رزرو نوبت روی دکمهٔ «رزرو نوبت» کلیک کنید یا از گزینه‌های زیر انتخاب کنید:");
+            renderState("start");
+          }, 800);
+        }
+      });
+
+      /* ===== Mobile nav ===== */
+      var style = document.createElement("style");
+      style.textContent = ".header-nav.show{display:flex!important;position:absolute;top:68px;right:0;left:0;flex-direction:column;background:#fff;padding:20px;gap:16px;border-bottom:1px solid var(--line);box-shadow:var(--sh-md)}";
+      document.head.appendChild(style);
+    })();
+  </script>
+</body>
+</html>
