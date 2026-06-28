@@ -51,136 +51,86 @@ export default async function BizcardPage({ params }: { params: { slug: string }
 
   return (
     <>
-      <style>{`
-        @font-face{font-family:"Vazirmatn";src:url("/assets/fonts/Vazirmatn-Regular.woff2") format("woff2");font-weight:400;font-display:swap;}
-        @font-face{font-family:"Vazirmatn";src:url("/assets/fonts/Vazirmatn-Bold.woff2") format("woff2");font-weight:700;font-display:swap;}
-        *{box-sizing:border-box;margin:0;padding:0;}
-        .bc-root{
-          font-family:"Vazirmatn",Tahoma,sans-serif;
-          direction:rtl;background:#f0f2f5;
-          min-height:100vh;display:flex;flex-direction:column;align-items:center;
-          padding:0 0 48px;
-        }
-        /* header */
-        .bc-header{
-          width:100%;background:linear-gradient(135deg,#4285F4 0%,#1b6ef3 100%);
-          padding:40px 24px 80px;text-align:center;position:relative;
-        }
-        .bc-avatar{
-          width:82px;height:82px;border-radius:50%;
-          background:#fff;color:#4285F4;
-          font-size:34px;font-weight:700;
-          display:grid;place-items:center;
-          margin:0 auto 14px;
-          box-shadow:0 4px 16px rgba(0,0,0,.18);
-        }
-        .bc-name{font-size:24px;font-weight:700;color:#fff;line-height:1.35;}
-        .bc-category{
-          display:inline-block;margin-top:8px;
-          background:rgba(255,255,255,.22);color:#fff;
-          font-size:13px;padding:4px 14px;border-radius:999px;
-        }
-        /* card body */
-        .bc-card{
-          background:#fff;border-radius:24px;
-          max-width:480px;width:calc(100% - 32px);
-          margin:-44px auto 0;padding:24px;
-          box-shadow:0 4px 24px rgba(0,0,0,.10);
-        }
-        /* info rows */
-        .bc-info{margin-bottom:20px;}
-        .bc-row{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#5f6368;padding:8px 0;border-bottom:1px solid #f0f2f5;}
-        .bc-row:last-child{border-bottom:none;}
-        .bc-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
-        .bc-row-text{line-height:1.65;}
-        /* buttons */
-        .bc-btn{
-          display:flex;align-items:center;justify-content:center;gap:10px;
-          width:100%;font-family:"Vazirmatn",Tahoma,sans-serif;
-          font-weight:700;font-size:16px;border:0;border-radius:14px;
-          padding:15px 20px;cursor:pointer;text-decoration:none;
-          transition:opacity .15s,transform .15s;
-          margin-bottom:10px;
-        }
-        .bc-btn:active{opacity:.85;transform:scale(.98);}
-        .bc-btn-maps{background:#34A853;color:#fff;}
-        .bc-btn-phone{background:#4285F4;color:#fff;}
-        .bc-secondary{display:flex;gap:10px;margin-top:4px;}
-        .bc-btn-sm{
-          flex:1;font-family:"Vazirmatn",Tahoma,sans-serif;
-          font-size:14px;font-weight:700;border:2px solid #e3e6ea;
-          border-radius:12px;padding:11px 8px;background:#fff;
-          display:flex;align-items:center;justify-content:center;gap:6px;
-          text-decoration:none;color:#202124;
-          transition:background .15s,border-color .15s;
-        }
-        .bc-btn-sm:hover{background:#f1f3f4;border-color:#c6d3ff;}
-        /* footer */
-        .bc-footer{text-align:center;margin-top:20px;font-size:12px;color:#9aa0a6;}
-        .bc-footer a{color:#4285F4;text-decoration:none;font-weight:700;}
-      `}</style>
+      <link rel="stylesheet" href="/assets/css/bizcard.css" />
 
       <div className="bc-root">
-        <div className="bc-header">
-          <div className="bc-avatar">{initial}</div>
-          <div className="bc-name">{card.business_name}</div>
-          {card.category && <div className="bc-category">{card.category}</div>}
-        </div>
+        <main className="bc-card">
+          <div className="bc-banner" />
 
-        <div className="bc-card">
+          <div className="bc-id">
+            <div className="bc-avatar">{initial}</div>
+            <h1 className="bc-name">{card.business_name}</h1>
+            {card.category && (
+              <span className="bc-cat"><span className="dot" />{card.category}</span>
+            )}
+          </div>
+
           {(card.address || card.hours) && (
-            <div className="bc-info">
+            <div className="bc-meta">
               {card.address && (
                 <div className="bc-row">
-                  <span className="bc-icon">📍</span>
-                  <span className="bc-row-text">{card.address}</span>
+                  <span className="ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </span>
+                  <span className="tx"><small>آدرس</small>{card.address}</span>
                 </div>
               )}
               {card.hours && (
                 <div className="bc-row">
-                  <span className="bc-icon">🕐</span>
-                  <span className="bc-row-text">{card.hours}</span>
+                  <span className="ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                  </span>
+                  <span className="tx"><small>ساعت کاری</small>{card.hours}</span>
                 </div>
               )}
             </div>
           )}
 
-          {card.maps_url && (
-            <a className="bc-btn bc-btn-maps" href={card.maps_url} target="_blank" rel="noopener noreferrer">
-              <span>📍</span> مشاهده در گوگل مپ
-            </a>
-          )}
-
-          {card.phone && (
-            <a className="bc-btn bc-btn-phone" href={`tel:${card.phone}`}>
-              <span>📞</span> تماس: {card.phone}
-            </a>
-          )}
+          <div className="bc-actions">
+            {card.maps_url && (
+              <a className="bc-cta primary" href={card.maps_url} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                مسیریابی در گوگل مپ
+              </a>
+            )}
+            {card.phone && (
+              <a className="bc-cta call" href={`tel:${card.phone}`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+                تماس: {card.phone}
+              </a>
+            )}
+          </div>
 
           {(card.instagram || card.telegram || card.website) && (
-            <div className="bc-secondary">
+            <div className="bc-socials">
               {card.instagram && (
-                <a className="bc-btn-sm" href={`https://instagram.com/${card.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer">
-                  <span>📸</span> اینستاگرام
+                <a className="bc-soc ig" href={`https://instagram.com/${card.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                  اینستاگرام
                 </a>
               )}
               {card.telegram && (
-                <a className="bc-btn-sm" href={`https://t.me/${card.telegram.replace("@","")}`} target="_blank" rel="noopener noreferrer">
-                  <span>✈️</span> تلگرام
+                <a className="bc-soc tg" href={`https://t.me/${card.telegram.replace("@","")}`} target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.94 4.6 18.7 19.86c-.24 1.08-.88 1.35-1.78.84l-4.92-3.63-2.37 2.29c-.26.26-.48.48-.99.48l.35-5.02 9.14-8.26c.4-.35-.09-.55-.62-.2L4.93 13.2.06 11.68c-1.06-.33-1.08-1.06.22-1.57L20.57 2.3c.88-.33 1.65.2 1.37 2.3Z"/></svg>
+                  تلگرام
                 </a>
               )}
               {card.website && (
-                <a className="bc-btn-sm" href={card.website} target="_blank" rel="noopener noreferrer">
-                  <span>🌐</span> وب‌سایت
+                <a className="bc-soc web" href={card.website} target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg>
+                  وب‌سایت
                 </a>
               )}
             </div>
           )}
 
-          <div className="bc-footer">
-            <a href="https://araaye.com">ساخته‌شده با آرایه</a>
+          <div className="bc-foot">
+            <a href="https://araaye.com" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 2.5 5.5L20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5L12 3Z"/></svg>
+              ساخته‌شده با <b>آرایه</b>
+            </a>
           </div>
-        </div>
+        </main>
       </div>
     </>
   );
