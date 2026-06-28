@@ -128,7 +128,13 @@ export async function POST(req: NextRequest) {
     crm_note: str(body.crm_note, 1000),
     crm_updated_at: new Date().toISOString(),
     next_followup_at: str(body.next_followup_at, 40) || null,
-    owner_id: body.assign_me ? session.userId : str(body.owner_id, 64),
+    owner_id: body.assign_me
+      ? /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          session.userId
+        )
+        ? session.userId
+        : null
+      : str(body.owner_id, 64),
     consent: true,
   };
 
