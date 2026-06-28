@@ -332,7 +332,6 @@
           detail.innerHTML = "";
         } else {
           // داده‌های فعلی کارت را از DOM بازنمی‌سازیم؛ از حالت ساده استفاده می‌کنیم.
-          detail.dataset.lead = leadId;
           detail.innerHTML = detailHtml(leadsById[leadId] || { id: leadId, crm_status: "new" });
           detail.classList.add("is-open");
           loadActivities(detail.querySelector("[data-activities]"), leadId);
