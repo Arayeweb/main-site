@@ -70,7 +70,7 @@
     return fetch(url, opts).then(function (r) {
       return r.json().then(function (data) { return { status: r.status, data: data }; })
         .catch(function () { return { status: r.status, data: null }; });
-    });
+    }).catch(function () { return { status: 0, data: null }; });
   }
 
   /* ---------- state ---------- */
@@ -351,6 +351,10 @@
             ok.textContent = "ذخیره شد ✓";
             setTimeout(function () { onRefresh(); }, 600);
           } else { ok.textContent = "خطا"; ok.style.color = "#d9534f"; }
+        }).catch(function () {
+          btn.disabled = false;
+          var ok = detail.querySelector("[data-saveok]");
+          if (ok) { ok.textContent = "خطا"; ok.style.color = "#d9534f"; }
         });
         return;
       }

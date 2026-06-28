@@ -190,7 +190,18 @@ export async function PATCH(req: NextRequest) {
     statusChange = status;
   }
   if ("owner_id" in body) {
-    patch.owner_id = body.owner_id === "me" ? session.userId : str(body.owner_id, 64);
+    if (body.owner_id === "me") {
+      // session.userId برای ادمین fallback برابر "admin" است (UUID نیست)؛
+      // ستون owner_id از نوع uuid است، پس فقط UUID معتبر می‌پذیرد.
+      patch.owner_id =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          session.userId
+        )
+          ? session.userId
+          : null;
+    } else {
+      patch.owner_id = str(body.owner_id, 64);
+    }
   }
   if ("next_followup_at" in body) {
     patch.next_followup_at = str(body.next_followup_at, 40) || null;
