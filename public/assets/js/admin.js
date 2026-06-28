@@ -1124,7 +1124,7 @@
       "@media print{body{padding:20px 24px}}" +
       "</style></head><body>" +
       "<div class='inv-header'>" +
-        "<div class='inv-brand'>آرایه وب<small>Araaye.com</small></div>" +
+        "<div class='inv-brand'>هوش آرایه پارس<small>Araaye.com</small></div>" +
         "<div class='inv-meta'>" +
           "<h1>" + esc(kindLabel) + " <span class='status-badge'>" + esc(statusLabel) + "</span></h1>" +
           "<div class='inv-meta-row'><b>شماره سند:</b> " + esc(inv.invoice_number) + "</div>" +
@@ -1133,7 +1133,7 @@
         "</div>" +
       "</div>" +
       "<div class='inv-parties'>" +
-        "<div><div class='inv-party-label'>صادرکننده</div><div class='inv-party-name'>آرایه وب</div><div class='inv-party-sub'>araaye.com</div></div>" +
+        "<div><div class='inv-party-label'>صادرکننده</div><div class='inv-party-name'>هوش آرایه پارس</div><div class='inv-party-sub'>araaye.com</div></div>" +
         "<div><div class='inv-party-label'>مشتری</div><div class='inv-party-name'>" + esc(inv.customer_name) + "</div>" +
           (inv.customer_contact ? "<div class='inv-party-sub'>" + esc(inv.customer_contact) + "</div>" : "") +
           (inv.customer_address ? "<div class='inv-party-sub'>" + esc(inv.customer_address) + "</div>" : "") +
@@ -1194,7 +1194,7 @@
   function invLoadFull(id, cb) {
     if (invCache[id]) { cb(invCache[id]); return; }
     api("GET", "/api/admin/invoices?id=" + encodeURIComponent(id) + "&full=1").then(function (res) {
-      if (res.ok && res.data && res.data.invoice) {
+      if (res.data && res.data.ok && res.data.invoice) {
         invCache[id] = res.data.invoice;
         cb(res.data.invoice);
       }
@@ -1221,7 +1221,7 @@
       if (!confirm("فاکتور " + (card.querySelector(".admin-card-code") || {}).textContent + " حذف شود؟")) return;
       var id = delBtn.dataset.id;
       api("DELETE", "/api/admin/invoices?id=" + encodeURIComponent(id)).then(function (res) {
-        if (res.ok) {
+        if (res.data && res.data.ok) {
           var c = el("inv-" + id);
           if (c) c.remove();
           delete invCache[id];
@@ -1236,7 +1236,7 @@
     var status = el("invStatusFilter").value;
     var url = "/api/admin/invoices?page=" + invPage + (kind ? "&kind=" + encodeURIComponent(kind) : "") + (status ? "&status=" + encodeURIComponent(status) : "");
     api("GET", url).then(function (res) {
-      if (!res.ok || !res.data) return;
+      if (!res.data || !res.data.ok) return;
       var list = res.data.invoices || [];
       if (list.length === 0 && invPage === 0) {
         el("invList").innerHTML = '<div class="admin-empty">هیچ فاکتوری یافت نشد.</div>';
@@ -1277,7 +1277,7 @@
         payload.id = editId;
         api("PATCH", "/api/admin/invoices", payload).then(function (res) {
           el("invSaveBtn").disabled = false;
-          if (res.ok && res.data && res.data.invoice) {
+          if (res.data && res.data.ok && res.data.invoice) {
             var inv = res.data.invoice;
             invCache[inv.id] = inv;
             var old = el("inv-" + inv.id);
@@ -1294,7 +1294,7 @@
       } else {
         api("POST", "/api/admin/invoices", payload).then(function (res) {
           el("invSaveBtn").disabled = false;
-          if (res.ok && res.data && res.data.invoice) {
+          if (res.data && res.data.ok && res.data.invoice) {
             var inv = res.data.invoice;
             invCache[inv.id] = inv;
             el("invBuilderWrap").hidden = true;
