@@ -35,6 +35,20 @@ async function fetchAll(
   return { data: all, error: null };
 }
 
+async function countExact(
+  table: string,
+  supabase: ReturnType<typeof getSupabaseAdmin>
+): Promise<number | null> {
+  const { count, error } = await supabase
+    .from(table)
+    .select("*", { count: "exact", head: true });
+  if (error) {
+    console.error(`[api/admin/stats] countExact(${table}) error:`, error.message);
+    return null;
+  }
+  return count;
+}
+
 function groupCount(items: Record<string, unknown>[], key: string): { key: string; count: number }[] {
   const map = new Map<string, number>();
   for (const item of items) {
@@ -53,9 +67,13 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
-    const [leadsRes, pvRes] = await Promise.all([
+
+    // Count queries — reliable totals even if fetchAll fails
+    const [leadsRes, pvRes, leadsCount, pvCount] = await Promise.all([
       fetchAll("leads", "source, page, utm_source, utm_medium, utm_campaign, created_at", supabase),
       fetchAll("page_views", "page, utm_source, utm_medium, utm_campaign, created_at", supabase),
+      countExact("leads", supabase),
+      countExact("page_views", supabase),
     ]);
 
     if (leadsRes.error) {
@@ -101,8 +119,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      total_leads: leads.length,
-      total_views: views.length,
+      total_leads: leadsCount ?? leads.length,
+      total_views: pvCount ?? views.length,
       this_week: thisWeek,
       this_month: thisMonth,
       views_this_week: viewsThisWeek,

@@ -227,3 +227,27 @@ create index if not exists invoices_status_idx on public.invoices (status);
 create index if not exists invoices_project_idx on public.invoices (project_id);
 
 alter table public.invoices enable row level security;
+
+-- =========================================================
+-- پنل تبلیغات: ثبت و تحلیل داده‌های کمپین‌های تبلیغاتی
+-- =========================================================
+create table if not exists public.ad_campaigns (
+  id            uuid primary key default gen_random_uuid(),
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+  date          date not null,                          -- تاریخ داده
+  platform      text not null,                          -- instagram | google | telegram | other
+  campaign_name text,                                   -- نام کمپین
+  spend         numeric(14,0) not null default 0,       -- هزینه
+  impressions   int not null default 0,                 -- تعداد نمایش
+  clicks        int not null default 0,                 -- تعداد کلیک
+  leads         int not null default 0,                 -- تعداد لید/تبدیل
+  currency      text not null default 'IRR',            -- IRR | USD
+  note          text,
+  created_by    uuid references public.admin_users (id) on delete set null
+);
+
+create index if not exists ad_campaigns_date_idx on public.ad_campaigns (date desc);
+create index if not exists ad_campaigns_platform_idx on public.ad_campaigns (platform);
+
+alter table public.ad_campaigns enable row level security;

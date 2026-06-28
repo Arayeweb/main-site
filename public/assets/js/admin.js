@@ -144,6 +144,7 @@
   var statsLoaded = false;
   var usersLoaded = false;
   var invLoaded = false;
+  var adsLoaded = false;
 
   function initTabs() {
     var tabs = document.querySelectorAll(".admin-tab");
@@ -164,6 +165,7 @@
         if (name === "partners") { loadPartners(0, partnersSearch); }
         if (name === "links") { loadLinks(); }
         if (name === "invoices" && !invLoaded) { invLoaded = true; loadInvoices(true); }
+        if (name === "ads") { adsLoaded = true; loadAds(); }
       });
     });
   }
@@ -1325,6 +1327,311 @@
     el("invMoreBtn").addEventListener("click", function () { invPage++; loadInvoices(false); });
   }
 
+  /* =========================================================
+     پنل تبلیغات
+     ========================================================= */
+  var AD_PLATFORM_LABELS = { instagram: "اینستاگرام", google: "گوگل", telegram: "تلگرام", other: "سایر" };
+  var adsData = [];
+  var adsFilterPlatform = "";
+  var adsCharts = {};
+
+  function loadAds() {
+    api("GET", "/api/admin/ads").then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (!res.data || !res.data.ok) {
+        el("adsEmpty").hidden = false;
+        el("adsEmpty").textContent = "خطا در بارگذاری داده‌ها.";
+        return;
+      }
+      adsData = res.data.ads || [];
+      renderAds();
+    }).catch(function () {
+      el("adsEmpty").hidden = false;
+      el("adsEmpty").textContent = "ارتباط برقرار نشد.";
+    });
+  }
+
+  function adsFiltered() {
+    if (!adsFilterPlatform) return adsData;
+    return adsData.filter(function (a) { return a.platform === adsFilterPlatform; });
+  }
+
+  function fmtAdMoney(n, currency) {
+    var num = Number(n) || 0;
+    var formatted;
+    try { formatted = num.toLocaleString("fa-IR"); } catch (e) { formatted = toFa(String(num)); }
+    return formatted + (currency === "USD" ? " $" : " تومان");
+  }
+
+  function renderAds() {
+    var list = adsFiltered();
+    var tbody = el("adsTableBody");
+    var empty = el("adsEmpty");
+
+    // محاسبه جمع‌ها
+    var totalSpend = 0, totalImpressions = 0, totalClicks = 0, totalLeads = 0;
+    for (var i = 0; i < list.length; i++) {
+      totalSpend += Number(list[i].spend) || 0;
+      totalImpressions += Number(list[i].impressions) || 0;
+      totalClicks += Number(list[i].clicks) || 0;
+      totalLeads += Number(list[i].leads) || 0;
+    }
+    var avgCtr = totalImpressions ? (totalClicks / totalImpressions * 100).toFixed(2) : "0";
+    var avgCpc = totalClicks ? fmtAdMoney(totalSpend / totalClicks, list[0] ? list[0].currency : "IRR") : "—";
+    var avgCpl = totalLeads ? fmtAdMoney(totalSpend / totalLeads, list[0] ? list[0].currency : "IRR") : "—";
+
+    // summary cards
+    el("adsSummary").innerHTML =
+      '<div class="stats-summary">' +
+        '<div class="stat-card"><div class="stat-num">' + toFa(list.length) + '</div><div class="stat-label">تعداد رکورد</div></div>' +
+        '<div class="stat-card"><div class="stat-num">' + fmtAdMoney(totalSpend, list[0] ? list[0].currency : "IRR") + '</div><div class="stat-label">کل هزینه</div></div>' +
+        '<div class="stat-card"><div class="stat-num">' + toFa(totalImpressions) + '</div><div class="stat-label">کل نمایش</div></div>' +
+        '<div class="stat-card"><div class="stat-num">' + toFa(totalClicks) + '</div><div class="stat-label">کل کلیک</div></div>' +
+        '<div class="stat-card"><div class="stat-num">' + toFa(totalLeads) + '</div><div class="stat-label">کل لید</div></div>' +
+        '<div class="stat-card"><div class="stat-num">' + toFa(avgCtr) + '٪</div><div class="stat-label">میانگین CTR</div></div>' +
+        '<div class="stat-card"><div class="stat-num" style="font-size:1.4rem">' + avgCpc + '</div><div class="stat-label">میانگین CPC</div></div>' +
+        '<div class="stat-card"><div class="stat-num" style="font-size:1.4rem">' + avgCpl + '</div><div class="stat-label">میانگین CPL</div></div>' +
+      '</div>';
+
+    // table rows
+    if (!list.length) {
+      tbody.innerHTML = "";
+      empty.hidden = false;
+      el("adsCharts").innerHTML = "";
+      adsCharts = {};
+      return;
+    }
+    empty.hidden = true;
+
+    tbody.innerHTML = list.map(function (a) {
+      var ctr = a.impressions ? (a.clicks / a.impressions * 100).toFixed(2) : "0";
+      var cpc = a.clicks ? fmtAdMoney(a.spend / a.clicks, a.currency) : "—";
+      var cpl = a.leads ? fmtAdMoney(a.spend / a.leads, a.currency) : "—";
+      return '<tr>' +
+        '<td>' + esc(a.date) + '</td>' +
+        '<td><span class="ads-platform-badge ads-pf-' + esc(a.platform) + '">' + esc(AD_PLATFORM_LABELS[a.platform] || a.platform) + '</span></td>' +
+        '<td>' + esc(a.campaign_name || "—") + '</td>' +
+        '<td class="col-num">' + fmtAdMoney(a.spend, a.currency) + '</td>' +
+        '<td class="col-num">' + toFa(a.impressions) + '</td>' +
+        '<td class="col-num">' + toFa(a.clicks) + '</td>' +
+        '<td class="col-num">' + toFa(a.leads) + '</td>' +
+        '<td class="col-num">' + toFa(ctr) + '٪</td>' +
+        '<td class="col-num">' + cpc + '</td>' +
+        '<td class="col-num">' + cpl + '</td>' +
+        '<td class="col-actions">' +
+          '<button type="button" class="btn-edit-ad" data-ad-id="' + esc(a.id) + '">ویرایش</button> ' +
+          '<button type="button" class="btn-del-ad" data-ad-id="' + esc(a.id) + '">حذف</button>' +
+        '</td>' +
+      '</tr>';
+    }).join("");
+
+    // bind edit/delete
+    tbody.querySelectorAll(".btn-edit-ad").forEach(function (btn) {
+      btn.addEventListener("click", function () { openAdEditor(btn.dataset.adId); });
+    });
+    tbody.querySelectorAll(".btn-del-ad").forEach(function (btn) {
+      btn.addEventListener("click", function () { deleteAd(btn.dataset.adId); });
+    });
+
+    renderAdsCharts(list);
+  }
+
+  function renderAdsCharts(list) {
+    var chartsEl = el("adsCharts");
+    // destroy existing charts
+    Object.keys(adsCharts).forEach(function (k) { if (adsCharts[k]) adsCharts[k].destroy(); });
+    adsCharts = {};
+
+    if (list.length < 2) {
+      chartsEl.innerHTML = '<p style="color:var(--muted);font-size:.88rem;grid-column:1/-1">برای نمایش نمودار حداقل ۲ رکورد لازم است.</p>';
+      return;
+    }
+
+    // مرتب‌سازی بر اساس تاریخ صعودی برای نمودار
+    var sorted = list.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    var dates = sorted.map(function (a) { return a.date; });
+    var spends = sorted.map(function (a) { return Number(a.spend) || 0; });
+    var clicks = sorted.map(function (a) { return Number(a.clicks) || 0; });
+    var leads = sorted.map(function (a) { return Number(a.leads) || 0; });
+    var impressions = sorted.map(function (a) { return Number(a.impressions) || 0; });
+
+    chartsEl.innerHTML =
+      '<div class="ads-chart-box"><h3>روند هزینه و لید</h3><canvas id="adsChartTrend"></canvas></div>' +
+      '<div class="ads-chart-box"><h3>روند کلیک و نمایش</h3><canvas id="adsChartClicks"></canvas></div>' +
+      '<div class="ads-chart-box"><h3>هزینه به تفکیک پلتفرم</h3><canvas id="adsChartPlatform"></canvas></div>';
+
+    var emerald = "#2e7d6b";
+    var orange = "#e8b45a";
+    var blue = "#3478c8";
+    var purple = "#8c5fc8";
+
+    // Chart 1: Spend vs Leads (line)
+    adsCharts.trend = new Chart(document.getElementById("adsChartTrend"), {
+      type: "line",
+      data: {
+        labels: dates.map(function (d) { return toFa(d); }),
+        datasets: [
+          { label: "هزینه", data: spends, borderColor: orange, backgroundColor: "rgba(232,180,90,.15)", tension: .3, yAxisID: "y" },
+          { label: "لید", data: leads, borderColor: emerald, backgroundColor: "rgba(46,125,107,.15)", tension: .3, yAxisID: "y1" }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { font: { size: 11 } } } },
+        scales: {
+          y: { position: "left", title: { display: true, text: "هزینه" } },
+          y1: { position: "right", title: { display: true, text: "لید" }, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+
+    // Chart 2: Clicks vs Impressions (bar)
+    adsCharts.clicks = new Chart(document.getElementById("adsChartClicks"), {
+      type: "bar",
+      data: {
+        labels: dates.map(function (d) { return toFa(d); }),
+        datasets: [
+          { label: "نمایش", data: impressions, backgroundColor: "rgba(52,120,200,.5)", borderColor: blue, borderWidth: 1 },
+          { label: "کلیک", data: clicks, backgroundColor: "rgba(140,95,200,.5)", borderColor: purple, borderWidth: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { font: { size: 11 } } } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // Chart 3: Spend by Platform (doughnut)
+    var platformMap = {};
+    list.forEach(function (a) {
+      var p = a.platform;
+      platformMap[p] = (platformMap[p] || 0) + (Number(a.spend) || 0);
+    });
+    var pfLabels = Object.keys(platformMap).map(function (k) { return AD_PLATFORM_LABELS[k] || k; });
+    var pfData = Object.keys(platformMap).map(function (k) { return platformMap[k]; });
+    var pfColors = ["#c2185b", "#1a73e8", "#0277bd", "#5b6b7b"];
+
+    adsCharts.platform = new Chart(document.getElementById("adsChartPlatform"), {
+      type: "doughnut",
+      data: {
+        labels: pfLabels,
+        datasets: [{ data: pfData, backgroundColor: pfColors.slice(0, pfLabels.length) }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } }
+      }
+    });
+  }
+
+  function openAdEditor(id) {
+    var wrap = el("adsBuilderWrap");
+    wrap.hidden = false;
+    el("adsErr").textContent = "";
+
+    if (id) {
+      var ad = adsData.find(function (a) { return a.id === id; });
+      if (!ad) return;
+      el("adEditId").value = ad.id;
+      el("adsBuilderTitle").textContent = "ویرایش تبلیغ";
+      el("adDate").value = ad.date || "";
+      el("adPlatform").value = ad.platform || "instagram";
+      el("adCampaignName").value = ad.campaign_name || "";
+      el("adCurrency").value = ad.currency || "IRR";
+      el("adSpend").value = ad.spend || "";
+      el("adImpressions").value = ad.impressions || "";
+      el("adClicks").value = ad.clicks || "";
+      el("adLeads").value = ad.leads || "";
+      el("adNote").value = ad.note || "";
+    } else {
+      el("adEditId").value = "";
+      el("adsBuilderTitle").textContent = "ثبت تبلیغ جدید";
+      el("adDate").value = new Date().toISOString().slice(0, 10);
+      el("adPlatform").value = "instagram";
+      el("adCampaignName").value = "";
+      el("adCurrency").value = "IRR";
+      el("adSpend").value = "";
+      el("adImpressions").value = "";
+      el("adClicks").value = "";
+      el("adLeads").value = "";
+      el("adNote").value = "";
+    }
+    wrap.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function closeAdEditor() {
+    el("adsBuilderWrap").hidden = true;
+    el("adEditId").value = "";
+    el("adsErr").textContent = "";
+  }
+
+  function saveAd() {
+    var err = el("adsErr");
+    err.textContent = "";
+    var date = el("adDate").value;
+    var platform = el("adPlatform").value;
+    if (!date) { err.textContent = "تاریخ را وارد کنید."; return; }
+    if (!platform) { err.textContent = "پلتفرم را انتخاب کنید."; return; }
+
+    var payload = {
+      date: date,
+      platform: platform,
+      campaign_name: el("adCampaignName").value || null,
+      currency: el("adCurrency").value || "IRR",
+      spend: Number(el("adSpend").value) || 0,
+      impressions: Number(el("adImpressions").value) || 0,
+      clicks: Number(el("adClicks").value) || 0,
+      leads: Number(el("adLeads").value) || 0,
+      note: el("adNote").value || null,
+    };
+
+    var editId = el("adEditId").value;
+    var method = editId ? "PATCH" : "POST";
+    if (editId) payload.id = editId;
+
+    var btn = el("adsSaveBtn");
+    btn.disabled = true;
+    btn.textContent = "در حال ذخیره…";
+
+    api(method, "/api/admin/ads", payload).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = "ذخیره";
+      if (res.data && res.data.ok) {
+        closeAdEditor();
+        loadAds();
+      } else {
+        err.textContent = "خطا در ذخیره‌سازی.";
+      }
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = "ذخیره";
+      err.textContent = "ارتباط برقرار نشد.";
+    });
+  }
+
+  function deleteAd(id) {
+    if (!confirm("آیا از حذف این رکورد اطمینان دارید؟")) return;
+    api("DELETE", "/api/admin/ads?id=" + encodeURIComponent(id)).then(function (res) {
+      if (res.data && res.data.ok) {
+        loadAds();
+      } else {
+        alert("خطا در حذف.");
+      }
+    }).catch(function () { alert("ارتباط برقرار نشد."); });
+  }
+
+  function initAdsPanel() {
+    el("newAdBtn").addEventListener("click", function () { openAdEditor(null); });
+    el("adsCancelBtn").addEventListener("click", closeAdEditor);
+    el("adsSaveBtn").addEventListener("click", saveAd);
+    el("adsFilterBtn").addEventListener("click", function () {
+      adsFilterPlatform = el("adsPlatformFilter").value;
+      renderAds();
+    });
+    el("adsRefreshBtn").addEventListener("click", function () { loadAds(); });
+  }
+
   /* ---------- boot ---------- */
   initLogin();
   initTabs();
@@ -1336,6 +1643,7 @@
   initLinksPanel();
   initStatsPanel();
   initInvoicesPanel();
+  initAdsPanel();
 
   // اگر نشست معتبر بود مستقیم وارد پنل شو.
   api("GET", "/api/admin/login").then(function (res) {

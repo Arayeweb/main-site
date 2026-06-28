@@ -153,8 +153,33 @@
       body > *{display:none!important}
       #invPrintFrame{display:block!important;position:fixed;inset:0;width:100%;height:100%;background:#fff;z-index:99999}
     }
+
+    /* ===== Ads ===== */
+    .ads-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-bottom:22px}
+    .ads-chart-box{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:18px 20px}
+    .ads-chart-box h3{font-size:.95rem;font-weight:800;margin-bottom:12px}
+    .ads-chart-box canvas{max-height:260px;width:100%!important}
+    .ads-table{width:100%;border-collapse:collapse;font-size:.88rem}
+    .ads-table th{text-align:right;padding:8px 10px;background:var(--paper-2);border-bottom:1.5px solid var(--line);font-weight:800;white-space:nowrap}
+    .ads-table td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+    .ads-table tr:last-child td{border-bottom:none}
+    .ads-table .col-num{text-align:left;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .ads-table .col-actions{width:80px;text-align:center;white-space:nowrap}
+    .ads-table .btn-del-ad{background:none;border:none;cursor:pointer;color:#c0392b;font-size:.95rem;padding:4px 8px;border-radius:var(--r-sm)}
+    .ads-table .btn-del-ad:hover{background:rgba(217,83,79,.1)}
+    .ads-table .btn-edit-ad{background:none;border:none;cursor:pointer;color:var(--emerald);font-size:.95rem;padding:4px 8px;border-radius:var(--r-sm)}
+    .ads-table .btn-edit-ad:hover{background:rgba(46,125,107,.1)}
+    .ads-platform-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--r-pill);font-size:.78rem;font-weight:700}
+    .ads-pf-instagram{background:rgba(214,41,118,.13);color:#c2185b}
+    .ads-pf-google{background:rgba(66,133,244,.13);color:#1a73e8}
+    .ads-pf-telegram{background:rgba(33,150,243,.13);color:#0277bd}
+    .ads-pf-other{background:rgba(91,107,123,.12);color:var(--muted)}
+    .ads-builder{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:24px;margin-bottom:18px}
+    .ads-builder-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .ads-builder-head h3{font-size:1.1rem;font-weight:800}
   </style>
   <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <!-- ============ LOGIN ============ -->
@@ -201,6 +226,7 @@
           <button class="admin-tab" type="button" data-tab="links">لینک کوتاه</button>
           <button class="admin-tab" type="button" data-tab="invoices">فاکتورها</button>
           <button class="admin-tab" type="button" data-tab="stats">آمار</button>
+          <button class="admin-tab" type="button" data-tab="ads">تبلیغات</button>
           <button class="admin-tab" type="button" data-tab="users" data-role="admin">کاربران</button>
         </div>
 
@@ -478,6 +504,90 @@
             <button type="button" class="btn btn-ghost btn-sm" id="statsRefreshBtn">↻ به‌روزرسانی</button>
           </div>
           <div id="statsContent"><div class="admin-empty">در حال بارگذاری…</div></div>
+        </section>
+
+        <!-- ===== Ads ===== -->
+        <section class="admin-panel" id="panelAds">
+          <div class="admin-toolbar">
+            <h2>پنل تبلیغات</h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <select id="adsPlatformFilter">
+                <option value="">همه پلتفرم‌ها</option>
+                <option value="instagram">اینستاگرام</option>
+                <option value="google">گوگل</option>
+                <option value="telegram">تلگرام</option>
+                <option value="other">سایر</option>
+              </select>
+              <button type="button" class="btn btn-ghost btn-sm" id="adsFilterBtn">اعمال</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="adsRefreshBtn">↻ به‌روزرسانی</button>
+              <button type="button" class="btn btn-primary btn-sm" id="newAdBtn">+ ثبت تبلیغ جدید</button>
+            </div>
+          </div>
+
+          <!-- builder -->
+          <div id="adsBuilderWrap" hidden>
+            <div class="ads-builder">
+              <div class="ads-builder-head">
+                <h3 id="adsBuilderTitle">ثبت تبلیغ جدید</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button type="button" class="btn btn-ghost btn-sm" id="adsCancelBtn">انصراف</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="adsSaveBtn">ذخیره</button>
+                </div>
+              </div>
+              <input type="hidden" id="adEditId" />
+              <div class="admin-grid" style="margin-bottom:14px">
+                <div class="field"><label>تاریخ *</label><input type="date" id="adDate" /></div>
+                <div class="field"><label>پلتفرم *</label>
+                  <select id="adPlatform">
+                    <option value="instagram">اینستاگرام</option>
+                    <option value="google">گوگل</option>
+                    <option value="telegram">تلگرام</option>
+                    <option value="other">سایر</option>
+                  </select>
+                </div>
+                <div class="field"><label>نام کمپین</label><input type="text" id="adCampaignName" placeholder="مثلاً کمپین بهار اینستاگرام" /></div>
+                <div class="field"><label>ارز</label>
+                  <select id="adCurrency">
+                    <option value="IRR">تومان (IRR)</option>
+                    <option value="USD">دلار (USD)</option>
+                  </select>
+                </div>
+                <div class="field"><label>هزینه</label><input type="number" id="adSpend" min="0" placeholder="مبلغ هزینه‌شده" /></div>
+                <div class="field"><label>نمایش (Impression)</label><input type="number" id="adImpressions" min="0" placeholder="تعداد نمایش" /></div>
+                <div class="field"><label>کلیک</label><input type="number" id="adClicks" min="0" placeholder="تعداد کلیک" /></div>
+                <div class="field"><label>لید / تبدیل</label><input type="number" id="adLeads" min="0" placeholder="تعداد لید" /></div>
+                <div class="field col-full"><label>یادداشت</label><textarea id="adNote" rows="2" style="width:100%;padding:10px;border-radius:var(--r-sm);border:1.5px solid var(--line);font-family:inherit;font-size:.9rem;resize:vertical;line-height:1.7"></textarea></div>
+              </div>
+              <span class="form-err" id="adsErr" style="display:block"></span>
+            </div>
+          </div>
+
+          <!-- summary + charts -->
+          <div id="adsSummary"></div>
+          <div class="ads-charts" id="adsCharts"></div>
+
+          <!-- table -->
+          <div style="overflow-x:auto">
+            <table class="ads-table" id="adsTable">
+              <thead>
+                <tr>
+                  <th>تاریخ</th>
+                  <th>پلتفرم</th>
+                  <th>کمپین</th>
+                  <th class="col-num">هزینه</th>
+                  <th class="col-num">نمایش</th>
+                  <th class="col-num">کلیک</th>
+                  <th class="col-num">لید</th>
+                  <th class="col-num">CTR٪</th>
+                  <th class="col-num">CPC</th>
+                  <th class="col-num">CPL</th>
+                  <th class="col-actions">عملیات</th>
+                </tr>
+              </thead>
+              <tbody id="adsTableBody"></tbody>
+            </table>
+          </div>
+          <div class="admin-empty" id="adsEmpty" hidden>هنوز داده‌ای ثبت نشده است.</div>
         </section>
 
         <!-- ===== Users ===== -->
