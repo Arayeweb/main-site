@@ -339,7 +339,7 @@
       var card = e.target.closest("[data-lead]");
       if (!card) return;
       var leadId = card.dataset.lead;
-      var detail = card.querySelector("[data-detail='" + leadId + "']");
+      var detail = card.querySelector(".lead-detail");
       var act = btn.dataset.act;
 
       if (act === "toggle") {
