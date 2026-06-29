@@ -1,6 +1,6 @@
-import type React from "react";
 import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { normalizeReactStyle } from "@/lib/style";
 
 export const dynamic = "force-dynamic";
 
@@ -63,13 +63,15 @@ export default async function BizcardPage({ params }: { params: { slug: string }
 
   const initial = card.business_name.trim()[0] ?? "؟";
   const theme = THEMES[card.theme_color ?? "blue"] ?? THEMES.blue;
-  const themeStyle = `--brand:${theme.brand};--brand-deep:${theme.deep};`;
+  const themeStyle = normalizeReactStyle(
+    `--brand:${theme.brand};--brand-deep:${theme.deep};`
+  );
 
   return (
     <>
       <link rel="stylesheet" href="/assets/css/bizcard.css" />
 
-      <div className="bc-root" style={themeStyle as React.CSSProperties}>
+      <div className="bc-root" style={themeStyle}>
         <main className="bc-card">
           <div className="bc-banner" />
 
