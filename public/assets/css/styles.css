@@ -636,6 +636,7 @@ body[class*="theme-"] .brand-tag{color:var(--th);background:color-mix(in srgb,va
 .footer-links a{padding:9px 18px;border:1px solid var(--line-dark);border-radius:var(--r-pill);font-size:.88rem;font-weight:600;transition:border-color .2s,background .2s}
 .footer-links a:hover{border-color:var(--emerald-soft);background:rgba(46,125,107,.14)}
 .footer-base{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:22px;color:rgba(255,255,255,.45);font-size:.82rem}
+.footer-license{width:100%;text-align:center;font-size:.78rem;color:rgba(255,255,255,.3);padding-top:10px;border-top:1px solid rgba(255,255,255,.07);margin-top:4px}
 .footer-resil{display:flex;align-items:center;gap:8px}
 
 /* (exit-intent modal removed by request) */

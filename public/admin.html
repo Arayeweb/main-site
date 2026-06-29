@@ -328,6 +328,13 @@
           </button>
         </div>
         <div class="nav-group">
+          <div class="nav-group-title">ابزارها</div>
+          <button class="admin-tab" type="button" data-tab="bizcard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M7 15h3M14 15h3"/></svg>
+            <span>کارت ویزیت</span><span class="nav-badge" id="navBizcardBadge" hidden>۰</span>
+          </button>
+        </div>
+        <div class="nav-group">
           <div class="nav-group-title">سیستم</div>
           <button class="admin-tab" type="button" data-tab="users" data-role="admin">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -710,6 +717,178 @@
           <div class="admin-empty" id="adsEmpty" hidden>هنوز داده‌ای ثبت نشده است.</div>
         </section>
 
+        <!-- ===== Bizcard ===== -->
+        <section class="admin-panel" id="panelBizcard">
+          <style>
+            #panelBizcard .bc-wrap{max-width:740px}
+            #panelBizcard .bc-card-box{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:22px;margin-bottom:18px;box-shadow:var(--sh-sm)}
+            #panelBizcard .bc-card-box h2{font-size:1rem;font-weight:800;margin-bottom:16px;color:var(--emerald)}
+            #panelBizcard .bc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+            #panelBizcard .bc-full{grid-column:1/-1}
+            @media(max-width:560px){#panelBizcard .bc-grid{grid-template-columns:1fr}#panelBizcard .bc-full{grid-column:1}}
+            #panelBizcard label{display:block;font-size:.83rem;font-weight:700;margin-bottom:4px}
+            #panelBizcard .bc-hint{font-size:.76rem;color:var(--muted);margin-top:3px}
+            #panelBizcard input[type=text],#panelBizcard input[type=tel],#panelBizcard input[type=url],#panelBizcard textarea{
+              width:100%;border:1.5px solid var(--line);border-radius:var(--r-sm);
+              padding:9px 12px;font-family:inherit;font-size:.9rem;
+              outline:0;transition:border-color .2s;
+            }
+            #panelBizcard input:focus,#panelBizcard textarea:focus{border-color:var(--emerald);box-shadow:0 0 0 3px rgba(16,185,129,.1);}
+            #panelBizcard .bc-err{color:#c0392b;font-size:.83rem;font-weight:700;margin-top:8px;min-height:18px}
+            #panelBizcard .bc-submit{font-family:inherit;font-weight:700;font-size:.95rem;background:var(--emerald);color:#fff;border:0;border-radius:var(--r-sm);padding:12px 28px;cursor:pointer;width:100%;margin-top:8px;transition:background .15s;}
+            #panelBizcard .bc-submit:hover{filter:brightness(1.08)}
+            #panelBizcard .bc-submit:disabled{background:var(--muted);cursor:not-allowed}
+            #panelBizcard .bc-result{display:none;background:#e6f4ea;border-radius:var(--r-sm);padding:16px;margin-top:14px}
+            #panelBizcard .bc-result.show{display:block}
+            #panelBizcard .bc-result h3{color:#34A853;font-size:.95rem;font-weight:800;margin-bottom:10px}
+            #panelBizcard .bc-result-url{font-size:.9rem;font-weight:700;word-break:break-all;margin-bottom:12px}
+            #panelBizcard .bc-result-url a{color:#1b6ef3}
+            #panelBizcard .bc-qr{text-align:center}
+            #panelBizcard .bc-qr img{border-radius:8px;border:3px solid #fff;box-shadow:var(--sh-sm)}
+            #panelBizcard .bc-qr-dl{font-size:.8rem;color:#34A853;font-weight:700;cursor:pointer;display:inline-block;margin-top:6px}
+            #panelBizcard .bc-list-table{width:100%;border-collapse:collapse;font-size:.85rem}
+            #panelBizcard .bc-list-table th{text-align:right;padding:9px 11px;background:var(--paper-2);font-weight:700;border-bottom:2px solid var(--line)}
+            #panelBizcard .bc-list-table td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
+            #panelBizcard .bc-list-table tr:hover td{background:var(--paper)}
+            #panelBizcard .bc-tag{font-size:.73rem;background:#e8f0fe;color:#4285F4;padding:2px 7px;border-radius:999px;font-weight:700}
+            #panelBizcard .bc-tag-p{font-size:.73rem;background:#fff3e0;color:#e65100;padding:2px 7px;border-radius:999px;font-weight:700}
+            #panelBizcard .bc-empty{text-align:center;padding:28px;color:var(--muted)}
+            #panelBizcard .bc-btn-approve{font-family:inherit;font-size:.78rem;font-weight:700;background:#34A853;color:#fff;border:0;border-radius:6px;padding:5px 12px;cursor:pointer;white-space:nowrap;transition:background .15s}
+            #panelBizcard .bc-btn-approve:hover{background:#2d9247}
+            #panelBizcard .bc-btn-approve:disabled{background:var(--muted);cursor:not-allowed}
+            #panelBizcard .bc-pending-head{color:#e65100;display:flex;align-items:center;gap:8px}
+            #panelBizcard .bc-avatar-zone{border:2px dashed var(--line);border-radius:var(--r-sm);cursor:pointer;overflow:hidden;transition:border-color .2s}
+            #panelBizcard .bc-avatar-zone:hover{border-color:var(--emerald)}
+            #panelBizcard .bc-avatar-empty{padding:18px;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted);font-size:.85rem}
+            #panelBizcard .bc-avatar-empty svg{opacity:.4}
+            #panelBizcard .bc-avatar-full{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--paper)}
+            #panelBizcard .bc-avatar-full img{width:52px;height:52px;border-radius:10px;object-fit:cover;border:1.5px solid var(--line);flex-shrink:0}
+            #panelBizcard .bc-avatar-info{flex:1;min-width:0}
+            #panelBizcard .bc-avatar-fname{font-size:.83rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            #panelBizcard .bc-avatar-status{font-size:.76rem;margin-top:2px}
+            #panelBizcard .bc-avatar-status.uploading{color:#f97316}
+            #panelBizcard .bc-avatar-status.done{color:#34A853}
+            #panelBizcard .bc-avatar-status.fail{color:#c0392b}
+            #panelBizcard .bc-avatar-remove{background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;padding:3px;flex-shrink:0}
+            #panelBizcard .bc-avatar-remove:hover{color:#c0392b}
+          </style>
+
+          <div class="admin-toolbar">
+            <h2>کارت ویزیت دیجیتال</h2>
+            <a class="btn btn-ghost btn-sm" href="/bizcard" target="_blank">↗ صفحه عمومی</a>
+          </div>
+
+          <div class="bc-wrap">
+
+            <!-- pending -->
+            <div class="bc-card-box" id="bc_pendingSection" style="display:none">
+              <h2 class="bc-pending-head">⏳ کارت‌های در انتظار تایید</h2>
+              <div id="bc_pendingWrap"><p class="bc-empty">در حال بارگذاری...</p></div>
+            </div>
+
+            <!-- create form -->
+            <div class="bc-card-box">
+              <h2>ساخت کارت ویزیت جدید</h2>
+              <form id="bc_form">
+                <div class="bc-grid">
+                  <div class="bc-full">
+                    <label>نام کسب‌وکار *</label>
+                    <input id="bc_business_name" type="text" placeholder="مثلاً رستوران میلاد" required />
+                  </div>
+                  <div>
+                    <label>شناسه URL <span style="font-weight:400;color:var(--muted)">(اختیاری)</span></label>
+                    <input id="bc_slug" type="text" placeholder="milad-restaurant" />
+                    <p class="bc-hint">حروف انگلیسی، عدد و خط‌تیره — اگر خالی بماند خودکار ساخته می‌شود</p>
+                  </div>
+                  <div>
+                    <label>دسته‌بندی</label>
+                    <input id="bc_category" type="text" placeholder="رستوران / دندانپزشک / تعمیرگاه" />
+                  </div>
+                  <div>
+                    <label>شماره تماس</label>
+                    <input id="bc_phone" type="tel" placeholder="09121234567" />
+                  </div>
+                  <div>
+                    <label>لینک گوگل مپ</label>
+                    <input id="bc_maps_url" type="url" placeholder="https://maps.google.com/..." />
+                  </div>
+                  <div>
+                    <label>لینک نشان</label>
+                    <input id="bc_neshan_url" type="url" placeholder="https://neshan.org/..." />
+                  </div>
+                  <div>
+                    <label>لینک بلد</label>
+                    <input id="bc_balad_url" type="url" placeholder="https://balad.ir/..." />
+                  </div>
+                  <div>
+                    <label>اینستاگرام</label>
+                    <input id="bc_instagram" type="text" placeholder="@username" />
+                  </div>
+                  <div>
+                    <label>تلگرام</label>
+                    <input id="bc_telegram" type="text" placeholder="@username" />
+                  </div>
+                  <div>
+                    <label>وب‌سایت</label>
+                    <input id="bc_website" type="url" placeholder="https://example.com" />
+                  </div>
+                  <div class="bc-full">
+                    <label>آدرس</label>
+                    <input id="bc_address" type="text" placeholder="تهران، خیابان ولیعصر، پلاک ۱۲" />
+                  </div>
+                  <div class="bc-full">
+                    <label>ساعت کاری</label>
+                    <input id="bc_hours" type="text" placeholder="شنبه تا پنجشنبه: ۹ صبح — ۱۰ شب" />
+                  </div>
+                  <div class="bc-full">
+                    <label>لوگو / عکس پروفایل</label>
+                    <div class="bc-avatar-zone" id="bc_avatarZone" onclick="document.getElementById('bc_logoFile').click()">
+                      <div class="bc-avatar-empty" id="bc_avatarEmpty">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="12" cy="12" r="3.5"/></svg>
+                        <span>انتخاب یا کشیدن تصویر</span>
+                        <small style="font-size:.75rem">JPG، PNG یا WebP — حداکثر ۳ مگابایت</small>
+                      </div>
+                      <div class="bc-avatar-full" id="bc_avatarFull" style="display:none">
+                        <img id="bc_avatarThumb" src="" alt="" />
+                        <div class="bc-avatar-info">
+                          <div class="bc-avatar-fname" id="bc_avatarFname"></div>
+                          <div class="bc-avatar-status" id="bc_avatarStatus"></div>
+                        </div>
+                        <button type="button" class="bc-avatar-remove" onclick="event.stopPropagation();bcRemoveAvatar()">×</button>
+                      </div>
+                    </div>
+                    <input type="file" id="bc_logoFile" accept="image/jpeg,image/png,image/webp" style="display:none" />
+                    <input type="hidden" id="bc_logo_url" value="" />
+                  </div>
+                  <div class="bc-full">
+                    <label>تم رنگی</label>
+                    <div id="bc_themePicker" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+                    <input type="hidden" id="bc_theme_color" value="blue" />
+                  </div>
+                </div>
+                <div class="bc-err" id="bc_err"></div>
+                <button type="submit" class="bc-submit" id="bc_submitBtn">ساخت کارت ویزیت ←</button>
+              </form>
+
+              <div class="bc-result" id="bc_result">
+                <h3>✓ کارت ویزیت ساخته شد!</h3>
+                <div class="bc-result-url">لینک مشتری: <a id="bc_cardLink" href="#" target="_blank"></a></div>
+                <div class="bc-qr">
+                  <img id="bc_qrImg" src="" alt="QR" width="180" height="180" /><br/>
+                  <a class="bc-qr-dl" id="bc_qrDl" download="qr.png">⬇ دانلود QR کد</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- active list -->
+            <div class="bc-card-box">
+              <h2>کارت‌های فعال</h2>
+              <div id="bc_listWrap"><p class="bc-empty">در حال بارگذاری...</p></div>
+            </div>
+
+          </div>
+        </section>
+
         <!-- ===== Users ===== -->
         <section class="admin-panel" id="panelUsers">
           <div class="admin-toolbar">
@@ -747,5 +926,256 @@
 
   <div id="invPrintFrame"></div>
   <script src="assets/js/admin.js" defer></script>
+
+  <script>
+  (function() {
+    var BC_THEMES = [
+      {key:"blue",color:"#2f6df6"},{key:"green",color:"#059669"},{key:"purple",color:"#7c3aed"},
+      {key:"red",color:"#dc2626"},{key:"orange",color:"#f97316"},{key:"teal",color:"#0d9488"},
+      {key:"rose",color:"#e11d48"},{key:"slate",color:"#475569"},
+    ];
+    var bc_uploadedUrl = "";
+    var bc_uploading = false;
+    var bc_initialized = false;
+
+    function bcEsc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+    function bcInit() {
+      if (bc_initialized) return;
+      bc_initialized = true;
+
+      // theme picker
+      var picker = document.getElementById("bc_themePicker");
+      var themeInput = document.getElementById("bc_theme_color");
+      BC_THEMES.forEach(function(t) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.title = t.key;
+        btn.dataset.key = t.key;
+        btn.style.cssText = "width:30px;height:30px;border-radius:50%;cursor:pointer;background:" + t.color
+          + ";border:3px solid " + (t.key==="blue"?"#202124":"transparent")
+          + ";transition:border-color .15s,transform .15s;outline:none;flex-shrink:0;";
+        btn.addEventListener("click", function() {
+          themeInput.value = t.key;
+          picker.querySelectorAll("button").forEach(function(b){b.style.borderColor="transparent";b.style.transform="none";});
+          btn.style.borderColor = "#202124";
+          btn.style.transform = "scale(1.18)";
+        });
+        picker.appendChild(btn);
+      });
+
+      // form submit
+      document.getElementById("bc_form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        var err = document.getElementById("bc_err");
+        var btn = document.getElementById("bc_submitBtn");
+        err.textContent = "";
+        if (bc_uploading) { err.textContent = "لطفاً منتظر بمانید تا آپلود کامل شود..."; return; }
+        btn.disabled = true;
+        btn.textContent = "در حال ثبت...";
+
+        var body = {};
+        ["bc_business_name","bc_slug","bc_category","bc_phone","bc_maps_url","bc_neshan_url","bc_balad_url","bc_address","bc_hours","bc_instagram","bc_telegram","bc_website"]
+          .forEach(function(id) {
+            var v = document.getElementById(id).value.trim();
+            if (v) body[id.replace("bc_","")] = v;
+          });
+        if (bc_uploadedUrl) body.logo_url = bc_uploadedUrl;
+        body.theme_color = document.getElementById("bc_theme_color").value || "blue";
+
+        fetch("/api/bizcards", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          credentials: "include",
+          body: JSON.stringify(body)
+        })
+        .then(function(r){return r.json();})
+        .then(function(data) {
+          btn.disabled = false;
+          btn.textContent = "ساخت کارت ویزیت ←";
+          if (!data.ok) {
+            if (data.error==="duplicate_slug") {err.textContent="این شناسه URL قبلاً استفاده شده.";return;}
+            err.textContent = "خطا: " + (data.error||"نامشخص");
+            return;
+          }
+          bcShowResult(data.card);
+          bcLoadList();
+          document.getElementById("bc_form").reset();
+          bcRemoveAvatar();
+          picker.querySelectorAll("button").forEach(function(b){b.style.borderColor=b.dataset.key==="blue"?"#202124":"transparent";b.style.transform="none";});
+        })
+        .catch(function() {
+          btn.disabled = false;
+          btn.textContent = "ساخت کارت ویزیت ←";
+          err.textContent = "خطا در اتصال — دوباره تلاش کن";
+        });
+      });
+
+      // avatar upload
+      document.getElementById("bc_logoFile").addEventListener("change", function() {
+        var file = this.files && this.files[0];
+        if (!file) return;
+        if (file.size > 3*1024*1024) { alert("حجم فایل بیش از ۳ مگابایت است"); this.value=""; return; }
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          document.getElementById("bc_avatarThumb").src = ev.target.result;
+          document.getElementById("bc_avatarFname").textContent = file.name;
+          document.getElementById("bc_avatarEmpty").style.display = "none";
+          document.getElementById("bc_avatarFull").style.display = "flex";
+          bcSetAvatarStatus("در حال آپلود...", "uploading");
+        };
+        reader.readAsDataURL(file);
+        bc_uploading = true;
+        bc_uploadedUrl = "";
+        var fd = new FormData();
+        fd.append("file", file);
+        fetch("/api/bizcards/upload", {method:"POST", credentials:"include", body:fd})
+          .then(function(r){return r.json();})
+          .then(function(d) {
+            bc_uploading = false;
+            if (d.ok) { bc_uploadedUrl=d.url; bcSetAvatarStatus("✓ آپلود شد","done"); }
+            else { bcSetAvatarStatus("خطا: "+(d.error||"نامشخص"),"fail"); }
+          })
+          .catch(function() { bc_uploading=false; bcSetAvatarStatus("خطا در اتصال","fail"); });
+      });
+
+      // drag & drop
+      var zone = document.getElementById("bc_avatarZone");
+      zone.addEventListener("dragover", function(e){e.preventDefault();zone.style.borderColor="#059669";});
+      zone.addEventListener("dragleave", function(){zone.style.borderColor="";});
+      zone.addEventListener("drop", function(e){
+        e.preventDefault(); zone.style.borderColor="";
+        var file = e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+        if (!file) return;
+        var input = document.getElementById("bc_logoFile");
+        var dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+        input.dispatchEvent(new Event("change"));
+      });
+
+      bcLoadList();
+    }
+
+    function bcSetAvatarStatus(text, cls) {
+      var el = document.getElementById("bc_avatarStatus");
+      el.textContent = text;
+      el.className = "bc-avatar-status" + (cls?" "+cls:"");
+    }
+
+    window.bcRemoveAvatar = function() {
+      bc_uploadedUrl = "";
+      bc_uploading = false;
+      document.getElementById("bc_logo_url").value = "";
+      document.getElementById("bc_avatarFull").style.display = "none";
+      document.getElementById("bc_avatarEmpty").style.display = "flex";
+      document.getElementById("bc_logoFile").value = "";
+    };
+
+    function bcShowResult(card) {
+      var url = window.location.origin + "/b/" + card.slug;
+      var link = document.getElementById("bc_cardLink");
+      link.href = url; link.textContent = url;
+      var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(url);
+      document.getElementById("bc_qrImg").src = qrUrl;
+      var dl = document.getElementById("bc_qrDl");
+      dl.href = qrUrl+"&format=png"; dl.download = card.slug+"-qr.png";
+      var res = document.getElementById("bc_result");
+      res.classList.add("show");
+      res.scrollIntoView({behavior:"smooth",block:"nearest"});
+    }
+
+    function bcLoadList() { bcFetchPending(); bcFetchActive(); }
+
+    function bcFetchPending() {
+      fetch("/api/bizcards/list?pending=1", {credentials:"include"})
+        .then(function(r){return r.ok?r.json():{ok:false};})
+        .then(function(data) {
+          var section = document.getElementById("bc_pendingSection");
+          var wrap = document.getElementById("bc_pendingWrap");
+          var cards = data.cards||[];
+          if (!data.ok || !cards.length) { section.style.display="none"; bcUpdateBadge(0); return; }
+          section.style.display = "block";
+          bcUpdateBadge(cards.length);
+          var rows = cards.map(function(c) {
+            var date = c.created_at ? new Date(c.created_at).toLocaleDateString("fa-IR") : "—";
+            return '<tr id="bc_pr_'+bcEsc(c.id)+'">'
+              +'<td><strong>'+bcEsc(c.business_name)+'</strong><br><small style="color:var(--muted)">'+date+'</small></td>'
+              +'<td>'+(c.category?'<span class="bc-tag-p">'+bcEsc(c.category)+'</span>':"—")+'</td>'
+              +'<td>'+bcEsc(c.phone||"—")+'</td>'
+              +'<td>/b/'+bcEsc(c.slug)+'</td>'
+              +'<td><button class="bc-btn-approve" onclick="bcApprove(\''+bcEsc(c.id)+'\',this)">✓ تایید</button></td>'
+              +'</tr>';
+          }).join("");
+          wrap.innerHTML = '<table class="bc-list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>'+rows+'</tbody></table>';
+        })
+        .catch(function(){document.getElementById("bc_pendingWrap").innerHTML='<p class="bc-empty">خطا در بارگذاری</p>';});
+    }
+
+    function bcUpdateBadge(n) {
+      var badge = document.getElementById("navBizcardBadge");
+      if (!badge) return;
+      if (n>0) { badge.hidden=false; badge.textContent=String(n); }
+      else { badge.hidden=true; }
+    }
+
+    window.bcApprove = function(id, btn) {
+      btn.disabled = true; btn.textContent = "در حال تایید...";
+      fetch("/api/bizcards/approve", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        credentials:"include", body:JSON.stringify({id:id})
+      })
+      .then(function(r){return r.json();})
+      .then(function(data) {
+        if (data.ok) {
+          var row = document.getElementById("bc_pr_"+id);
+          if (row) row.remove();
+          var tbody = document.querySelector("#bc_pendingWrap tbody");
+          if (tbody && !tbody.children.length) document.getElementById("bc_pendingSection").style.display="none";
+          bcFetchActive();
+          // recount
+          var remaining = document.querySelectorAll("#bc_pendingWrap tbody tr").length;
+          bcUpdateBadge(remaining);
+        } else {
+          btn.disabled=false; btn.textContent="✓ تایید";
+          alert("خطا در تایید: "+(data.error||"نامشخص"));
+        }
+      })
+      .catch(function(){btn.disabled=false;btn.textContent="✓ تایید";alert("خطا در اتصال");});
+    };
+
+    function bcFetchActive() {
+      fetch("/api/bizcards/list", {credentials:"include"})
+        .then(function(r){return r.ok?r.json():{ok:false};})
+        .then(function(data) {
+          var wrap = document.getElementById("bc_listWrap");
+          var active = (data.cards||[]).filter(function(c){return c.is_active;});
+          if (!active.length) { wrap.innerHTML='<p class="bc-empty">هنوز کارتی فعال نشده</p>'; return; }
+          var rows = active.map(function(c) {
+            return '<tr>'
+              +'<td><strong>'+bcEsc(c.business_name)+'</strong></td>'
+              +'<td>'+(c.category?'<span class="bc-tag">'+bcEsc(c.category)+'</span>':"—")+'</td>'
+              +'<td><a href="/b/'+bcEsc(c.slug)+'" target="_blank">/b/'+bcEsc(c.slug)+'</a></td>'
+              +'<td><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(window.location.origin+'/b/'+c.slug)+'" target="_blank" download="'+bcEsc(c.slug)+'-qr.png">QR ⬇</a></td>'
+              +'</tr>';
+          }).join("");
+          wrap.innerHTML = '<table class="bc-list-table"><thead><tr><th>نام</th><th>دسته</th><th>لینک</th><th>QR</th></tr></thead><tbody>'+rows+'</tbody></table>';
+        })
+        .catch(function(){document.getElementById("bc_listWrap").innerHTML='<p class="bc-empty">خطا در بارگذاری</p>';});
+    }
+
+    // init when tab is clicked
+    document.addEventListener("DOMContentLoaded", function() {
+      var tabBtn = document.querySelector('[data-tab="bizcard"]');
+      if (tabBtn) {
+        tabBtn.addEventListener("click", function() {
+          setTimeout(bcInit, 50);
+        });
+      }
+      // اگه پنل از URL باز شد
+      if (window.location.hash === "#bizcard") {
+        setTimeout(bcInit, 200);
+      }
+    });
+  })();
+  </script>
 </body>
 </html>

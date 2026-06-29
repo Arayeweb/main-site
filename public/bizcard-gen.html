@@ -64,7 +64,13 @@
     .list-table td{padding:10px 12px;border-bottom:1px solid #f0f2f5;vertical-align:middle;}
     .list-table tr:hover td{background:#fafbfc;}
     .tag{font-size:11px;background:#e8f0fe;color:#4285F4;padding:3px 8px;border-radius:999px;font-weight:700;}
+    .tag-pending{font-size:11px;background:#fff3e0;color:#e65100;padding:3px 8px;border-radius:999px;font-weight:700;}
     .empty{text-align:center;padding:32px;color:#9aa0a6;}
+    .btn-approve{font-family:"Vazirmatn",Tahoma;font-size:12px;font-weight:700;background:#34A853;color:#fff;border:0;border-radius:8px;padding:6px 14px;cursor:pointer;transition:background .15s;white-space:nowrap;}
+    .btn-approve:hover{background:#2d9247;}
+    .btn-approve:disabled{background:#9aa0a6;cursor:not-allowed;}
+    .pending-banner{background:#fff8e1;border:1.5px solid #ffe082;border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#e65100;font-weight:700;display:flex;align-items:center;gap:8px;}
+    .pending-count{background:#e65100;color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;}
 
     /* avatar upload */
     .avatar-zone{
@@ -142,6 +148,14 @@
             <label for="maps_url">لینک گوگل مپ</label>
             <input id="maps_url" name="maps_url" type="url" placeholder="https://maps.google.com/..." />
           </div>
+          <div>
+            <label for="neshan_url">لینک نشان</label>
+            <input id="neshan_url" name="neshan_url" type="url" placeholder="https://neshan.org/..." />
+          </div>
+          <div>
+            <label for="balad_url">لینک بلد</label>
+            <input id="balad_url" name="balad_url" type="url" placeholder="https://balad.ir/..." />
+          </div>
           <div class="full">
             <label for="address">آدرس</label>
             <input id="address" name="address" type="text" placeholder="تهران، خیابان ولیعصر، پلاک ۱۲" />
@@ -205,9 +219,15 @@
       </div>
     </div>
 
+    <!-- pending cards waiting for approval -->
+    <div class="card" id="pendingSection" style="display:none">
+      <h2 style="color:#e65100;">⏳ کارت‌های در انتظار تایید</h2>
+      <div id="pendingWrap"><p class="empty">در حال بارگذاری...</p></div>
+    </div>
+
     <!-- list of existing cards -->
     <div class="card">
-      <h2>کارت‌های موجود</h2>
+      <h2>کارت‌های فعال</h2>
       <div id="listWrap"><p class="empty">در حال بارگذاری...</p></div>
     </div>
   </div>
@@ -233,7 +253,7 @@
       }
 
       var body = {};
-      ["business_name","slug","category","phone","maps_url","address","hours","instagram","telegram","website"]
+      ["business_name","slug","category","phone","maps_url","neshan_url","balad_url","address","hours","instagram","telegram","website"]
         .forEach(function(k) {
           var v = document.getElementById(k).value.trim();
           if (v) body[k] = v;
@@ -288,29 +308,88 @@
 
     // ── load existing cards ──
     function loadList() {
-      fetch("/api/bizcards?list=1&slug=__all__", { credentials: "include" })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          // fallback: load all by fetching admin-only endpoint
-        })
-        .catch(function() {});
-
-      // Since GET /api/bizcards requires slug, we use a small trick:
-      // call /api/admin/bizcards (we'll create this) or just show the form result.
-      // For now, fetch via the list endpoint we'll add.
-      fetchList();
+      fetchPending();
+      fetchActive();
     }
 
-    function fetchList() {
+    function fetchPending() {
+      fetch("/api/bizcards/list?pending=1", { credentials: "include" })
+        .then(function(r) { return r.ok ? r.json() : { ok: false }; })
+        .then(function(data) {
+          var section = document.getElementById("pendingSection");
+          var wrap = document.getElementById("pendingWrap");
+          if (!data.ok || !data.cards || !data.cards.length) {
+            section.style.display = "none";
+            return;
+          }
+          section.style.display = "block";
+          var rows = data.cards.map(function(c) {
+            var date = c.created_at ? new Date(c.created_at).toLocaleDateString("fa-IR") : "—";
+            return '<tr id="pending-row-' + esc(c.id) + '">'
+              + '<td><strong>' + esc(c.business_name) + '</strong><br><small style="color:#9aa0a6">' + date + '</small></td>'
+              + '<td>' + (c.category ? '<span class="tag-pending">' + esc(c.category) + '</span>' : '—') + '</td>'
+              + '<td>' + esc(c.phone || '—') + '</td>'
+              + '<td>/b/' + esc(c.slug) + '</td>'
+              + '<td><button class="btn-approve" onclick="approveCard(\'' + esc(c.id) + '\',this)">✓ تایید</button></td>'
+              + '</tr>';
+          }).join("");
+          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        })
+        .catch(function() {
+          document.getElementById("pendingWrap").innerHTML = '<p class="empty">خطا در بارگذاری</p>';
+        });
+    }
+
+    function approveCard(id, btn) {
+      btn.disabled = true;
+      btn.textContent = "در حال تایید...";
+      fetch("/api/bizcards/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id: id })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.ok) {
+          var row = document.getElementById("pending-row-" + id);
+          if (row) row.remove();
+          var tbody = document.querySelector("#pendingWrap tbody");
+          if (tbody && !tbody.children.length) {
+            document.getElementById("pendingSection").style.display = "none";
+          }
+          fetchActive();
+        } else {
+          btn.disabled = false;
+          btn.textContent = "✓ تایید";
+          alert("خطا در تایید: " + (data.error || "نامشخص"));
+        }
+      })
+      .catch(function() {
+        btn.disabled = false;
+        btn.textContent = "✓ تایید";
+        alert("خطا در اتصال");
+      });
+    }
+
+    function fetchActive() {
       fetch("/api/bizcards/list", { credentials: "include" })
         .then(function(r) { return r.ok ? r.json() : { ok: false }; })
         .then(function(data) {
           var wrap = document.getElementById("listWrap");
           if (!data.ok || !data.cards || !data.cards.length) {
-            wrap.innerHTML = '<p class="empty">هنوز کارتی ساخته نشده</p>';
+            var active = (data.cards || []).filter(function(c){ return c.is_active; });
+            if (!active.length) {
+              wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
+              return;
+            }
+          }
+          var active = (data.cards || []).filter(function(c){ return c.is_active; });
+          if (!active.length) {
+            wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
             return;
           }
-          var rows = data.cards.map(function(c) {
+          var rows = active.map(function(c) {
             return '<tr>'
               + '<td><strong>' + esc(c.business_name) + '</strong></td>'
               + '<td>' + (c.category ? '<span class="tag">' + esc(c.category) + '</span>' : '—') + '</td>'
@@ -329,7 +408,7 @@
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
-    fetchList();
+    loadList();
 
     // ── avatar upload ──
     var _uploadedUrl = "";

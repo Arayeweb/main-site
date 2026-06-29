@@ -12,12 +12,19 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase
+    const onlyPending = req.nextUrl.searchParams.get("pending") === "1";
+
+    let query = supabase
       .from("bizcards")
-      .select("id, slug, business_name, category, phone, created_at")
-      .eq("is_active", true)
+      .select("id, slug, business_name, category, phone, created_at, is_active")
       .order("created_at", { ascending: false })
       .limit(200);
+
+    if (onlyPending) {
+      query = query.eq("is_active", false);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("[api/bizcards/list] error:", error.message);

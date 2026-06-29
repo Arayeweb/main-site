@@ -263,6 +263,8 @@ create table if not exists public.bizcards (
   category      text,
   phone         text,
   maps_url      text,
+  neshan_url    text,
+  balad_url     text,
   address       text,
   instagram     text,
   telegram      text,
@@ -276,6 +278,8 @@ create table if not exists public.bizcards (
 -- مهاجرت برای جدول‌های موجود (اگر جدول از قبل وجود داشته باشد):
 alter table public.bizcards add column if not exists logo_url text;
 alter table public.bizcards add column if not exists theme_color text not null default 'blue';
+alter table public.bizcards add column if not exists neshan_url text;
+alter table public.bizcards add column if not exists balad_url text;
 
 -- ساخت bucket آپلود تصویر در Supabase Dashboard → Storage:
 --   نام: bizcards   |   Public bucket: فعال   |   Max file size: 3MB
@@ -287,3 +291,91 @@ on conflict (id) do nothing;
 create index if not exists bizcards_slug_idx on public.bizcards (slug);
 create index if not exists bizcards_active_idx on public.bizcards (is_active);
 alter table public.bizcards enable row level security;
+
+-- =========================================================
+-- اتاق فکر هوشمند آرایه (Araaye AI)
+-- araaye.com/ai — سیستم چت چند مدلی
+-- =========================================================
+
+create table if not exists public.ai_users (
+  id               uuid primary key default gen_random_uuid(),
+  phone            text not null unique,         -- 09xxxxxxxxx
+  password_hash    text not null,                -- scrypt$...$...
+  plan             text not null default 'free', -- free | pro | business
+  credits          int  not null default 5,      -- اعتبار باقی‌مانده
+  brainstorm_demos int  not null default 2,      -- دمو رایگان همفکری برای کاربر free
+  created_at       timestamptz default now(),
+  last_login_at    timestamptz
+);
+create index if not exists ai_users_phone_idx on public.ai_users (phone);
+alter table public.ai_users enable row level security;
+
+create table if not exists public.ai_conversations (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references public.ai_users(id) on delete cascade,
+  title      text,
+  mode       text not null,  -- quick | brainstorm | critique
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists ai_conversations_user_idx on public.ai_conversations (user_id, created_at desc);
+alter table public.ai_conversations enable row level security;
+
+create table if not exists public.ai_messages (
+  id              uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.ai_conversations(id) on delete cascade,
+  role            text not null,  -- user | assistant
+  content         text not null,
+  created_at      timestamptz default now()
+);
+create index if not exists ai_messages_conv_idx on public.ai_messages (conversation_id, created_at);
+alter table public.ai_messages enable row level security;
+
+create table if not exists public.ai_responses (
+  id          uuid primary key default gen_random_uuid(),
+  message_id  uuid not null references public.ai_messages(id) on delete cascade,
+  mode        text not null,
+  agent_role  text not null,
+  -- quick: "quick"
+  -- brainstorm: "logical_analyst"|"exec_advisor"|"risk_critic"|"creative"|"synthesizer"
+  -- critique: "initial"|"accuracy_critic"|"logic_critic"|"practical_critic"|"final_improved"
+  content     text not null,
+  order_index int  not null default 0,
+  model_name  text,
+  created_at  timestamptz default now()
+);
+create index if not exists ai_responses_msg_idx on public.ai_responses (message_id, order_index);
+alter table public.ai_responses enable row level security;
+
+create table if not exists public.ai_usage (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid references public.ai_users(id),
+  conversation_id uuid,
+  mode            text,
+  tokens_used     int,
+  cost_usd        numeric(10,6),
+  created_at      timestamptz default now()
+);
+create index if not exists ai_usage_user_idx on public.ai_usage (user_id, created_at desc);
+alter table public.ai_usage enable row level security;
+
+-- =========================================================
+-- سیستم معرفی (Referral / Affiliate)
+-- =========================================================
+-- مشتریان کد معرفی می‌گیرند و برای هر معرفی موفق ۱۰۰ هزار تومان تخفیف می‌گیرند.
+create table if not exists public.referrals (
+  id               uuid primary key default gen_random_uuid(),
+  created_at       timestamptz not null default now(),
+  code             text not null unique,           -- ARY-XXXXXX
+  referrer_name    text,
+  referrer_phone   text not null,                  -- موبایل معرفی‌کننده
+  status           text not null default 'active', -- active | paused | redeemed
+  referral_count   int  not null default 0,        -- تعداد معرفی‌های موفق
+  reward_earned    numeric(14,0) not null default 0, -- مبلغ تخفیف کسب‌شده (تومان)
+  last_referral_at timestamptz,
+  raw              jsonb
+);
+
+create index if not exists referrals_code_idx on public.referrals (code);
+create index if not exists referrals_phone_idx on public.referrals (referrer_phone);
+alter table public.referrals enable row level security;
