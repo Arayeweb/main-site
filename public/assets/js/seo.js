@@ -1,11 +1,12 @@
 /* =========================================================
    آرایه — seo.js
    SEO landing page logic:
-   - Package selection (trial/basic/pro)
+   - Package selection (basic/growth/pro/bundle)
    - Multi-step form with lead capture → /api/leads
    - Zibal payment gateway redirect for paid packages
    - Rule-based chatbot for SEO questions
    - WhatsApp float + sticky CTA
+   - Referral program + returning customer discount
    ========================================================= */
 (function () {
   "use strict";
@@ -54,7 +55,6 @@
 
   /* ---------- package data ---------- */
   var pkgs = {
-    trial:  { name: "آزمایشی",  price: 0,       old: 0,       label: "رایگان" },
     basic:  { name: "پایه",     price: 890000,  old: 1290000, label: "۸۹۰,۰۰۰ تومان" },
     growth: { name: "رشد",      price: 1690000, old: 2290000, label: "۱,۶۹۰,۰۰۰ تومان" },
     pro:    { name: "حرفه‌ای",  price: 2900000, old: 3900000, label: "۲,۹۰۰,۰۰۰ تومان" }
@@ -178,8 +178,12 @@
     var submitBtn = document.getElementById("submitBtn");
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "در حال ثبت..."; }
 
+    if (!current || !pkgs[current]) {
+      if (err) err.textContent = "لطفاً یک پکیج را انتخاب کنید.";
+      return;
+    }
+
     var pkg = pkgs[current];
-    var isTrial = current === "trial" || pkg.price === 0;
 
     var payload = {
       source: "seo_multistep",
@@ -187,8 +191,8 @@
       name: name,
       goal: "seo_service",
       plan: current,
-      budget: isTrial ? "trial" : String(pkg.price),
-      detail: "package: " + current + " | name: " + pkg.name + " | price: " + (isTrial ? "free" : pkg.price) + (website ? " | website: " + website : "")
+      budget: String(pkg.price),
+      detail: "package: " + current + " | name: " + pkg.name + " | price: " + pkg.price + (website ? " | website: " + website : "")
     };
 
     submitLead(payload).then(function (r) {
@@ -236,25 +240,18 @@
       if (successPkgName) successPkgName.textContent = pkg.name;
       if (summaryPkg) summaryPkg.textContent = pkg.name;
 
-      if (isTrial) {
-        if (summaryPriceRow) summaryPriceRow.style.display = "none";
-        if (summaryTotalRow) summaryTotalRow.style.display = "none";
-        if (payBtn) payBtn.style.display = "none";
-        if (successMsg) successMsg.textContent = "پکیج آزمایشی رایگان رو انتخاب کردی. تیم ما در کمتر از ۲ ساعت باهات تماس می‌گیره و ممیزی رایگان رو شروع می‌کنه.";
-      } else {
-        if (summaryPriceRow) summaryPriceRow.style.display = "";
-        if (summaryTotalRow) summaryTotalRow.style.display = "";
-        if (summaryPrice) summaryPrice.textContent = formatToman(pkg.price) + " تومان";
-        if (summaryTotal) summaryTotal.textContent = formatToman(pkg.price) + " تومان";
-        if (payBtn) {
-          payBtn.style.display = "";
-          payBtn.textContent = "پرداخت آنلاین " + formatToman(pkg.price) + " تومان 🔒";
-          payBtn.onclick = function () {
-            startCheckout(current, { name: name, contact: contact.value, website: website });
-          };
-        }
-        if (successMsg) successMsg.textContent = "پکیج " + pkg.name + " رو انتخاب کردی. برای شروع کار، پرداخت آنلاین را انجام بده یا منتظر تماس تیم ما باش.";
+      if (summaryPriceRow) summaryPriceRow.style.display = "";
+      if (summaryTotalRow) summaryTotalRow.style.display = "";
+      if (summaryPrice) summaryPrice.textContent = formatToman(pkg.price) + " تومان";
+      if (summaryTotal) summaryTotal.textContent = formatToman(pkg.price) + " تومان";
+      if (payBtn) {
+        payBtn.style.display = "";
+        payBtn.textContent = "پرداخت آنلاین " + formatToman(pkg.price) + " تومان 🔒";
+        payBtn.onclick = function () {
+          startCheckout(current, { name: name, contact: contact.value, website: website });
+        };
       }
+      if (successMsg) successMsg.textContent = "پکیج " + pkg.name + " رو انتخاب کردی. برای شروع کار، پرداخت آنلاین را انجام بده یا منتظر تماس تیم ما باش.";
 
       setStep(3);
     }).catch(function () {
@@ -297,14 +294,14 @@
   var chatExpecting = null;
 
   var faqAnswers = {
-    price: "پکیج‌های سئو ما:\n• آزمایشی: رایگان (ممیزی + گزارش)\n• پایه: ۸۹۰,۰۰۰ تومان (بهینه‌سازی + ۳ محتوا)\n• حرفه‌ای: ۲,۹۰۰,۰۰۰ تومان (سئوی کامل + ۱۰ محتوا + بک‌لینک + ضمانت ۶ ماهه)\n\nکدوم پکیج مناسبته؟ شماره‌ت رو بفرست تا کارشناس راهنماییت کنه.",
+    price: "پکیج‌های سئو ما:\n• پایه: ۸۹۰,۰۰۰ تومان (بررسی تخصصی + بهینه‌سازی + ۳ محتوا)\n• رشد: ۱,۶۹۰,۰۰۰ تومان (۵ صفحه کلیدی + ۶ محتوا + شروع بک‌لینک)\n• حرفه‌ای: ۲,۹۰۰,۰۰۰ تومان (سئوی کامل + ۱۰ محتوا + بک‌لینک + ضمانت ۶ ماهه)\n\nبررسی تخصصی رایگان هم داریم. کدوم مناسبته؟ شماره‌ت رو بفرست تا کارشناس راهنماییت کنه.",
     time: "بهبودهای تکنیکال طی ۱-۲ هفته اعمال می‌شن. نتایج جستجو از ماه دوم شروع و در ۳-۶ ماه به اوج می‌رسه.\n\nسوالی دیگه داری؟",
-    trial: "ممیزی رایگان شامل:\n• بررسی سرعت سایت\n• ساختار URL و متا تگ‌ها\n• سایت‌مپ و روبوتز\n• ریسپانسیو بودن\n• گزارش کامل مشکلات + پیشنهاد رفع\n\nکافیه شماره‌ت رو بفرست تا شروع کنیم.",
+    trial: "بررسی تخصصی رایگان شامل:\n• بررسی سرعت سایت\n• ساختار URL و متا تگ‌ها\n• سایت‌مپ و روبوتز\n• ریسپانسیو بودن\n• گزارش کامل مشکلات + پیشنهاد رفع\n\nکافیه شماره‌ت رو بفرست تا شروع کنیم.",
     guarantee: "پکیج حرفه‌ای با ضمانت ۶ ماهه است. اگر در این مدت نتیجه‌ای نبود، کار رو رایگان ادامه می‌دیم.\n\nپکیج پایه هم ضمانت رضایت ۷ روزه داره.",
-    basic: "پکیج پایه شامل:\n• ممیزی کامل + بهینه‌سازی تکنیکال\n• بهینه‌سازی ۱ صفحه کلیدی\n• تولید ۳ محتوای سئوشده\n• ثبت در گوگل سرچ کنسول\n• گزارش ماهانه\n\nقیمت: ۸۹۰,۰۰۰ تومان (۳۰٪ تخفیف این هفته)\n\nشماره‌ت رو بفرست تا شروع کنیم.",
+    basic: "پکیج پایه شامل:\n• بررسی تخصصی کامل + بهینه‌سازی تکنیکال\n• بهینه‌سازی ۱ صفحه کلیدی\n• تولید ۳ محتوای سئوشده\n• ثبت در گوگل سرچ کنسول\n• گزارش ماهانه\n\nقیمت: ۸۹۰,۰۰۰ تومان (۳۰٪ تخفیف این هفته)\n\nشماره‌ت رو بفرست تا شروع کنیم.",
     pro: "پکیج حرفه‌ای شامل:\n• همه امکانات پایه + بهینه‌سازی کل سایت\n• تولید ۱۰ محتوای سئوشده\n• استراتژی بک‌لینک\n• مانیتورینگ رتبه روزانه\n• ضمانت ۶ ماهه نتایج\n• پشتیبانی اختصاصی\n\nقیمت: ۲,۹۰۰,۰۰۰ تومان\n\nشماره‌ت رو بفرست تا کارشناس راهنماییت کنه.",
     hello: "سلام! من دستیار سئو آرایه هستم. می‌تونم در مورد پکیج‌ها، قیمت‌ها، زمان نتیجه‌گیری و ضمانت کمک کنم.\n\nسؤالت چیه؟",
-    default: "سؤال خوبیه! می‌تونم در مورد قیمت پکیج‌ها، زمان نتیجه‌گیری، ممیزی رایگان و ضمانت کمک کنم.\n\nیا شماره‌ت رو بفرست تا کارشناس ما مستقیم راهنماییت کنه.",
+    default: "سؤال خوبیه! می‌تونم در مورد قیمت پکیج‌ها، زمان نتیجه‌گیری، بررسی تخصصی رایگان و ضمانت کمک کنم.\n\nیا شماره‌ت رو بفرست تا کارشناس ما مستقیم راهنماییت کنه.",
     contact_saved: "عالی! شماره‌ت رو ثبت کردم. کارشناس ما در کمتر از ۲ ساعت باهات تماس می‌گیره. 🌟"
   };
 
@@ -325,7 +322,7 @@
     if (/سلام|درود| hi|hello/.test(t)) key = "hello";
     else if (/قیمت|چنده|هزینه|نرخ|cost|price/.test(t)) key = "price";
     else if (/چقدر|زمان|مدت|وقت|long|time/.test(t)) key = "time";
-    else if (/آزمایش|رایگان|free|trial|ممیزی/.test(t)) key = "trial";
+    else if (/رایگان|free|trial|بررسی تخصصی|بررسی/.test(t)) key = "trial";
     else if (/ضمانت|گارانتی|warranty|guarantee/.test(t)) key = "guarantee";
     else if (/پایه|basic/.test(t)) key = "basic";
     else if (/حرفه|pro|کامل/.test(t)) key = "pro";
@@ -374,7 +371,7 @@
   };
 
   window.chatQuick = function (key) {
-    var labels = { price: "قیمت پکیج‌ها چنده؟", time: "چقدر طول می‌کشه؟", trial: "ممیزی رایگان چیه؟", guarantee: "ضمانت دارید؟" };
+    var labels = { price: "قیمت پکیج‌ها چنده؟", time: "چقدر طول می‌کشه؟", trial: "بررسی تخصصی رایگان چیه؟", guarantee: "ضمانت دارید؟" };
     var label = labels[key] || key;
     chatAdd(label, "user");
     setTimeout(function () { chatAdd(faqAnswers[key] || faqAnswers.default, "bot"); }, 300);
@@ -540,7 +537,7 @@
         source: "seo_exit_intent",
         contact: contact.value,
         goal: "seo_audit_free",
-        plan: "trial",
+        plan: "free_audit",
         detail: "exit-intent free audit capture",
         consent: true
       }, getUtms())),

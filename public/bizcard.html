@@ -303,23 +303,48 @@
     .step h3{font-size:15.5px;font-weight:700;margin-bottom:8px;}
     .step p{font-size:13.5px;color:var(--muted);line-height:1.65;}
 
-    /* ── SAMPLES ── */
-    .samples-section{
-      max-width:900px;margin:48px auto 0;padding:0 16px;
+    /* ── TESTIMONIALS ── */
+    .testi-section{
+      max-width:900px;margin:60px auto 0;padding:0 16px;
     }
-    .samples-section h2{font-size:22px;font-weight:700;text-align:center;margin-bottom:28px;}
-    .samples-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
-    .sample-chip{
+    .testi-section h2{font-size:22px;font-weight:700;text-align:center;margin-bottom:8px;}
+    .testi-sub{text-align:center;font-size:13.5px;color:var(--muted);margin-bottom:32px;}
+    .testi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+    .testi-card{
+      background:#fff;border:1.5px solid var(--line);border-radius:18px;
+      padding:22px;box-shadow:0 2px 12px rgba(16,19,26,.06);
+      display:flex;flex-direction:column;gap:14px;
+    }
+    .testi-stars{color:#f59e0b;font-size:15px;letter-spacing:1px;}
+    .testi-text{font-size:14px;line-height:1.75;color:var(--ink);flex:1;}
+    .testi-author{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:14px;}
+    .testi-avatar{
+      width:40px;height:40px;border-radius:12px;flex-shrink:0;
+      display:grid;place-items:center;font-size:17px;font-weight:700;color:#fff;
+    }
+    .testi-name{font-size:13px;font-weight:700;}
+    .testi-biz{font-size:12px;color:var(--muted);margin-top:1px;}
+
+    /* ── FOMO TOAST ── */
+    .fomo-toast{
+      position:fixed;bottom:24px;left:24px;z-index:9999;
       background:#fff;border:1.5px solid var(--line);border-radius:16px;
-      padding:16px;display:flex;align-items:center;gap:12px;
-      box-shadow:0 1px 6px rgba(16,19,26,.05);
+      padding:14px 18px;display:flex;align-items:center;gap:12px;
+      box-shadow:0 8px 28px rgba(16,19,26,.14);
+      transform:translateY(120%);opacity:0;
+      transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+      max-width:300px;
     }
-    .sample-avatar{
-      width:46px;height:46px;border-radius:13px;flex-shrink:0;
-      display:grid;place-items:center;font-size:20px;font-weight:700;color:#fff;
+    .fomo-toast.show{transform:translateY(0);opacity:1;}
+    .fomo-toast-av{
+      width:38px;height:38px;border-radius:10px;flex-shrink:0;
+      display:grid;place-items:center;font-size:16px;font-weight:700;color:#fff;
     }
-    .sample-info strong{display:block;font-size:14px;font-weight:700;margin-bottom:2px;}
-    .sample-info span{font-size:12px;color:var(--muted);}
+    .fomo-toast-body{flex:1;min-width:0;}
+    .fomo-toast-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .fomo-toast-msg{font-size:12px;color:var(--muted);margin-top:1px;}
+    .fomo-toast-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:2px;flex-shrink:0;line-height:1;}
+    .fomo-toast-close:hover{color:var(--ink);}
   </style>
 </head>
 <body>
@@ -388,36 +413,47 @@
   </div>
 </section>
 
-<!-- SAMPLES -->
-<section class="samples-section">
-  <h2>نمونه کارت‌های ساخته‌شده</h2>
-  <div class="samples-grid">
-    <div class="sample-chip">
-      <div class="sample-avatar" style="background:linear-gradient(135deg,#2f6df6,#1b4fd6);">ر</div>
-      <div class="sample-info"><strong>رستوران میلاد</strong><span>رستوران</span></div>
+<!-- TESTIMONIALS -->
+<section class="testi-section">
+  <h2>چی کسایی از کارت ویزیت آرایه استفاده کرده‌اند؟</h2>
+  <p class="testi-sub">صاحبان کسب‌وکاری که دیجیتال شدند — بدون هزینه و بدون دانش فنی</p>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">«قبلاً لینک اینستاگرامم رو تو بیو می‌ذاشتم ولی هیچ آدرس یا نقشه‌ای نداشت. الان یه لینک دارم که همه چیز توشه. مشتریام بدون گفتن پیدام می‌کنن.»</p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">ن</div>
+        <div><div class="testi-name">نیلوفر رحیمی</div><div class="testi-biz">آرایشگاه نیلوفر — تهران</div></div>
+      </div>
     </div>
-    <div class="sample-chip">
-      <div class="sample-avatar" style="background:linear-gradient(135deg,#059669,#047857);">د</div>
-      <div class="sample-info"><strong>دکتر احمدی</strong><span>دندانپزشک</span></div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">«تو دو دقیقه کارتم آماده شد. QR کدش رو پرینت گرفتم چسبوندم جلوی مغازه. هر روز چند نفر اسکن می‌کنن می‌بینن چی کسب‌وکاریه.»</p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#f97316,#ea580c)">ح</div>
+        <div><div class="testi-name">حسین مرادی</div><div class="testi-biz">تعمیرگاه موبایل — اصفهان</div></div>
+      </div>
     </div>
-    <div class="sample-chip">
-      <div class="sample-avatar" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);">آ</div>
-      <div class="sample-info"><strong>آرایشگاه نیلوفر</strong><span>آرایشگاه</span></div>
-    </div>
-    <div class="sample-chip">
-      <div class="sample-avatar" style="background:linear-gradient(135deg,#f97316,#ea580c);">م</div>
-      <div class="sample-info"><strong>مغازه مبل نوین</strong><span>مبل‌فروشی</span></div>
-    </div>
-    <div class="sample-chip">
-      <div class="sample-avatar" style="background:linear-gradient(135deg,#0d9488,#0f766e);">ک</div>
-      <div class="sample-info"><strong>کلینیک فیزیوتراپی</strong><span>فیزیوتراپی</span></div>
-    </div>
-    <div class="sample-chip">
-      <div class="sample-avatar" style="background:linear-gradient(135deg,#e11d48,#be123c);">ع</div>
-      <div class="sample-info"><strong>عکاسی لحظه</strong><span>عکاسی</span></div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">«بیمارایی که میان شماره‌ام رو می‌گیرن دیگه از کاغذ پاره نیست. لینک کارت ویزیتم رو از واتساپ می‌فرستم کافیه.»</p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#059669,#047857)">د</div>
+        <div><div class="testi-name">دکتر صادقی</div><div class="testi-biz">مطب دندانپزشکی — مشهد</div></div>
+      </div>
     </div>
   </div>
 </section>
+
+<!-- FOMO TOAST -->
+<div class="fomo-toast" id="fomoToast">
+  <div class="fomo-toast-av" id="fomoAv"></div>
+  <div class="fomo-toast-body">
+    <div class="fomo-toast-name" id="fomoName"></div>
+    <div class="fomo-toast-msg" id="fomoMsg"></div>
+  </div>
+  <button class="fomo-toast-close" onclick="document.getElementById('fomoToast').classList.remove('show')">×</button>
+</div>
 
 <!-- MAIN: FORM + PREVIEW -->
 <div class="main-wrap" style="margin-top:52px;">
@@ -829,6 +865,31 @@
     applyPreviewTheme();
     syncPreview();
   };
+
+  // ── FOMO Toast ──
+  var FOMO_DATA = [
+    {name:"سارا ک.", biz:"آرایشگاه — تهران", color:"linear-gradient(135deg,#7c3aed,#6d28d9)", av:"س"},
+    {name:"محمد ر.", biz:"رستوران — اصفهان", color:"linear-gradient(135deg,#2f6df6,#1b4fd6)", av:"م"},
+    {name:"زهرا م.", biz:"مطب پزشکی — شیراز", color:"linear-gradient(135deg,#059669,#047857)", av:"ز"},
+    {name:"علی ح.", biz:"تعمیرگاه — مشهد", color:"linear-gradient(135deg,#f97316,#ea580c)", av:"ع"},
+    {name:"مریم ت.", biz:"بوتیک لباس — تهران", color:"linear-gradient(135deg,#e11d48,#be123c)", av:"م"},
+    {name:"رضا ش.", biz:"کافه — تبریز", color:"linear-gradient(135deg,#0d9488,#0f766e)", av:"ر"},
+    {name:"نیلوفر ب.", biz:"آموزشگاه — کرج", color:"linear-gradient(135deg,#7c3aed,#5b21b6)", av:"ن"},
+    {name:"امیر ف.", biz:"تعمیرات موبایل — قم", color:"linear-gradient(135deg,#dc2626,#b91c1c)", av:"ا"},
+  ];
+  var fomoIndex = Math.floor(Math.random() * FOMO_DATA.length);
+  function showFomo(){
+    var d = FOMO_DATA[fomoIndex % FOMO_DATA.length];
+    fomoIndex++;
+    var toast = document.getElementById("fomoToast");
+    document.getElementById("fomoAv").style.background = d.color;
+    document.getElementById("fomoAv").textContent = d.av;
+    document.getElementById("fomoName").textContent = d.name + " از " + d.biz;
+    document.getElementById("fomoMsg").textContent = "همین الان کارت ویزیت ساخت";
+    toast.classList.add("show");
+    setTimeout(function(){ toast.classList.remove("show"); }, 4000);
+  }
+  setTimeout(function(){ showFomo(); setInterval(showFomo, 12000); }, 6000);
 
   // ── Counter ──
   function loadCounter(){

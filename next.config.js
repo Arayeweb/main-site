@@ -20,6 +20,8 @@ const nextConfig = {
       { source: "/googlesabt", destination: "/googlesabt.html" },
       { source: "/google-sabt", destination: "/googlesabt.html" },
       { source: "/googlesabt-simple", destination: "/googlesabt-simple.html" },
+      { source: "/seo", destination: "/seo.html" },
+      { source: "/bizcard", destination: "/bizcard.html" },
       { source: "/bizcard-gen", destination: "/bizcard-gen.html" },
       { source: "/konkour", destination: "/konkour.html" },
       { source: "/privacy", destination: "/privacy.html" },
