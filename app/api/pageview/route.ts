@@ -42,11 +42,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  // utm_source الزامی است — بدون آن ثبت نمی‌کنیم
+  // هر بازدید ثبت می‌شود؛ utm_source اختیاری است (برای بازدیدهای بدون کمپین null می‌ماند)
   const utmSource = str(body.utm_source, 200);
-  if (!utmSource) {
-    return NextResponse.json({ ok: true });
-  }
 
   const row = {
     page: str(body.page, 200),

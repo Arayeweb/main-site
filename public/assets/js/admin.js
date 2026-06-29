@@ -86,6 +86,7 @@
     appView.hidden = false;
     el("userInfo").textContent = (ROLE_LABELS[currentRole] || currentRole);
     applyRoleVisibility();
+    loadOverview();
     loadProjects();
     loadTickets("");
     loadPartners(0, "");
@@ -156,7 +157,9 @@
         var name = t.dataset.tab;
         var panelId = "panel" + name.charAt(0).toUpperCase() + name.slice(1);
         panels.forEach(function (p) { p.classList.toggle("is-active", p.id === panelId); });
+        closeSidebar();
         // بارگذاری تنبل
+        if (name === "overview") loadOverview();
         if (name === "leads" && !leadsLoaded) { leadsLoaded = true; loadLeads(0); }
         if (name === "links" && !linksLoaded) { linksLoaded = true; loadLinks(); }
         if (name === "users" && !usersLoaded) { usersLoaded = true; loadUsers(); }
@@ -168,6 +171,114 @@
         if (name === "ads") { adsLoaded = true; loadAds(); }
       });
     });
+  }
+
+  // رفتن به یک تب از طریق کد (برای لینک‌های میان‌بر در نمای کلی)
+  function navigateTab(name) {
+    var t = document.querySelector('.admin-tab[data-tab="' + name + '"]');
+    if (t && !t.hidden) t.click();
+  }
+
+  /* ---------- sidebar (mobile) ---------- */
+  function closeSidebar() {
+    var sb = el("adminSidebar");
+    var bd = el("sidebarBackdrop");
+    if (sb) sb.classList.remove("is-open");
+    if (bd) bd.classList.remove("is-open");
+  }
+  function initSidebar() {
+    var toggle = el("sidebarToggle");
+    var sb = el("adminSidebar");
+    var bd = el("sidebarBackdrop");
+    if (toggle && sb) {
+      toggle.addEventListener("click", function () {
+        sb.classList.toggle("is-open");
+        if (bd) bd.classList.toggle("is-open", sb.classList.contains("is-open"));
+      });
+    }
+    if (bd) bd.addEventListener("click", closeSidebar);
+  }
+
+  /* ---------- overview (dashboard) ---------- */
+  function ovKpi(num, label, icon, tab, warn) {
+    return '<div class="ov-kpi' + (warn ? " warn" : "") + '" data-go="' + esc(tab) + '">' +
+      '<div class="ico">' + icon + '</div>' +
+      '<div class="num">' + (typeof num === "number" ? toFa(num) : num) + '</div>' +
+      '<div class="lbl">' + esc(label) + '</div></div>';
+  }
+  function loadOverview() {
+    var box = el("ovContent");
+    var greet = el("ovGreeting");
+    if (greet) {
+      var h = new Date().getHours();
+      greet.textContent = (h < 12 ? "صبح بخیر" : h < 18 ? "ظهر بخیر" : "عصر بخیر") +
+        "، " + (ROLE_LABELS[currentRole] || "");
+    }
+    Promise.all([
+      api("GET", "/api/admin/stats"),
+      api("GET", "/api/admin/projects"),
+      api("GET", "/api/admin/tickets"),
+    ]).then(function (r) {
+      var s = (r[0].data && r[0].data.ok) ? r[0].data : {};
+      var projects = (r[1].data && r[1].data.projects) || [];
+      var tickets = (r[2].data && r[2].data.tickets) || [];
+      var activeProjects = projects.filter(function (p) { return p.status !== "delivered" && p.status !== "paused"; }).length;
+      var openTickets = tickets.filter(function (t) { return t.status === "open" || t.status === "in_progress"; }).length;
+      updateTicketsBadge(openTickets);
+
+      var kpis =
+        ovKpi(openTickets, "تیکت باز", "🎫", "tickets", openTickets > 0) +
+        ovKpi(activeProjects, "پروژه فعال", "📁", "projects") +
+        ovKpi(s.this_week || 0, "لید این هفته", "👥", "leads") +
+        ovKpi(s.total_leads || 0, "کل لیدها", "📈", "leads") +
+        ovKpi(s.views_this_week || 0, "بازدید این هفته", "👁", "stats") +
+        ovKpi(projects.length, "کل پروژه‌ها", "🗂", "projects");
+
+      // اسپارک‌لاین ۷ روز (لید + بازدید)
+      var days = s.last_7_days || [];
+      var maxV = Math.max.apply(null, days.map(function (d) { return Math.max(d.views || 0, d.leads || 0); }).concat([1]));
+      var spark = days.map(function (d) {
+        var hv = Math.round(((d.views || 0) / maxV) * 90) + 3;
+        var hl = Math.round(((d.leads || 0) / maxV) * 90) + 3;
+        var day = toFa(new Date(d.date).getDate());
+        return '<div class="ov-spark-col"><div class="ov-spark-bars">' +
+          '<div class="ov-spark-bar v" style="height:' + hv + 'px" title="بازدید: ' + toFa(d.views || 0) + '"></div>' +
+          '<div class="ov-spark-bar l" style="height:' + hl + 'px" title="لید: ' + toFa(d.leads || 0) + '"></div>' +
+          '</div><span class="ov-spark-day">' + day + '</span></div>';
+      }).join("");
+
+      var quick =
+        quickBtn("➕", "ساخت پروژه جدید", "projects") +
+        quickBtn("🧾", "صدور فاکتور", "invoices") +
+        quickBtn("🔗", "ساخت لینک کوتاه", "links") +
+        quickBtn("📊", "ثبت هزینه تبلیغات", "ads");
+
+      box.innerHTML =
+        '<div class="ov-kpis">' + kpis + '</div>' +
+        '<div class="ov-cols">' +
+          '<div class="ov-block"><h3>روند ۷ روز اخیر</h3>' +
+            '<div class="ov-legend"><span><span class="ov-dot" style="background:rgba(52,120,200,.45)"></span>بازدید</span><span><span class="ov-dot" style="background:var(--emerald)"></span>لید</span></div>' +
+            '<div class="ov-spark">' + (spark || '<div class="admin-empty">داده‌ای نیست.</div>') + '</div>' +
+          '</div>' +
+          '<div class="ov-block"><h3>میان‌بُرها</h3><div class="ov-quick">' + quick + '</div></div>' +
+        '</div>';
+
+      box.querySelectorAll("[data-go]").forEach(function (k) {
+        k.addEventListener("click", function () { navigateTab(k.dataset.go); });
+      });
+      box.querySelectorAll("[data-quick]").forEach(function (k) {
+        k.addEventListener("click", function () { navigateTab(k.dataset.quick); });
+      });
+    });
+  }
+  function quickBtn(icon, label, tab) {
+    return '<button type="button" data-quick="' + esc(tab) + '"><span class="q-ico">' + icon + '</span><span>' + esc(label) + '</span><span class="q-arrow">←</span></button>';
+  }
+  function updateTicketsBadge(n) {
+    var b = el("navTicketsBadge");
+    if (!b) return;
+    if (n > 0) { b.textContent = toFa(n); b.hidden = false; }
+    else { b.hidden = true; }
   }
 
   /* ---------- projects ---------- */
@@ -397,6 +508,7 @@
   /* ---------- leads ---------- */
   var leadsPage = 0;
   var leadsFilters = {};
+  var leadsAccum = [];
 
   function buildLeadsUrl(page) {
     var params = new URLSearchParams();
@@ -413,6 +525,7 @@
     if (page === 0) {
       list.innerHTML = '<div class="admin-empty">در حال بارگذاری…</div>';
       moreWrap.hidden = true;
+      leadsAccum = [];
     }
     api("GET", buildLeadsUrl(page)).then(function (res) {
       if (res.status === 401) { showLogin(); return; }
@@ -421,19 +534,46 @@
         return;
       }
       var leads = res.data.leads || [];
-      if (page === 0) {
-        if (!leads.length) { list.innerHTML = '<div class="admin-empty">هیچ لیدی یافت نشد.</div>'; return; }
-        list.innerHTML = leads.map(leadCard).join("");
-      } else {
-        var tmp = document.createElement("div");
-        tmp.innerHTML = leads.map(leadCard).join("");
-        while (tmp.firstChild) list.appendChild(tmp.firstChild);
-      }
+      leadsAccum = leadsAccum.concat(leads);
+      if (!leadsAccum.length) { list.innerHTML = '<div class="admin-empty">هیچ لیدی یافت نشد.</div>'; }
+      else { renderLeadsGrouped(list, leadsAccum); }
       leadsPage = page;
       moreWrap.hidden = !res.data.has_more;
     }).catch(function () {
       list.innerHTML = '<div class="admin-empty">ارتباط برقرار نشد.</div>';
     });
+  }
+
+  // دسته‌بندی لیدها بر اساس بازهٔ زمانی ثبت
+  function leadBucket(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return { key: "z_old", label: "قدیمی‌تر" };
+    var now = new Date();
+    var startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    var t = d.getTime();
+    var dayMs = 86400000;
+    if (t >= startToday) return { key: "a_today", label: "امروز" };
+    if (t >= startToday - dayMs) return { key: "b_yesterday", label: "دیروز" };
+    if (t >= startToday - 7 * dayMs) return { key: "c_week", label: "۷ روز گذشته" };
+    if (t >= startToday - 30 * dayMs) return { key: "d_month", label: "۳۰ روز گذشته" };
+    return { key: "z_old", label: "قدیمی‌تر" };
+  }
+  function renderLeadsGrouped(list, leads) {
+    var order = ["a_today", "b_yesterday", "c_week", "d_month", "z_old"];
+    var groups = {};
+    leads.forEach(function (l) {
+      var b = leadBucket(l.created_at);
+      if (!groups[b.key]) groups[b.key] = { label: b.label, items: [] };
+      groups[b.key].items.push(l);
+    });
+    var html = order.filter(function (k) { return groups[k]; }).map(function (k) {
+      var g = groups[k];
+      return '<div class="lead-group">' +
+        '<div class="lead-group-title"><span>' + esc(g.label) + '</span><span class="lead-group-count">' + toFa(g.items.length) + '</span></div>' +
+        '<div class="admin-list">' + g.items.map(leadCard).join("") + '</div>' +
+      '</div>';
+    }).join("");
+    list.innerHTML = html;
   }
 
   function leadCard(l) {
@@ -443,7 +583,7 @@
       ? '<div class="utm-row">UTM: <b>' + utmParts.map(esc).join("</b> / <b>") + "</b></div>"
       : "";
     return (
-      '<div class="admin-card">' +
+      '<div class="admin-card lead-' + esc(l.source || "") + '">' +
         '<div class="admin-card-head">' +
           '<div>' +
             '<span class="admin-card-code">' + esc(l.name || l.contact) + "</span>" +
@@ -902,7 +1042,7 @@
     var content = el("statsContent");
     var last7Html = s.last_7_days && s.last_7_days.length
       ? '<table class="stats-table">' +
-          '<thead><tr><th style="text-align:right;font-size:.8rem;color:var(--muted);padding:4px 8px">تاریخ</th><th style="font-size:.8rem;color:var(--muted);padding:4px 8px">بازدید UTM</th><th style="font-size:.8rem;color:var(--muted);padding:4px 8px">لید</th></tr></thead>' +
+          '<thead><tr><th style="text-align:right;font-size:.8rem;color:var(--muted);padding:4px 8px">تاریخ</th><th style="font-size:.8rem;color:var(--muted);padding:4px 8px">بازدید</th><th style="font-size:.8rem;color:var(--muted);padding:4px 8px">لید</th></tr></thead>' +
           s.last_7_days.map(function (d) {
             return "<tr><td>" + esc(d.date) + "</td><td>" + toFa(d.views || 0) + "</td><td>" + toFa(d.leads || 0) + "</td></tr>";
           }).join("") +
@@ -911,7 +1051,7 @@
 
     content.innerHTML =
       '<div class="stats-summary">' +
-        '<div class="stat-card"><div class="stat-num">' + toFa(s.total_views || 0) + '</div><div class="stat-label">بازدید UTM‌دار</div></div>' +
+        '<div class="stat-card"><div class="stat-num">' + toFa(s.total_views || 0) + '</div><div class="stat-label">کل بازدید سایت</div></div>' +
         '<div class="stat-card"><div class="stat-num">' + toFa(s.views_this_week || 0) + '</div><div class="stat-label">بازدید این هفته</div></div>' +
         '<div class="stat-card"><div class="stat-num">' + toFa(s.total_leads || 0) + '</div><div class="stat-label">کل لیدها</div></div>' +
         '<div class="stat-card"><div class="stat-num">' + toFa(s.this_week || 0) + '</div><div class="stat-label">لید این هفته</div></div>' +
@@ -1632,6 +1772,11 @@
   /* ---------- boot ---------- */
   initLogin();
   initTabs();
+  initSidebar();
+  (function () {
+    var b = el("ovRefreshBtn");
+    if (b) b.addEventListener("click", loadOverview);
+  })();
   initProjectsPanel();
   initTicketsPanel();
   initLeadsPanel();

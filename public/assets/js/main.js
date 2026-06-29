@@ -29,27 +29,31 @@
   });
   track("page_view", { title: document.title, referrer: document.referrer });
 
-  /* ---------- UTM page-view tracker ----------
-     فقط وقتی utm_source در URL باشد، یک beacon می‌زند.
-     sessionStorage جلوگیری از ارسال مجدد در همان session. */
+  /* ---------- page-view tracker ----------
+     هر بازدید صفحه را ثبت می‌کند (نه فقط ترافیک UTM‌دار).
+     UTM (در صورت وجود) هم ثبت و برای فرم‌ها ذخیره می‌شود.
+     یک گارد کوتاه جلوی ثبت دوبارهٔ همان صفحه (reload/bfcache) را می‌گیرد. */
   (function () {
     var p = new URLSearchParams(location.search);
     var utmSource = p.get("utm_source");
-    if (!utmSource) return;
-    var sessionKey = "__pv_" + utmSource + "_" + (p.get("utm_campaign") || "");
-    if (sessionStorage.getItem(sessionKey)) return;
-    try { sessionStorage.setItem(sessionKey, "1"); } catch (_) {}
     var payload = {
       page: location.pathname,
-      utm_source: utmSource,
+      utm_source: utmSource || undefined,
       utm_medium: p.get("utm_medium") || undefined,
       utm_campaign: p.get("utm_campaign") || undefined,
       utm_content: p.get("utm_content") || undefined,
       utm_term: p.get("utm_term") || undefined,
       referrer: document.referrer || undefined,
     };
-    // ذخیره در sessionStorage برای فرم‌ها
-    try { sessionStorage.setItem("__utms", JSON.stringify(payload)); } catch (_) {}
+    // ذخیرهٔ UTM برای پیش‌پرکردن فرم‌ها (فقط وقتی موجود باشد)
+    if (utmSource) { try { sessionStorage.setItem("__utms", JSON.stringify(payload)); } catch (_) {} }
+    // گارد ضدِ ثبت تکراری در بازهٔ کوتاه (مثلاً بازگشت bfcache یا دابل‌فایر)
+    var dedupKey = "__pv_seen_" + location.pathname;
+    try {
+      var last = Number(sessionStorage.getItem(dedupKey) || 0);
+      if (Date.now() - last < 1500) return;
+      sessionStorage.setItem(dedupKey, String(Date.now()));
+    } catch (_) {}
     fetch("/api/pageview", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
