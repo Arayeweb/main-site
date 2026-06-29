@@ -1,3 +1,4 @@
+import type React from "react";
 import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
@@ -14,7 +15,20 @@ interface Bizcard {
   telegram: string | null;
   website: string | null;
   hours: string | null;
+  logo_url: string | null;
+  theme_color: string | null;
 }
+
+const THEMES: Record<string, { brand: string; deep: string }> = {
+  blue:   { brand: "#2f6df6", deep: "#1b4fd6" },
+  green:  { brand: "#059669", deep: "#047857" },
+  purple: { brand: "#7c3aed", deep: "#6d28d9" },
+  red:    { brand: "#dc2626", deep: "#b91c1c" },
+  orange: { brand: "#f97316", deep: "#ea580c" },
+  teal:   { brand: "#0d9488", deep: "#0f766e" },
+  rose:   { brand: "#e11d48", deep: "#be123c" },
+  slate:  { brand: "#475569", deep: "#334155" },
+};
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const supabase = getSupabaseAdmin();
@@ -39,7 +53,7 @@ export default async function BizcardPage({ params }: { params: { slug: string }
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("bizcards")
-    .select("slug,business_name,category,phone,maps_url,address,instagram,telegram,website,hours")
+    .select("slug,business_name,category,phone,maps_url,address,instagram,telegram,website,hours,logo_url,theme_color")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -48,17 +62,23 @@ export default async function BizcardPage({ params }: { params: { slug: string }
   const card = data as Bizcard;
 
   const initial = card.business_name.trim()[0] ?? "؟";
+  const theme = THEMES[card.theme_color ?? "blue"] ?? THEMES.blue;
+  const themeStyle = `--brand:${theme.brand};--brand-deep:${theme.deep};`;
 
   return (
     <>
       <link rel="stylesheet" href="/assets/css/bizcard.css" />
 
-      <div className="bc-root">
+      <div className="bc-root" style={themeStyle as React.CSSProperties}>
         <main className="bc-card">
           <div className="bc-banner" />
 
           <div className="bc-id">
-            <div className="bc-avatar">{initial}</div>
+            <div className="bc-avatar">
+              {card.logo_url
+                ? <img src={card.logo_url} alt={card.business_name} />
+                : initial}
+            </div>
             <h1 className="bc-name">{card.business_name}</h1>
             {card.category && (
               <span className="bc-cat"><span className="dot" />{card.category}</span>

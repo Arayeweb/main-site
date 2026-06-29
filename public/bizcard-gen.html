@@ -129,6 +129,20 @@
             <label for="website">وب‌سایت</label>
             <input id="website" name="website" type="url" placeholder="https://example.com" />
           </div>
+          <div class="full">
+            <label for="logo_url">لوگو / عکس پرفایل</label>
+            <input id="logo_url" name="logo_url" type="url" placeholder="https://example.com/logo.png" />
+            <div id="logo-preview" style="margin-top:10px;display:none;text-align:right;">
+              <img id="logo-img" src="" alt="پیش‌نمایش"
+                style="width:80px;height:80px;border-radius:20px;object-fit:cover;border:3px solid #e3e6ea;display:block;" />
+            </div>
+            <p class="hint">لینک مستقیم به تصویر (JPG، PNG، WebP) — خالی بگذار تا حرف اول نام نشان داده شود</p>
+          </div>
+          <div class="full">
+            <label>تم رنگی کارت</label>
+            <div id="theme-picker" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center;"></div>
+            <input type="hidden" id="theme_color" value="blue" />
+          </div>
         </div>
         <div class="err" id="err"></div>
         <button type="submit" class="btn-submit" id="submitBtn">ساخت کارت ویزیت ←</button>
@@ -168,11 +182,12 @@
       btn.textContent = "در حال ثبت...";
 
       var body = {};
-      ["business_name","slug","category","phone","maps_url","address","hours","instagram","telegram","website"]
+      ["business_name","slug","category","phone","maps_url","address","hours","instagram","telegram","website","logo_url"]
         .forEach(function(k) {
           var v = document.getElementById(k).value.trim();
           if (v) body[k] = v;
         });
+      body.theme_color = document.getElementById("theme_color").value || "blue";
 
       fetch("/api/bizcards", {
         method: "POST",
@@ -263,6 +278,59 @@
     }
 
     fetchList();
+
+    // ── logo url preview ──
+    document.getElementById("logo_url").addEventListener("input", function() {
+      var preview = document.getElementById("logo-preview");
+      var img = document.getElementById("logo-img");
+      var url = this.value.trim();
+      if (url) { img.src = url; preview.style.display = "block"; }
+      else { preview.style.display = "none"; }
+    });
+
+    // ── theme color picker ──
+    var THEMES = [
+      { key:"blue",   color:"#2f6df6", label:"آبی" },
+      { key:"green",  color:"#059669", label:"سبز" },
+      { key:"purple", color:"#7c3aed", label:"بنفش" },
+      { key:"red",    color:"#dc2626", label:"قرمز" },
+      { key:"orange", color:"#f97316", label:"نارنجی" },
+      { key:"teal",   color:"#0d9488", label:"فیروزه‌ای" },
+      { key:"rose",   color:"#e11d48", label:"گلبهی" },
+      { key:"slate",  color:"#475569", label:"خاکستری" },
+    ];
+    var themeInput = document.getElementById("theme_color");
+    var pickerEl = document.getElementById("theme-picker");
+    THEMES.forEach(function(t) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.title = t.label;
+      btn.dataset.key = t.key;
+      btn.style.cssText = "width:36px;height:36px;border-radius:50%;cursor:pointer;background:" + t.color
+        + ";border:3px solid " + (t.key === "blue" ? "#202124" : "transparent")
+        + ";transition:border-color .15s,transform .15s;outline:none;flex-shrink:0;";
+      btn.addEventListener("click", function() {
+        themeInput.value = t.key;
+        pickerEl.querySelectorAll("button").forEach(function(b) {
+          b.style.borderColor = "transparent";
+          b.style.transform = "none";
+        });
+        btn.style.borderColor = "#202124";
+        btn.style.transform = "scale(1.18)";
+      });
+      pickerEl.appendChild(btn);
+    });
+
+    // reset theme picker visual on form reset
+    document.getElementById("form").addEventListener("reset", function() {
+      document.getElementById("logo-preview").style.display = "none";
+      themeInput.value = "blue";
+      pickerEl.querySelectorAll("button").forEach(function(b) {
+        b.style.borderColor = b.dataset.key === "blue" ? "#202124" : "transparent";
+        b.style.transform = "none";
+      });
+    });
+
   })();
   </script>
 </body>

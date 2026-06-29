@@ -251,3 +251,32 @@ create index if not exists ad_campaigns_date_idx on public.ad_campaigns (date de
 create index if not exists ad_campaigns_platform_idx on public.ad_campaigns (platform);
 
 alter table public.ad_campaigns enable row level security;
+
+-- =========================================================
+-- کارت ویزیت آنلاین (bizcard)
+-- =========================================================
+create table if not exists public.bizcards (
+  id            uuid primary key default gen_random_uuid(),
+  created_at    timestamptz not null default now(),
+  slug          text not null unique,
+  business_name text not null,
+  category      text,
+  phone         text,
+  maps_url      text,
+  address       text,
+  instagram     text,
+  telegram      text,
+  website       text,
+  hours         text,
+  logo_url      text,
+  theme_color   text not null default 'blue',
+  is_active     boolean not null default true
+);
+
+-- مهاجرت برای جدول‌های موجود (اگر جدول از قبل وجود داشته باشد):
+alter table public.bizcards add column if not exists logo_url text;
+alter table public.bizcards add column if not exists theme_color text not null default 'blue';
+
+create index if not exists bizcards_slug_idx on public.bizcards (slug);
+create index if not exists bizcards_active_idx on public.bizcards (is_active);
+alter table public.bizcards enable row level security;

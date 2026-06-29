@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("bizcards")
-      .select("slug,business_name,category,phone,maps_url,address,instagram,telegram,website,hours")
+      .select("slug,business_name,category,phone,maps_url,address,instagram,telegram,website,hours,logo_url,theme_color")
       .eq("slug", slug)
       .eq("is_active", true)
       .maybeSingle();
@@ -64,15 +64,17 @@ export async function POST(req: NextRequest) {
   const row = {
     slug,
     business_name,
-    category:  str(body.category, 100),
-    phone:     str(body.phone, 30),
-    maps_url:  str(body.maps_url, 2000),
-    address:   str(body.address, 500),
-    instagram: str(body.instagram, 100),
-    telegram:  str(body.telegram, 100),
-    website:   str(body.website, 2000),
-    hours:     str(body.hours, 300),
-    is_active: true,
+    category:    str(body.category, 100),
+    phone:       str(body.phone, 30),
+    maps_url:    str(body.maps_url, 2000),
+    address:     str(body.address, 500),
+    instagram:   str(body.instagram, 100),
+    telegram:    str(body.telegram, 100),
+    website:     str(body.website, 2000),
+    hours:       str(body.hours, 300),
+    logo_url:    str(body.logo_url, 2000),
+    theme_color: str(body.theme_color, 20) ?? "blue",
+    is_active:   true,
   };
 
   try {
