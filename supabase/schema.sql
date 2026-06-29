@@ -277,6 +277,13 @@ create table if not exists public.bizcards (
 alter table public.bizcards add column if not exists logo_url text;
 alter table public.bizcards add column if not exists theme_color text not null default 'blue';
 
+-- ساخت bucket آپلود تصویر در Supabase Dashboard → Storage:
+--   نام: bizcards   |   Public bucket: فعال   |   Max file size: 3MB
+-- یا از SQL Editor:
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('bizcards', 'bizcards', true, 3145728, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do nothing;
+
 create index if not exists bizcards_slug_idx on public.bizcards (slug);
 create index if not exists bizcards_active_idx on public.bizcards (is_active);
 alter table public.bizcards enable row level security;

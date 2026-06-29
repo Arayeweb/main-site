@@ -66,6 +66,39 @@
     .tag{font-size:11px;background:#e8f0fe;color:#4285F4;padding:3px 8px;border-radius:999px;font-weight:700;}
     .empty{text-align:center;padding:32px;color:#9aa0a6;}
 
+    /* avatar upload */
+    .avatar-zone{
+      border:2px dashed #d1d5db;border-radius:14px;cursor:pointer;
+      transition:border-color .2s,background .2s;overflow:hidden;
+    }
+    .avatar-zone:hover{border-color:#4285F4;background:#f8faff;}
+    .avatar-empty{
+      padding:22px 16px;display:flex;flex-direction:column;
+      align-items:center;gap:6px;color:#6b7280;font-size:14px;
+    }
+    .avatar-empty svg{opacity:.45;margin-bottom:2px;}
+    .avatar-empty small{font-size:12px;color:#9aa0a6;}
+    .avatar-full{
+      display:flex;align-items:center;gap:14px;
+      padding:12px 16px;background:#f8faff;
+    }
+    .avatar-full img{
+      width:64px;height:64px;border-radius:14px;
+      object-fit:cover;border:2px solid #e3e6ea;flex-shrink:0;
+    }
+    .avatar-info{flex:1;min-width:0;}
+    .avatar-fname{font-size:13px;font-weight:700;color:#202124;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .avatar-status{font-size:12px;margin-top:2px;}
+    .avatar-status.uploading{color:#f97316;}
+    .avatar-status.done{color:#34A853;}
+    .avatar-status.fail{color:#EA4335;}
+    .avatar-remove{
+      background:none;border:none;cursor:pointer;color:#9aa0a6;
+      font-size:22px;line-height:1;padding:4px;flex-shrink:0;
+    }
+    .avatar-remove:hover{color:#EA4335;}
+
     @media(max-width:560px){
       .grid{grid-template-columns:1fr;}
       .full{grid-column:1;}
@@ -130,13 +163,24 @@
             <input id="website" name="website" type="url" placeholder="https://example.com" />
           </div>
           <div class="full">
-            <label for="logo_url">لوگو / عکس پرفایل</label>
-            <input id="logo_url" name="logo_url" type="url" placeholder="https://example.com/logo.png" />
-            <div id="logo-preview" style="margin-top:10px;display:none;text-align:right;">
-              <img id="logo-img" src="" alt="پیش‌نمایش"
-                style="width:80px;height:80px;border-radius:20px;object-fit:cover;border:3px solid #e3e6ea;display:block;" />
+            <label>لوگو / عکس پرفایل</label>
+            <div class="avatar-zone" id="avatarZone" onclick="document.getElementById('logoFile').click()">
+              <div class="avatar-empty" id="avatarEmpty">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1"/></svg>
+                <span>انتخاب یا کشیدن تصویر</span>
+                <small>JPG، PNG یا WebP — حداکثر ۳ مگابایت</small>
+              </div>
+              <div class="avatar-full" id="avatarFull" style="display:none">
+                <img id="avatarThumb" src="" alt="" />
+                <div class="avatar-info">
+                  <div class="avatar-fname" id="avatarFname"></div>
+                  <div class="avatar-status" id="avatarStatus"></div>
+                </div>
+                <button type="button" class="avatar-remove" id="avatarRemove" onclick="event.stopPropagation();removeAvatar()">×</button>
+              </div>
             </div>
-            <p class="hint">لینک مستقیم به تصویر (JPG، PNG، WebP) — خالی بگذار تا حرف اول نام نشان داده شود</p>
+            <input type="file" id="logoFile" accept="image/jpeg,image/png,image/webp" style="display:none" />
+            <input type="hidden" id="logo_url" value="" />
           </div>
           <div class="full">
             <label>تم رنگی کارت</label>
@@ -181,12 +225,20 @@
       btn.disabled = true;
       btn.textContent = "در حال ثبت...";
 
+      if (_uploading) {
+        err.textContent = "لطفاً منتظر بمانید تا آپلود تصویر کامل شود...";
+        btn.disabled = false;
+        btn.textContent = "ساخت کارت ویزیت ←";
+        return;
+      }
+
       var body = {};
-      ["business_name","slug","category","phone","maps_url","address","hours","instagram","telegram","website","logo_url"]
+      ["business_name","slug","category","phone","maps_url","address","hours","instagram","telegram","website"]
         .forEach(function(k) {
           var v = document.getElementById(k).value.trim();
           if (v) body[k] = v;
         });
+      if (_uploadedUrl) body.logo_url = _uploadedUrl;
       body.theme_color = document.getElementById("theme_color").value || "blue";
 
       fetch("/api/bizcards", {
@@ -279,14 +331,86 @@
 
     fetchList();
 
-    // ── logo url preview ──
-    document.getElementById("logo_url").addEventListener("input", function() {
-      var preview = document.getElementById("logo-preview");
-      var img = document.getElementById("logo-img");
-      var url = this.value.trim();
-      if (url) { img.src = url; preview.style.display = "block"; }
-      else { preview.style.display = "none"; }
+    // ── avatar upload ──
+    var _uploadedUrl = "";
+    var _uploading = false;
+
+    function setAvatarStatus(text, cls) {
+      var el = document.getElementById("avatarStatus");
+      el.textContent = text;
+      el.className = "avatar-status" + (cls ? " " + cls : "");
+    }
+
+    function removeAvatar() {
+      _uploadedUrl = "";
+      _uploading = false;
+      document.getElementById("logo_url").value = "";
+      document.getElementById("avatarFull").style.display = "none";
+      document.getElementById("avatarEmpty").style.display = "flex";
+      document.getElementById("logoFile").value = "";
+    }
+
+    document.getElementById("logoFile").addEventListener("change", function() {
+      var file = this.files && this.files[0];
+      if (!file) return;
+      if (file.size > 3 * 1024 * 1024) {
+        alert("حجم فایل بیش از ۳ مگابایت است");
+        this.value = "";
+        return;
+      }
+      // show preview
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById("avatarThumb").src = e.target.result;
+        document.getElementById("avatarFname").textContent = file.name;
+        document.getElementById("avatarEmpty").style.display = "none";
+        document.getElementById("avatarFull").style.display = "flex";
+        setAvatarStatus("در حال آپلود...", "uploading");
+      };
+      reader.readAsDataURL(file);
+
+      // upload
+      _uploading = true;
+      _uploadedUrl = "";
+      document.getElementById("logo_url").value = "";
+      var fd = new FormData();
+      fd.append("file", file);
+      fetch("/api/bizcards/upload", { method: "POST", credentials: "include", body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          _uploading = false;
+          if (d.ok) {
+            _uploadedUrl = d.url;
+            document.getElementById("logo_url").value = d.url;
+            setAvatarStatus("✓ آپلود شد", "done");
+          } else {
+            setAvatarStatus("خطا: " + (d.error || "نامشخص") + " — دوباره تلاش کن", "fail");
+          }
+        })
+        .catch(function() {
+          _uploading = false;
+          setAvatarStatus("خطا در اتصال — دوباره تلاش کن", "fail");
+        });
     });
+
+    // drag & drop
+    (function() {
+      var zone = document.getElementById("avatarZone");
+      zone.addEventListener("dragover", function(e) { e.preventDefault(); zone.style.borderColor = "#4285F4"; });
+      zone.addEventListener("dragleave", function() { zone.style.borderColor = ""; });
+      zone.addEventListener("drop", function(e) {
+        e.preventDefault();
+        zone.style.borderColor = "";
+        var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!file) return;
+        var input = document.getElementById("logoFile");
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event("change"));
+      });
+    })();
+
 
     // ── theme color picker ──
     var THEMES = [
@@ -321,9 +445,9 @@
       pickerEl.appendChild(btn);
     });
 
-    // reset theme picker visual on form reset
+    // reset on form reset
     document.getElementById("form").addEventListener("reset", function() {
-      document.getElementById("logo-preview").style.display = "none";
+      removeAvatar();
       themeInput.value = "blue";
       pickerEl.querySelectorAll("button").forEach(function(b) {
         b.style.borderColor = b.dataset.key === "blue" ? "#202124" : "transparent";
