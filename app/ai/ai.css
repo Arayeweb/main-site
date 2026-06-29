@@ -1060,6 +1060,176 @@
 .ai-settings-row-val { font-size: 13px; color: var(--ai-text2); }
 
 /* =========================================================
+   HOME — Chat-first entry page (/ai)
+   ========================================================= */
+.ai-home-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+}
+.ai-home-nav {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px clamp(16px, 4vw, 32px);
+  border-bottom: 1px solid var(--ai-border);
+}
+.ai-home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* Welcome area (hides when messages appear) */
+.ai-welcome-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 12px;
+  text-align: center;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.ai-welcome-area.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  height: 0;
+  flex: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.ai-welcome-logo {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.ai-welcome-logo span { color: var(--ai-primary-b); }
+.ai-welcome-sub {
+  font-size: 14px;
+  color: var(--ai-text2);
+  margin-bottom: 28px;
+  max-width: 400px;
+  line-height: 1.7;
+}
+/* Suggestion chips */
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 560px;
+}
+.ai-suggestion-chip {
+  padding: 8px 14px;
+  background: var(--ai-surface2);
+  border: 1px solid var(--ai-border2);
+  border-radius: var(--r-lg);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ai-text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: right;
+  line-height: 1.45;
+  max-width: 240px;
+}
+.ai-suggestion-chip:hover {
+  color: var(--ai-text);
+  border-color: var(--ai-primary);
+  background: color-mix(in srgb, var(--ai-primary) 8%, transparent);
+}
+
+/* Messages area (shown when conversation starts) */
+.ai-home-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+  scroll-behavior: smooth;
+}
+.ai-home-messages::-webkit-scrollbar { width: 4px; }
+.ai-home-messages::-webkit-scrollbar-thumb { background: var(--ai-border2); border-radius: 2px; }
+
+/* =========================================================
+   AUTH SHEET (bottom slide-up modal)
+   ========================================================= */
+.ai-auth-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 200;
+  backdrop-filter: blur(2px);
+  animation: ai-fade-in 0.2s;
+}
+@keyframes ai-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.ai-auth-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 201;
+  background: #0E1A2B;
+  border-top: 1px solid var(--ai-border2);
+  border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+  padding: 0 0 env(safe-area-inset-bottom, 16px);
+  animation: ai-slide-up 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 92dvh;
+  overflow-y: auto;
+}
+@keyframes ai-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.ai-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--ai-border2);
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+.ai-sheet-inner {
+  padding: 20px 24px 24px;
+  max-width: 440px;
+  margin-inline: auto;
+}
+.ai-sheet-title {
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.ai-sheet-title span { color: var(--ai-primary-b); }
+.ai-sheet-sub {
+  font-size: 13px;
+  color: var(--ai-text2);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.ai-sheet-tabs {
+  display: flex;
+  border: 1px solid var(--ai-border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.ai-sheet-tab {
+  flex: 1;
+  padding: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ai-text2);
+  background: transparent;
+  text-align: center;
+  transition: all 0.15s;
+}
+.ai-sheet-tab.active { background: var(--ai-primary); color: #fff; }
+
+/* =========================================================
    Responsive
    ========================================================= */
 @media (max-width: 600px) {

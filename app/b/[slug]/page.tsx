@@ -163,7 +163,7 @@ export default async function BizcardPage({ params }: { params: { slug: string }
           <div className="bc-foot">
             <a href="https://araaye.com/bizcard" target="_blank" rel="noopener noreferrer">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 2.5 5.5L20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5L12 3Z"/></svg>
-              کارت ویزیت رایگان با <b>آرایه</b> بساز
+              کارت ویزیت با <b>آرایه</b> بساز
             </a>
           </div>
         </main>
