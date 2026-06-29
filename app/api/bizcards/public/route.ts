@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
   if (!business_name) return NextResponse.json({ ok: false, error: "missing_name" }, { status: 422 });
 
   const phone = str(body.phone, 30);
-  if (!phone) return NextResponse.json({ ok: false, error: "missing_phone" }, { status: 422 });
 
   const rawSlug = normSlug(body.slug || business_name);
   if (!rawSlug) return NextResponse.json({ ok: false, error: "invalid_slug" }, { status: 422 });
