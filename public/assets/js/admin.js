@@ -1870,7 +1870,7 @@
         html += '<div class="ov-spark-bar v" style="height:' + rH + '%"></div>';
         html += '<div class="ov-spark-bar l" style="height:' + tH + '%"></div>';
         html += "</div>";
-        html += '<div class="ov-spark-day">' + toFa(dayName) + "</div>';
+        html += '<div class="ov-spark-day">' + toFa(dayName) + "</div>";
         html += "</div>";
       });
       html += "</div>";
