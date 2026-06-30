@@ -9,6 +9,7 @@ interface Bizcard {
   business_name: string;
   category: string | null;
   phone: string | null;
+  whatsapp: string | null;
   maps_url: string | null;
   neshan_url: string | null;
   balad_url: string | null;
@@ -55,7 +56,7 @@ export default async function BizcardPage({ params }: { params: { slug: string }
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("bizcards")
-    .select("slug,business_name,category,phone,maps_url,neshan_url,balad_url,address,instagram,telegram,website,hours,logo_url,theme_color")
+    .select("slug,business_name,category,phone,whatsapp,maps_url,neshan_url,balad_url,address,instagram,telegram,website,hours,logo_url,theme_color")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -64,6 +65,14 @@ export default async function BizcardPage({ params }: { params: { slug: string }
   const card = data as Bizcard;
 
   const initial = card.business_name.trim()[0] ?? "؟";
+  // واتساپ: 09xxxxxxxxx → 98xxxxxxxxx برای لینک wa.me
+  const waDigits = (card.whatsapp ?? "").replace(/[^\d]/g, "");
+  const waNumber = waDigits
+    ? (waDigits.startsWith("0") ? "98" + waDigits.slice(1)
+      : waDigits.startsWith("98") ? waDigits
+      : waDigits.startsWith("9") ? "98" + waDigits
+      : waDigits)
+    : "";
   const theme = THEMES[card.theme_color ?? "blue"] ?? THEMES.blue;
   const themeStyle = normalizeReactStyle(
     `--brand:${theme.brand};--brand-deep:${theme.deep};`
@@ -133,6 +142,12 @@ export default async function BizcardPage({ params }: { params: { slug: string }
               <a className="bc-cta call" href={`tel:${card.phone}`}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
                 تماس: {card.phone}
+              </a>
+            )}
+            {waNumber && (
+              <a className="bc-cta whatsapp" href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.6.2-.2.3-.7.9-.8 1-.2.2-.3.2-.6.1-1.7-.9-2.9-1.6-4-3.5-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.9 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Z"/></svg>
+                واتساپ
               </a>
             )}
           </div>

@@ -134,7 +134,7 @@ export default function AuthPage() {
             href="/ai"
             style={{ fontSize: 13, color: "var(--ai-text3)" }}
           >
-            ← بازگشت به صفحه اصلی
+            بازگشت به صفحه اصلی
           </Link>
         </div>
       </div>

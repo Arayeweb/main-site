@@ -34,22 +34,35 @@
 
     /* ── HEADER ── */
     .site-header{
-      background:#fff;border-bottom:1px solid var(--line);
-      padding:0 24px;
+      background:rgba(255,255,255,.85);backdrop-filter:saturate(160%) blur(10px);
+      border-bottom:1px solid var(--line);
+      padding:0 24px;position:sticky;top:0;z-index:100;
     }
     .site-header-in{
-      max-width:900px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;height:60px;
+      max-width:1100px;margin:0 auto;
+      display:flex;align-items:center;gap:20px;height:64px;
     }
-    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);}
-    .logo img{width:30px;height:30px;}
-    .logo-text{font-size:18px;font-weight:700;}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex-shrink:0;}
+    .logo img{width:32px;height:32px;}
+    .logo-text{font-size:19px;font-weight:700;}
     .logo-badge{
       font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;
       background:#eef3ff;color:var(--brand);letter-spacing:.3px;
     }
+    .header-nav{display:flex;align-items:center;gap:26px;margin:0 auto;}
+    .header-nav a{font-size:14px;color:var(--muted);text-decoration:none;font-weight:700;transition:color .15s;}
+    .header-nav a:hover{color:var(--brand);}
+    .header-cta{
+      flex-shrink:0;font-size:13.5px;font-weight:700;text-decoration:none;
+      background:linear-gradient(135deg,#3a8bff,var(--brand-deep));color:#fff;
+      padding:9px 18px;border-radius:10px;box-shadow:0 8px 18px -8px rgba(27,79,214,.7);
+      transition:box-shadow .2s,transform .14s;white-space:nowrap;
+    }
+    .header-cta:hover{box-shadow:0 12px 22px -8px rgba(27,79,214,.85);}
+    .header-cta:active{transform:translateY(1px);}
     .header-link{font-size:13.5px;color:var(--muted);text-decoration:none;font-weight:700;}
     .header-link:hover{color:var(--brand);}
+    @media(max-width:880px){.header-nav{display:none;}.site-header-in{justify-content:space-between;}}
 
     /* ── HERO ── */
     .hero{
@@ -74,7 +87,46 @@
       background:linear-gradient(135deg,var(--brand),var(--brand-deep));
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
     }
-    .hero-sub{font-size:16px;color:var(--muted);max-width:500px;margin:0 auto 36px;line-height:1.7;}
+    .hero-sub{font-size:16px;color:var(--muted);max-width:520px;margin:0 auto 28px;line-height:1.7;}
+    .hero-cta-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:28px;}
+    .hero-btn{
+      display:inline-flex;align-items:center;gap:8px;
+      font-family:"Vazirmatn",Tahoma;font-size:15.5px;font-weight:700;text-decoration:none;cursor:pointer;
+      padding:14px 28px;border-radius:14px;border:0;transition:box-shadow .2s,transform .14s;
+    }
+    .hero-btn.primary{
+      background:linear-gradient(135deg,#3a8bff,var(--brand-deep));color:#fff;
+      box-shadow:0 12px 26px -10px rgba(27,79,214,.75);
+    }
+    .hero-btn.primary:hover{box-shadow:0 16px 32px -10px rgba(27,79,214,.9);transform:translateY(-1px);}
+    .hero-btn.ghost{
+      background:#fff;color:var(--ink);border:1.5px solid var(--line);
+      box-shadow:0 2px 10px rgba(16,19,26,.05);
+    }
+    .hero-btn.ghost:hover{border-color:var(--brand);color:var(--brand);}
+    .hero-btn svg{width:18px;height:18px;}
+    /* trust avatars + rating */
+    .hero-trust{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:40px;}
+    .hero-avs{display:flex;}
+    .hero-avs span{
+      width:34px;height:34px;border-radius:50%;border:2.5px solid #fff;
+      display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff;margin-left:-10px;
+      box-shadow:0 1px 4px rgba(16,19,26,.15);
+    }
+    .hero-trust-tx{font-size:13px;color:var(--muted);font-weight:700;text-align:right;}
+    .hero-trust-tx b{color:var(--ink);}
+    .hero-trust-tx .stars{color:#f59e0b;letter-spacing:1px;}
+    /* stats strip */
+    .hero-stats{
+      display:flex;justify-content:center;gap:14px;flex-wrap:wrap;
+      max-width:680px;margin:0 auto 48px;
+    }
+    .hero-stat{
+      flex:1;min-width:150px;background:#fff;border:1.5px solid var(--line);border-radius:16px;
+      padding:18px 20px;box-shadow:0 2px 12px rgba(16,19,26,.05);
+    }
+    .hero-stat .num{font-size:26px;font-weight:700;color:var(--brand);line-height:1;font-variant-numeric:tabular-nums;}
+    .hero-stat .lbl{font-size:13px;color:var(--muted);margin-top:8px;font-weight:700;}
     .hero-pills{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:48px;}
     .pill{
       display:flex;align-items:center;gap:6px;
@@ -190,6 +242,62 @@
     }
     .copy-btn:hover{background:#dde8ff;}
     .copy-btn.copied{background:#e8f5e9;color:#2e7d32;}
+
+    /* ── QR ── */
+    .qr-box{
+      background:#fff;border:1.5px solid #c8e6c9;border-radius:14px;
+      padding:14px;margin-bottom:16px;display:flex;flex-direction:column;align-items:center;gap:8px;
+    }
+    .qr-box img{width:170px;height:170px;border-radius:8px;}
+    .qr-box span{font-size:12px;color:var(--muted);font-weight:700;}
+
+    /* ── WIZARD SCREENS ── */
+    .screen{display:none;}
+    .screen.active{display:block;animation:fadeUp .35s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+    .lead-q-intro{
+      background:linear-gradient(135deg,#eef3ff,#f0f4ff);border:1.5px solid #dde8ff;
+      border-radius:16px;padding:18px 20px;margin-bottom:22px;
+    }
+    .lead-q-intro h3{font-size:17px;font-weight:700;margin-bottom:6px;color:var(--ink);}
+    .lead-q-intro p{font-size:13.5px;color:var(--muted);line-height:1.65;}
+
+    .q-block{margin-bottom:20px;}
+    .q-block > p{font-size:14.5px;font-weight:700;margin-bottom:10px;color:var(--ink);}
+    .q-opts{display:flex;gap:10px;flex-wrap:wrap;}
+    .q-opt{
+      flex:1;min-width:90px;font-family:"Vazirmatn",Tahoma;font-size:14px;font-weight:700;
+      background:#fff;border:1.5px solid var(--line);border-radius:12px;
+      padding:12px 10px;cursor:pointer;color:var(--ink);text-align:center;
+      transition:border-color .15s,background .15s,color .15s;
+    }
+    .q-opt:hover{border-color:var(--brand);}
+    .q-opt.sel{border-color:var(--brand);background:var(--brand);color:#fff;}
+    .q-conditional{margin-top:12px;display:none;}
+    .q-conditional.show{display:block;}
+
+    /* ── SERVICE SUGGESTION ── */
+    .suggest-box{
+      background:linear-gradient(160deg,#fff,#f7faff);
+      border:1.5px solid #dde8ff;border-radius:18px;padding:26px;text-align:center;
+    }
+    .suggest-icon{font-size:42px;margin-bottom:10px;}
+    .suggest-box h3{font-size:19px;font-weight:700;margin-bottom:10px;color:var(--ink);}
+    .suggest-box p{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:20px;}
+    .suggest-cta{
+      font-family:"Vazirmatn",Tahoma;font-weight:700;font-size:15px;
+      background:linear-gradient(135deg,#3a8bff,var(--brand-deep));color:#fff;
+      border:0;border-radius:13px;padding:14px 28px;cursor:pointer;width:100%;
+      box-shadow:0 10px 22px -10px rgba(27,79,214,.7);transition:box-shadow .2s,transform .14s;
+    }
+    .suggest-cta:hover{box-shadow:0 14px 28px -10px rgba(27,79,214,.85);}
+    .suggest-cta:active{transform:translateY(1px);}
+    .suggest-cta:disabled{background:#b0b8c8;box-shadow:none;cursor:not-allowed;}
+    .suggest-skip{
+      display:block;margin:14px auto 0;background:none;border:none;cursor:pointer;
+      color:var(--muted);font-family:"Vazirmatn",Tahoma;font-size:13px;font-weight:700;text-decoration:underline;
+    }
 
     /* ── PREVIEW PANEL ── */
     .preview-sticky{position:sticky;top:24px;}
@@ -345,6 +453,93 @@
     .fomo-toast-msg{font-size:12px;color:var(--muted);margin-top:1px;}
     .fomo-toast-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:2px;flex-shrink:0;line-height:1;}
     .fomo-toast-close:hover{color:var(--ink);}
+
+    /* ── FEATURES GRID ── */
+    .feat-section{max-width:1000px;margin:64px auto 0;padding:0 16px;}
+    .feat-section h2{font-size:24px;font-weight:700;text-align:center;margin-bottom:8px;}
+    .feat-sub{text-align:center;font-size:13.5px;color:var(--muted);margin-bottom:36px;}
+    .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+    @media(max-width:820px){.feat-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:460px){.feat-grid{grid-template-columns:1fr;}}
+    .feat-card{
+      background:#fff;border:1.5px solid var(--line);border-radius:16px;
+      padding:22px 18px;text-align:center;box-shadow:0 2px 10px rgba(16,19,26,.05);
+      transition:transform .15s,box-shadow .2s,border-color .2s;
+    }
+    .feat-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -12px rgba(16,19,26,.18);border-color:#dde8ff;}
+    .feat-ic{
+      width:46px;height:46px;border-radius:14px;margin:0 auto 14px;
+      background:linear-gradient(135deg,#eef3ff,#dde8ff);color:var(--brand);
+      display:grid;place-items:center;
+    }
+    .feat-ic svg{width:22px;height:22px;}
+    .feat-card h3{font-size:14.5px;font-weight:700;margin-bottom:6px;}
+    .feat-card p{font-size:12.5px;color:var(--muted);line-height:1.6;}
+
+    /* ── FAQ ── */
+    .faq-section{max-width:760px;margin:64px auto 0;padding:0 16px;}
+    .faq-section h2{font-size:24px;font-weight:700;text-align:center;margin-bottom:32px;}
+    .faq-item{
+      background:#fff;border:1.5px solid var(--line);border-radius:14px;
+      margin-bottom:12px;overflow:hidden;transition:border-color .2s;
+    }
+    .faq-item[open]{border-color:#dde8ff;}
+    .faq-item summary{
+      list-style:none;cursor:pointer;padding:18px 20px;
+      font-size:14.5px;font-weight:700;color:var(--ink);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .faq-item summary::-webkit-details-marker{display:none;}
+    .faq-item summary .chev{
+      flex-shrink:0;width:20px;height:20px;color:var(--brand);transition:transform .2s;
+    }
+    .faq-item[open] summary .chev{transform:rotate(180deg);}
+    .faq-item .faq-a{padding:0 20px 18px;font-size:13.5px;color:var(--muted);line-height:1.8;}
+
+    /* ── FINAL CTA ── */
+    .final-cta{
+      max-width:900px;margin:72px auto 0;padding:0 16px;
+    }
+    .final-cta-in{
+      background:linear-gradient(135deg,var(--brand),var(--brand-deep));
+      border-radius:26px;padding:48px 32px;text-align:center;color:#fff;
+      box-shadow:0 24px 50px -20px rgba(27,79,214,.6);
+    }
+    .final-cta-in h2{font-size:clamp(22px,4vw,30px);font-weight:700;margin-bottom:12px;}
+    .final-cta-in p{font-size:15px;opacity:.92;margin-bottom:28px;line-height:1.7;max-width:480px;margin-left:auto;margin-right:auto;}
+    .final-cta-in a{
+      display:inline-flex;align-items:center;gap:8px;
+      background:#fff;color:var(--brand-deep);font-weight:700;font-size:16px;text-decoration:none;
+      padding:15px 34px;border-radius:14px;box-shadow:0 12px 26px -12px rgba(0,0,0,.4);
+      transition:transform .14s;
+    }
+    .final-cta-in a:hover{transform:translateY(-2px);}
+    .final-cta-in a svg{width:18px;height:18px;}
+
+    /* ── FOOTER ── */
+    .site-footer{
+      background:#0f1320;color:#cbd2e0;margin-top:80px;
+      padding:56px 24px 0;
+    }
+    .footer-inner{
+      max-width:1100px;margin:0 auto;
+      display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;
+      padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    @media(max-width:760px){.footer-inner{grid-template-columns:1fr;gap:32px;}}
+    .footer-brand .brand-name{font-size:22px;font-weight:700;color:#fff;display:block;margin-bottom:10px;}
+    .footer-brand p{font-size:14px;color:#9aa3b8;line-height:1.7;max-width:280px;}
+    .footer-label{display:block;font-size:13px;font-weight:700;color:#fff;margin-bottom:16px;}
+    .footer-links{display:flex;flex-direction:column;gap:11px;}
+    .footer-links a{font-size:13.5px;color:#9aa3b8;text-decoration:none;transition:color .15s;}
+    .footer-links a:hover{color:#fff;}
+    .footer-base{
+      max-width:1100px;margin:0 auto;padding:22px 0 30px;
+      display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+      font-size:12.5px;color:#6b7488;
+    }
+    .footer-base .chip-dot{width:8px;height:8px;border-radius:50%;background:#34A853;display:inline-block;margin-left:6px;animation:pulse 2s infinite;}
+    .footer-resil{display:inline-flex;align-items:center;}
   </style>
 </head>
 <body>
@@ -353,11 +548,19 @@
 <header class="site-header">
   <div class="site-header-in">
     <a class="logo" href="/">
-      <img src="/assets/logo-icon.svg" alt="آرایه" width="30" height="30" />
+      <img src="/assets/logo-icon.svg" alt="آرایه" width="32" height="32" />
       <span class="logo-text">آرایه</span>
       <span class="logo-badge">کارت ویزیت</span>
     </a>
-    <a class="header-link" href="/">بازگشت به سایت</a>
+    <nav class="header-nav" aria-label="ناوبری اصلی">
+      <a href="/googlesabt">ثبت در گوگل</a>
+      <a href="/shortener">کوتاه‌کننده لینک</a>
+      <a href="/seo">سئو سایت</a>
+      <a href="/qr">ساخت QR</a>
+      <a href="/blog">بلاگ</a>
+      <a href="/support">پشتیبانی</a>
+    </nav>
+    <a class="header-cta" href="#bizForm">ساخت کارت رایگان</a>
   </div>
 </header>
 
@@ -366,11 +569,31 @@
   <div class="hero-eyebrow"><span></span>رایگان — همیشه</div>
   <h1>کارت ویزیت دیجیتال<br><mark>برای همه کسب‌وکارها</mark></h1>
   <p class="hero-sub">لینک اختصاصی، QR کد، نقشه، شبکه‌های اجتماعی — همه در یه صفحه. بدون نیاز به سایت، کدنویسی یا هزینه.</p>
-  <div class="counter-bar" id="heroCounter" style="display:none">
-    <span class="dot"></span>
-    <span class="cnt" id="heroCountNum">...</span>
-    کارت ویزیت تا امروز ساخته شده
+
+  <div class="hero-cta-row">
+    <a class="hero-btn primary" href="#bizForm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      همین حالا کارتت رو بساز
+    </a>
+    <a class="hero-btn ghost" href="#how">چطور کار می‌کنه؟</a>
   </div>
+
+  <div class="hero-trust">
+    <div class="hero-avs">
+      <span style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">ن</span>
+      <span style="background:linear-gradient(135deg,#f97316,#ea580c)">ح</span>
+      <span style="background:linear-gradient(135deg,#059669,#047857)">د</span>
+      <span style="background:linear-gradient(135deg,#2f6df6,#1b4fd6)">م</span>
+    </div>
+    <div class="hero-trust-tx"><span class="stars">★★★★★</span> <b id="heroTrustCount">۱۲۰۰+</b> کسب‌وکار از آرایه استفاده می‌کنند</div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num" id="heroStatCount">۱۲۰۰+</div><div class="lbl">کارت ساخته‌شده</div></div>
+    <div class="hero-stat"><div class="num">۲ دقیقه</div><div class="lbl">تا آماده‌شدن کارت</div></div>
+    <div class="hero-stat"><div class="num">۰ تومان</div><div class="lbl">هزینهٔ ساخت</div></div>
+  </div>
+
   <div class="hero-pills">
     <div class="pill">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
@@ -392,7 +615,7 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="how-section">
+<section class="how-section" id="how">
   <h2>چطور کار می‌کنه؟</h2>
   <div class="steps">
     <div class="step">
@@ -409,6 +632,54 @@
       <div class="step-num">۳</div>
       <h3>لینک رو به اشتراک بذار</h3>
       <p>لینک اختصاصی و QR کد رو برای مشتریانت بفرست یا پرینت بگیر.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="feat-section">
+  <h2>چی می‌تونی روی کارتت بذاری؟</h2>
+  <p class="feat-sub">همه‌ی راه‌های ارتباطی کسب‌وکارت — یکجا، توی یه لینک</p>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.21 12 19.79 19.79 0 0 1 1.14 3.33 2 2 0 0 1 3.11 1h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></div>
+      <h3>تماس مستقیم</h3>
+      <p>مشتری با یک لمس بهت زنگ می‌زنه</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <h3>نقشه و مسیریابی</h3>
+      <p>گوگل‌مپ، نشان و بلد — راحت پیدات کنن</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></div>
+      <h3>شبکه‌های اجتماعی</h3>
+      <p>اینستاگرام، تلگرام، واتساپ و وب‌سایت</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h.01M21 21v-3h-3"/></svg></div>
+      <h3>QR کد اختصاصی</h3>
+      <p>پرینت بگیر، بچسبون جلوی مغازه</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+      <h3>ساعت کاری</h3>
+      <p>مشتری بدونه کِی بازی</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="13" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="14" r="2.5"/><path d="M12 22c5 0 7-2 7-5 0-2-2-3-7-3s-7 1-7 3c0 3 2 5 7 5Z"/></svg></div>
+      <h3>لوگو و رنگ برند</h3>
+      <p>کارت رو با هویت کسب‌وکارت بساز</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1Z"/><path d="M4 22v-7"/></svg></div>
+      <h3>لینک اختصاصی</h3>
+      <p>آدرس کوتاه و حرفه‌ای مخصوص خودت</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+      <h3>ویرایش همیشگی</h3>
+      <p>هر وقت خواستی اطلاعات رو عوض کن</p>
     </div>
   </div>
 </section>
@@ -460,46 +731,43 @@
 
   <!-- FORM -->
   <div class="form-panel">
-    <h2>کارت ویزیت رایگان بساز</h2>
-    <p class="form-desc">اطلاعات کسب‌وکارت رو وارد کن — ظرف ۲۴ ساعت لینک فعال می‌شه.</p>
+    <div id="formHeader">
+      <h2>کارت ویزیت رایگان بساز</h2>
+      <p class="form-desc">فقط چند فیلد — کارتت همین الان ساخته می‌شه و لینک اختصاصیت فعاله.</p>
+    </div>
 
     <form id="bizForm">
 
-      <div class="section-title">اطلاعات اصلی</div>
+      <div class="section-title">اطلاعات کسب‌وکار</div>
       <div class="grid">
         <div class="full">
           <label for="business_name">نام کسب‌وکار *</label>
           <input id="business_name" name="business_name" type="text" placeholder="مثلاً کافه آریا" required maxlength="200" />
         </div>
         <div>
-          <label for="category">دسته‌بندی <span class="opt">(اختیاری)</span></label>
-          <input id="category" name="category" type="text" placeholder="رستوران / دندانپزشک / سالن زیبایی" maxlength="100" />
+          <label for="category">صنف *</label>
+          <input id="category" name="category" type="text" placeholder="رستوران / دندانپزشک / سالن زیبایی" required maxlength="100" />
+        </div>
+        <div>
+          <label for="city">شهر *</label>
+          <input id="city" name="city" type="text" placeholder="تهران" required maxlength="100" />
         </div>
         <div>
           <label for="phone">شماره تماس *</label>
           <input id="phone" name="phone" type="tel" placeholder="09121234567" required maxlength="30" />
         </div>
-        <div class="full">
-          <label for="slug">شناسه لینک <span class="opt">(اختیاری — مثلاً cafe-arya)</span></label>
-          <input id="slug" name="slug" type="text" placeholder="cafe-arya" maxlength="48" pattern="[a-z0-9_-]*" />
-          <p class="hint">فقط حروف انگلیسی کوچک، عدد و خط‌تیره — اگر خالی بماند خودکار ساخته می‌شود</p>
+        <div>
+          <label for="whatsapp">واتساپ <span class="opt">(اختیاری)</span></label>
+          <input id="whatsapp" name="whatsapp" type="tel" placeholder="09121234567" maxlength="30" />
         </div>
-      </div>
-
-      <div class="section-title">آدرس و ساعت کاری</div>
-      <div class="grid">
+        <div>
+          <label for="instagram">اینستاگرام <span class="opt">(اختیاری)</span></label>
+          <input id="instagram" name="instagram" type="text" placeholder="@username" maxlength="100" />
+        </div>
         <div class="full">
-          <label for="address">آدرس <span class="opt">(اختیاری)</span></label>
+          <label for="address">آدرس یا لوکیشن <span class="opt">(اختیاری)</span></label>
           <input id="address" name="address" type="text" placeholder="تهران، خیابان ولیعصر، پلاک ۱۲" maxlength="500" />
         </div>
-        <div class="full">
-          <label for="hours">ساعت کاری <span class="opt">(اختیاری)</span></label>
-          <input id="hours" name="hours" type="text" placeholder="شنبه تا پنجشنبه: ۹ صبح — ۱۰ شب" maxlength="300" />
-        </div>
-      </div>
-
-      <div class="section-title">نقشه</div>
-      <div class="grid">
         <div>
           <label for="maps_url">لینک گوگل مپ <span class="opt">(اختیاری)</span></label>
           <input id="maps_url" name="maps_url" type="url" placeholder="https://maps.google.com/..." />
@@ -511,22 +779,6 @@
         <div class="full">
           <label for="balad_url">لینک بلد <span class="opt">(اختیاری)</span></label>
           <input id="balad_url" name="balad_url" type="url" placeholder="https://balad.ir/..." />
-        </div>
-      </div>
-
-      <div class="section-title">شبکه‌های اجتماعی</div>
-      <div class="grid">
-        <div>
-          <label for="instagram">اینستاگرام <span class="opt">(اختیاری)</span></label>
-          <input id="instagram" name="instagram" type="text" placeholder="@username" maxlength="100" />
-        </div>
-        <div>
-          <label for="telegram">تلگرام <span class="opt">(اختیاری)</span></label>
-          <input id="telegram" name="telegram" type="text" placeholder="@username" maxlength="100" />
-        </div>
-        <div class="full">
-          <label for="website">وب‌سایت <span class="opt">(اختیاری)</span></label>
-          <input id="website" name="website" type="url" placeholder="https://example.com" />
         </div>
       </div>
 
@@ -561,12 +813,13 @@
 
       <div class="submit-wrap">
         <div class="err" id="err"></div>
-        <button type="submit" class="btn-submit" id="submitBtn">ساخت کارت ویزیت رایگان ←</button>
+        <button type="submit" class="btn-submit" id="submitBtn">ساخت کارت ویزیت ←</button>
       </div>
     </form>
 
     <!-- SUCCESS -->
-    <div class="success-box" id="successBox">
+    <!-- SCREEN: کارت فعال شد -->
+    <div class="success-box" id="screenDone">
       <div class="success-icon">🎉</div>
       <h3>کارت ویزیت شما آماده‌ست!</h3>
       <p>لینک اختصاصی شما همین الان فعاله — بفرستش برای مشتریانت!</p>
@@ -574,7 +827,11 @@
         <a id="pendingLink" href="#" target="_blank"></a>
         <button class="copy-btn" id="copyLinkBtn" onclick="copyLink(this)">کپی لینک</button>
       </div>
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px">
+      <div class="qr-box">
+        <img id="qrImg" src="" alt="QR کارت ویزیت" />
+        <span>QR کارت — برای پرینت و چسباندن جلوی مغازه</span>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px">
         <a id="successViewBtn" href="#" target="_blank" style="
           font-family:'Vazirmatn',Tahoma;font-weight:700;font-size:14px;
           background:linear-gradient(135deg,#3a8bff,var(--brand-deep));color:#fff;
@@ -586,16 +843,84 @@
           padding:12px 22px;cursor:pointer;color:var(--ink);
         ">ساخت کارت دیگری</button>
       </div>
+      <button type="button" id="goQuestionsBtn" onclick="goQuestions()" style="
+        font-family:'Vazirmatn',Tahoma;font-weight:700;font-size:15px;
+        background:linear-gradient(135deg,#3a8bff,var(--brand-deep));color:#fff;
+        border:0;border-radius:13px;padding:14px 28px;cursor:pointer;width:100%;
+        box-shadow:0 10px 22px -10px rgba(27,79,214,.7);
+      ">برای پیشنهاد رشد کسب‌وکار، ۴ سوال کوتاه ←</button>
+    </div>
 
-      <div class="lead-capture">
-        <h4>می‌خوای یه سایت کامل هم داشته باشی؟</h4>
-        <p>آرایه برای کسب‌وکارهای مثل تو سایت‌های حرفه‌ای می‌سازه.<br>مشاوره رایگان، بدون تعهد.</p>
-        <div class="lead-row">
-          <input class="lead-input" type="tel" id="leadPhone" placeholder="شماره موبایلت رو وارد کن" />
-          <button class="lead-btn" id="leadBtn" onclick="sendLead()">درخواست مشاوره</button>
-        </div>
-        <div class="lead-sent" id="leadSent">✓ دریافت شد — تیم آرایه به زودی تماس می‌گیره!</div>
+    <!-- SCREEN: سوال‌های لیدگیری -->
+    <div class="screen" id="screenQuestions">
+      <div class="lead-q-intro">
+        <h3>۴ سوال کوتاه</h3>
+        <p>برای اینکه پیشنهاد دقیق‌تری برای رشد کسب‌وکارتان بدهیم، این ۴ سوال را جواب دهید. (اختیاری)</p>
       </div>
+
+      <div class="q-block" data-q="has_site">
+        <p>سایت دارید؟</p>
+        <div class="q-opts">
+          <button type="button" class="q-opt" data-val="yes">بله</button>
+          <button type="button" class="q-opt" data-val="no">خیر</button>
+        </div>
+        <div class="q-conditional" id="siteUrlWrap">
+          <input id="site_url" type="url" placeholder="آدرس سایت شما (https://...)" />
+        </div>
+      </div>
+
+      <div class="q-block" data-q="has_googlemap">
+        <p>گوگل‌مپ دارید؟</p>
+        <div class="q-opts">
+          <button type="button" class="q-opt" data-val="yes">بله</button>
+          <button type="button" class="q-opt" data-val="no">خیر</button>
+          <button type="button" class="q-opt" data-val="unknown">نمی‌دانم</button>
+        </div>
+      </div>
+
+      <div class="q-block" data-q="wants_google">
+        <p>می‌خواهید از گوگل مشتری بگیرید؟</p>
+        <div class="q-opts">
+          <button type="button" class="q-opt" data-val="yes">بله</button>
+          <button type="button" class="q-opt" data-val="no">خیر</button>
+        </div>
+      </div>
+
+      <div class="q-block" data-q="wants_review">
+        <p>دوست دارید مشاور آرایه وضعیت آنلاین کسب‌وکارتان را بررسی کند؟</p>
+        <div class="q-opts">
+          <button type="button" class="q-opt" data-val="yes">بله</button>
+          <button type="button" class="q-opt" data-val="no">خیر</button>
+        </div>
+      </div>
+
+      <div class="submit-wrap">
+        <button type="button" class="btn-submit" onclick="submitQuestions()">دیدن پیشنهاد آرایه ←</button>
+        <button type="button" class="suggest-skip" onclick="skipQuestions()">فعلاً نه، رد کن</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: پیشنهاد سرویس -->
+    <div class="screen" id="screenSuggestion">
+      <div class="suggest-box">
+        <div class="suggest-icon" id="sgIcon">🚀</div>
+        <h3 id="sgTitle"></h3>
+        <p id="sgText"></p>
+        <button type="button" class="suggest-cta" id="sgCta" onclick="requestService()"></button>
+        <button type="button" class="suggest-skip" onclick="resetForm()">فعلاً نه، ممنون</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: تایید نهایی درخواست -->
+    <div class="success-box" id="screenFinal">
+      <div class="success-icon">✅</div>
+      <h3>درخواست شما ثبت شد</h3>
+      <p>مشاور آرایه برای بررسی وضعیت کسب‌وکارتان به‌زودی با شما تماس می‌گیرد.</p>
+      <a id="finalViewBtn" href="#" target="_blank" style="
+        font-family:'Vazirmatn',Tahoma;font-weight:700;font-size:14px;
+        background:linear-gradient(135deg,#3a8bff,var(--brand-deep));color:#fff;
+        border:0;border-radius:12px;padding:12px 22px;text-decoration:none;display:inline-block;
+      ">مشاهده کارت من ←</a>
     </div>
   </div>
 
@@ -649,6 +974,9 @@
   var _theme = THEMES[0];
   var _uploadedUrl = "";
   var _uploading = false;
+  var _card = { id:"", slug:"", link:"" };   // کارت ساخته‌شده
+  var _answers = {};                          // جواب سوال‌های لیدگیری
+  var _suggested = null;                       // سرویس پیشنهادی فعلی
 
   // ── Theme picker ──
   var picker = document.getElementById("themePicker");
@@ -808,7 +1136,7 @@
     }
 
     var body = {};
-    ["business_name","slug","category","phone","maps_url","neshan_url","balad_url","address","hours","instagram","telegram","website"]
+    ["business_name","category","city","phone","whatsapp","instagram","address","maps_url","neshan_url","balad_url"]
       .forEach(function(k){
         var v = document.getElementById(k).value.trim();
         if(v) body[k] = v;
@@ -827,36 +1155,170 @@
     .then(function(r){ return r.json(); })
     .then(function(data){
       btn.disabled = false;
-      btn.textContent = "ساخت کارت ویزیت رایگان ←";
+      btn.textContent = "ساخت کارت ویزیت ←";
       if(!data.ok){
         if(data.error==="missing_name") { err.textContent = "لطفاً نام کسب‌وکار را وارد کنید."; return; }
-        if(data.error==="missing_phone") { err.textContent = "لطفاً شماره تماس را وارد کنید."; return; }
+        if(data.error==="invalid_slug") { err.textContent = "نام کسب‌وکار معتبر نیست."; return; }
         err.textContent = "خطا: " + (data.error || "نامشخص");
         return;
       }
-      // show success
+      // ذخیره وضعیت کارت
       var link = window.location.origin + "/b/" + data.slug;
+      _card = { id: data.id || "", slug: data.slug, link: link };
+
       document.getElementById("pendingLink").href = link;
       document.getElementById("pendingLink").textContent = link;
       document.getElementById("copyLinkBtn").dataset.url = link;
       document.getElementById("successViewBtn").href = link;
+      document.getElementById("finalViewBtn").href = link;
+      // QR
+      document.getElementById("qrImg").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=340x340&margin=8&data=" + encodeURIComponent(link);
+
       document.getElementById("bizForm").style.display = "none";
-      document.getElementById("successBox").classList.add("show");
+      showScreen("screenDone");
       loadCounter();
     })
     .catch(function(){
       btn.disabled = false;
-      btn.textContent = "ساخت کارت ویزیت رایگان ←";
+      btn.textContent = "ساخت کارت ویزیت ←";
       err.textContent = "خطا در اتصال — دوباره تلاش کن";
     });
   });
 
+  // ── مدیریت صفحه‌ها (wizard) ──
+  var SCREENS = ["screenDone","screenQuestions","screenSuggestion","screenFinal"];
+  function showScreen(id){
+    var fh = document.getElementById("formHeader");
+    if(fh) fh.style.display = "none";
+    SCREENS.forEach(function(s){
+      var el = document.getElementById(s);
+      if(!el) return;
+      if(s === "screenDone"){
+        el.classList.toggle("show", s === id);   // success-box با کلاس show
+      } else {
+        el.classList.toggle("active", s === id);  // screen با کلاس active
+      }
+    });
+    var panel = document.querySelector(".form-panel");
+    if(panel) panel.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+
+  window.goQuestions = function(){ showScreen("screenQuestions"); };
+
+  // ── انتخاب جواب سوال‌ها ──
+  document.querySelectorAll("#screenQuestions .q-block").forEach(function(block){
+    var key = block.getAttribute("data-q");
+    block.querySelectorAll(".q-opt").forEach(function(opt){
+      opt.addEventListener("click", function(){
+        block.querySelectorAll(".q-opt").forEach(function(o){ o.classList.remove("sel"); });
+        opt.classList.add("sel");
+        _answers[key] = opt.getAttribute("data-val");
+        if(key === "has_site"){
+          document.getElementById("siteUrlWrap").classList.toggle("show", opt.getAttribute("data-val") === "yes");
+        }
+      });
+    });
+  });
+
+  window.skipQuestions = function(){
+    // بدون جواب — فقط ثبت لید پایه و بازگشت
+    postLead(null);
+    resetForm();
+  };
+
+  // محاسبهٔ سرویس پیشنهادی بر اساس جواب‌ها
+  function computeSuggestion(){
+    var hasSite = _answers.has_site;        // yes | no
+    var hasMap  = _answers.has_googlemap;   // yes | no | unknown
+    if(hasSite === "no"){
+      return {
+        service:"website", icon:"🌐",
+        title:"کارت شما آماده شد — حالا یک قدم جلوتر",
+        text:"اما برای دیده‌شدن در گوگل، فقط کارت کافی نیست. پیشنهاد ما: سایت معرفی سریع کسب‌وکار.",
+        cta:"درخواست طراحی سایت"
+      };
+    }
+    if(hasMap === "no" || hasMap === "unknown"){
+      return {
+        service:"googlemap", icon:"📍",
+        title:"کارت شما آماده شد",
+        text:"ولی اگر مشتری اسم کسب‌وکارتان را در گوگل سرچ کند، باید گوگل‌مپ شما هم درست ثبت شده باشد.",
+        cta:"درخواست ثبت گوگل‌مپ"
+      };
+    }
+    // سایت دارد و گوگل‌مپ دارد
+    return {
+      service:"seo", icon:"🔎",
+      title:"کارت شما آماده شد",
+      text:"می‌توانیم سایت شما را رایگان بررسی کنیم و بگوییم چرا از گوگل مشتری نمی‌گیرید.",
+      cta:"درخواست بررسی سئو"
+    };
+  }
+
+  window.submitQuestions = function(){
+    if(_answers.has_site === "yes"){
+      _answers.site_url = document.getElementById("site_url").value.trim();
+    }
+    postLead(null);                  // ثبت جواب‌ها بدون درخواست سرویس
+    _suggested = computeSuggestion();
+    document.getElementById("sgIcon").textContent = _suggested.icon;
+    document.getElementById("sgTitle").textContent = _suggested.title;
+    document.getElementById("sgText").textContent = _suggested.text;
+    document.getElementById("sgCta").textContent = _suggested.cta;
+    showScreen("screenSuggestion");
+  };
+
+  window.requestService = function(){
+    if(!_suggested) return;
+    var btn = document.getElementById("sgCta");
+    btn.disabled = true;
+    btn.textContent = "در حال ثبت...";
+    postLead(_suggested.service).then(function(){
+      showScreen("screenFinal");
+    }).catch(function(){
+      btn.disabled = false;
+      btn.textContent = _suggested.cta;
+    });
+  };
+
+  // ثبت/به‌روزرسانی لید کارت ویزیت
+  function postLead(service){
+    var payload = {
+      bizcard_id: _card.id || undefined,
+      slug: _card.slug || undefined,
+      business_name: document.getElementById("business_name").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      category: document.getElementById("category").value.trim(),
+      city: document.getElementById("city").value.trim(),
+      has_site: _answers.has_site === "yes" ? true : (_answers.has_site === "no" ? false : undefined),
+      site_url: _answers.site_url || undefined,
+      has_googlemap: _answers.has_googlemap || undefined,
+      wants_google: _answers.wants_google === "yes" ? true : (_answers.wants_google === "no" ? false : undefined),
+      wants_review: _answers.wants_review === "yes" ? true : (_answers.wants_review === "no" ? false : undefined),
+      requested_service: service || undefined
+    };
+    return fetch("/api/bizcards/lead", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    }).then(function(r){ return r.json(); });
+  }
+
   window.resetForm = function(){
     document.getElementById("bizForm").reset();
     removeAvatar();
+    var fh = document.getElementById("formHeader");
+    if(fh) fh.style.display = "";
     document.getElementById("bizForm").style.display = "";
-    document.getElementById("successBox").classList.remove("show");
+    document.getElementById("screenDone").classList.remove("show");
+    document.getElementById("screenFinal").classList.remove("show");
+    document.getElementById("screenQuestions").classList.remove("active");
+    document.getElementById("screenSuggestion").classList.remove("active");
     document.getElementById("err").textContent = "";
+    document.getElementById("siteUrlWrap").classList.remove("show");
+    document.querySelectorAll("#screenQuestions .q-opt").forEach(function(o){ o.classList.remove("sel"); });
+    _answers = {}; _suggested = null; _card = { id:"", slug:"", link:"" };
     _theme = THEMES[0];
     document.getElementById("theme_color").value = "blue";
     picker.querySelectorAll(".theme-btn").forEach(function(b,i){
@@ -897,8 +1359,11 @@
       .then(function(r){ return r.json(); })
       .then(function(d){
         if(d.ok && d.count > 0){
-          document.getElementById("heroCountNum").textContent = d.count.toLocaleString("fa-IR");
-          document.getElementById("heroCounter").style.display = "inline-flex";
+          var fa = d.count.toLocaleString("fa-IR") + "+";
+          var statEl = document.getElementById("heroStatCount");
+          var trustEl = document.getElementById("heroTrustCount");
+          if(statEl) statEl.textContent = fa;
+          if(trustEl) trustEl.textContent = fa;
         }
       })
       .catch(function(){});
@@ -918,29 +1383,88 @@
     });
   };
 
-  // ── Lead capture ──
-  window.sendLead = function(){
-    var phone = document.getElementById("leadPhone").value.trim();
-    var btn = document.getElementById("leadBtn");
-    var sent = document.getElementById("leadSent");
-    if(!phone){ document.getElementById("leadPhone").focus(); return; }
-    btn.disabled = true;
-    btn.textContent = "در حال ارسال...";
-    fetch("/api/leads", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        phone: phone,
-        source: "bizcard_lead",
-        message: "درخواست مشاوره سایت کامل از صفحه کارت ویزیت"
-      })
-    })
-    .then(function(){ sent.classList.add("show"); })
-    .catch(function(){ btn.disabled=false; btn.textContent="درخواست مشاوره"; });
-  };
-
 })();
 </script>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <h2>سوالات متداول</h2>
+  <details class="faq-item">
+    <summary>ساخت کارت ویزیت واقعاً رایگانه؟
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </summary>
+    <div class="faq-a">بله، ساخت کارت ویزیت دیجیتال در آرایه کاملاً رایگانه و همیشه رایگان می‌مونه. لینک اختصاصی و QR کدت هم بدون هیچ هزینه‌ای فعال می‌شه.</div>
+  </details>
+  <details class="faq-item">
+    <summary>برای ساخت کارت به دانش فنی نیاز دارم؟
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </summary>
+    <div class="faq-a">نه اصلاً. فقط فرم کوتاه رو پر می‌کنی و کارتت فوری آماده می‌شه. نه نصب اپ لازمه، نه کدنویسی.</div>
+  </details>
+  <details class="faq-item">
+    <summary>چطور لینک کارتم رو به مشتری بدم؟
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </summary>
+    <div class="faq-a">لینک اختصاصیت رو می‌تونی توی بیو اینستاگرام، واتساپ یا تلگرام بذاری. QR کدش رو هم می‌تونی پرینت بگیری و جلوی مغازه یا روی منو بچسبونی.</div>
+  </details>
+  <details class="faq-item">
+    <summary>بعداً می‌تونم اطلاعات کارتم رو تغییر بدم؟
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </summary>
+    <div class="faq-a">بله، اطلاعات کارتت همیشه قابل ویرایشه. هر وقت شماره، آدرس یا ساعت کاریت عوض شد، کارت رو به‌روز می‌کنی و لینک ثابت می‌مونه.</div>
+  </details>
+  <details class="faq-item">
+    <summary>کارت ویزیت دیجیتال برای چه کسب‌وکارهایی مناسبه؟
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </summary>
+    <div class="faq-a">برای هر کسب‌وکاری — رستوران و کافه، پزشک و کلینیک، آرایشگاه و سالن زیبایی، مغازه، آموزشگاه، تعمیرگاه و خدمات. هر جا که مشتری باید راحت پیدات کنه.</div>
+  </details>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-in">
+    <h2>کارت ویزیت دیجیتالت رو رایگان بساز</h2>
+    <p>تو کمتر از ۲ دقیقه یه لینک حرفه‌ای برای کسب‌وکارت داشته باش — بدون نصب اپ، بدون هزینه.</p>
+    <a href="#bizForm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      شروع کن — رایگان
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="brand-name">آرایه</span>
+      <p>سایت بسازید، مشتری بگیرید. کارت ویزیت دیجیتال، ثبت در گوگل و حضور آنلاین حرفه‌ای برای هر کسب‌وکاری.</p>
+    </div>
+    <div class="footer-ch">
+      <span class="footer-label">کانال‌های ارتباطی</span>
+      <div class="footer-links">
+        <a href="/">صفحه اصلی</a>
+        <a href="/support">پشتیبانی</a>
+        <a href="/blog">بلاگ</a>
+        <a href="/about">درباره ما</a>
+      </div>
+    </div>
+    <div class="footer-ch">
+      <span class="footer-label">راهکارهای صنفی</span>
+      <div class="footer-links">
+        <a href="/googlesabt">ثبت کسب‌وکار در گوگل</a>
+        <a href="/clinic">سایت کلینیک زیبایی</a>
+        <a href="/doctors">سایت و نوبت‌دهی پزشکان</a>
+        <a href="/restaurant">سایت و سفارش آنلاین رستوران</a>
+        <a href="/portfolio">برند شخصی و پرتفولیو</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-base">
+    <span>© ۱۴۰۵ آرایه — همهٔ حقوق محفوظ است.</span>
+    <span class="footer-resil"><span class="chip-dot"></span> زیرساخت بومی، پایدار و مطمئن</span>
+  </div>
+</footer>
 
 </body>
 </html>

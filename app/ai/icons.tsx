@@ -63,6 +63,14 @@ export function IconPlus({ size = 18, className, strokeWidth = 1.75 }: IconProps
   );
 }
 
+export function IconX({ size = 16, className, strokeWidth = 1.75 }: IconProps) {
+  return (
+    <svg {...base(size, className)} strokeWidth={strokeWidth}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
 export function IconLock({ size = 14, className, strokeWidth = 1.75 }: IconProps) {
   return (
     <svg {...base(size, className)} strokeWidth={strokeWidth}>
@@ -199,6 +207,100 @@ export function IconSeal({ size = 22, className, strokeWidth = 1.6 }: IconProps)
   );
 }
 
+/* ---------- AI model brand marks (clean, distinct, monochrome) ---------- */
+import { getModel, type BrandKey } from "@/lib/aiModels";
+
+function BrandOpenAI({ size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={1.5}>
+      <path d="M12 3l7.5 4.5v9L12 21l-7.5-4.5v-9L12 3z" />
+      <path d="M12 8.2l3.9 2.3v2.9L12 15.8l-3.9-2.4v-2.9L12 8.2z" />
+    </svg>
+  );
+}
+function BrandGemini({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2c.5 5 4.5 9 10 10-5.5 1-9.5 5-10 10-.5-5-4.5-9-10-10 5.5-1 9.5-5 10-10z" />
+    </svg>
+  );
+}
+function BrandGrok({ size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={1.6}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M7 17L17 7" />
+    </svg>
+  );
+}
+function BrandLlama({ size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={1.6}>
+      <circle cx="8" cy="12" r="4.4" />
+      <circle cx="16" cy="12" r="4.4" />
+    </svg>
+  );
+}
+function BrandDeepSeek({ size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={1.6}>
+      <path d="M19 6c-3.5 1-5 3-5 6 0 2.5 2 4.5 4.5 4.5C12 22 5 18.5 5 12.5 5 7.5 9 4 14 4" />
+    </svg>
+  );
+}
+function BrandMistral({ size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={1.7}>
+      <path d="M5 8h14M5 12h14M5 16h14" />
+    </svg>
+  );
+}
+function BrandClaude({ size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={1.7}>
+      <path d="M12 4v16M5 7l14 10M19 7L5 17" />
+    </svg>
+  );
+}
+
+const BRAND_GLYPH: Record<BrandKey, (p: IconProps) => JSX.Element> = {
+  openai: BrandOpenAI,
+  gemini: BrandGemini,
+  grok: BrandGrok,
+  llama: BrandLlama,
+  deepseek: BrandDeepSeek,
+  mistral: BrandMistral,
+  claude: BrandClaude,
+};
+
+export function BrandGlyph({ brand, size = 20 }: { brand: BrandKey; size?: number }) {
+  const G = BRAND_GLYPH[brand] ?? BrandOpenAI;
+  return <G size={size} />;
+}
+
+/* Circular avatar for an AI model (brand mark in a tinted ring) */
+export function ModelAvatar({
+  modelId,
+  size = 38,
+  className = "",
+}: {
+  modelId: string;
+  size?: number;
+  className?: string;
+}) {
+  const m = getModel(modelId);
+  const color = m?.color ?? "#9CA3AF";
+  const brand: BrandKey = m?.brand ?? "openai";
+  return (
+    <span
+      className={`ai-model-avatar ${className}`.trim()}
+      style={{ width: size, height: size, color }}
+    >
+      <BrandGlyph brand={brand} size={size * 0.52} />
+    </span>
+  );
+}
+
 /* ---------- Agent registry ---------- */
 export type AgentKey =
   | "quick"
@@ -234,12 +336,20 @@ export const AGENTS: Record<AgentKey, AgentMeta> = {
 };
 
 /* Circular avatar mark for an agent */
-export function AgentAvatar({ agent, size = 38 }: { agent: AgentKey; size?: number }) {
+export function AgentAvatar({
+  agent,
+  size = 38,
+  className = "",
+}: {
+  agent: AgentKey;
+  size?: number;
+  className?: string;
+}) {
   const meta = AGENTS[agent] ?? AGENTS.initial;
   const Icon = meta.Icon;
   return (
     <span
-      className="ai-agent-avatar"
+      className={`ai-agent-avatar ${className}`.trim()}
       style={{ width: size, height: size, color: meta.color }}
     >
       <Icon size={size * 0.5} strokeWidth={1.7} />
@@ -248,6 +358,14 @@ export function AgentAvatar({ agent, size = 38 }: { agent: AgentKey; size?: numb
 }
 
 /* The signature conic-gradient orb for the moderator/synthesis */
-export function ModeratorOrb({ size = 40 }: { size?: number }) {
-  return <span className="ai-orb" style={{ width: size, height: size }} />;
+export function ModeratorOrb({
+  size = 40,
+  className = "",
+}: {
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <span className={`ai-orb ${className}`.trim()} style={{ width: size, height: size }} />
+  );
 }

@@ -23,6 +23,8 @@ const nextConfig = {
       { source: "/seo", destination: "/seo.html" },
       { source: "/bizcard", destination: "/bizcard.html" },
       { source: "/bizcard-gen", destination: "/bizcard-gen.html" },
+      { source: "/shortener", destination: "/shortener.html" },
+      { source: "/qr", destination: "/qr.html" },
       { source: "/konkour", destination: "/konkour.html" },
       { source: "/privacy", destination: "/privacy.html" },
       { source: "/tashakor", destination: "/tashakor.html" },

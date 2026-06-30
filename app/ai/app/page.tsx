@@ -2,12 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { verifyAIToken } from "@/lib/aiAuth";
 import { getSupabaseAdmin } from "@/lib/supabase";
-
-const MODE_LABELS: Record<string, string> = {
-  quick: "جواب سریع",
-  brainstorm: "همفکری",
-  critique: "نقد و اصلاح",
-};
+import { IconBolt, IconSpark, IconSeal, IconPlus, IconArrowRight } from "../icons";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -74,47 +69,41 @@ export default async function DashboardPage() {
         <div className="ai-container">
           {/* Welcome */}
           <div className="ai-dashboard-welcome">
-            <h1>خوش آمدی 👋</h1>
+            <h1>خوش آمدی</h1>
             <p>
-              پلن: <strong>{planLabel}</strong> — {user?.credits ?? 0} کردیت
+              پلن <strong>{planLabel}</strong> — {user?.credits ?? 0} کردیت
               باقی‌مانده
               {user?.plan === "free" && user?.brainstorm_demos > 0 && (
-                <> — {user.brainstorm_demos} دمو همفکری رایگان</>
+                <> — {user.brainstorm_demos} دمو هم‌فکری رایگان</>
               )}
             </p>
           </div>
 
           {/* New Chat */}
           <Link href="/ai/app/chat" className="ai-new-chat-btn">
-            ✦ چت جدید شروع کن
+            <IconPlus size={20} /> گفتگوی جدید
           </Link>
 
           {/* Mode Cards */}
           <div className="ai-mode-cards">
-            <Link
-              href="/ai/app/chat?mode=quick"
-              className="ai-mode-card"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <div className="ai-mode-card-icon">⚡</div>
-              <div className="ai-mode-card-name">جواب سریع</div>
+            <Link href="/ai/app/chat?mode=quick" className="ai-mode-card">
+              <div className="ai-mode-card-icon" style={{ color: "var(--clr-quick)" }}>
+                <IconBolt size={22} />
+              </div>
+              <div className="ai-mode-card-name">پاسخ سریع</div>
               <div className="ai-mode-card-sub">۱ کردیت</div>
             </Link>
-            <Link
-              href="/ai/app/chat?mode=brainstorm"
-              className="ai-mode-card"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <div className="ai-mode-card-icon">🧠</div>
-              <div className="ai-mode-card-name">همفکری</div>
+            <Link href="/ai/app/chat?mode=brainstorm" className="ai-mode-card">
+              <div className="ai-mode-card-icon" style={{ color: "var(--clr-exec)" }}>
+                <IconSpark size={22} />
+              </div>
+              <div className="ai-mode-card-name">شورای هم‌فکری</div>
               <div className="ai-mode-card-sub">۲ کردیت</div>
             </Link>
-            <Link
-              href="/ai/app/chat?mode=critique"
-              className="ai-mode-card"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <div className="ai-mode-card-icon">🔬</div>
+            <Link href="/ai/app/chat?mode=critique" className="ai-mode-card">
+              <div className="ai-mode-card-icon" style={{ color: "var(--clr-final)" }}>
+                <IconSeal size={22} />
+              </div>
               <div className="ai-mode-card-name">نقد و اصلاح</div>
               <div className="ai-mode-card-sub">Business</div>
             </Link>
@@ -134,16 +123,22 @@ export default async function DashboardPage() {
               {conversations.length > 0 && (
                 <Link
                   href="/ai/app/history"
-                  style={{ fontSize: 12, color: "var(--ai-primary-b)" }}
+                  style={{
+                    fontSize: 12,
+                    color: "var(--ai-primary-b)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
                 >
-                  همه →
+                  همه <IconArrowRight size={13} />
                 </Link>
               )}
             </div>
 
             {conversations.length === 0 ? (
               <div className="ai-empty-state">
-                هنوز گفتگویی نداری. اولین سؤالت را بپرس! 🚀
+                هنوز گفتگویی نداری — اولین سؤالت را بپرس.
               </div>
             ) : (
               <div className="ai-conv-list">

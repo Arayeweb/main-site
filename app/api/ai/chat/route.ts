@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 import { runQuick, runBrainstorm, runCritique } from "@/lib/aiEngine";
+import { sanitizeCouncil } from "@/lib/aiModels";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +43,9 @@ export async function POST(req: NextRequest) {
   const content = str(body.content);
   const rawMode = str(body.mode, 20);
   const conversationId = str(body.conversation_id, 36) ?? null;
+  const rawModels = Array.isArray(body.models)
+    ? (body.models as unknown[]).map((m) => String(m)).slice(0, 4)
+    : undefined;
 
   if (!content || !rawMode) {
     return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 422 });
@@ -130,7 +134,8 @@ export async function POST(req: NextRequest) {
         tokens_used: Math.ceil(result.content.length / 4),
       };
     } else if (mode === "brainstorm") {
-      const result = await runBrainstorm(content);
+      const council = sanitizeCouncil(rawModels, user.plan as string);
+      const result = await runBrainstorm(content, council);
       const responses = [
         ...result.agents.map((a, i) => ({
           agent_role: a.role,
@@ -197,7 +202,10 @@ export async function POST(req: NextRequest) {
     agent_role: r.agent_role,
     content: r.content,
     order_index: r.order_index,
-    model_name: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+    // برای اعضای شورا، agent_role همان اسلاگ مدل است (شامل "/").
+    model_name: r.agent_role.includes("/")
+      ? r.agent_role
+      : process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
   }));
 
   await supabase.from("ai_responses").insert(responsesToInsert);

@@ -3,20 +3,39 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  IconBolt,
+  IconSpark,
+  IconSeal,
+  IconSend,
+  ModeratorOrb,
+  AgentAvatar,
+  ModelAvatar,
+  type AgentKey,
+} from "./icons";
+import { DEFAULT_COUNCIL } from "@/lib/aiModels";
+import WhySection from "./WhySection";
+import PWAInstall from "./PWAInstall";
 
 type Mode = "quick" | "brainstorm" | "critique";
 
-const MODES: { id: Mode; icon: string; label: string }[] = [
-  { id: "quick",      icon: "⚡", label: "جواب سریع" },
-  { id: "brainstorm", icon: "🧠", label: "همفکری" },
-  { id: "critique",   icon: "🔬", label: "نقد و اصلاح" },
+const MODES: { id: Mode; Icon: typeof IconBolt; label: string }[] = [
+  { id: "quick",      Icon: IconBolt,  label: "پاسخ سریع" },
+  { id: "brainstorm", Icon: IconSpark, label: "شورای هم‌فکری" },
+  { id: "critique",   Icon: IconSeal,  label: "نقد و اصلاح" },
 ];
 
+const MODE_MEMBERS: Record<Mode, AgentKey[]> = {
+  quick:      ["quick"],
+  brainstorm: ["logical_analyst", "exec_advisor", "risk_critic", "creative"],
+  critique:   ["initial", "accuracy_critic", "logic_critic", "practical_critic"],
+};
+
 const SUGGESTIONS = [
-  "برای تبلیغ کلینیک زیبایی، گوگل ادز بهتره یا اینستاگرام؟",
-  "چطور یک محصول جدید در بازار ایران معرفی کنم؟",
-  "استراتژی قیمت‌گذاری برای خدمات طراحی سایت؟",
-  "تفاوت SEO و گوگل ادز برای کسب‌وکار محلی؟",
+  "یک برنامه‌ی روزانه‌ی منظم برای خودم بچین",
+  "برای شروع یادگیری زبان انگلیسی از کجا شروع کنم؟",
+  "یک شام ساده و سالم برای امشب پیشنهاد بده",
+  "چطور پس‌انداز ماهانه‌ام را بیشتر کنم؟",
 ];
 
 const AUTH_ERRORS: Record<string, string> = {
@@ -121,14 +140,24 @@ export default function AIHomePage() {
 
   const hasInput = question.trim().length > 0;
 
+  function startFromCTA() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => textareaRef.current?.focus(), 350);
+  }
+
   return (
     <div className="ai-home-shell">
+      <div className="ai-hero">
       {/* ── Nav ── */}
       <nav className="ai-home-nav">
         <div className="ai-logo">
           آرایه <span>AI</span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <PWAInstall />
+          <a href="#why" className="ai-btn ai-btn-ghost ai-btn-sm ai-why-navlink">
+            چرا آرایه؟
+          </a>
           <Link href="/ai/pricing" className="ai-btn ai-btn-ghost ai-btn-sm">
             قیمت‌ها
           </Link>
@@ -151,12 +180,15 @@ export default function AIHomePage() {
       <main className="ai-home-main">
         {/* Welcome — collapses when typing */}
         <div className={`ai-welcome-area${hasInput ? " hidden" : ""}`}>
+          <div style={{ marginBottom: 22 }}>
+            <ModeratorOrb size={56} />
+          </div>
           <div className="ai-welcome-logo">
             اتاق فکر <span>هوشمند</span>
           </div>
           <p className="ai-welcome-sub">
-            سؤالت را بنویس — یک هوش مصنوعی جواب می‌دهد، یا چند AI با هم فکر
-            می‌کنند.
+            سؤالت را بنویس — یک هوش مصنوعی جواب می‌دهد، یا چند هوش با هم
+            هم‌فکری می‌کنند و یک جمع‌بندی می‌گیری.
           </p>
           <div className="ai-suggestions">
             {SUGGESTIONS.map((s, i) => (
@@ -180,17 +212,19 @@ export default function AIHomePage() {
         {/* Input area */}
         <div className="ai-input-area">
           <div className="ai-container" style={{ maxWidth: 680 }}>
-            <div className="ai-mode-pills-wrap">
-              <span className="ai-mode-label">حالت:</span>
-              {MODES.map((m) => (
-                <button
-                  key={m.id}
-                  className={`ai-mode-pill${mode === m.id ? " active" : ""}`}
-                  onClick={() => setMode(m.id)}
-                >
-                  {m.icon} {m.label}
-                </button>
-              ))}
+            <div className="ai-mode-pills-wrap ai-pills-center">
+              {MODES.map((m) => {
+                const Icon = m.Icon;
+                return (
+                  <button
+                    key={m.id}
+                    className={`ai-mode-pill${mode === m.id ? " active" : ""}`}
+                    onClick={() => setMode(m.id)}
+                  >
+                    <Icon size={14} /> {m.label}
+                  </button>
+                );
+              })}
             </div>
             <div className="ai-textarea-row">
               <textarea
@@ -207,30 +241,41 @@ export default function AIHomePage() {
                   }
                 }}
               />
-              <button
-                className="ai-send-btn"
-                onClick={handleSend}
-                disabled={!hasInput || sending}
-                aria-label="ارسال"
-              >
-                {sending ? (
-                  <span style={{ fontSize: 20, color: "#fff" }}>⋯</span>
-                ) : (
-                  <svg
-                    className="ai-send-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      d="M12 19V5M5 12l7-7 7 7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-              </button>
+              <div className="ai-composer-toolbar">
+                <div className="ai-members">
+                  <div className="ai-members-stack">
+                    {mode === "brainstorm" ? (
+                      <>
+                        {DEFAULT_COUNCIL.map((id) => (
+                          <ModelAvatar key={id} modelId={id} size={28} className="ai-mini-avatar" />
+                        ))}
+                        <ModeratorOrb size={28} className="ai-mini-orb" />
+                      </>
+                    ) : (
+                      <>
+                        {MODE_MEMBERS[mode].map((a) => (
+                          <AgentAvatar key={a} agent={a} size={28} className="ai-mini-avatar" />
+                        ))}
+                        {mode !== "quick" && (
+                          <ModeratorOrb size={28} className="ai-mini-orb" />
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+                <button
+                  className="ai-send-btn"
+                  onClick={handleSend}
+                  disabled={!hasInput || sending}
+                  aria-label="ارسال"
+                >
+                  {sending ? (
+                    <span className="ai-loading-orb" style={{ width: 18, height: 18 }} />
+                  ) : (
+                    <IconSend className="ai-send-icon" />
+                  )}
+                </button>
+              </div>
             </div>
             {authed === false && (
               <p
@@ -247,6 +292,10 @@ export default function AIHomePage() {
           </div>
         </div>
       </main>
+      </div>
+
+      {/* ── Why Araaye AI ── */}
+      <WhySection onStart={startFromCTA} />
 
       {/* ── Auth Sheet ── */}
       {showSheet && (

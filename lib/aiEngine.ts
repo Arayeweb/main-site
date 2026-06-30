@@ -4,6 +4,8 @@
 // critique: جواب اولیه → ۳ منتقد موازی → نسخه بهتر
 // =========================================================
 
+import { DEFAULT_COUNCIL, modelName } from "./aiModels";
+
 export type AIMessage = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -81,64 +83,56 @@ export interface BrainstormResult {
   synthesis: string;
 }
 
-const BRAINSTORM_AGENTS = [
-  {
-    role: "logical_analyst",
-    label: "تحلیل‌گر منطقی",
-    system:
-      "تو یک تحلیل‌گر منطقی هستی. از منظر منطق، داده و شواهد جواب بده. مختصر، ساختارمند و مفید باش.",
-  },
-  {
-    role: "exec_advisor",
-    label: "مشاور اجرایی",
-    system:
-      "تو یک مشاور اجرایی باتجربه هستی. از منظر اجرا و پیاده‌سازی جواب بده. چه کارهای عملی باید انجام شود؟",
-  },
-  {
-    role: "risk_critic",
-    label: "منتقد ریسک",
-    system:
-      "تو متخصص مدیریت ریسک هستی. ریسک‌ها، تهدیدها و اشتباهات احتمالی را بگو. بدبینانه و هوشمندانه فکر کن.",
-  },
-  {
-    role: "creative",
-    label: "متفکر خلاق",
-    system:
-      "تو یک ایده‌پرداز خلاق هستی. رویکردهای نوآورانه، غیرمتعارف یا خلاقانه پیشنهاد بده که بقیه نادیده می‌گیرند.",
-  },
-];
+// سؤال یکسان به چند مدل هوش مصنوعی داده می‌شود؛ تفاوتِ دیدگاه از خودِ مدل می‌آید نه نقش ساختگی.
+const COUNCIL_SYSTEM =
+  "تو یک دستیار هوشمند فارسی‌زبان هستی. به این سؤال جوابی دقیق، کاربردی و نسبتاً کوتاه بده. صادق باش و اگر مطمئن نیستی بگو.";
 
-export async function runBrainstorm(question: string): Promise<BrainstormResult> {
-  // ۴ فراخوانی موازی
+export async function runBrainstorm(
+  question: string,
+  modelIds: string[]
+): Promise<BrainstormResult> {
+  const ids = (modelIds.length >= 2 ? modelIds : DEFAULT_COUNCIL).slice(0, 4);
+
+  // هر مدل به‌صورت موازی جواب می‌دهد؛ اگر یکی خطا داد بقیه ادامه می‌دهند.
   const results = await Promise.all(
-    BRAINSTORM_AGENTS.map((a) =>
+    ids.map((id) =>
       callAI(
         [
-          { role: "system", content: a.system },
+          { role: "system", content: COUNCIL_SYSTEM },
           { role: "user", content: question },
         ],
-        { max_tokens: 600 }
-      )
+        { model: id, max_tokens: 700 }
+      ).catch(() => "")
     )
   );
 
-  const agents: AgentResponse[] = BRAINSTORM_AGENTS.map((a, i) => ({
-    role: a.role,
-    label: a.label,
-    content: results[i],
-  }));
+  const agents: AgentResponse[] = ids
+    .map((id, i) => ({
+      role: id, // اسلاگ مدل به‌عنوان شناسه
+      label: modelName(id),
+      content: results[i],
+    }))
+    .filter((a) => a.content.trim().length > 0);
 
-  // جمع‌بندی نهایی
+  if (agents.length === 0) {
+    throw new Error("هیچ‌کدام از مدل‌ها پاسخ ندادند.");
+  }
+
+  // هماهنگ‌کننده‌ی شورا: جواب‌های مدل‌ها را جمع‌بندی می‌کند.
+  const combined = agents
+    .map((a) => `${a.label}:\n${a.content}`)
+    .join("\n\n———\n\n");
+
   const synthesis = await callAI(
     [
       {
         role: "system",
         content:
-          "نظرات چند متخصص به تو داده شده. اختلاف‌نظرها را مشخص کن. یک جمع‌بندی کاربردی بده و قدم بعدی پیشنهاد بده. ساختارمند بنویس.",
+          "چند هوش مصنوعی به یک سؤال جواب داده‌اند. نقاط مشترک و تفاوت‌هایشان را کوتاه مشخص کن، بهترین نکات را کنار هم بگذار و یک جمع‌بندی نهاییِ کاربردی با قدم بعدی بده. ساده و خوانا بنویس.",
       },
       {
         role: "user",
-        content: `سؤال: ${question}\n\nتحلیل‌گر منطقی:\n${results[0]}\n\nمشاور اجرایی:\n${results[1]}\n\nمنتقد ریسک:\n${results[2]}\n\nمتفکر خلاق:\n${results[3]}`,
+        content: `سؤال: ${question}\n\nجواب مدل‌ها:\n\n${combined}`,
       },
     ],
     { max_tokens: 1200 }

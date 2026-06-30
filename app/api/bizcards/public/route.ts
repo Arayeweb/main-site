@@ -56,7 +56,9 @@ export async function POST(req: NextRequest) {
     slug,
     business_name,
     category:    str(body.category, 100),
+    city:        str(body.city, 100),
     phone,
+    whatsapp:    str(body.whatsapp, 30),
     maps_url:    str(body.maps_url, 2000),
     neshan_url:  str(body.neshan_url, 2000),
     balad_url:   str(body.balad_url, 2000),
@@ -74,14 +76,14 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabase
       .from("bizcards")
       .insert(row)
-      .select("slug, business_name")
+      .select("id, slug, business_name")
       .single();
 
     if (error) {
       console.error("[api/bizcards/public] POST error:", error.message);
       return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
     }
-    return NextResponse.json({ ok: true, slug: data.slug });
+    return NextResponse.json({ ok: true, id: data.id, slug: data.slug });
   } catch (e) {
     console.error("[api/bizcards/public] POST error:", e);
     return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });

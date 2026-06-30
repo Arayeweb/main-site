@@ -1,0 +1,18 @@
+{
+  "name": "araaye-payment-service",
+  "version": "1.0.0",
+  "description": "Standalone Zibal payment microservice — runs on an Iranian VPS with a fixed IP",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "express": "^4.19.2"
+  }
+}

@@ -379,3 +379,46 @@ create table if not exists public.referrals (
 create index if not exists referrals_code_idx on public.referrals (code);
 create index if not exists referrals_phone_idx on public.referrals (referrer_phone);
 alter table public.referrals enable row level security;
+
+-- =========================================================
+-- کارت ویزیت — فلو لیدگیری (بدون OTP)
+-- =========================================================
+-- فیلدهای اضافه روی bizcards برای فرم کوتاه اولیه (شهر + واتساپ)
+alter table public.bizcards add column if not exists city     text;
+alter table public.bizcards add column if not exists whatsapp text;
+
+-- لیدهای فروش‌محور حاصل از کارت ویزیت.
+-- هر کارت بعد از ساخت می‌تواند یک ردیف لید داشته باشد که با
+-- جواب سوال‌های لیدگیری و درخواست سرویس به‌روزرسانی می‌شود.
+create table if not exists public.bizcard_leads (
+  id                uuid primary key default gen_random_uuid(),
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now(),
+  bizcard_id        uuid references public.bizcards (id) on delete set null,
+  slug              text,
+  business_name     text not null,
+  phone             text,
+  category          text,
+  city              text,
+  -- جواب سوال‌های لیدگیری
+  has_site          boolean,                 -- سایت دارد؟
+  site_url          text,
+  has_googlemap     text,                    -- yes | no | unknown
+  wants_google      boolean,                 -- می‌خواهد از گوگل مشتری بگیرد؟
+  wants_review      boolean,                 -- بررسی رایگان توسط مشاور آرایه؟
+  -- درخواست سرویس
+  requested_service text,                    -- website | googlemap | seo | null
+  -- امتیاز و وضعیت فروش
+  lead_score        int  not null default 0,
+  sales_status      text not null default 'new', -- new|auto_followed|contacted|interested|proposal_sent|won|lost|not_answered
+  last_followup_at  timestamptz,
+  source            text not null default 'bizcard',
+  raw               jsonb
+);
+
+create index if not exists bizcard_leads_created_idx  on public.bizcard_leads (created_at desc);
+create index if not exists bizcard_leads_status_idx   on public.bizcard_leads (sales_status);
+create index if not exists bizcard_leads_score_idx    on public.bizcard_leads (lead_score desc);
+create index if not exists bizcard_leads_bizcard_idx  on public.bizcard_leads (bizcard_id);
+create index if not exists bizcard_leads_phone_idx    on public.bizcard_leads (phone);
+alter table public.bizcard_leads enable row level security;

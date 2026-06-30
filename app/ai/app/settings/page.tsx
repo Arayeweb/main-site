@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { IconArrowRight, IconLogout } from "../../icons";
 
 interface UserInfo {
   id: string;
@@ -41,8 +42,8 @@ export default function SettingsPage() {
       {/* Header */}
       <header className="ai-app-header">
         <div className="ai-container ai-app-header-inner">
-          <Link href="/ai/app" className="ai-back-btn">
-            ←
+          <Link href="/ai/app" className="ai-back-btn" aria-label="بازگشت">
+            <IconArrowRight size={18} />
           </Link>
           <div className="ai-app-logo">تنظیمات</div>
           <div style={{ width: 36 }} />
@@ -142,9 +143,12 @@ export default function SettingsPage() {
                     <button
                       className="ai-btn ai-btn-ghost ai-btn-sm"
                       onClick={handleLogout}
-                      style={{ color: "var(--ai-error)", borderColor: "rgba(239,68,68,0.3)" }}
+                      style={{
+                        color: "var(--ai-error)",
+                        borderColor: "color-mix(in srgb, var(--ai-error) 30%, transparent)",
+                      }}
                     >
-                      خروج
+                      <IconLogout size={15} /> خروج
                     </button>
                   </div>
                 </div>

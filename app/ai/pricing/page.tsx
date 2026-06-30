@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconCheck, IconX } from "../icons";
 
 const PLANS = [
   {
@@ -113,7 +114,7 @@ export default function PricingPage() {
                 {plan.features.map((f, i) => (
                   <li key={i}>
                     <span className={f.ok ? "check" : "cross"}>
-                      {f.ok ? "✓" : "✕"}
+                      {f.ok ? <IconCheck size={15} /> : <IconX size={14} />}
                     </span>
                     <span style={{ color: f.ok ? "var(--ai-text)" : "var(--ai-text3)" }}>
                       {f.label}

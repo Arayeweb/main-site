@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>کوتاه‌کننده لینک رایگان | ساخت لینک کوتاه + QR — آرایه</title>
+  <meta name="description" content="لینک‌های بلند رو رایگان کوتاه کن — آدرس کوتاه و حرفه‌ای با QR کد. مناسب اینستاگرام، واتساپ و تبلیغات. بدون نصب اپ." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://araaye.com/shortener" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://araaye.com/shortener" />
+  <meta property="og:title" content="کوتاه‌کننده لینک رایگان — آرایه" />
+  <meta property="og:description" content="لینک بلندت رو به یه آدرس کوتاه و حرفه‌ای با QR تبدیل کن. رایگان." />
+  <meta property="og:image" content="https://araaye.com/assets/og-cover.svg" />
+  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+  <style>
+    @font-face{font-family:"Vazirmatn";src:url("/assets/fonts/Vazirmatn-Regular.woff2") format("woff2");font-weight:400;font-display:swap;}
+    @font-face{font-family:"Vazirmatn";src:url("/assets/fonts/Vazirmatn-Bold.woff2") format("woff2");font-weight:700;font-display:swap;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --brand:#2f6df6;--brand-deep:#1b4fd6;
+      --ink:#10131a;--muted:#6b7280;--line:#eceef2;
+      --bg:#f6f7fb;--card:#fff;
+    }
+    html,body{min-height:100dvh;background:var(--bg);font-family:"Vazirmatn",Tahoma,sans-serif;color:var(--ink);}
+
+    /* ── HEADER ── */
+    .site-header{
+      background:rgba(255,255,255,.85);backdrop-filter:saturate(160%) blur(10px);
+      border-bottom:1px solid var(--line);padding:0 24px;position:sticky;top:0;z-index:100;
+    }
+    .site-header-in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:20px;height:64px;}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex-shrink:0;}
+    .logo img{width:32px;height:32px;}
+    .logo-text{font-size:19px;font-weight:700;}
+    .logo-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:#eef3ff;color:var(--brand);letter-spacing:.3px;}
+    .header-nav{display:flex;align-items:center;gap:26px;margin:0 auto;}
+    .header-nav a{font-size:14px;color:var(--muted);text-decoration:none;font-weight:700;transition:color .15s;}
+    .header-nav a:hover,.header-nav a.active{color:var(--brand);}
+    .header-cta{flex-shrink:0;font-size:13.5px;font-weight:700;text-decoration:none;background:linear-gradient(135deg,#3a8bff,var(--brand-deep));color:#fff;padding:9px 18px;border-radius:10px;box-shadow:0 8px 18px -8px rgba(27,79,214,.7);transition:box-shadow .2s,transform .14s;white-space:nowrap;}
+    .header-cta:hover{box-shadow:0 12px 22px -8px rgba(27,79,214,.85);}
+    .header-cta:active{transform:translateY(1px);}
+    @media(max-width:880px){.header-nav{display:none;}.site-header-in{justify-content:space-between;}}
+
+    /* ── HERO / TOOL ── */
+    .hero{text-align:center;padding:64px 20px 32px;background:radial-gradient(900px 400px at 50% 0%, #eaf0ff 0%, transparent 65%),var(--bg);}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:7px;background:#eef3ff;color:var(--brand);font-size:13px;font-weight:700;padding:6px 16px;border-radius:999px;margin-bottom:20px;}
+    .hero-eyebrow span{width:7px;height:7px;border-radius:50%;background:var(--brand);display:inline-block;}
+    .hero h1{font-size:clamp(26px,5vw,40px);font-weight:700;line-height:1.35;max-width:640px;margin:0 auto 14px;}
+    .hero h1 mark{background:linear-gradient(135deg,var(--brand),var(--brand-deep));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hero-sub{font-size:16px;color:var(--muted);max-width:520px;margin:0 auto 36px;line-height:1.7;}
+
+    .tool{max-width:640px;margin:0 auto;background:var(--card);border-radius:22px;padding:28px;box-shadow:0 8px 30px -12px rgba(16,19,26,.18);text-align:right;}
+    .tool label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;}
+    .tool label .opt{font-weight:400;color:var(--muted);font-size:12px;}
+    .tool input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;font-family:"Vazirmatn",Tahoma;font-size:14px;outline:0;transition:border-color .2s,box-shadow .2s;background:#fff;color:var(--ink);direction:ltr;text-align:left;}
+    .tool input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(47,109,246,.12);}
+    .tool .alias-row{display:flex;align-items:stretch;gap:0;margin-top:6px;direction:ltr;}
+    .tool .alias-prefix{display:flex;align-items:center;padding:0 12px;background:#f4f6fb;border:1.5px solid var(--line);border-left:0;border-radius:0 12px 12px 0;font-size:13px;color:var(--muted);white-space:nowrap;}
+    .tool .alias-row input{border-radius:12px 0 0 12px;}
+    .field+.field{margin-top:18px;}
+    .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;}
+    .btn{font-family:"Vazirmatn",Tahoma;font-weight:700;font-size:16px;background:linear-gradient(135deg,#3a8bff,var(--brand-deep));color:#fff;border:0;border-radius:14px;padding:15px 32px;cursor:pointer;width:100%;margin-top:22px;box-shadow:0 10px 22px -10px rgba(27,79,214,.7);transition:box-shadow .2s,transform .14s;}
+    .btn:hover{box-shadow:0 14px 28px -10px rgba(27,79,214,.85);}
+    .btn:active{transform:translateY(1px);}
+    .btn:disabled{background:#b0b8c8;box-shadow:none;cursor:not-allowed;}
+    .err{color:#EA4335;font-size:13px;font-weight:700;margin-top:12px;min-height:18px;text-align:center;}
+
+    /* result */
+    .result{display:none;margin-top:22px;background:#e8f5e9;border:1.5px solid #c8e6c9;border-radius:16px;padding:22px;text-align:center;}
+    .result.show{display:block;}
+    .result h3{font-size:16px;font-weight:700;color:#1b5e20;margin-bottom:14px;}
+    .result-link-box{background:#fff;border:1.5px solid #c8e6c9;border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:10px;direction:ltr;}
+    .result-link-box a{color:var(--brand);font-weight:700;font-size:15px;word-break:break-all;flex:1;text-align:left;text-decoration:none;}
+    .copy-btn{font-family:"Vazirmatn",Tahoma;font-size:12px;font-weight:700;background:#eef3ff;color:var(--brand);border:0;border-radius:8px;padding:8px 14px;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:background .15s;}
+    .copy-btn:hover{background:#dde8ff;}
+    .copy-btn.copied{background:#e8f5e9;color:#2e7d32;}
+    .result-qr{margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+    .result-qr canvas,.result-qr img{width:150px;height:150px;border-radius:12px;background:#fff;padding:8px;box-shadow:0 2px 10px rgba(16,19,26,.1);}
+    .qr-dl{font-size:12.5px;font-weight:700;color:var(--brand);text-decoration:none;}
+
+    /* ── FEATURES ── */
+    .feat-section{max-width:1000px;margin:64px auto 0;padding:0 16px;}
+    .feat-section h2{font-size:23px;font-weight:700;text-align:center;margin-bottom:32px;}
+    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+    @media(max-width:760px){.feat-grid{grid-template-columns:1fr;}}
+    .feat-card{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:24px 20px;text-align:center;box-shadow:0 2px 10px rgba(16,19,26,.05);}
+    .feat-ic{width:46px;height:46px;border-radius:14px;margin:0 auto 14px;background:linear-gradient(135deg,#eef3ff,#dde8ff);color:var(--brand);display:grid;place-items:center;}
+    .feat-ic svg{width:22px;height:22px;}
+    .feat-card h3{font-size:15px;font-weight:700;margin-bottom:6px;}
+    .feat-card p{font-size:13px;color:var(--muted);line-height:1.65;}
+
+    /* ── FOOTER ── */
+    .site-footer{background:#0f1320;color:#cbd2e0;margin-top:80px;padding:56px 24px 0;}
+    .footer-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,.08);}
+    @media(max-width:760px){.footer-inner{grid-template-columns:1fr;gap:32px;}}
+    .footer-brand .brand-name{font-size:22px;font-weight:700;color:#fff;display:block;margin-bottom:10px;}
+    .footer-brand p{font-size:14px;color:#9aa3b8;line-height:1.7;max-width:280px;}
+    .footer-label{display:block;font-size:13px;font-weight:700;color:#fff;margin-bottom:16px;}
+    .footer-links{display:flex;flex-direction:column;gap:11px;}
+    .footer-links a{font-size:13.5px;color:#9aa3b8;text-decoration:none;transition:color .15s;}
+    .footer-links a:hover{color:#fff;}
+    .footer-base{max-width:1100px;margin:0 auto;padding:22px 0 30px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#6b7488;}
+    .footer-base .chip-dot{width:8px;height:8px;border-radius:50%;background:#34A853;display:inline-block;margin-left:6px;}
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="site-header-in">
+    <a class="logo" href="/">
+      <img src="/assets/logo-icon.svg" alt="آرایه" width="32" height="32" />
+      <span class="logo-text">آرایه</span>
+      <span class="logo-badge">کوتاه‌کننده لینک</span>
+    </a>
+    <nav class="header-nav" aria-label="ناوبری اصلی">
+      <a href="/googlesabt">ثبت در گوگل</a>
+      <a href="/shortener" class="active">کوتاه‌کننده لینک</a>
+      <a href="/seo">سئو سایت</a>
+      <a href="/qr">ساخت QR</a>
+      <a href="/blog">بلاگ</a>
+      <a href="/support">پشتیبانی</a>
+    </nav>
+    <a class="header-cta" href="/bizcard">کارت ویزیت رایگان</a>
+  </div>
+</header>
+
+<!-- HERO / TOOL -->
+<section class="hero">
+  <div class="hero-eyebrow"><span></span>رایگان — بدون نصب اپ</div>
+  <h1>لینک بلندت رو <mark>کوتاه و حرفه‌ای</mark> کن</h1>
+  <p class="hero-sub">آدرس‌های طولانی رو به یه لینک کوتاه و تمیز با QR کد تبدیل کن — مناسب بیو اینستاگرام، واتساپ و تبلیغات.</p>
+
+  <form class="tool" id="shortForm">
+    <div class="field">
+      <label for="url">لینک بلندت رو وارد کن</label>
+      <input id="url" name="url" type="text" inputmode="url" placeholder="https://example.com/very/long/link?utm=..." required />
+    </div>
+    <div class="field">
+      <label for="slug">آدرس دلخواه <span class="opt">(اختیاری)</span></label>
+      <div class="alias-row">
+        <input id="slug" name="slug" type="text" placeholder="my-link" maxlength="48" pattern="[A-Za-z0-9_-]*" />
+        <span class="alias-prefix" id="aliasPrefix">/s/</span>
+      </div>
+    </div>
+    <input class="hp" type="text" id="company" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <button type="submit" class="btn" id="submitBtn">کوتاه کن ←</button>
+    <div class="err" id="err"></div>
+
+    <div class="result" id="result">
+      <h3>لینک کوتاهت آماده‌ست! 🎉</h3>
+      <div class="result-link-box">
+        <a id="resultLink" href="#" target="_blank" rel="noopener"></a>
+        <button type="button" class="copy-btn" id="copyBtn">کپی</button>
+      </div>
+      <div class="result-qr">
+        <div id="qrBox"></div>
+        <a href="#" class="qr-dl" id="qrDownload" download="qrcode.png">دانلود QR کد</a>
+      </div>
+    </div>
+  </form>
+</section>
+
+<!-- FEATURES -->
+<section class="feat-section">
+  <h2>چرا کوتاه‌کننده لینک آرایه؟</h2>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></div>
+      <h3>لینک کوتاه و تمیز</h3>
+      <p>آدرس‌های طولانی رو به یه لینک حرفه‌ای تبدیل کن</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h.01M21 21v-3h-3"/></svg></div>
+      <h3>QR کد خودکار</h3>
+      <p>برای هر لینک کوتاه، یه QR کد آماده دانلود</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg></div>
+      <h3>سریع و رایگان</h3>
+      <p>بدون ثبت‌نام، بدون نصب اپ، در یک ثانیه</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="brand-name">آرایه</span>
+      <p>سایت بسازید، مشتری بگیرید. کارت ویزیت دیجیتال، ثبت در گوگل و حضور آنلاین حرفه‌ای برای هر کسب‌وکاری.</p>
+    </div>
+    <div class="footer-ch">
+      <span class="footer-label">ابزارهای رایگان</span>
+      <div class="footer-links">
+        <a href="/bizcard">کارت ویزیت دیجیتال</a>
+        <a href="/shortener">کوتاه‌کننده لینک</a>
+        <a href="/qr">ساخت QR کد</a>
+      </div>
+    </div>
+    <div class="footer-ch">
+      <span class="footer-label">راهکارهای صنفی</span>
+      <div class="footer-links">
+        <a href="/googlesabt">ثبت کسب‌وکار در گوگل</a>
+        <a href="/seo">سئو سایت</a>
+        <a href="/software">تولید نرم‌افزار</a>
+        <a href="/support">پشتیبانی</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-base">
+    <span>© ۱۴۰۵ آرایه — همهٔ حقوق محفوظ است.</span>
+    <span class="footer-resil"><span class="chip-dot"></span> زیرساخت بومی، پایدار و مطمئن</span>
+  </div>
+</footer>
+
+<script src="/assets/js/qrcode.js"></script>
+<script>
+(function(){
+  var form = document.getElementById("shortForm");
+  var btn = document.getElementById("submitBtn");
+  var err = document.getElementById("err");
+  var result = document.getElementById("result");
+
+  // پیشوند آدرس دلخواه را با دامنه‌ی فعلی نشان بده
+  document.getElementById("aliasPrefix").textContent = window.location.host + "/s/";
+
+  function renderQR(text){
+    var box = document.getElementById("qrBox");
+    box.innerHTML = "";
+    try{
+      var qr = qrcode(0, "M");
+      qr.addData(text);
+      qr.make();
+      // خروجی به‌صورت img با data-uri (مقیاس‌پذیر و قابل دانلود)
+      box.innerHTML = qr.createImgTag(5, 8);
+      var img = box.querySelector("img");
+      if(img){
+        img.style.width = "150px";
+        img.style.height = "150px";
+        document.getElementById("qrDownload").href = img.src;
+      }
+    }catch(e){
+      box.textContent = "QR ساخته نشد";
+    }
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    err.textContent = "";
+    result.classList.remove("show");
+
+    var url = document.getElementById("url").value.trim();
+    var slug = document.getElementById("slug").value.trim();
+    var company = document.getElementById("company").value.trim();
+    if(!url){ document.getElementById("url").focus(); return; }
+
+    btn.disabled = true;
+    btn.textContent = "در حال ساخت...";
+
+    fetch("/api/shorten", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ url: url, slug: slug || undefined, company: company || undefined })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      btn.disabled = false;
+      btn.textContent = "کوتاه کن ←";
+      if(!d.ok){
+        var map = {
+          invalid_target: "لینک معتبر نیست — یه آدرس کامل وارد کن.",
+          duplicate_slug: "این آدرس دلخواه قبلاً گرفته شده — یکی دیگه امتحان کن.",
+          reserved_slug: "این آدرس رزرو شده — یکی دیگه انتخاب کن.",
+          rate_limited: "تعداد درخواست‌ها زیاد شد — یه دقیقه صبر کن.",
+        };
+        err.textContent = map[d.error] || "خطا — دوباره تلاش کن.";
+        return;
+      }
+      var link = d.short_url || (window.location.origin + "/s/" + d.slug);
+      var a = document.getElementById("resultLink");
+      a.href = link; a.textContent = link;
+      document.getElementById("copyBtn").dataset.url = link;
+      renderQR(link);
+      result.classList.add("show");
+    })
+    .catch(function(){
+      btn.disabled = false;
+      btn.textContent = "کوتاه کن ←";
+      err.textContent = "خطا در اتصال — دوباره تلاش کن.";
+    });
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", function(){
+    var btn = this;
+    var url = btn.dataset.url;
+    if(!url) return;
+    navigator.clipboard.writeText(url).then(function(){
+      btn.textContent = "کپی شد ✓"; btn.classList.add("copied");
+      setTimeout(function(){ btn.textContent="کپی"; btn.classList.remove("copied"); }, 2000);
+    }).catch(function(){ prompt("لینک کوتاه:", url); });
+  });
+})();
+</script>
+
+</body>
+</html>

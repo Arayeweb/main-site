@@ -128,6 +128,11 @@ html,body{height:100%;}
   box-shadow:0 10px 22px -10px rgba(255,109,0,.7);
 }
 .bc-cta.balad:hover{box-shadow:0 14px 28px -10px rgba(255,109,0,.85);}
+.bc-cta.whatsapp{
+  color:#fff;background:linear-gradient(135deg,#25d366,#1da851);
+  box-shadow:0 10px 22px -10px rgba(37,211,102,.7);
+}
+.bc-cta.whatsapp:hover{box-shadow:0 14px 28px -10px rgba(37,211,102,.85);}
 
 .bc-socials{display:flex;gap:10px;padding:6px 26px 0;}
 .bc-soc{

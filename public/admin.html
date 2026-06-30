@@ -886,6 +886,25 @@
               <div id="bc_listWrap"><p class="bc-empty">در حال بارگذاری...</p></div>
             </div>
 
+            <!-- sales leads -->
+            <div class="bc-card-box">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+                <h2 style="margin:0">لیدهای فروش کارت ویزیت</h2>
+                <select id="bc_leadFilter" style="margin-inline-start:auto;padding:7px 10px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:inherit;font-size:.85rem">
+                  <option value="">همه</option>
+                  <option value="hot">فقط داغ (امتیاز ≥ ۷۰)</option>
+                  <option value="new">جدید</option>
+                  <option value="contacted">تماس گرفته شد</option>
+                  <option value="interested">علاقه‌مند</option>
+                  <option value="proposal_sent">پیشنهاد ارسال شد</option>
+                  <option value="won">موفق</option>
+                  <option value="lost">ناموفق</option>
+                  <option value="not_answered">جواب نداد</option>
+                </select>
+              </div>
+              <div id="bc_leadsWrap"><p class="bc-empty">در حال بارگذاری...</p></div>
+            </div>
+
           </div>
         </section>
 
@@ -1083,7 +1102,65 @@
       res.scrollIntoView({behavior:"smooth",block:"nearest"});
     }
 
-    function bcLoadList() { bcFetchPending(); bcFetchActive(); }
+    function bcLoadList() { bcFetchPending(); bcFetchActive(); bcFetchLeads(); }
+
+    var BC_SALES_STATUS = [
+      ["new","جدید"],["auto_followed","فالوآپ خودکار"],["contacted","تماس گرفته شد"],
+      ["interested","علاقه‌مند"],["proposal_sent","پیشنهاد ارسال شد"],["won","موفق"],
+      ["lost","ناموفق"],["not_answered","جواب نداد"]
+    ];
+    var BC_SERVICE_FA = { website:"طراحی سایت", googlemap:"ثبت گوگل‌مپ", seo:"بررسی سئو" };
+
+    function bcYesNo(v){ return v===true?"✓":(v===false?"✗":"—"); }
+    function bcMapFa(v){ return v==="yes"?"✓":(v==="no"?"✗":(v==="unknown"?"؟":"—")); }
+
+    function bcFetchLeads() {
+      var filterEl = document.getElementById("bc_leadFilter");
+      var f = filterEl ? filterEl.value : "";
+      var qs = f === "hot" ? "?hot=1" : (f ? "?status="+encodeURIComponent(f) : "");
+      fetch("/api/admin/bizcard-leads"+qs, {credentials:"include"})
+        .then(function(r){return r.ok?r.json():{ok:false};})
+        .then(function(data) {
+          var wrap = document.getElementById("bc_leadsWrap");
+          var leads = data.leads||[];
+          if (!leads.length) { wrap.innerHTML='<p class="bc-empty">هنوز لیدی ثبت نشده</p>'; return; }
+          var rows = leads.map(function(l) {
+            var date = l.created_at ? new Date(l.created_at).toLocaleDateString("fa-IR") : "—";
+            var hot = l.lead_score >= 70;
+            var svc = l.requested_service ? '<span class="bc-tag-p">'+bcEsc(BC_SERVICE_FA[l.requested_service]||l.requested_service)+'</span>' : "—";
+            var opts = BC_SALES_STATUS.map(function(s){
+              return '<option value="'+s[0]+'"'+(l.sales_status===s[0]?" selected":"")+'>'+s[1]+'</option>';
+            }).join("");
+            return '<tr'+(hot?' style="background:rgba(217,83,79,.06)"':'')+'>'
+              +'<td><strong>'+bcEsc(l.business_name||"—")+'</strong>'+(l.slug?'<br><small><a href="/b/'+bcEsc(l.slug)+'" target="_blank" style="color:var(--muted)">/b/'+bcEsc(l.slug)+'</a></small>':'')+'</td>'
+              +'<td>'+bcEsc(l.phone||"—")+'</td>'
+              +'<td>'+bcEsc(l.category||"—")+'</td>'
+              +'<td>'+bcEsc(l.city||"—")+'</td>'
+              +'<td style="text-align:center">'+bcYesNo(l.has_site)+'</td>'
+              +'<td style="text-align:center">'+bcMapFa(l.has_googlemap)+'</td>'
+              +'<td>'+svc+'</td>'
+              +'<td style="text-align:center;font-weight:800'+(hot?';color:#c0392b':'')+'">'+(l.lead_score||0)+'</td>'
+              +'<td><select onchange="bcSetLeadStatus(\''+bcEsc(l.id)+'\',this)" style="padding:5px 7px;border:1.5px solid var(--line);border-radius:6px;font-family:inherit;font-size:.8rem">'+opts+'</select></td>'
+              +'<td><small style="color:var(--muted)">'+date+'</small></td>'
+              +'</tr>';
+          }).join("");
+          wrap.innerHTML = '<div style="overflow-x:auto"><table class="bc-list-table"><thead><tr>'
+            +'<th>کسب‌وکار</th><th>موبایل</th><th>صنف</th><th>شهر</th><th>سایت</th><th>گوگل‌مپ</th><th>خدمت درخواستی</th><th>امتیاز</th><th>وضعیت فروش</th><th>تاریخ</th>'
+            +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+        })
+        .catch(function(){document.getElementById("bc_leadsWrap").innerHTML='<p class="bc-empty">خطا در بارگذاری</p>';});
+    }
+
+    window.bcSetLeadStatus = function(id, sel) {
+      var prev = sel.dataset.prev || "";
+      fetch("/api/admin/bizcard-leads", {
+        method:"PATCH", headers:{"Content-Type":"application/json"},
+        credentials:"include", body:JSON.stringify({id:id, sales_status:sel.value})
+      })
+      .then(function(r){return r.json();})
+      .then(function(data){ if(!data.ok){ alert("خطا در ذخیره وضعیت"); } })
+      .catch(function(){ alert("خطا در اتصال"); });
+    };
 
     function bcFetchPending() {
       fetch("/api/bizcards/list?pending=1", {credentials:"include"})
@@ -1174,6 +1251,8 @@
       if (window.location.hash === "#bizcard") {
         setTimeout(bcInit, 200);
       }
+      var leadFilter = document.getElementById("bc_leadFilter");
+      if (leadFilter) leadFilter.addEventListener("change", bcFetchLeads);
     });
   })();
   </script>

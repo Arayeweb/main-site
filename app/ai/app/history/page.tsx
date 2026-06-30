@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { verifyAIToken } from "@/lib/aiAuth";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { IconArrowRight } from "../../icons";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -14,10 +15,10 @@ function formatDate(iso: string) {
   });
 }
 
-const MODE_LABEL: Record<string, { label: string; icon: string }> = {
-  quick:      { label: "جواب سریع",  icon: "⚡" },
-  brainstorm: { label: "همفکری",     icon: "🧠" },
-  critique:   { label: "نقد و اصلاح", icon: "🔬" },
+const MODE_LABEL: Record<string, string> = {
+  quick:      "پاسخ سریع",
+  brainstorm: "شورای هم‌فکری",
+  critique:   "نقد و اصلاح",
 };
 
 export default async function HistoryPage() {
@@ -41,8 +42,8 @@ export default async function HistoryPage() {
       {/* Header */}
       <header className="ai-app-header">
         <div className="ai-container ai-app-header-inner">
-          <Link href="/ai/app" className="ai-back-btn">
-            ←
+          <Link href="/ai/app" className="ai-back-btn" aria-label="بازگشت">
+            <IconArrowRight size={18} />
           </Link>
           <div className="ai-app-logo">
             تاریخچه گفتگوها
@@ -55,23 +56,20 @@ export default async function HistoryPage() {
         <div className="ai-container">
           {convs.length === 0 ? (
             <div className="ai-empty-state" style={{ marginTop: 60 }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>💬</div>
               <div>هنوز گفتگویی نداری.</div>
               <Link
                 href="/ai/app/chat"
                 className="ai-btn ai-btn-primary ai-btn-sm"
                 style={{ marginTop: 16, display: "inline-flex" }}
               >
-                شروع اولین چت
+                شروع اولین گفتگو
               </Link>
             </div>
           ) : (
             <div className="ai-conv-list">
               {convs.map((c) => {
-                const modeInfo = MODE_LABEL[c.mode as string] ?? {
-                  label: c.mode as string,
-                  icon: "●",
-                };
+                const modeLabel =
+                  MODE_LABEL[c.mode as string] ?? (c.mode as string);
                 return (
                   <Link
                     key={c.id as string}
@@ -93,7 +91,7 @@ export default async function HistoryPage() {
                           marginTop: 2,
                         }}
                       >
-                        {modeInfo.icon} {modeInfo.label}
+                        {modeLabel}
                       </div>
                     </div>
                     <div
