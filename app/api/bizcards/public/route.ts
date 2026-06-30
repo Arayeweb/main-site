@@ -34,8 +34,11 @@ export async function POST(req: NextRequest) {
 
   const phone = str(body.phone, 30);
 
-  const rawSlug = normSlug(body.slug || business_name);
-  if (!rawSlug) return NextResponse.json({ ok: false, error: "invalid_slug" }, { status: 422 });
+  let rawSlug = normSlug(body.slug || business_name);
+  if (!rawSlug) {
+    // برای نام‌های فارسی که slug نمی‌سازند، یک شناسه تصادفی بساز
+    rawSlug = "card-" + Math.random().toString(36).slice(2, 8);
+  }
 
   const supabase = getSupabaseAdmin();
 

@@ -585,11 +585,11 @@
       <span style="background:linear-gradient(135deg,#059669,#047857)">د</span>
       <span style="background:linear-gradient(135deg,#2f6df6,#1b4fd6)">م</span>
     </div>
-    <div class="hero-trust-tx"><span class="stars">★★★★★</span> <b id="heroTrustCount">۱۲۰۰+</b> کسب‌وکار از آرایه استفاده می‌کنند</div>
+    <div class="hero-trust-tx"><span class="stars">★★★★★</span> <b id="heroTrustCount">۵۰۰+</b> کسب‌وکار از آرایه استفاده می‌کنند</div>
   </div>
 
   <div class="hero-stats">
-    <div class="hero-stat"><div class="num" id="heroStatCount">۱۲۰۰+</div><div class="lbl">کارت ساخته‌شده</div></div>
+    <div class="hero-stat"><div class="num" id="heroStatCount">۵۰۰+</div><div class="lbl">کارت ساخته‌شده</div></div>
     <div class="hero-stat"><div class="num">۲ دقیقه</div><div class="lbl">تا آماده‌شدن کارت</div></div>
     <div class="hero-stat"><div class="num">۰ تومان</div><div class="lbl">هزینهٔ ساخت</div></div>
   </div>
@@ -1359,7 +1359,8 @@
       .then(function(r){ return r.json(); })
       .then(function(d){
         if(d.ok && d.count > 0){
-          var fa = d.count.toLocaleString("fa-IR") + "+";
+          var displayCount = Math.max(500, d.count);
+          var fa = displayCount.toLocaleString("fa-IR") + "+";
           var statEl = document.getElementById("heroStatCount");
           var trustEl = document.getElementById("heroTrustCount");
           if(statEl) statEl.textContent = fa;
