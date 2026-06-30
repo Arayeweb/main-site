@@ -90,6 +90,46 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // summary mode — aggregate stats for dashboard cards
+  if (searchParams.get("summary")) {
+    try {
+      const supabase = getSupabaseAdmin();
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("status,kind,grand_total,currency,paid_at");
+      if (error) {
+        console.error("[api/admin/invoices] GET summary error:", error.message);
+        return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
+      }
+      const rows = data || [];
+      const paid: Record<string, number> = {};
+      const outstanding: Record<string, number> = {};
+      const counts = { total: 0, paid: 0, sent: 0, draft: 0, cancelled: 0, invoice: 0, proforma: 0 };
+      for (const r of rows) {
+        const cur = r.currency || "IRR";
+        const amt = Number(r.grand_total) || 0;
+        counts.total++;
+        if (r.kind === "proforma") counts.proforma++; else counts.invoice++;
+        if (r.status === "paid") {
+          counts.paid++;
+          paid[cur] = (paid[cur] || 0) + amt;
+        } else if (r.status === "sent") {
+          counts.sent++;
+          outstanding[cur] = (outstanding[cur] || 0) + amt;
+        } else if (r.status === "draft") {
+          counts.draft++;
+          outstanding[cur] = (outstanding[cur] || 0) + amt;
+        } else if (r.status === "cancelled") {
+          counts.cancelled++;
+        }
+      }
+      return NextResponse.json({ ok: true, summary: { paid, outstanding, counts } });
+    } catch (e) {
+      console.error("[api/admin/invoices] GET summary error:", e);
+      return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    }
+  }
+
   const kind = searchParams.get("kind") || "";
   const status = searchParams.get("status") || "";
   const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10));

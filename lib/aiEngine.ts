@@ -21,7 +21,7 @@ export async function callAI(
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY تنظیم نشده.");
 
-  const model = opts?.model || process.env.OPENROUTER_MODEL || DEFAULT_MODEL;
+  const model = opts?.model || DEFAULT_MODEL;
 
   const res = await fetch(OPENROUTER_API, {
     method: "POST",
@@ -49,13 +49,52 @@ export async function callAI(
   return data.choices[0]?.message?.content ?? "";
 }
 
+/** نسخه‌ی streaming از callAI — متن را تکه‌تکه برمی‌گرداند. */
+export async function callAIStream(
+  messages: AIMessage[],
+  opts?: { model?: string; max_tokens?: number }
+): Promise<ReadableStream<Uint8Array>> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY تنظیم نشده.");
+
+  const model = opts?.model || DEFAULT_MODEL;
+
+  const res = await fetch(OPENROUTER_API, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com",
+      "X-Title": "Araaye AI",
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      max_tokens: opts?.max_tokens ?? 1000,
+      stream: true,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`OpenRouter ${res.status}: ${err}`);
+  }
+
+  if (!res.body) throw new Error("No response body from OpenRouter.");
+  return res.body;
+}
+
 // ---------- Mode: quick ----------
 
 export interface QuickResult {
   content: string;
 }
 
-export async function runQuick(question: string): Promise<QuickResult> {
+export async function runQuick(
+  question: string,
+  model?: string
+): Promise<QuickResult> {
+  const usedModel = model || DEFAULT_MODEL;
   const content = await callAI(
     [
       {
@@ -65,9 +104,28 @@ export async function runQuick(question: string): Promise<QuickResult> {
       },
       { role: "user", content: question },
     ],
-    { max_tokens: 1200 }
+    { model: usedModel, max_tokens: 1200 }
   );
   return { content };
+}
+
+/** نسخه‌ی streaming از runQuick — فقط برای حالت quick. */
+export async function runQuickStream(
+  question: string,
+  model?: string
+): Promise<ReadableStream<Uint8Array>> {
+  const usedModel = model || DEFAULT_MODEL;
+  return callAIStream(
+    [
+      {
+        role: "system",
+        content:
+          "تو یک دستیار هوشمند فارسی‌زبان هستی. جواب‌های دقیق، مستقیم و کاربردی بده. از ساختار خوانا با بولت یا نکات کوتاه استفاده کن.",
+      },
+      { role: "user", content: question },
+    ],
+    { model: usedModel, max_tokens: 1200 }
+  );
 }
 
 // ---------- Mode: brainstorm ----------

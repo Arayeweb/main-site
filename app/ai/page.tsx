@@ -14,6 +14,7 @@ import {
   type AgentKey,
 } from "./icons";
 import { DEFAULT_COUNCIL } from "@/lib/aiModels";
+import ModelPicker from "./ModelPicker";
 import WhySection from "./WhySection";
 import PWAInstall from "./PWAInstall";
 
@@ -21,8 +22,8 @@ type Mode = "quick" | "brainstorm" | "critique";
 
 const MODES: { id: Mode; Icon: typeof IconBolt; label: string }[] = [
   { id: "quick",      Icon: IconBolt,  label: "پاسخ سریع" },
-  { id: "brainstorm", Icon: IconSpark, label: "شورای هم‌فکری" },
-  { id: "critique",   Icon: IconSeal,  label: "نقد و اصلاح" },
+  { id: "brainstorm", Icon: IconSpark, label: "گفت‌وگوی چند AI" },
+  { id: "critique",   Icon: IconSeal,  label: "نقد و بهبود" },
 ];
 
 const MODE_MEMBERS: Record<Mode, AgentKey[]> = {
@@ -55,6 +56,11 @@ export default function AIHomePage() {
   const [question, setQuestion] = useState("");
   const [mode,     setMode]     = useState<Mode>("quick");
   const [sending,  setSending]  = useState(false);
+  const [sendErr,  setSendErr]   = useState("");
+  const [quickModel, setQuickModel] = useState<string>(DEFAULT_COUNCIL[0]);
+  const [council, setCouncil] = useState<string[]>(DEFAULT_COUNCIL);
+  const [showPicker, setShowPicker] = useState(false);
+  const [plan, setPlan] = useState<string | null>(null);
 
   // Auth sheet state
   const [showSheet, setShowSheet] = useState(false);
@@ -68,7 +74,12 @@ export default function AIHomePage() {
   useEffect(() => {
     fetch("/api/ai/auth")
       .then((r) => r.json())
-      .then((d) => setAuthed(!!d.authed))
+      .then((d) => {
+        setAuthed(!!d.authed);
+        if (d.authed && d.user) {
+          setPlan(d.user.plan as string);
+        }
+      })
       .catch(() => setAuthed(false));
   }, []);
 
@@ -86,16 +97,34 @@ export default function AIHomePage() {
   async function sendMessage(q: string) {
     if (!q.trim() || sending) return;
     setSending(true);
+    setSendErr("");
     try {
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, content: q.trim() }),
+        body: JSON.stringify({
+          mode,
+          content: q.trim(),
+          ...(mode === "quick" ? { model: quickModel } : {}),
+          ...(mode === "brainstorm" ? { models: council } : {}),
+        }),
       });
       const data = await res.json();
       if (data.ok && data.conversation_id) {
         router.push(`/ai/app/c/${data.conversation_id}`);
+        return;
       }
+      if (data.error === "insufficient_credits") {
+        setSendErr("کردیت کافی نداری. برای ادامه اعتبار بخر.");
+      } else if (data.error === "plan_upgrade_required" || data.error === "brainstorm_demo_exhausted") {
+        setSendErr("برای این حالت باید پلن خود را ارتقا دهی.");
+      } else if (data.error === "unauthorized") {
+        setSendErr("ابتدا وارد شو.");
+      } else {
+        setSendErr("خطایی رخ داد. دوباره تلاش کن.");
+      }
+    } catch {
+      setSendErr("خطا در اتصال. دوباره تلاش کن.");
     } finally {
       setSending(false);
     }
@@ -179,7 +208,7 @@ export default function AIHomePage() {
       {/* ── Main ── */}
       <main className="ai-home-main">
         {/* Welcome — collapses when typing */}
-        <div className={`ai-welcome-area${hasInput ? " hidden" : ""}`}>
+        <div className="ai-welcome-area">
           <div style={{ marginBottom: 22 }}>
             <ModeratorOrb size={56} />
           </div>
@@ -187,8 +216,8 @@ export default function AIHomePage() {
             اتاق فکر <span>هوشمند</span>
           </div>
           <p className="ai-welcome-sub">
-            سؤالت را بنویس — یک هوش مصنوعی جواب می‌دهد، یا چند هوش با هم
-            هم‌فکری می‌کنند و یک جمع‌بندی می‌گیری.
+            سؤالت را بنویس — یک هوش مصنوعی پاسخ می‌دهد، یا چند هوش مصنوعی با هم
+            مشورت می‌کنند و یک جمع‌بندی می‌گیری.
           </p>
           <div className="ai-suggestions">
             {SUGGESTIONS.map((s, i) => (
@@ -242,27 +271,42 @@ export default function AIHomePage() {
                 }}
               />
               <div className="ai-composer-toolbar">
-                <div className="ai-members">
-                  <div className="ai-members-stack">
-                    {mode === "brainstorm" ? (
-                      <>
-                        {DEFAULT_COUNCIL.map((id) => (
-                          <ModelAvatar key={id} modelId={id} size={28} className="ai-mini-avatar" />
-                        ))}
+                {mode === "quick" || mode === "brainstorm" ? (
+                  <button
+                    type="button"
+                    className="ai-council-trigger"
+                    onClick={() => setShowPicker(true)}
+                    disabled={sending}
+                    title="انتخاب هوش‌ها"
+                  >
+                    <div className="ai-members-stack">
+                      {mode === "quick" ? (
+                        <ModelAvatar modelId={quickModel} size={28} className="ai-mini-avatar" />
+                      ) : (
+                        <>
+                          {council.map((id) => (
+                            <ModelAvatar key={id} modelId={id} size={28} className="ai-mini-avatar" />
+                          ))}
+                        </>
+                      )}
+                      {mode !== "quick" && (
                         <ModeratorOrb size={28} className="ai-mini-orb" />
-                      </>
-                    ) : (
-                      <>
-                        {MODE_MEMBERS[mode].map((a) => (
-                          <AgentAvatar key={a} agent={a} size={28} className="ai-mini-avatar" />
-                        ))}
-                        {mode !== "quick" && (
-                          <ModeratorOrb size={28} className="ai-mini-orb" />
-                        )}
-                      </>
-                    )}
+                      )}
+                    </div>
+                    <span className="ai-council-trigger-label">
+                      {mode === "quick" ? "یک هوش مصنوعی" : "چند AI"}
+                    </span>
+                  </button>
+                ) : (
+                  <div className="ai-members" title="اعضای شورا و هماهنگ‌کننده">
+                    <div className="ai-members-stack">
+                      {MODE_MEMBERS[mode].map((a) => (
+                        <AgentAvatar key={a} agent={a} size={28} className="ai-mini-avatar" />
+                      ))}
+                      <ModeratorOrb size={28} className="ai-mini-orb" />
+                    </div>
                   </div>
-                </div>
+                )}
                 <button
                   className="ai-send-btn"
                   onClick={handleSend}
@@ -277,6 +321,11 @@ export default function AIHomePage() {
                 </button>
               </div>
             </div>
+            {sendErr && (
+              <p className="ai-form-err" style={{ textAlign: "center", marginTop: 8 }}>
+                {sendErr}
+              </p>
+            )}
             {authed === false && (
               <p
                 style={{
@@ -296,6 +345,23 @@ export default function AIHomePage() {
 
       {/* ── Why Araaye AI ── */}
       <WhySection onStart={startFromCTA} />
+
+      {/* ── Model Picker ── */}
+      <ModelPicker
+        open={showPicker}
+        plan={plan ?? "free"}
+        mode={mode === "quick" ? "single" : "multi"}
+        initial={mode === "quick" ? [quickModel] : council}
+        onClose={() => setShowPicker(false)}
+        onSave={(ids) => {
+          if (mode === "quick" && ids[0]) {
+            setQuickModel(ids[0]);
+          } else if (mode === "brainstorm") {
+            setCouncil(ids);
+          }
+          setShowPicker(false);
+        }}
+      />
 
       {/* ── Auth Sheet ── */}
       {showSheet && (

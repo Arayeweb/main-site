@@ -48,7 +48,7 @@
 
   /* ---------- API ---------- */
   function api(method, url, body) {
-    var opts = { method: method, credentials: "same-origin", headers: {} };
+    var opts = { method: method, credentials: "same-origin", headers: {}, cache: "no-store" };
     if (body !== undefined) {
       opts.headers["Content-Type"] = "application/json";
       opts.body = JSON.stringify(body);
@@ -167,8 +167,10 @@
         if (name === "stats") { statsLoaded = true; loadStats(); }
         if (name === "partners") { loadPartners(0, partnersSearch); }
         if (name === "links") { loadLinks(); }
-        if (name === "invoices" && !invLoaded) { invLoaded = true; loadInvoices(true); }
+        if (name === "invoices" && !invLoaded) { invLoaded = true; loadInvoices(true); loadInvSummary(); }
         if (name === "ads") { adsLoaded = true; loadAds(); }
+        if (name === "aistats") { loadAiStats(); }
+        if (name === "freelance") { loadFreelance(); }
       });
     });
   }
@@ -1370,8 +1372,30 @@
           var c = el("inv-" + id);
           if (c) c.remove();
           delete invCache[id];
+          loadInvSummary();
         } else { alert("خطا در حذف فاکتور"); }
       });
+    });
+  }
+
+  function invFmtMulti(totals) {
+    var parts = [];
+    if (totals.IRR) parts.push(fmtMoney(totals.IRR, "IRR"));
+    if (totals.USD) parts.push(fmtMoney(totals.USD, "USD"));
+    return parts.length ? parts.join(" + ") : fmtMoney(0, "IRR");
+  }
+
+  function loadInvSummary() {
+    api("GET", "/api/admin/invoices?summary=1").then(function (res) {
+      if (!res.data || !res.data.ok || !res.data.summary) return;
+      var s = res.data.summary;
+      var c = s.counts || {};
+      var html =
+        '<div class="stat-card"><div class="stat-num">' + esc(invFmtMulti(s.paid || {})) + '</div><div class="stat-label">درآمد کل (پرداخت‌شده)</div></div>' +
+        '<div class="stat-card"><div class="stat-num" style="color:#a9791f">' + esc(invFmtMulti(s.outstanding || {})) + '</div><div class="stat-label">مطالبات معوق (ارسال‌شده + پیش‌نویس)</div></div>' +
+        '<div class="stat-card"><div class="stat-num">' + esc(toFa(String(c.total || 0))) + '</div><div class="stat-label">تعداد کل فاکتورها</div></div>' +
+        '<div class="stat-card"><div class="stat-num">' + esc(toFa(String(c.paid || 0))) + '</div><div class="stat-label">تعداد پرداخت‌شده</div></div>';
+      el("invSummary").innerHTML = html;
     });
   }
 
@@ -1434,6 +1458,7 @@
               old.replaceWith(card);
             }
             el("invBuilderWrap").hidden = true;
+            loadInvSummary();
           } else { el("invErr").textContent = "خطا در ذخیره‌سازی."; }
         }).catch(function () { el("invSaveBtn").disabled = false; el("invErr").textContent = "خطا در ارتباط با سرور."; });
       } else {
@@ -1452,6 +1477,7 @@
               list.innerHTML = "";
             }
             list.insertBefore(card, list.firstElementChild);
+            loadInvSummary();
           } else {
             var errMsg = (res.data && res.data.error) === "duplicate_number" ? "این شماره فاکتور قبلاً ثبت شده." : "خطا در ذخیره‌سازی.";
             el("invErr").textContent = errMsg;
@@ -1769,6 +1795,308 @@
     el("adsRefreshBtn").addEventListener("click", function () { loadAds(); });
   }
 
+  /* ---------- AI Stats ---------- */
+  var AI_MODE_LABELS = { quick: "پاسخ سریع", brainstorm: "همفکری چند هوش", critique: "نقد و بهبود" };
+  var AI_PLAN_LABELS = { free: "رایگان", pro: "حرفه‌ای", business: "سازمانی" };
+
+  function loadAiStats() {
+    var container = el("aiContent");
+    if (!container) return;
+    container.innerHTML = '<div class="admin-empty">در حال بارگذاری…</div>';
+    api("GET", "/api/admin/ai-stats").then(function (res) {
+      if (!res.data || !res.data.ok) {
+        container.innerHTML = '<div class="admin-empty">خطا در بارگذاری آمار.</div>';
+        return;
+      }
+      var d = res.data;
+      var html = "";
+
+      // KPI cards
+      html += '<div class="stats-summary" style="margin-bottom:22px">';
+      html += '<div class="stat-card"><div class="stat-num">' + toFa(d.total_users || 0) + '</div><div class="stat-label">کاربران هوش مصنوعی</div></div>';
+      html += '<div class="stat-card"><div class="stat-num">' + toFa(d.total_conversations || 0) + '</div><div class="stat-label">مکالمات</div></div>';
+      html += '<div class="stat-card"><div class="stat-num">' + toFa(d.total_tokens || 0) + '</div><div class="stat-label">توکن مصرفی</div></div>';
+      html += "</div>";
+
+      // Two columns: breakdown + chart
+      html += '<div class="ov-cols">';
+
+      // Left: breakdowns
+      html += '<div class="ov-block">';
+      html += "<h3>کاربران بر اساس پلن</h3>";
+      html += '<table class="stats-table">';
+      var plans = Object.keys(d.users_by_plan || {});
+      if (plans.length === 0) html += '<tr><td>—</td><td>۰</td></tr>';
+      plans.forEach(function (p) {
+        html += "<tr><td>" + esc(AI_PLAN_LABELS[p] || p) + '</td><td>' + toFa(d.users_by_plan[p]) + "</td></tr>";
+      });
+      html += "</table>";
+
+      html += '<h3 style="margin-top:18px">مکالمات بر اساس حالت</h3>';
+      html += '<table class="stats-table">';
+      var modes = Object.keys(d.conversations_by_mode || {});
+      if (modes.length === 0) html += '<tr><td>—</td><td>۰</td></tr>';
+      modes.forEach(function (m) {
+        html += "<tr><td>" + esc(AI_MODE_LABELS[m] || m) + '</td><td>' + toFa(d.conversations_by_mode[m]) + "</td></tr>";
+      });
+      html += "</table>";
+
+      html += '<h3 style="margin-top:18px">توکن بر اساس حالت</h3>';
+      html += '<table class="stats-table">';
+      var tmodes = Object.keys(d.tokens_by_mode || {});
+      if (tmodes.length === 0) html += '<tr><td>—</td><td>۰</td></tr>';
+      tmodes.forEach(function (m) {
+        html += "<tr><td>" + esc(AI_MODE_LABELS[m] || m) + '</td><td>' + toFa(d.tokens_by_mode[m]) + "</td></tr>";
+      });
+      html += "</table>";
+      html += "</div>";
+
+      // Right: 7-day chart
+      html += '<div class="ov-block">';
+      html += "<h3>۷ روز اخیر</h3>";
+      html += '<div class="ov-legend"><span><span class="ov-dot" style="background:var(--emerald)"></span> توکن</span><span><span class="ov-dot" style="background:rgba(52,120,200,.6)"></span> درخواست</span></div>';
+      html += '<div class="ov-spark">';
+      var maxT = 1, maxR = 1;
+      (d.last_7_days || []).forEach(function (day) {
+        if (day.tokens > maxT) maxT = day.tokens;
+        if (day.requests > maxR) maxR = day.requests;
+      });
+      (d.last_7_days || []).forEach(function (day) {
+        var tH = Math.round((day.tokens / maxT) * 100);
+        var rH = Math.round((day.requests / maxR) * 100);
+        var dayName = day.date.slice(5).replace("-", "/");
+        html += '<div class="ov-spark-col">';
+        html += '<div class="ov-spark-bars">';
+        html += '<div class="ov-spark-bar v" style="height:' + rH + '%"></div>';
+        html += '<div class="ov-spark-bar l" style="height:' + tH + '%"></div>';
+        html += "</div>";
+        html += '<div class="ov-spark-day">' + toFa(dayName) + "</div>';
+        html += "</div>";
+      });
+      html += "</div>";
+      html += "</div>";
+
+      html += "</div>"; // ov-cols
+
+      // Top users by token
+      html += '<div class="ov-block" style="margin-top:18px">';
+      html += "<h3>برترین کاربران بر اساس مصرف توکن</h3>";
+      if (!d.top_users || d.top_users.length === 0) {
+        html += '<div class="admin-empty">داده‌ای موجود نیست.</div>';
+      } else {
+        html += '<table class="stats-table"><thead><tr><td style="font-weight:800">شماره</td><td style="font-weight:800">پلن</td><td style="font-weight:800">کردیت</td><td style="font-weight:800">توکن</td></tr></thead><tbody>';
+        d.top_users.forEach(function (u) {
+          html += "<tr><td>" + esc(u.phone) + "</td><td>" + esc(AI_PLAN_LABELS[u.plan] || u.plan) + "</td><td>" + toFa(u.credits) + "</td><td>" + toFa(u.tokens) + "</td></tr>";
+        });
+        html += "</tbody></table>";
+      }
+      html += "</div>";
+
+      // Recent users
+      html += '<div class="ov-block" style="margin-top:18px">';
+      html += "<h3>کاربران اخیر</h3>";
+      if (!d.recent_users || d.recent_users.length === 0) {
+        html += '<div class="admin-empty">داده‌ای موجود نیست.</div>';
+      } else {
+        html += '<div class="admin-list">';
+        d.recent_users.forEach(function (u) {
+          html += '<div class="admin-card">';
+          html += '<div class="admin-card-head">';
+          html += '<span class="admin-card-code">' + esc(u.phone) + "</span>";
+          html += '<span class="pill pr-normal">' + esc(AI_PLAN_LABELS[u.plan] || u.plan) + "</span>";
+          html += "</div>";
+          html += '<div class="admin-meta">';
+          html += "<span>کردیت: <b>" + toFa(u.credits || 0) + "</b></span>";
+          html += "<span>ثبت: <b>" + fmtDate(u.created_at) + "</b></span>";
+          html += "<span>آخرین ورود: <b>" + fmtDate(u.last_login_at) + "</b></span>";
+          html += "</div>";
+          html += "</div>";
+        });
+        html += "</div>";
+      }
+      html += "</div>";
+
+      container.innerHTML = html;
+    }).catch(function () {
+      container.innerHTML = '<div class="admin-empty">خطا در ارتباط با سرور.</div>';
+    });
+  }
+
+  function initAiStatsPanel() {
+    var b = el("aiRefreshBtn");
+    if (b) b.addEventListener("click", loadAiStats);
+  }
+
+  /* ---------- freelance ---------- */
+  var flData = [];
+  var flFilter = "all";
+  var flLoaded = false;
+  var flScanning = false;
+
+  var FL_STATUS = {
+    new: "جدید",
+    applied: "درخواست داده‌شده",
+    won: "موفق",
+    lost: "ناموفق",
+  };
+
+  function flEsc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, ">")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function flTimeAgo(iso) {
+    if (!iso) return "—";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "—";
+    var diff = Date.now() - d.getTime();
+    var mins = Math.floor(diff / 60000);
+    if (mins < 1) return "همین الان";
+    if (mins < 60) return toFa(mins) + " دقیقه پیش";
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return toFa(hrs) + " ساعت پیش";
+    var days = Math.floor(hrs / 24);
+    return toFa(days) + " روز پیش";
+  }
+
+  function loadFreelance() {
+    api("GET", "/api/admin/freelance").then(function (res) {
+      if (res.status === 401) { showLogin(); return; }
+      if (!res.data || !res.data.ok) {
+        el("flCards").innerHTML =
+          '<div class="fl-empty"><div>خطا در بارگذاری.</div></div>';
+        return;
+      }
+      flData = res.data.projects || [];
+      renderFreelance();
+    }).catch(function () {
+      el("flCards").innerHTML =
+        '<div class="fl-empty"><div>ارتباط برقرار نشد.</div></div>';
+    });
+  }
+
+  function renderFreelance() {
+    var stats = { new: 0, applied: 0, won: 0, lost: 0 };
+    flData.forEach(function (p) {
+      if (stats[p.status] != null) stats[p.status]++;
+    });
+    el("flStatNew").textContent = toFa(stats.new);
+    el("flStatApplied").textContent = toFa(stats.applied);
+    el("flStatWon").textContent = toFa(stats.won);
+    el("flStatLost").textContent = toFa(stats.lost);
+
+    var badge = el("navFreelanceBadge");
+    if (badge) {
+      if (stats.new > 0) { badge.hidden = false; badge.textContent = toFa(stats.new); }
+      else badge.hidden = true;
+    }
+
+    var latest = flData.length ? flData[0].scanned_at : null;
+    el("flLastScan").textContent = latest ? "آخرین اسکن: " + flTimeAgo(latest) : "—";
+
+    var filtered = flFilter === "all"
+      ? flData
+      : flData.filter(function (p) { return p.status === flFilter; });
+
+    if (!filtered.length) {
+      el("flCards").innerHTML =
+        '<div class="fl-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><div>پروژه‌ای یافت نشد.</div></div>';
+      return;
+    }
+
+    el("flCards").innerHTML = filtered.map(function (p) {
+      var srcClass = p.source === "ponisha" ? "ponisha" : "karlancer";
+      var srcLabel = p.source === "ponisha" ? "پونیشا" : "کارلنسر";
+      var statusOpts = Object.keys(FL_STATUS).map(function (k) {
+        return '<option value="' + k + '"' + (p.status === k ? " selected" : "") + ">" + FL_STATUS[k] + "</option>";
+      }).join("");
+
+      return '<div class="fl-card status-' + p.status + '" data-id="' + flEsc(p.id) + '">' +
+        '<div class="fl-card-top">' +
+          '<span class="fl-title">' + flEsc(p.title) + '</span>' +
+          '<span class="fl-source ' + srcClass + '">' + srcLabel + '</span>' +
+        '</div>' +
+        (p.description ? '<div class="fl-desc">' + flEsc(p.description) + '</div>' : '') +
+        '<div class="fl-meta">' +
+          (p.budget ? '<span>💰 ' + flEsc(p.budget) + '</span>' : '') +
+          '<span>🕐 ' + flTimeAgo(p.scanned_at) + '</span>' +
+        '</div>' +
+        '<div class="fl-actions">' +
+          '<a class="fl-go-btn" href="' + flEsc(p.url) + '" target="_blank" rel="noopener">رفتن به پروژه ←</a>' +
+          '<select class="fl-status-sel" onchange="flSetStatus(\'' + flEsc(p.id) + '\',this)">' + statusOpts + '</select>' +
+          '<input class="fl-note-input" type="text" placeholder="یادداشت نتیجه..." value="' + flEsc(p.result_note || "") + '" onblur="flSaveNote(\'' + flEsc(p.id) + '\',this)" />' +
+        '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  window.flSetStatus = function (id, sel) {
+    api("PATCH", "/api/admin/freelance", { id: id, status: sel.value }).then(function (res) {
+      if (res.data && res.data.ok) {
+        var item = flData.find(function (p) { return p.id === id; });
+        if (item) { item.status = sel.value; renderFreelance(); }
+      } else {
+        alert("خطا در ذخیره وضعیت");
+      }
+    }).catch(function () { alert("خطا در اتصال"); });
+  };
+
+  window.flSaveNote = function (id, input) {
+    api("PATCH", "/api/admin/freelance", { id: id, result_note: input.value }).then(function (res) {
+      if (res.data && res.data.ok) {
+        var item = flData.find(function (p) { return p.id === id; });
+        if (item) item.result_note = input.value;
+      }
+    }).catch(function () {});
+  };
+
+  function flScan() {
+    if (flScanning) return;
+    flScanning = true;
+    var btn = el("flScanBtn");
+    var result = el("flScanResult");
+    btn.disabled = true;
+    btn.textContent = "در حال اسکن…";
+    result.className = "fl-scan-result";
+
+    api("POST", "/api/admin/freelance").then(function (res) {
+      btn.disabled = false;
+      btn.textContent = "↻ اسکن الان";
+      flScanning = false;
+      if (res.data && res.data.ok) {
+        var d = res.data;
+        var msg = toFa(d.scanned) + " پروژه اسکن شد";
+        if (d.new) msg += " (" + toFa(d.new) + " جدید)";
+        result.className = "fl-scan-result show ok";
+        result.textContent = "✓ " + msg;
+        loadFreelance();
+      } else {
+        result.className = "fl-scan-result show err";
+        result.textContent = "خطا در اسکن: " + ((res.data && res.data.error) || "نامشخص");
+      }
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = "↻ اسکن الان";
+      flScanning = false;
+      result.className = "fl-scan-result show err";
+      result.textContent = "خطا در اتصال";
+    });
+  }
+
+  function initFreelancePanel() {
+    el("flScanBtn").addEventListener("click", flScan);
+    el("flFilters").addEventListener("click", function (e) {
+      var btn = e.target.closest(".fl-filter");
+      if (!btn) return;
+      flFilter = btn.dataset.flFilter;
+      el("flFilters").querySelectorAll(".fl-filter").forEach(function (b) {
+        b.classList.toggle("is-active", b === btn);
+      });
+      renderFreelance();
+    });
+  }
+
   /* ---------- boot ---------- */
   initLogin();
   initTabs();
@@ -1786,6 +2114,8 @@
   initStatsPanel();
   initInvoicesPanel();
   initAdsPanel();
+  initAiStatsPanel();
+  initFreelancePanel();
 
   // اگر نشست معتبر بود مستقیم وارد پنل شو.
   api("GET", "/api/admin/login").then(function (res) {

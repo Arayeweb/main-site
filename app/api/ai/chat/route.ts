@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
-import { runQuick, runBrainstorm, runCritique } from "@/lib/aiEngine";
+import { runQuick, runQuickStream, runBrainstorm, runCritique } from "@/lib/aiEngine";
 import { sanitizeCouncil } from "@/lib/aiModels";
 
 export const runtime = "nodejs";
@@ -46,6 +46,8 @@ export async function POST(req: NextRequest) {
   const rawModels = Array.isArray(body.models)
     ? (body.models as unknown[]).map((m) => String(m)).slice(0, 4)
     : undefined;
+  const quickModel = str(body.model, 60) ?? undefined;
+  const wantStream = body.stream === true;
 
   if (!content || !rawMode) {
     return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 422 });
@@ -127,10 +129,115 @@ export async function POST(req: NextRequest) {
   };
 
   try {
+    if (mode === "quick" && wantStream) {
+      // Streaming path for quick mode
+      const usedModel = quickModel || "openai/gpt-4o-mini";
+      const stream = await runQuickStream(content, usedModel);
+
+      // Save user message + placeholder assistant message first
+      const { data: assistantMsg } = await supabase
+        .from("ai_messages")
+        .insert({ conversation_id: convId, role: "assistant", content: "[streaming]" })
+        .select("id")
+        .single();
+
+      const encoder = new TextEncoder();
+      let fullContent = "";
+
+      const transformedStream = new ReadableStream({
+        async start(controller) {
+          const reader = stream.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || !trimmed.startsWith("data: ")) continue;
+                const data = trimmed.slice(6);
+                if (data === "[DONE]") continue;
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const delta = parsed.choices?.[0]?.delta?.content;
+                  if (delta) {
+                    fullContent += delta;
+                    controller.enqueue(encoder.encode(delta));
+                  }
+                } catch {
+                  // skip malformed chunks
+                }
+              }
+            }
+          } catch (e) {
+            console.error("[api/ai/chat] stream error:", e);
+          } finally {
+            controller.close();
+
+            // Save full response to DB after stream completes
+            if (assistantMsg && fullContent) {
+              await supabase.from("ai_responses").insert({
+                message_id: assistantMsg.id,
+                mode: "quick",
+                agent_role: usedModel,
+                content: fullContent,
+                order_index: 0,
+                model_name: usedModel,
+              });
+
+              // Update assistant message content
+              await supabase
+                .from("ai_messages")
+                .update({ content: "[structured]" })
+                .eq("id", assistantMsg.id);
+
+              // Deduct credits
+              const updateData: Record<string, number> = {
+                credits: Math.max(0, (user.credits as number) - cost),
+              };
+              await supabase.from("ai_users").update(updateData).eq("id", session.userId);
+
+              // Log usage
+              await supabase.from("ai_usage").insert({
+                user_id: session.userId,
+                conversation_id: convId,
+                mode: "quick",
+                tokens_used: Math.ceil(fullContent.length / 4),
+              });
+
+              // Update conversation timestamp
+              await supabase
+                .from("ai_conversations")
+                .update({ updated_at: new Date().toISOString() })
+                .eq("id", convId);
+            }
+          }
+        },
+      });
+
+      return new Response(transformedStream, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Transfer-Encoding": "chunked",
+          "X-Conversation-Id": convId,
+          "X-Credits-Remaining": String(Math.max(0, (user.credits as number) - cost)),
+        },
+      });
+    }
+
     if (mode === "quick") {
-      const result = await runQuick(content);
+      const usedModel = quickModel || "openai/gpt-4o-mini";
+      const result = await runQuick(content, usedModel);
       aiResult = {
-        responses: [{ agent_role: "quick", content: result.content, order_index: 0 }],
+        responses: [{ agent_role: usedModel, content: result.content, order_index: 0 }],
         tokens_used: Math.ceil(result.content.length / 4),
       };
     } else if (mode === "brainstorm") {
@@ -205,7 +312,7 @@ export async function POST(req: NextRequest) {
     // برای اعضای شورا، agent_role همان اسلاگ مدل است (شامل "/").
     model_name: r.agent_role.includes("/")
       ? r.agent_role
-      : process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+      : "openai/gpt-4o-mini",
   }));
 
   await supabase.from("ai_responses").insert(responsesToInsert);

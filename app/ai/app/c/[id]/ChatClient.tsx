@@ -16,15 +16,13 @@ import {
   IconBolt,
   IconSpark,
   IconSeal,
-  IconLock,
 } from "../../../icons";
 import {
-  MODELS,
-  PRESETS,
   getModel,
   modelName,
   DEFAULT_COUNCIL,
 } from "@/lib/aiModels";
+import ModelPicker from "../../../ModelPicker";
 
 type Mode = "quick" | "brainstorm" | "critique";
 
@@ -46,6 +44,18 @@ const MODES: { id: Mode; label: string; Icon: typeof IconBolt }[] = [
   { id: "brainstorm", label: "شورای هم‌فکری", Icon: IconSpark },
   { id: "critique",   label: "نقد و اصلاح", Icon: IconSeal },
 ];
+
+/* Convert markdown headings into emoji bullets so raw ## doesn't show up */
+function formatAIContent(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(/^###### (.*)$/gm, "▪️ $1")
+    .replace(/^##### (.*)$/gm, "▫️ $1")
+    .replace(/^#### (.*)$/gm, "🔸 $1")
+    .replace(/^### (.*)$/gm, "🔹 $1")
+    .replace(/^## (.*)$/gm, "🔷 $1")
+    .replace(/^# (.*)$/gm, "🔶 $1");
+}
 
 // Which council members participate in each mode (shown in the composer)
 const MODE_MEMBERS: Record<Mode, AgentKey[]> = {
@@ -83,7 +93,7 @@ function CouncilTurn({
         <AgentAvatar agent={agentKey} />
         <div className="ai-turn-name">{meta.label}</div>
       </div>
-      <div className="ai-turn-body">{content}</div>
+      <div className="ai-turn-body">{formatAIContent(content)}</div>
     </div>
   );
 }
@@ -100,165 +110,8 @@ function ModelTurn({ modelId, content }: { modelId: string; content: string }) {
           {m?.blurb && <div className="ai-turn-sub">{m.blurb}</div>}
         </div>
       </div>
-      <div className="ai-turn-body">{content}</div>
+      <div className="ai-turn-body">{formatAIContent(content)}</div>
     </div>
-  );
-}
-
-/* Council picker — choose AI models via presets or custom */
-function ModelPicker({
-  open,
-  plan,
-  initial,
-  onClose,
-  onSave,
-}: {
-  open: boolean;
-  plan: string;
-  initial: string[];
-  onClose: () => void;
-  onSave: (ids: string[]) => void;
-}) {
-  const [tab, setTab] = useState<"presets" | "custom">("presets");
-  const [sel, setSel] = useState<string[]>(initial);
-
-  useEffect(() => {
-    if (open) setSel(initial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  if (!open) return null;
-  const allowAll = plan === "pro" || plan === "business";
-
-  const sameSet = (a: string[], b: string[]) =>
-    a.length === b.length && a.every((x) => b.includes(x));
-
-  function toggleModel(id: string, locked: boolean) {
-    if (locked) return;
-    setSel((prev) => {
-      if (prev.includes(id)) {
-        return prev.length <= 2 ? prev : prev.filter((x) => x !== id);
-      }
-      return prev.length >= 4 ? prev : [...prev, id];
-    });
-  }
-
-  return (
-    <>
-      <div className="ai-picker-overlay" onClick={onClose} />
-      <div className="ai-picker-sheet" role="dialog" aria-modal="true">
-        <div className="ai-picker-head">
-          <div className="ai-picker-head-row">
-            <div>
-              <div className="ai-picker-title">انتخاب هوش‌ها</div>
-              <div className="ai-picker-sub">
-                ۲ تا ۴ هوش مصنوعی انتخاب کن تا هم‌زمان به سؤالت جواب بدهند.
-              </div>
-            </div>
-            <button className="ai-picker-close" onClick={onClose} aria-label="بستن">
-              ✕
-            </button>
-          </div>
-          <div className="ai-picker-tabs">
-            <button
-              className={`ai-picker-tab${tab === "presets" ? " active" : ""}`}
-              onClick={() => setTab("presets")}
-            >
-              پریست‌های آماده
-            </button>
-            <button
-              className={`ai-picker-tab${tab === "custom" ? " active" : ""}`}
-              onClick={() => setTab("custom")}
-            >
-              انتخاب دستی
-            </button>
-          </div>
-        </div>
-
-        <div className="ai-picker-body">
-          {tab === "presets" &&
-            PRESETS.map((p) => {
-              const locked = p.pro && !allowAll;
-              const active = sameSet(sel, p.models);
-              return (
-                <button
-                  key={p.id}
-                  className={`ai-preset${active ? " active" : ""}${locked ? " locked" : ""}`}
-                  onClick={() => !locked && setSel(p.models)}
-                >
-                  <div className="ai-preset-top">
-                    <span className="ai-preset-name">{p.name}</span>
-                    {locked && (
-                      <span className="ai-pro-pill">
-                        <IconLock size={12} /> Pro
-                      </span>
-                    )}
-                  </div>
-                  <div className="ai-preset-models">
-                    {p.models.map((id) => (
-                      <div key={id} className="ai-preset-model">
-                        <ModelAvatar modelId={id} size={36} />
-                        <span className="ai-preset-model-name">{modelName(id)}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="ai-preset-blurb">{p.blurb}</div>
-                </button>
-              );
-            })}
-
-          {tab === "custom" && (
-            <>
-              <div className="ai-custom-hint">
-                {sel.length} مدل انتخاب شده — حداقل ۲، حداکثر ۴.
-              </div>
-              {MODELS.map((m) => {
-                const locked = !m.free && !allowAll;
-                const selected = sel.includes(m.id);
-                return (
-                  <button
-                    key={m.id}
-                    className={`ai-model-row${selected ? " selected" : ""}${locked ? " locked" : ""}`}
-                    onClick={() => toggleModel(m.id, locked)}
-                  >
-                    <ModelAvatar modelId={m.id} size={36} />
-                    <div className="ai-model-row-info">
-                      <div className="ai-model-row-name">{m.name}</div>
-                      <div className="ai-model-row-blurb">{m.blurb}</div>
-                    </div>
-                    {locked ? (
-                      <span className="ai-pro-pill">
-                        <IconLock size={12} /> Pro
-                      </span>
-                    ) : (
-                      <span className="ai-model-check">
-                        {selected && <IconCheck size={13} />}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </>
-          )}
-        </div>
-
-        <div className="ai-picker-foot">
-          {!allowAll ? (
-            <Link href="/ai/pricing" className="ai-gopro-btn">
-              <IconLock size={12} /> باز کردن همه‌ی هوش‌ها
-            </Link>
-          ) : (
-            <span className="ai-custom-hint">دسترسی کامل فعال است</span>
-          )}
-          <button
-            className="ai-btn ai-btn-primary ai-btn-sm"
-            onClick={() => onSave(sel)}
-          >
-            ذخیره
-          </button>
-        </div>
-      </div>
-    </>
   );
 }
 
@@ -291,7 +144,7 @@ function ResponseView({ msg, mode }: { msg: Message; mode: Mode }) {
     return (
       <div className="ai-response-section">
         <div className="ai-quick-card">
-          <div className="ai-quick-body">{r.content}</div>
+          <div className="ai-quick-body">{formatAIContent(r.content)}</div>
         </div>
         <div className="ai-action-bar" style={{ paddingInlineStart: 0 }}>
           {copyBtn(r.content, "q")}
@@ -321,7 +174,7 @@ function ResponseView({ msg, mode }: { msg: Message; mode: Mode }) {
                 <div className="ai-turn-sub">جمع‌بندی دیدگاه‌ها و قدم بعدی</div>
               </div>
             </div>
-            <div className="ai-turn-body">{synth.content}</div>
+            <div className="ai-turn-body">{formatAIContent(synth.content)}</div>
             <div className="ai-action-bar">{copyBtn(synth.content, "s", "کپی جمع‌بندی")}</div>
           </div>
         )}
@@ -354,7 +207,7 @@ function ResponseView({ msg, mode }: { msg: Message; mode: Mode }) {
               <div className="ai-turn-sub">پس از اعمال نقدها</div>
             </div>
           </div>
-          <div className="ai-turn-body">{final.content}</div>
+          <div className="ai-turn-body">{formatAIContent(final.content)}</div>
           <div className="ai-action-bar">{copyBtn(final.content, "f", "کپی نسخه نهایی")}</div>
         </div>
       )}
@@ -387,7 +240,9 @@ export default function ChatClient({
   const [error, setError] = useState("");
   const [title, setTitle] = useState(initialTitle ?? "");
   const [council, setCouncil] = useState<string[]>(DEFAULT_COUNCIL);
+  const [quickModel, setQuickModel] = useState<string>(DEFAULT_COUNCIL[0]);
   const [showPicker, setShowPicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState<"single" | "multi">("multi");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -446,44 +301,116 @@ export default function ChatClient({
     startLoadingAnimation(mode);
 
     try {
-      const res = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversation_id: convId,
-          mode,
-          content: q,
-          ...(mode === "brainstorm" ? { models: council } : {}),
-        }),
-      });
-      const data = await res.json();
+      if (mode === "quick") {
+        // Streaming path for quick mode
+        const res = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversation_id: convId,
+            mode,
+            content: q,
+            model: quickModel,
+            stream: true,
+          }),
+        });
 
-      if (!data.ok) {
-        if (data.error === "plan_upgrade_required" || data.error === "brainstorm_demo_exhausted") {
-          setError("برای این حالت باید پلن خود را ارتقاء دهی.");
-        } else if (data.error === "insufficient_credits") {
-          setError("کردیت کافی نداری. برای ادامه اعتبار بخر.");
-        } else {
-          setError("خطایی رخ داد. دوباره تلاش کن.");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.error === "insufficient_credits") {
+            setError("کردیت کافی نداری. برای ادامه اعتبار بخر.");
+          } else if (errData.error === "plan_upgrade_required") {
+            setError("برای این حالت باید پلن خود را ارتقاء دهی.");
+          } else {
+            setError("خطایی رخ داد. دوباره تلاش کن.");
+          }
+          setMessages((prev) => prev.slice(0, -1));
+          return;
         }
-        setMessages((prev) => prev.slice(0, -1));
-        return;
+
+        const newConvId = res.headers.get("X-Conversation-Id");
+        if (newConvId && !convId) {
+          setConvId(newConvId);
+          router.replace(`/ai/app/c/${newConvId}`, { scroll: false });
+          if (!title && q) setTitle(q.slice(0, 60));
+        }
+
+        const creditsRemaining = res.headers.get("X-Credits-Remaining");
+        if (creditsRemaining) setCredits(Number(creditsRemaining));
+
+        // Start with empty streaming message
+        const streamMsg: Message = {
+          role: "assistant",
+          content: "[structured]",
+          responses: [{ agent_role: quickModel, content: "", order_index: 0 }],
+        };
+        setMessages((prev) => [...prev, streamMsg]);
+        stopLoadingAnimation();
+
+        // Read stream and update content live
+        const reader = res.body?.getReader();
+        if (!reader) throw new Error("No stream body");
+        const decoder = new TextDecoder();
+        let accumulated = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          accumulated += decoder.decode(value, { stream: true });
+          // Update the last message's content in real-time
+          setMessages((prev) => {
+            const copy = [...prev];
+            const last = copy[copy.length - 1];
+            if (last && last.role === "assistant" && last.responses && last.responses[0]) {
+              copy[copy.length - 1] = {
+                ...last,
+                responses: [{ ...last.responses[0], content: accumulated }],
+              };
+            }
+            return copy;
+          });
+        }
+      } else {
+        // Non-streaming path for brainstorm / critique
+        const res = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversation_id: convId,
+            mode,
+            content: q,
+            ...(mode === "brainstorm" ? { models: council } : {}),
+          }),
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+          if (data.error === "plan_upgrade_required" || data.error === "brainstorm_demo_exhausted") {
+            setError("برای این حالت باید پلن خود را ارتقاء دهی.");
+          } else if (data.error === "insufficient_credits") {
+            setError("کردیت کافی نداری. برای ادامه اعتبار بخر.");
+          } else {
+            setError("خطایی رخ داد. دوباره تلاش کن.");
+          }
+          setMessages((prev) => prev.slice(0, -1));
+          return;
+        }
+
+        if (!convId) {
+          setConvId(data.conversation_id as string);
+          router.replace(`/ai/app/c/${data.conversation_id}`, { scroll: false });
+          if (!title && q) setTitle(q.slice(0, 60));
+        }
+
+        setCredits(data.credits_remaining as number);
+
+        const aiMsg: Message = {
+          role: "assistant",
+          content: "[structured]",
+          responses: data.responses as AgentResponse[],
+        };
+        setMessages((prev) => [...prev, aiMsg]);
       }
-
-      if (!convId) {
-        setConvId(data.conversation_id as string);
-        router.replace(`/ai/app/c/${data.conversation_id}`, { scroll: false });
-        if (!title && q) setTitle(q.slice(0, 60));
-      }
-
-      setCredits(data.credits_remaining as number);
-
-      const aiMsg: Message = {
-        role: "assistant",
-        content: "[structured]",
-        responses: data.responses as AgentResponse[],
-      };
-      setMessages((prev) => [...prev, aiMsg]);
     } catch {
       setError("خطا در اتصال. دوباره تلاش کن.");
       setMessages((prev) => prev.slice(0, -1));
@@ -505,10 +432,10 @@ export default function ChatClient({
 
   const emptyHint =
     mode === "quick"
-      ? "یک پاسخ مستقیم و سریع می‌گیری"
+      ? "یک هوش مصنوعی پاسخ می‌دهد"
       : mode === "brainstorm"
-      ? "چهار متخصص از زوایای مختلف نظر می‌دهند و شورا جمع‌بندی می‌کند"
-      : "پاسخ اولیه نقد و سپس بازنویسی می‌شود";
+      ? "گفت‌وگوی چند AI برای جمع‌بندی بهتر"
+      : "پاسخ اولیه نقد و سپس بهبود می‌یابد";
 
   return (
     <div className="ai-chat-shell">
@@ -622,34 +549,41 @@ export default function ChatClient({
               disabled={loading}
             />
             <div className="ai-composer-toolbar">
-              {mode === "brainstorm" ? (
+              {mode === "brainstorm" || mode === "quick" ? (
                 <button
                   type="button"
                   className="ai-council-trigger"
-                  onClick={() => setShowPicker(true)}
+                  onClick={() => {
+                    setPickerMode(mode === "quick" ? "single" : "multi");
+                    setShowPicker(true);
+                  }}
                   disabled={loading}
                   title="انتخاب هوش‌ها"
                 >
                   <div className="ai-members-stack">
-                    {council.map((id) => (
-                      <ModelAvatar key={id} modelId={id} size={28} className="ai-mini-avatar" />
-                    ))}
-                    <ModeratorOrb size={28} className="ai-mini-orb" />
+                    {mode === "quick" ? (
+                      <ModelAvatar modelId={quickModel} size={28} className="ai-mini-avatar" />
+                    ) : (
+                      council.map((id) => (
+                        <ModelAvatar key={id} modelId={id} size={28} className="ai-mini-avatar" />
+                      ))
+                    )}
+                    {mode !== "quick" && <ModeratorOrb size={28} className="ai-mini-orb" />}
                   </div>
-                  <span className="ai-council-trigger-label">تغییر</span>
+                  <span className="ai-council-trigger-label">
+                    {mode === "quick" ? "یک هوش مصنوعی" : "چند AI"}
+                  </span>
                 </button>
               ) : (
                 <div
                   className="ai-members"
-                  title={mode === "quick" ? "یک پاسخ‌دهنده" : "اعضای شورا و هماهنگ‌کننده"}
+                  title="اعضای شورا و هماهنگ‌کننده"
                 >
                   <div className="ai-members-stack">
                     {MODE_MEMBERS[mode].map((a) => (
                       <AgentAvatar key={a} agent={a} size={28} className="ai-mini-avatar" />
                     ))}
-                    {mode !== "quick" && (
-                      <ModeratorOrb size={28} className="ai-mini-orb" />
-                    )}
+                    <ModeratorOrb size={28} className="ai-mini-orb" />
                   </div>
                 </div>
               )}
@@ -669,10 +603,15 @@ export default function ChatClient({
       <ModelPicker
         open={showPicker}
         plan={plan ?? "free"}
-        initial={council}
+        mode={pickerMode}
+        initial={pickerMode === "single" ? [quickModel] : council}
         onClose={() => setShowPicker(false)}
         onSave={(ids) => {
-          setCouncil(ids);
+          if (pickerMode === "single" && ids[0]) {
+            setQuickModel(ids[0]);
+          } else {
+            setCouncil(ids);
+          }
           setShowPicker(false);
         }}
       />

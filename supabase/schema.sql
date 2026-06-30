@@ -156,6 +156,10 @@ create index if not exists leads_owner_idx on public.leads (owner_id);
 create index if not exists leads_followup_idx on public.leads (next_followup_at);
 -- منبع 'manual_entry': لیدهایی که تیم فروش دستی از منابع مختلف وارد می‌کند.
 
+-- ستون برای جلوگیری از ارسال تکراری لید به تلگرام (cron notifier)
+alter table public.leads add column if not exists telegram_notified_at timestamptz;
+create index if not exists leads_tg_notified_idx on public.leads (telegram_notified_at);
+
 -- تاریخچهٔ فعالیت روی هر لید (یادداشت، تماس، تغییر وضعیت)
 create table if not exists public.lead_activities (
   id          uuid primary key default gen_random_uuid(),
@@ -422,3 +426,24 @@ create index if not exists bizcard_leads_score_idx    on public.bizcard_leads (l
 create index if not exists bizcard_leads_bizcard_idx  on public.bizcard_leads (bizcard_id);
 create index if not exists bizcard_leads_phone_idx    on public.bizcard_leads (phone);
 alter table public.bizcard_leads enable row level security;
+
+-- ===== پروژه‌های فریلنس (scraper ponisha + karlancer) =====
+create table if not exists public.freelance_projects (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  scanned_at   timestamptz not null default now(),
+  source       text not null,           -- 'ponisha' | 'karlancer'
+  title        text not null,
+  url          text not null,
+  budget       text,
+  description  text,
+  status       text not null default 'new',  -- new | applied | won | lost
+  applied_at   timestamptz,
+  result_note  text,
+  unique(source, url)
+);
+
+create index if not exists freelance_scanned_idx on public.freelance_projects (scanned_at desc);
+create index if not exists freelance_status_idx  on public.freelance_projects (status);
+create index if not exists freelance_source_idx  on public.freelance_projects (source);
+alter table public.freelance_projects enable row level security;

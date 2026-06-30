@@ -333,9 +333,17 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M7 15h3M14 15h3"/></svg>
             <span>کارت ویزیت</span><span class="nav-badge" id="navBizcardBadge" hidden>۰</span>
           </button>
+          <button class="admin-tab" type="button" data-tab="freelance">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 22v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6M19 8v6"/></svg>
+            <span>فریلنس</span><span class="nav-badge" id="navFreelanceBadge" hidden>۰</span>
+          </button>
         </div>
         <div class="nav-group">
           <div class="nav-group-title">سیستم</div>
+          <button class="admin-tab" type="button" data-tab="aistats" data-role="admin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 1 3 3c0 1.31-.83 2.42-2 2.83V9h3a4 4 0 0 1 4 4v.17A3 3 0 0 1 23 16a3 3 0 0 1-5 2.83V19a4 4 0 0 1-4 4h-3a4 4 0 0 1-4-4v-.17A3 3 0 0 1 1 16a3 3 0 0 1 5-2.83V13a4 4 0 0 1 4-4h3V7.83A3 3 0 0 1 9 5a3 3 0 0 1 3-3z"/></svg>
+            <span>هوش مصنوعی</span>
+          </button>
           <button class="admin-tab" type="button" data-tab="users" data-role="admin">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <span>کاربران</span>
@@ -518,6 +526,9 @@
               <button type="button" class="btn btn-primary btn-sm" id="newInvBtn">+ فاکتور جدید</button>
             </div>
           </div>
+
+          <!-- summary cards -->
+          <div class="stats-summary" id="invSummary"></div>
 
           <!-- builder -->
           <div id="invBuilderWrap" hidden>
@@ -908,6 +919,100 @@
           </div>
         </section>
 
+        <!-- ===== Freelance ===== -->
+        <section class="admin-panel" id="panelFreelance">
+          <style>
+            #panelFreelance .fl-wrap{max-width:960px}
+            #panelFreelance .fl-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+            #panelFreelance .fl-scan-btn{font-family:inherit;font-weight:700;font-size:.88rem;background:var(--emerald);color:#fff;border:0;border-radius:var(--r-sm);padding:9px 20px;cursor:pointer;transition:background .15s,filter .15s;white-space:nowrap}
+            #panelFreelance .fl-scan-btn:hover{filter:brightness(1.08)}
+            #panelFreelance .fl-scan-btn:disabled{background:var(--muted);cursor:not-allowed}
+            #panelFreelance .fl-last-scan{font-size:.82rem;color:var(--muted);margin-inline-start:auto}
+            #panelFreelance .fl-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+            #panelFreelance .fl-filter{font-family:inherit;font-size:.82rem;font-weight:700;padding:7px 16px;border-radius:var(--r-pill);border:1.5px solid var(--line);background:var(--paper);color:var(--muted);cursor:pointer;transition:all .15s}
+            #panelFreelance .fl-filter:hover{border-color:var(--emerald);color:var(--emerald)}
+            #panelFreelance .fl-filter.is-active{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+            #panelFreelance .fl-cards{display:grid;gap:14px}
+            #panelFreelance .fl-card{background:var(--card);border:1.5px solid var(--line);border-radius:var(--r-md);padding:18px 20px;box-shadow:var(--sh-sm);transition:border-color .2s,box-shadow .2s;position:relative;overflow:hidden}
+            #panelFreelance .fl-card:hover{border-color:var(--emerald);box-shadow:var(--sh-md)}
+            #panelFreelance .fl-card::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--emerald)}
+            #panelFreelance .fl-card.status-applied::before{background:#f59e0b}
+            #panelFreelance .fl-card.status-won::before{background:#34A853}
+            #panelFreelance .fl-card.status-lost::before{background:#ef4444}
+            #panelFreelance .fl-card-top{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+            #panelFreelance .fl-title{font-size:1rem;font-weight:800;flex:1;min-width:0;line-height:1.5}
+            #panelFreelance .fl-source{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:var(--r-pill);white-space:nowrap}
+            #panelFreelance .fl-source.ponisha{background:#e8f0fe;color:#1a73e8}
+            #panelFreelance .fl-source.karlancer{background:#fce8e6;color:#d93025}
+            #panelFreelance .fl-desc{font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+            #panelFreelance .fl-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted-2);margin-bottom:14px}
+            #panelFreelance .fl-meta span{display:inline-flex;align-items:center;gap:4px}
+            #panelFreelance .fl-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+            #panelFreelance .fl-go-btn{font-family:inherit;font-weight:700;font-size:.85rem;background:var(--navy-800);color:#fff;border:0;border-radius:var(--r-sm);padding:8px 18px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
+            #panelFreelance .fl-go-btn:hover{background:var(--navy-700)}
+            #panelFreelance .fl-status-sel{padding:7px 12px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;outline:0;transition:border-color .2s}
+            #panelFreelance .fl-status-sel:focus{border-color:var(--emerald)}
+            #panelFreelance .fl-status-sel option{font-weight:600}
+            #panelFreelance .fl-note-input{flex:1;min-width:160px;padding:7px 12px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:inherit;font-size:.82rem;outline:0;transition:border-color .2s}
+            #panelFreelance .fl-note-input:focus{border-color:var(--emerald)}
+            #panelFreelance .fl-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:.92rem}
+            #panelFreelance .fl-empty svg{opacity:.3;margin-bottom:10px}
+            #panelFreelance .fl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:18px}
+            #panelFreelance .fl-stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 16px;text-align:center}
+            #panelFreelance .fl-stat .num{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+            #panelFreelance .fl-stat .lbl{font-size:.76rem;color:var(--muted);margin-top:5px}
+            #panelFreelance .fl-stat.new .num{color:var(--emerald)}
+            #panelFreelance .fl-stat.applied .num{color:#f59e0b}
+            #panelFreelance .fl-stat.won .num{color:#34A853}
+            #panelFreelance .fl-stat.lost .num{color:#ef4444}
+            #panelFreelance .fl-scan-result{font-size:.82rem;font-weight:700;padding:8px 14px;border-radius:var(--r-sm);margin-bottom:14px;display:none}
+            #panelFreelance .fl-scan-result.show{display:block}
+            #panelFreelance .fl-scan-result.ok{background:#e6f4ea;color:#34A853}
+            #panelFreelance .fl-scan-result.err{background:#fde8e8;color:#c0392b}
+          </style>
+
+          <div class="fl-wrap">
+            <div class="fl-toolbar">
+              <h2>پروژه‌های فریلنس</h2>
+              <button type="button" class="fl-scan-btn" id="flScanBtn">↻ اسکن الان</button>
+              <span class="fl-last-scan" id="flLastScan">—</span>
+            </div>
+
+            <div class="fl-scan-result" id="flScanResult"></div>
+
+            <div class="fl-stats" id="flStats">
+              <div class="fl-stat new"><div class="num" id="flStatNew">۰</div><div class="lbl">جدید</div></div>
+              <div class="fl-stat applied"><div class="num" id="flStatApplied">۰</div><div class="lbl">درخواست داده‌شده</div></div>
+              <div class="fl-stat won"><div class="num" id="flStatWon">۰</div><div class="lbl">موفق</div></div>
+              <div class="fl-stat lost"><div class="num" id="flStatLost">۰</div><div class="lbl">ناموفق</div></div>
+            </div>
+
+            <div class="fl-filters" id="flFilters">
+              <button class="fl-filter is-active" data-fl-filter="all">همه</button>
+              <button class="fl-filter" data-fl-filter="new">جدید</button>
+              <button class="fl-filter" data-fl-filter="applied">درخواست‌داده‌شده</button>
+              <button class="fl-filter" data-fl-filter="won">موفق</button>
+              <button class="fl-filter" data-fl-filter="lost">ناموفق</button>
+            </div>
+
+            <div class="fl-cards" id="flCards">
+              <div class="fl-empty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <div>در حال بارگذاری…</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== AI Stats ===== -->
+        <section class="admin-panel" id="panelAistats">
+          <div class="admin-toolbar">
+            <h2>هوش مصنوعی — آمار و کاربران</h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="aiRefreshBtn">↻ به‌روزرسانی</button>
+          </div>
+          <div id="aiContent"><div class="admin-empty">در حال بارگذاری…</div></div>
+        </section>
+
         <!-- ===== Users ===== -->
         <section class="admin-panel" id="panelUsers">
           <div class="admin-toolbar">
@@ -1118,7 +1223,7 @@
       var filterEl = document.getElementById("bc_leadFilter");
       var f = filterEl ? filterEl.value : "";
       var qs = f === "hot" ? "?hot=1" : (f ? "?status="+encodeURIComponent(f) : "");
-      fetch("/api/admin/bizcard-leads"+qs, {credentials:"include"})
+      fetch("/api/admin/bizcard-leads"+qs, {credentials:"include", cache:"no-store"})
         .then(function(r){return r.ok?r.json():{ok:false};})
         .then(function(data) {
           var wrap = document.getElementById("bc_leadsWrap");
@@ -1163,7 +1268,7 @@
     };
 
     function bcFetchPending() {
-      fetch("/api/bizcards/list?pending=1", {credentials:"include"})
+      fetch("/api/bizcards/list?pending=1", {credentials:"include", cache:"no-store"})
         .then(function(r){return r.ok?r.json():{ok:false};})
         .then(function(data) {
           var section = document.getElementById("bc_pendingSection");
@@ -1220,7 +1325,7 @@
     };
 
     function bcFetchActive() {
-      fetch("/api/bizcards/list", {credentials:"include"})
+      fetch("/api/bizcards/list", {credentials:"include", cache:"no-store"})
         .then(function(r){return r.ok?r.json():{ok:false};})
         .then(function(data) {
           var wrap = document.getElementById("bc_listWrap");
