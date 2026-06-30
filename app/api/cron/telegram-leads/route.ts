@@ -23,24 +23,24 @@ function fmtDate(iso: string): string {
 
 function buildLeadMessage(lead: Record<string, unknown>): string {
   const lines: string[] = [];
-  lines.push("🔔 لید جدید");
+  lines.push("--- لید جدید ---");
   lines.push("");
 
-  if (lead.name) lines.push(`👤 نام: ${escapeHtml(String(lead.name))}`);
-  if (lead.contact) lines.push(`📞 تماس: ${escapeHtml(String(lead.contact))}`);
-  if (lead.source) lines.push(`📊 منبع: ${escapeHtml(String(lead.source))}`);
-  if (lead.page) lines.push(`📄 صفحه: ${escapeHtml(String(lead.page))}`);
-  if (lead.goal) lines.push(`🎯 هدف: ${escapeHtml(String(lead.goal))}`);
-  if (lead.budget) lines.push(`💰 بودجه: ${escapeHtml(String(lead.budget))}`);
-  if (lead.plan) lines.push(`📦 پلن: ${escapeHtml(String(lead.plan))}`);
-  if (lead.sitetype) lines.push(`🏪 نوع کسب‌وکار: ${escapeHtml(String(lead.sitetype))}`);
-  if (lead.intent) lines.push(`💡 قصد: ${escapeHtml(String(lead.intent))`);
-  if (lead.detail) lines.push(`📝 جزئیات: ${escapeHtml(String(lead.detail).slice(0, 500))}`);
+  if (lead.name) lines.push("نام: " + escapeHtml(String(lead.name)));
+  if (lead.contact) lines.push("تماس: " + escapeHtml(String(lead.contact)));
+  if (lead.source) lines.push("منبع: " + escapeHtml(String(lead.source)));
+  if (lead.page) lines.push("صفحه: " + escapeHtml(String(lead.page)));
+  if (lead.goal) lines.push("هدف: " + escapeHtml(String(lead.goal)));
+  if (lead.budget) lines.push("بودجه: " + escapeHtml(String(lead.budget)));
+  if (lead.plan) lines.push("پلن: " + escapeHtml(String(lead.plan)));
+  if (lead.sitetype) lines.push("نوع کسب‌وکار: " + escapeHtml(String(lead.sitetype)));
+  if (lead.intent) lines.push("قصد: " + escapeHtml(String(lead.intent)));
+  if (lead.detail) lines.push("جزئیات: " + escapeHtml(String(lead.detail).slice(0, 500)));
 
-  if (lead.utm_source) lines.push(`🔗 UTM: ${escapeHtml(String(lead.utm_source))}`);
+  if (lead.utm_source) lines.push("UTM: " + escapeHtml(String(lead.utm_source)));
 
   lines.push("");
-  lines.push(`🕐 ${escapeHtml(fmtDate(String(lead.created_at)))}`);
+  lines.push(escapeHtml(fmtDate(String(lead.created_at))));
 
   return lines.join("\n");
 }
