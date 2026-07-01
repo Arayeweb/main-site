@@ -183,12 +183,13 @@ export async function POST(req: NextRequest) {
             controller.close();
 
             // Save full response to DB after stream completes
-            if (assistantMsg && fullContent) {
+            if (assistantMsg) {
+              const savedContent = fullContent || "[پاسخی دریافت نشد]";
               await supabase.from("ai_responses").insert({
                 message_id: assistantMsg.id,
                 mode: "quick",
                 agent_role: usedModel,
-                content: fullContent,
+                content: savedContent,
                 order_index: 0,
                 model_name: usedModel,
               });
@@ -210,7 +211,7 @@ export async function POST(req: NextRequest) {
                 user_id: session.userId,
                 conversation_id: convId,
                 mode: "quick",
-                tokens_used: Math.ceil(fullContent.length / 4),
+                tokens_used: Math.ceil(savedContent.length / 4),
               });
 
               // Update conversation timestamp
@@ -226,7 +227,6 @@ export async function POST(req: NextRequest) {
       return new Response(transformedStream, {
         headers: {
           "Content-Type": "text/plain; charset=utf-8",
-          "Transfer-Encoding": "chunked",
           "X-Conversation-Id": convId,
           "X-Credits-Remaining": String(Math.max(0, (user.credits as number) - cost)),
         },

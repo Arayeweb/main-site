@@ -432,35 +432,6 @@
       fetchActive();
     }
 
-    function fetchPending() {
-      fetch("/api/bizcards/list?pending=1", { credentials: "include" })
-        .then(function(r) { return r.ok ? r.json() : { ok: false }; })
-        .then(function(data) {
-          var section = document.getElementById("pendingSection");
-          var wrap = document.getElementById("pendingWrap");
-          if (!data.ok || !data.cards || !data.cards.length) {
-            section.style.display = "none";
-            return;
-          }
-          section.style.display = "block";
-          var rows = data.cards.map(function(c) {
-            var date = c.created_at ? new Date(c.created_at).toLocaleDateString("fa-IR") : "—";
-            return '<tr id="pending-row-' + esc(c.id) + '">'
-              + '<td><strong>' + esc(c.business_name) + '</strong><br><small style="color:#9aa0a6">' + date + '</small></td>'
-              + '<td>' + (c.category ? '<span class="tag-pending">' + esc(c.category) + '</span>' : '—') + '</td>'
-              + '<td>' + esc(c.phone || '—') + '</td>'
-              + '<td>' + esc(c.whatsapp || '—') + '</td>'
-              + '<td>/b/' + esc(c.slug) + '</td>'
-              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button><button class="btn-approve" onclick="approveCard(\'' + esc(c.id) + '\',this)">✓ تایید</button></td>'
-              + '</tr>';
-          }).join("");
-          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
-        })
-        .catch(function() {
-          document.getElementById("pendingWrap").innerHTML = '<p class="empty">خطا در بارگذاری</p>';
-        });
-    }
-
     function approveCard(id, btn) {
       btn.disabled = true;
       btn.textContent = "در حال تایید...";
@@ -493,40 +464,6 @@
       });
     }
 
-    function fetchActive() {
-      fetch("/api/bizcards/list", { credentials: "include" })
-        .then(function(r) { return r.ok ? r.json() : { ok: false }; })
-        .then(function(data) {
-          var wrap = document.getElementById("listWrap");
-          if (!data.ok || !data.cards || !data.cards.length) {
-            var active = (data.cards || []).filter(function(c){ return c.is_active; });
-            if (!active.length) {
-              wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
-              return;
-            }
-          }
-          var active = (data.cards || []).filter(function(c){ return c.is_active; });
-          if (!active.length) {
-            wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
-            return;
-          }
-          var rows = active.map(function(c) {
-            return '<tr>'
-              + '<td><strong>' + esc(c.business_name) + '</strong></td>'
-              + '<td>' + (c.category ? '<span class="tag">' + esc(c.category) + '</span>' : '—') + '</td>'
-              + '<td>' + esc(c.phone || '—') + '</td>'
-              + '<td>' + esc(c.whatsapp || '—') + '</td>'
-              + '<td><a href="/b/' + esc(c.slug) + '" target="_blank">/b/' + esc(c.slug) + '</a></td>'
-              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.origin + '/b/' + c.slug) + '" target="_blank" download="' + esc(c.slug) + '-qr.png">QR ⬇</a></td>'
-              + '</tr>';
-          }).join("");
-          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
-        })
-        .catch(function() {
-          document.getElementById("listWrap").innerHTML = '<p class="empty">خطا در بارگذاری لیست</p>';
-        });
-    }
-
     function esc(s) {
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
@@ -547,10 +484,7 @@
       return _cardsCache.find(function(c) { return c.id === id; });
     }
 
-    // override fetchers to cache and timestamp
-    var _origFetchPending = fetchPending;
-    var _origFetchActive = fetchActive;
-    fetchPending = function() {
+    function fetchPending() {
       return fetch("/api/bizcards/list?pending=1&_t=" + Date.now(), { credentials: "include" })
         .then(function(r) { return r.ok ? r.json() : { ok: false }; })
         .then(function(data) {
@@ -579,21 +513,19 @@
         .catch(function() {
           document.getElementById("pendingWrap").innerHTML = '<p class="empty">خطا در بارگذاری</p>';
         });
-    };
-    fetchActive = function() {
+    }
+
+    function fetchActive() {
       return fetch("/api/bizcards/list?_t=" + Date.now(), { credentials: "include" })
         .then(function(r) { return r.ok ? r.json() : { ok: false }; })
         .then(function(data) {
           var wrap = document.getElementById("listWrap");
-          if (!data.ok || !data.cards || !data.cards.length) {
-            var active = (data.cards || []).filter(function(c){ return c.is_active; });
-            if (!active.length) {
-              wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
-              return;
-            }
+          if (!data.ok || !data.cards) {
+            wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
+            return;
           }
           data.cards.forEach(function(c) { updateCache(c.id, c); });
-          var active = (data.cards || []).filter(function(c){ return c.is_active; });
+          var active = data.cards.filter(function(c){ return c.is_active; });
           if (!active.length) {
             wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
             return;
@@ -614,7 +546,7 @@
         .catch(function() {
           document.getElementById("listWrap").innerHTML = '<p class="empty">خطا در بارگذاری لیست</p>';
         });
-    };
+    }
 
     // edit modal
     var editModal = document.getElementById("editModal");

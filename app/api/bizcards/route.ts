@@ -118,8 +118,8 @@ export async function PUT(req: NextRequest) {
   const slug = normSlug(body.slug);
 
   const row: Record<string, unknown> = {};
-  if (business_name !== undefined) row.business_name = business_name;
-  if (slug !== undefined) row.slug = slug;
+  if (business_name) row.business_name = business_name;
+  if (slug) row.slug = slug;
   if (body.category !== undefined) row.category = str(body.category, 100);
   if (body.phone !== undefined) row.phone = str(body.phone, 30);
   if (body.whatsapp !== undefined) row.whatsapp = str(body.whatsapp, 30);

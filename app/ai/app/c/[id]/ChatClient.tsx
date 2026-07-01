@@ -370,6 +370,11 @@ export default function ChatClient({
             return copy;
           });
         }
+
+        if (!accumulated.trim()) {
+          setError("پاسخی دریافت نشد. دوباره تلاش کن.");
+          setMessages((prev) => prev.slice(0, -1));
+        }
       } else {
         // Non-streaming path for brainstorm / critique
         const res = await fetch("/api/ai/chat", {
