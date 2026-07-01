@@ -276,7 +276,8 @@ create table if not exists public.bizcards (
   hours         text,
   logo_url      text,
   theme_color   text not null default 'blue',
-  is_active     boolean not null default true
+  is_active     boolean not null default true,
+  updated_at    timestamptz
 );
 
 -- مهاجرت برای جدول‌های موجود (اگر جدول از قبل وجود داشته باشد):
@@ -284,6 +285,7 @@ alter table public.bizcards add column if not exists logo_url text;
 alter table public.bizcards add column if not exists theme_color text not null default 'blue';
 alter table public.bizcards add column if not exists neshan_url text;
 alter table public.bizcards add column if not exists balad_url text;
+alter table public.bizcards add column if not exists updated_at timestamptz;
 
 -- ساخت bucket آپلود تصویر در Supabase Dashboard → Storage:
 --   نام: bizcards   |   Public bucket: فعال   |   Max file size: 3MB

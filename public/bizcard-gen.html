@@ -72,6 +72,30 @@
     .pending-banner{background:#fff8e1;border:1.5px solid #ffe082;border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#e65100;font-weight:700;display:flex;align-items:center;gap:8px;}
     .pending-count{background:#e65100;color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;}
 
+    .btn-edit{font-family:"Vazirmatn",Tahoma;font-size:12px;font-weight:700;background:#4285F4;color:#fff;border:0;border-radius:8px;padding:6px 14px;cursor:pointer;transition:background .15s;white-space:nowrap;margin-inline-end:6px;}
+    .btn-edit:hover{background:#1b6ef3;}
+    .btn-edit:disabled{background:#9aa0a6;cursor:not-allowed;}
+    .btn-refresh{font-family:"Vazirmatn",Tahoma;font-size:12px;font-weight:700;background:#fff;color:#4285F4;border:1.5px solid #4285F4;border-radius:8px;padding:6px 14px;cursor:pointer;transition:all .15s;}
+    .btn-refresh:hover{background:#f8faff;}
+    .list-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+    .last-updated{font-size:12px;color:#9aa0a6;}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(10,20,34,.6);z-index:50;display:none;align-items:center;justify-content:center;padding:16px;}
+    .modal-overlay.show{display:flex;}
+    .modal-sheet{background:#fff;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.2);width:min(720px,100%);max-height:90vh;overflow-y:auto;position:relative;}
+    .modal-head{padding:18px 24px;border-bottom:1px solid #e3e6ea;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .modal-head h3{font-size:16px;font-weight:700;}
+    .modal-close{background:none;border:none;font-size:26px;color:#9aa0a6;cursor:pointer;line-height:1;padding:0;}
+    .modal-close:hover{color:#EA4335;}
+    .modal-body{padding:24px;}
+    .modal-foot{padding:18px 24px;border-top:1px solid #e3e6ea;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+    .btn-primary{font-family:"Vazirmatn",Tahoma;font-weight:700;background:#4285F4;color:#fff;border:0;border-radius:10px;padding:12px 24px;cursor:pointer;}
+    .btn-primary:hover{background:#1b6ef3;}
+    .btn-primary:disabled{background:#9aa0a6;cursor:not-allowed;}
+    .btn-ghost{font-family:"Vazirmatn",Tahoma;font-weight:700;background:#fff;color:#5f6368;border:1.5px solid #e3e6ea;border-radius:10px;padding:12px 24px;cursor:pointer;}
+    .btn-ghost:hover{border-color:#4285F4;color:#4285F4;}
+    .modal-err{color:#EA4335;font-weight:700;font-size:13px;min-height:20px;}
+
     /* avatar upload */
     .avatar-zone{
       border:2px dashed #d1d5db;border-radius:14px;cursor:pointer;
@@ -231,8 +255,100 @@
 
     <!-- list of existing cards -->
     <div class="card">
-      <h2>کارت‌های فعال</h2>
+      <div class="list-header">
+        <h2>کارت‌های فعال</h2>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="last-updated" id="lastUpdated">در حال بارگذاری...</span>
+          <button type="button" class="btn-refresh" id="refreshBtn" onclick="loadList()">↻ به‌روزرسانی</button>
+        </div>
+      </div>
       <div id="listWrap"><p class="empty">در حال بارگذاری...</p></div>
+    </div>
+  </div>
+
+  <!-- edit modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <h3>✏️ ویرایش کارت ویزیت</h3>
+        <button type="button" class="modal-close" onclick="closeEditModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <input type="hidden" id="edit_id" />
+          <div class="grid">
+            <div class="full">
+              <label for="edit_business_name">نام کسب‌وکار *</label>
+              <input id="edit_business_name" name="business_name" type="text" required />
+            </div>
+            <div>
+              <label for="edit_slug">شناسه URL</label>
+              <input id="edit_slug" name="slug" type="text" />
+            </div>
+            <div>
+              <label for="edit_category">دسته‌بندی</label>
+              <input id="edit_category" name="category" type="text" />
+            </div>
+            <div>
+              <label for="edit_phone">شماره تماس</label>
+              <input id="edit_phone" name="phone" type="tel" />
+            </div>
+            <div>
+              <label for="edit_whatsapp">واتس‌اپ</label>
+              <input id="edit_whatsapp" name="whatsapp" type="text" />
+            </div>
+            <div>
+              <label for="edit_maps_url">لینک گوگل مپ</label>
+              <input id="edit_maps_url" name="maps_url" type="url" />
+            </div>
+            <div>
+              <label for="edit_neshan_url">لینک نشان</label>
+              <input id="edit_neshan_url" name="neshan_url" type="url" />
+            </div>
+            <div>
+              <label for="edit_balad_url">لینک بلد</label>
+              <input id="edit_balad_url" name="balad_url" type="url" />
+            </div>
+            <div class="full">
+              <label for="edit_address">آدرس</label>
+              <input id="edit_address" name="address" type="text" />
+            </div>
+            <div class="full">
+              <label for="edit_hours">ساعت کاری</label>
+              <input id="edit_hours" name="hours" type="text" />
+            </div>
+            <div>
+              <label for="edit_instagram">اینستاگرام</label>
+              <input id="edit_instagram" name="instagram" type="text" />
+            </div>
+            <div>
+              <label for="edit_telegram">تلگرام</label>
+              <input id="edit_telegram" name="telegram" type="text" />
+            </div>
+            <div class="full">
+              <label for="edit_website">وب‌سایت</label>
+              <input id="edit_website" name="website" type="url" />
+            </div>
+            <div class="full">
+              <label for="edit_logo_url">لینک تصویر لوگو</label>
+              <input id="edit_logo_url" name="logo_url" type="url" />
+            </div>
+            <div class="full">
+              <label>تم رنگی کارت</label>
+              <div id="edit-theme-picker" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center;"></div>
+              <input type="hidden" id="edit_theme_color" value="blue" />
+            </div>
+            <div class="full">
+              <label><input type="checkbox" id="edit_is_active" style="width:auto;vertical-align:middle;margin-inline-end:6px;" /> فعال</label>
+            </div>
+          </div>
+          <div class="modal-err" id="editErr"></div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn-ghost" onclick="closeEditModal()">انصراف</button>
+        <button type="button" class="btn-primary" id="editSaveBtn" onclick="saveEdit()">ذخیره تغییرات</button>
+      </div>
     </div>
   </div>
 
@@ -335,7 +451,7 @@
               + '<td>' + esc(c.phone || '—') + '</td>'
               + '<td>' + esc(c.whatsapp || '—') + '</td>'
               + '<td>/b/' + esc(c.slug) + '</td>'
-              + '<td><button class="btn-approve" onclick="approveCard(\'' + esc(c.id) + '\',this)">✓ تایید</button></td>'
+              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button><button class="btn-approve" onclick="approveCard(\'' + esc(c.id) + '\',this)">✓ تایید</button></td>'
               + '</tr>';
           }).join("");
           wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
@@ -401,10 +517,10 @@
               + '<td>' + esc(c.phone || '—') + '</td>'
               + '<td>' + esc(c.whatsapp || '—') + '</td>'
               + '<td><a href="/b/' + esc(c.slug) + '" target="_blank">/b/' + esc(c.slug) + '</a></td>'
-              + '<td><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.origin + '/b/' + c.slug) + '" target="_blank" download="' + esc(c.slug) + '-qr.png">QR ⬇</a></td>'
+              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.origin + '/b/' + c.slug) + '" target="_blank" download="' + esc(c.slug) + '-qr.png">QR ⬇</a></td>'
               + '</tr>';
           }).join("");
-          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>QR</th></tr></thead><tbody>' + rows + '</tbody></table>';
+          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
         })
         .catch(function() {
           document.getElementById("listWrap").innerHTML = '<p class="empty">خطا در بارگذاری لیست</p>';
@@ -415,7 +531,216 @@
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
+    var _cardsCache = [];
+    function setLastUpdated() {
+      var el = document.getElementById("lastUpdated");
+      if (!el) return;
+      el.textContent = "آخرین به‌روزرسانی: " + new Date().toLocaleTimeString("fa-IR");
+    }
+
+    function updateCache(id, card) {
+      var idx = _cardsCache.findIndex(function(c) { return c.id === id; });
+      if (idx >= 0) _cardsCache[idx] = card; else _cardsCache.push(card);
+    }
+
+    function findCard(id) {
+      return _cardsCache.find(function(c) { return c.id === id; });
+    }
+
+    // override fetchers to cache and timestamp
+    var _origFetchPending = fetchPending;
+    var _origFetchActive = fetchActive;
+    fetchPending = function() {
+      return fetch("/api/bizcards/list?pending=1&_t=" + Date.now(), { credentials: "include" })
+        .then(function(r) { return r.ok ? r.json() : { ok: false }; })
+        .then(function(data) {
+          var section = document.getElementById("pendingSection");
+          var wrap = document.getElementById("pendingWrap");
+          if (!data.ok || !data.cards || !data.cards.length) {
+            section.style.display = "none";
+            return;
+          }
+          data.cards.forEach(function(c) { updateCache(c.id, c); });
+          section.style.display = "block";
+          var rows = data.cards.map(function(c) {
+            var date = c.created_at ? new Date(c.created_at).toLocaleDateString("fa-IR") : "—";
+            return '<tr id="pending-row-' + esc(c.id) + '">'
+              + '<td><strong>' + esc(c.business_name) + '</strong><br><small style="color:#9aa0a6">' + date + '</small></td>'
+              + '<td>' + (c.category ? '<span class="tag-pending">' + esc(c.category) + '</span>' : '—') + '</td>'
+              + '<td>' + esc(c.phone || '—') + '</td>'
+              + '<td>' + esc(c.whatsapp || '—') + '</td>'
+              + '<td>/b/' + esc(c.slug) + '</td>'
+              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button><button class="btn-approve" onclick="approveCard(\'' + esc(c.id) + '\',this)">✓ تایید</button></td>'
+              + '</tr>';
+          }).join("");
+          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
+          setLastUpdated();
+        })
+        .catch(function() {
+          document.getElementById("pendingWrap").innerHTML = '<p class="empty">خطا در بارگذاری</p>';
+        });
+    };
+    fetchActive = function() {
+      return fetch("/api/bizcards/list?_t=" + Date.now(), { credentials: "include" })
+        .then(function(r) { return r.ok ? r.json() : { ok: false }; })
+        .then(function(data) {
+          var wrap = document.getElementById("listWrap");
+          if (!data.ok || !data.cards || !data.cards.length) {
+            var active = (data.cards || []).filter(function(c){ return c.is_active; });
+            if (!active.length) {
+              wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
+              return;
+            }
+          }
+          data.cards.forEach(function(c) { updateCache(c.id, c); });
+          var active = (data.cards || []).filter(function(c){ return c.is_active; });
+          if (!active.length) {
+            wrap.innerHTML = '<p class="empty">هنوز کارتی فعال نشده</p>';
+            return;
+          }
+          var rows = active.map(function(c) {
+            return '<tr>'
+              + '<td><strong>' + esc(c.business_name) + '</strong></td>'
+              + '<td>' + (c.category ? '<span class="tag">' + esc(c.category) + '</span>' : '—') + '</td>'
+              + '<td>' + esc(c.phone || '—') + '</td>'
+              + '<td>' + esc(c.whatsapp || '—') + '</td>'
+              + '<td><a href="/b/' + esc(c.slug) + '" target="_blank">/b/' + esc(c.slug) + '</a></td>'
+              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.origin + '/b/' + c.slug) + '" target="_blank" download="' + esc(c.slug) + '-qr.png">QR ⬇</a></td>'
+              + '</tr>';
+          }).join("");
+          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
+          setLastUpdated();
+        })
+        .catch(function() {
+          document.getElementById("listWrap").innerHTML = '<p class="empty">خطا در بارگذاری لیست</p>';
+        });
+    };
+
+    // edit modal
+    var editModal = document.getElementById("editModal");
+    var editThemePicker = document.getElementById("edit-theme-picker");
+    var editThemeInput = document.getElementById("edit_theme_color");
+
+    THEMES.forEach(function(t) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.title = t.label;
+      btn.dataset.key = t.key;
+      btn.style.cssText = "width:36px;height:36px;border-radius:50%;cursor:pointer;background:" + t.color
+        + ";border:3px solid transparent;transition:border-color .15s,transform .15s;outline:none;flex-shrink:0;";
+      btn.addEventListener("click", function() {
+        editThemeInput.value = t.key;
+        editThemePicker.querySelectorAll("button").forEach(function(b) {
+          b.style.borderColor = "transparent";
+          b.style.transform = "none";
+        });
+        btn.style.borderColor = "#202124";
+        btn.style.transform = "scale(1.18)";
+      });
+      editThemePicker.appendChild(btn);
+    });
+
+    function setEditTheme(key) {
+      editThemeInput.value = key;
+      editThemePicker.querySelectorAll("button").forEach(function(b) {
+        if (b.dataset.key === key) {
+          b.style.borderColor = "#202124";
+          b.style.transform = "scale(1.18)";
+        } else {
+          b.style.borderColor = "transparent";
+          b.style.transform = "none";
+        }
+      });
+    }
+
+    function openEditModal(id) {
+      var card = findCard(id);
+      if (!card) {
+        alert("کارت مورد نظر یافت نشد — لطفاً لیست را به‌روزرسانی کنید.");
+        return;
+      }
+      document.getElementById("edit_id").value = card.id;
+      document.getElementById("edit_business_name").value = card.business_name || "";
+      document.getElementById("edit_slug").value = card.slug || "";
+      document.getElementById("edit_category").value = card.category || "";
+      document.getElementById("edit_phone").value = card.phone || "";
+      document.getElementById("edit_whatsapp").value = card.whatsapp || "";
+      document.getElementById("edit_maps_url").value = card.maps_url || "";
+      document.getElementById("edit_neshan_url").value = card.neshan_url || "";
+      document.getElementById("edit_balad_url").value = card.balad_url || "";
+      document.getElementById("edit_address").value = card.address || "";
+      document.getElementById("edit_hours").value = card.hours || "";
+      document.getElementById("edit_instagram").value = card.instagram || "";
+      document.getElementById("edit_telegram").value = card.telegram || "";
+      document.getElementById("edit_website").value = card.website || "";
+      document.getElementById("edit_logo_url").value = card.logo_url || "";
+      document.getElementById("edit_is_active").checked = card.is_active !== false;
+      setEditTheme(card.theme_color || "blue");
+      document.getElementById("editErr").textContent = "";
+      editModal.classList.add("show");
+    }
+
+    function closeEditModal() {
+      editModal.classList.remove("show");
+    }
+
+    function saveEdit() {
+      var btn = document.getElementById("editSaveBtn");
+      var err = document.getElementById("editErr");
+      err.textContent = "";
+      btn.disabled = true;
+      btn.textContent = "در حال ذخیره...";
+
+      var id = document.getElementById("edit_id").value;
+      var body = {};
+      ["business_name","slug","category","phone","whatsapp","maps_url","neshan_url","balad_url","address","hours","instagram","telegram","website","logo_url"]
+        .forEach(function(k) {
+          var v = document.getElementById("edit_" + k).value.trim();
+          body[k] = v;
+        });
+      body.theme_color = editThemeInput.value || "blue";
+      body.is_active = document.getElementById("edit_is_active").checked;
+
+      fetch("/api/bizcards?id=" + encodeURIComponent(id), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        btn.disabled = false;
+        btn.textContent = "ذخیره تغییرات";
+        if (!data.ok) {
+          if (data.error === "unauthorized") { location.href = "/admin"; return; }
+          if (data.error === "duplicate_slug") { err.textContent = "این شناسه URL قبلاً استفاده شده."; return; }
+          err.textContent = "خطا: " + (data.error || "نامشخص");
+          return;
+        }
+        closeEditModal();
+        loadList();
+      })
+      .catch(function() {
+        btn.disabled = false;
+        btn.textContent = "ذخیره تغییرات";
+        err.textContent = "خطا در اتصال — دوباره تلاش کن";
+      });
+    }
+
+    // expose globals used by inline handlers
+    window.loadList = loadList;
+    window.approveCard = approveCard;
+    window.openEditModal = openEditModal;
+    window.closeEditModal = closeEditModal;
+    window.saveEdit = saveEdit;
+
     loadList();
+
+    // auto refresh every 30 seconds and on page visibility
+    setInterval(loadList, 30000);
+    document.addEventListener("visibilitychange", function() {
+      if (!document.hidden) loadList();
+    });
 
     // ── avatar upload ──
     var _uploadedUrl = "";

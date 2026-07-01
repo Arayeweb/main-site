@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from("bizcards")
-      .select("id, slug, business_name, category, phone, whatsapp, created_at, is_active")
+      .select("id, slug, business_name, category, phone, whatsapp, maps_url, neshan_url, balad_url, address, instagram, telegram, website, hours, logo_url, theme_color, is_active, created_at, updated_at")
       .order("created_at", { ascending: false })
       .limit(200);
 
