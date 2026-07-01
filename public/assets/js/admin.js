@@ -1882,7 +1882,6 @@
       html += '<div class="ov-block" style="margin-top:18px">';
       html += "<h3>برترین کاربران بر اساس مصرف توکن</h3>";
       if (!d.top_users || d.top_users.length === 0) {
-        for   
         html += '<div class="admin-empty">داده‌ای موجود نیست.</div>';
       } else {
         html += '<table class="stats-table"><thead><tr><td style="font-weight:800">شماره</td><td style="font-weight:800">پلن</td><td style="font-weight:800">کردیت</td><td style="font-weight:800">توکن</td></tr></thead><tbody>';
