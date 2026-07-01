@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("bizcards")
-      .select("slug,business_name,category,phone,maps_url,neshan_url,balad_url,address,instagram,telegram,website,hours,logo_url,theme_color")
+      .select("slug,business_name,category,phone,maps_url,neshan_url,balad_url,address,instagram,telegram,whatsapp,website,hours,logo_url,theme_color")
       .eq("slug", slug)
       .eq("is_active", true)
       .maybeSingle();
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
     address:     str(body.address, 500),
     instagram:   str(body.instagram, 100),
     telegram:    str(body.telegram, 100),
+    whatsapp:    str(body.whatsapp, 30),
     website:     str(body.website, 2000),
     hours:       str(body.hours, 300),
     logo_url:    str(body.logo_url, 2000),

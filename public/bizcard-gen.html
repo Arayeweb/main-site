@@ -172,6 +172,10 @@
             <label for="telegram">تلگرام</label>
             <input id="telegram" name="telegram" type="text" placeholder="@username" />
           </div>
+          <div>
+            <label for="whatsapp">واتس‌اپ</label>
+            <input id="whatsapp" name="whatsapp" type="text" placeholder="09121234567" />
+          </div>
           <div class="full">
             <label for="website">وب‌سایت</label>
             <input id="website" name="website" type="url" placeholder="https://example.com" />
@@ -253,7 +257,7 @@
       }
 
       var body = {};
-      ["business_name","slug","category","phone","maps_url","neshan_url","balad_url","address","hours","instagram","telegram","website"]
+      ["business_name","slug","category","phone","whatsapp","maps_url","neshan_url","balad_url","address","hours","instagram","telegram","website"]
         .forEach(function(k) {
           var v = document.getElementById(k).value.trim();
           if (v) body[k] = v;
@@ -329,11 +333,12 @@
               + '<td><strong>' + esc(c.business_name) + '</strong><br><small style="color:#9aa0a6">' + date + '</small></td>'
               + '<td>' + (c.category ? '<span class="tag-pending">' + esc(c.category) + '</span>' : '—') + '</td>'
               + '<td>' + esc(c.phone || '—') + '</td>'
+              + '<td>' + esc(c.whatsapp || '—') + '</td>'
               + '<td>/b/' + esc(c.slug) + '</td>'
               + '<td><button class="btn-approve" onclick="approveCard(\'' + esc(c.id) + '\',this)">✓ تایید</button></td>'
               + '</tr>';
           }).join("");
-          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
+          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
         })
         .catch(function() {
           document.getElementById("pendingWrap").innerHTML = '<p class="empty">خطا در بارگذاری</p>';
@@ -393,11 +398,13 @@
             return '<tr>'
               + '<td><strong>' + esc(c.business_name) + '</strong></td>'
               + '<td>' + (c.category ? '<span class="tag">' + esc(c.category) + '</span>' : '—') + '</td>'
+              + '<td>' + esc(c.phone || '—') + '</td>'
+              + '<td>' + esc(c.whatsapp || '—') + '</td>'
               + '<td><a href="/b/' + esc(c.slug) + '" target="_blank">/b/' + esc(c.slug) + '</a></td>'
               + '<td><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.origin + '/b/' + c.slug) + '" target="_blank" download="' + esc(c.slug) + '-qr.png">QR ⬇</a></td>'
               + '</tr>';
           }).join("");
-          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>لینک</th><th>QR</th></tr></thead><tbody>' + rows + '</tbody></table>';
+          wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>QR</th></tr></thead><tbody>' + rows + '</tbody></table>';
         })
         .catch(function() {
           document.getElementById("listWrap").innerHTML = '<p class="empty">خطا در بارگذاری لیست</p>';
