@@ -356,6 +356,17 @@
   (function() {
     var BASE = window.location.origin;
 
+    var THEMES = [
+      { key:"blue",   color:"#2f6df6", label:"آبی" },
+      { key:"green",  color:"#059669", label:"سبز" },
+      { key:"purple", color:"#7c3aed", label:"بنفش" },
+      { key:"red",    color:"#dc2626", label:"قرمز" },
+      { key:"orange", color:"#f97316", label:"نارنجی" },
+      { key:"teal",   color:"#0d9488", label:"فیروزه‌ای" },
+      { key:"rose",   color:"#e11d48", label:"گلبهی" },
+      { key:"slate",  color:"#475569", label:"خاکستری" },
+    ];
+
     // ── form submit ──
     document.getElementById("form").addEventListener("submit", function(e) {
       e.preventDefault();
@@ -756,16 +767,6 @@
 
 
     // ── theme color picker ──
-    var THEMES = [
-      { key:"blue",   color:"#2f6df6", label:"آبی" },
-      { key:"green",  color:"#059669", label:"سبز" },
-      { key:"purple", color:"#7c3aed", label:"بنفش" },
-      { key:"red",    color:"#dc2626", label:"قرمز" },
-      { key:"orange", color:"#f97316", label:"نارنجی" },
-      { key:"teal",   color:"#0d9488", label:"فیروزه‌ای" },
-      { key:"rose",   color:"#e11d48", label:"گلبهی" },
-      { key:"slate",  color:"#475569", label:"خاکستری" },
-    ];
     var themeInput = document.getElementById("theme_color");
     var pickerEl = document.getElementById("theme-picker");
     THEMES.forEach(function(t) {
