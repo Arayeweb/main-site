@@ -15,7 +15,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="کارت ویزیت دیجیتال رایگان — آرایه" />
   <meta name="twitter:description" content="لینک اختصاصی، QR کد، نقشه و شبکه‌های اجتماعی در یک صفحه. رایگان، همیشه." />
-  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"WebPage","name":"کارت ویزیت دیجیتال رایگان","description":"ساخت کارت ویزیت دیجیتال رایگان با لینک اختصاصی و QR کد","url":"https://araaye.com/bizcard","provider":{"@type":"Organization","name":"آرایه","url":"https://araaye.com"}}
   </script>
@@ -831,6 +831,20 @@
         <img id="qrImg" src="" alt="QR کارت ویزیت" />
         <span>QR کارت — برای پرینت و چسباندن جلوی مغازه</span>
       </div>
+      <div id="googlesabtUpsell" style="
+        margin:0 0 18px;padding:16px 18px;border-radius:14px;
+        background:linear-gradient(135deg,#e8f0fe,#f4fbf6);
+        border:1.5px solid #c6d3ff;text-align:right;
+      ">
+        <p style="font-size:14px;font-weight:800;color:#202124;margin-bottom:6px;">📍 می‌خواهید در گوگل‌مپ و نشان هم ثبت شوید؟</p>
+        <p style="font-size:12.5px;color:#5f6368;line-height:1.7;margin-bottom:12px;">
+          کارت رایگان فقط لینک شماست. با پکیج <b>محبوب</b> ثبت حرفه‌ای در ۵ نقشه + همه مسیریاب‌ها روی همین لینک انجام می‌شود.
+        </p>
+        <a href="/googlesabt?from=bizcard&amp;package=popular#packages" style="
+          display:inline-block;font-family:'Vazirmatn',Tahoma;font-weight:700;font-size:13px;
+          background:#4285F4;color:#fff;border-radius:10px;padding:10px 18px;text-decoration:none;
+        ">ثبت در گوگل + لینک کامل — از ۹۹۰ هزار تومان</a>
+      </div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px">
         <a id="successViewBtn" href="#" target="_blank" style="
           font-family:'Vazirmatn',Tahoma;font-weight:700;font-size:14px;
@@ -1243,8 +1257,9 @@
       return {
         service:"googlemap", icon:"📍",
         title:"کارت شما آماده شد",
-        text:"ولی اگر مشتری اسم کسب‌وکارتان را در گوگل سرچ کند، باید گوگل‌مپ شما هم درست ثبت شده باشد.",
-        cta:"درخواست ثبت گوگل‌مپ"
+        text:"ولی اگر مشتری اسم کسب‌وکارتان را در گوگل سرچ کند، باید گوگل‌مپ شما هم درست ثبت شده باشد. پکیج محبوب: ثبت ۵ نقشه + همه مسیریاب‌ها روی لینک BizCard.",
+        cta:"ثبت حرفه‌ای در گوگل‌مپ",
+        ctaLink:"/googlesabt?from=bizcard&package=popular#packages"
       };
     }
     // سایت دارد و گوگل‌مپ دارد
@@ -1271,6 +1286,10 @@
 
   window.requestService = function(){
     if(!_suggested) return;
+    if(_suggested.ctaLink){
+      window.location.href = _suggested.ctaLink;
+      return;
+    }
     var btn = document.getElementById("sgCta");
     btn.disabled = true;
     btn.textContent = "در حال ثبت...";

@@ -13,29 +13,27 @@ const nextConfig = {
   async rewrites() {
     // صفحات استاتیک از public/ سرو می‌شوند؛ این rewriteها مسیرهای تمیز می‌سازند.
     return [
-      { source: "/", destination: "/index.html" },
+      // Homepage is now served by Next.js app/page.tsx
       { source: "/about", destination: "/about.html" },
       { source: "/clinic", destination: "/clinic.html" },
-      { source: "/doctors", destination: "/doctors.html" },
+      // /doctors از Next.js (app/doctors/page.tsx) سرو می‌شود — rewrite حذف شد
       { source: "/restaurant", destination: "/restaurant.html" },
       { source: "/support", destination: "/support.html" },
-      { source: "/admin", destination: "/admin.html" },
+      // /admin handled by Next.js app router (app/admin/*) — legacy admin.html removed
       { source: "/sales", destination: "/sales.html" },
       { source: "/results", destination: "/results.html" },
       { source: "/cases", destination: "/results.html" },
       { source: "/portfolio", destination: "/portfolio.html" },
       { source: "/software", destination: "/software.html" },
       { source: "/hamkari", destination: "/hamkari.html" },
-      { source: "/spaces", destination: "/spaces.html" },
-      { source: "/googlesabt", destination: "/googlesabt.html" },
-      { source: "/google-sabt", destination: "/googlesabt.html" },
+      // /googlesabt از Next.js (app/googlesabt/page.tsx) سرو می‌شود — rewrite حذف شد
+      { source: "/google-sabt", destination: "/googlesabt" },
       { source: "/googlesabt-simple", destination: "/googlesabt-simple.html" },
-      { source: "/seo", destination: "/seo.html" },
-      { source: "/bizcard", destination: "/bizcard.html" },
+      // /seo از Next.js (app/seo/page.tsx) سرو می‌شود — rewrite حذف شد
+      // /bizcard از Next.js (app/bizcard/page.tsx) سرو می‌شود — rewrite حذف شد
       { source: "/bizcard-gen", destination: "/bizcard-gen.html" },
       { source: "/shortener", destination: "/shortener.html" },
       { source: "/qr", destination: "/qr.html" },
-      { source: "/konkour", destination: "/konkour.html" },
       { source: "/privacy", destination: "/privacy.html" },
       { source: "/tashakor", destination: "/tashakor.html" },
       // بلاگ (قابل سرو روی subdomain یا مسیر /blog)

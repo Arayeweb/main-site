@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("bizcards")
-      .select("slug,business_name,category,phone,maps_url,neshan_url,balad_url,address,instagram,telegram,whatsapp,website,hours,logo_url,theme_color")
+      .select("slug,business_name,category,phone,maps_url,neshan_url,balad_url,snap_url,osm_url,address,instagram,telegram,whatsapp,website,hours,logo_url,theme_color")
       .eq("slug", slug)
       .eq("is_active", true)
       .maybeSingle();
@@ -69,6 +69,8 @@ export async function POST(req: NextRequest) {
     maps_url:    str(body.maps_url, 2000),
     neshan_url:  str(body.neshan_url, 2000),
     balad_url:   str(body.balad_url, 2000),
+    snap_url:    str(body.snap_url, 2000),
+    osm_url:     str(body.osm_url, 2000),
     address:     str(body.address, 500),
     instagram:   str(body.instagram, 100),
     telegram:    str(body.telegram, 100),
@@ -126,6 +128,8 @@ export async function PUT(req: NextRequest) {
   if (body.maps_url !== undefined) row.maps_url = str(body.maps_url, 2000);
   if (body.neshan_url !== undefined) row.neshan_url = str(body.neshan_url, 2000);
   if (body.balad_url !== undefined) row.balad_url = str(body.balad_url, 2000);
+  if (body.snap_url !== undefined) row.snap_url = str(body.snap_url, 2000);
+  if (body.osm_url !== undefined) row.osm_url = str(body.osm_url, 2000);
   if (body.address !== undefined) row.address = str(body.address, 500);
   if (body.instagram !== undefined) row.instagram = str(body.instagram, 100);
   if (body.telegram !== undefined) row.telegram = str(body.telegram, 100);
@@ -143,7 +147,7 @@ export async function PUT(req: NextRequest) {
       .from("bizcards")
       .update(row)
       .eq("id", id)
-      .select("id, slug, business_name, category, phone, whatsapp, maps_url, neshan_url, balad_url, address, instagram, telegram, website, hours, logo_url, theme_color, is_active, created_at, updated_at")
+      .select("id, slug, business_name, category, phone, whatsapp, maps_url, neshan_url, balad_url, snap_url, osm_url, address, instagram, telegram, website, hours, logo_url, theme_color, is_active, created_at, updated_at")
       .single();
 
     if (error) {

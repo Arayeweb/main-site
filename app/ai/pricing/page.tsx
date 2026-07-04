@@ -1,152 +1,379 @@
-import Link from "next/link";
-import { IconCheck, IconX } from "../icons";
+"use client";
 
-const PLANS = [
-  {
-    id: "free",
-    name: "رایگان",
-    price: null,
-    desc: "شروع کن و ببین چطور کار می‌کند.",
-    features: [
-      { label: "۵ سؤال با جواب سریع", ok: true },
-      { label: "۲ تست همفکری AI", ok: true },
-      { label: "دسترسی به نقد و اصلاح", ok: false },
-      { label: "تاریخچه گفتگوها", ok: false },
-    ],
-    cta: "شروع رایگان",
-    ctaHref: "/ai/auth",
-    featured: false,
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "۱۴۹,۰۰۰",
-    desc: "برای دانشجوها، فریلنسرها و کسب‌وکارهای کوچک.",
-    features: [
-      { label: "۱۰۰ کردیت ماهانه", ok: true },
-      { label: "جواب سریع نامحدود از کردیت", ok: true },
-      { label: "همفکری AI کامل", ok: true },
-      { label: "تاریخچه گفتگوها", ok: true },
-      { label: "نقد و اصلاح پیشرفته", ok: false },
-    ],
-    cta: "شروع با Pro",
-    ctaHref: "/ai/auth",
-    featured: true,
-    badge: "محبوب‌ترین",
-  },
-  {
-    id: "business",
-    name: "Business",
-    price: "۳۴۹,۰۰۰",
-    desc: "برای کلینیک‌ها، فروشگاه‌ها و کسب‌وکارهای خدماتی.",
-    features: [
-      { label: "کردیت نامحدود", ok: true },
-      { label: "جواب سریع", ok: true },
-      { label: "همفکری AI کامل", ok: true },
-      { label: "نقد و اصلاح پیشرفته", ok: true },
-      { label: "قالب‌های مخصوص کسب‌وکار", ok: true },
-      { label: "تحلیل تبلیغات و محتوا", ok: true },
-    ],
-    cta: "تماس با آرایه",
-    ctaHref: "/ai/auth",
-    featured: false,
-  },
-];
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { PACKAGE_LIST } from "@/lib/aiPackages";
+import { formatFreeAllowanceGuest, formatStarterCredits, MAX_GUEST_DIRECT, MAX_GUEST_BATTLES } from "@/lib/aiFreeMessaging";
+import { trackAiBeginCheckout } from "@/lib/aiTracking";
+import {
+  ARENA_PROMO_STORAGE_KEY,
+  ARENA_REF_STORAGE_KEY,
+  getStoredPromoCode,
+  getUtmParams,
+  pickUtmForDb,
+} from "@/lib/utm";
+import { IconCheck, IconDiamond, IconX } from "../icons";
+
+type PricePreview = {
+  listPrice: number;
+  discount: number;
+  finalPrice: number;
+  codeType: string | null;
+  label: string | null;
+};
 
 export default function PricingPage() {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState("");
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [code, setCode] = useState("");
+  const [codeErr, setCodeErr] = useState("");
+  const [validating, setValidating] = useState(false);
+  const [preview, setPreview] = useState<PricePreview | null>(null);
+  const [selectedPkg, setSelectedPkg] = useState(PACKAGE_LIST[0]?.id || "starter");
+
+  useEffect(() => {
+    getUtmParams();
+
+    fetch("/api/ai/auth")
+      .then((r) => r.json())
+      .then((d) => setAuthed(!!d.authed))
+      .catch(() => setAuthed(false));
+
+    const params = new URLSearchParams(window.location.search);
+
+    const promoFromUrl = params.get("code");
+    const ref = params.get("ref");
+    if (promoFromUrl) {
+      const upper = promoFromUrl.toUpperCase();
+      setCode(upper);
+      try {
+        sessionStorage.setItem(ARENA_PROMO_STORAGE_KEY, upper);
+      } catch {
+        /* ignore */
+      }
+    } else if (ref) {
+      setCode(ref.toUpperCase());
+      try {
+        sessionStorage.setItem(ARENA_REF_STORAGE_KEY, ref.toUpperCase());
+      } catch {
+        /* ignore */
+      }
+    } else {
+      try {
+        const storedPromo = getStoredPromoCode();
+        const storedRef = sessionStorage.getItem(ARENA_REF_STORAGE_KEY);
+        if (storedPromo) setCode(storedPromo);
+        else if (storedRef) setCode(storedRef);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const cleanParams = new URLSearchParams();
+    if (params.get("payment") === "failed" || params.get("payment") === "error") {
+      setFailed(true);
+      cleanParams.set("payment", params.get("payment")!);
+    }
+    const pkg = params.get("package");
+    if (pkg && PACKAGE_LIST.some((p) => p.id === pkg)) {
+      setSelectedPkg(pkg);
+      cleanParams.set("package", pkg);
+    }
+    const nextQs = cleanParams.toString();
+    window.history.replaceState({}, "", nextQs ? `/ai/pricing?${nextQs}` : "/ai/pricing");
+  }, []);
+
+  async function validateCode(pkgId?: string) {
+    const packageId = pkgId || selectedPkg;
+    if (!code.trim()) {
+      setPreview(null);
+      setCodeErr("");
+      return;
+    }
+    if (authed === false) return;
+
+    setValidating(true);
+    setCodeErr("");
+    try {
+      const res = await fetch("/api/ai/promo/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packageId, code: code.trim() }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        setPreview(null);
+        setCodeErr(data?.message || "کد معتبر نیست.");
+        setValidating(false);
+        return;
+      }
+      setPreview({
+        listPrice: data.listPrice,
+        discount: data.discount,
+        finalPrice: data.finalPrice,
+        codeType: data.codeType,
+        label: data.label,
+      });
+    } catch {
+      setCodeErr("خطا در بررسی کد.");
+      setPreview(null);
+    }
+    setValidating(false);
+  }
+
+  useEffect(() => {
+    if (authed && code.trim()) validateCode(selectedPkg);
+    else if (!code.trim()) setPreview(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPkg, authed]);
+
+  function priceFor(pkgId: string) {
+    if (preview && pkgId === selectedPkg && code.trim()) {
+      return preview;
+    }
+    const pkg = PACKAGE_LIST.find((p) => p.id === pkgId);
+    return pkg
+      ? { listPrice: pkg.priceToman, discount: 0, finalPrice: pkg.priceToman, codeType: null, label: null }
+      : null;
+  }
+
+  async function buy(packageId: string) {
+    if (busy) return;
+    setErr("");
+    setSelectedPkg(packageId);
+
+    if (authed === false) {
+      window.location.href = "/ai?login=1";
+      return;
+    }
+
+    const p = priceFor(packageId);
+    trackAiBeginCheckout({
+      packageId,
+      amountToman: p?.finalPrice ?? PACKAGE_LIST.find((x) => x.id === packageId)?.priceToman ?? 0,
+      promoCode: code.trim() || undefined,
+    });
+
+    setBusy(packageId);
+    try {
+      const utm = pickUtmForDb(getUtmParams());
+      const res = await fetch("/api/ai/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          packageId,
+          code: code.trim() || undefined,
+          ...utm,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+
+      if (res.status === 401) {
+        window.location.href = "/ai?login=1";
+        return;
+      }
+      if (res.status === 422) {
+        setErr(data?.message || "کد تخفیف معتبر نیست.");
+        setBusy(null);
+        return;
+      }
+      if (!res.ok || !data?.ok || !data.redirectUrl) {
+        setErr("اتصال به درگاه پرداخت ناموفق بود. دوباره تلاش کن.");
+        setBusy(null);
+        return;
+      }
+      window.location.href = data.redirectUrl;
+    } catch {
+      setErr("خطایی پیش آمد. دوباره تلاش کن.");
+      setBusy(null);
+    }
+  }
+
   return (
     <div>
-      {/* Nav */}
-      <nav className="ai-nav">
-        <div className="ai-container-wide ai-nav-inner">
-          <Link href="/ai" className="ai-logo">
+      <nav className="ar-nav">
+        <div className="ar-container-wide ar-nav-inner">
+          <Link href="/ai" className="ar-logo">
             آرایه <span>AI</span>
           </Link>
-          <div className="ai-nav-links">
-            <Link href="/ai/auth" className="ai-btn ai-btn-primary ai-btn-sm">
-              ورود / ثبت‌نام
+          <div className="ar-nav-links">
+            <Link href="/ai" className="ar-btn ar-btn-primary ar-btn-sm">
+              شروع گفتگو
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="ai-pricing-hero">
-        <div className="ai-container">
-          <h1>پلن مناسب خودت را انتخاب کن</h1>
+      <section className="ar-pricing-hero">
+        <div className="ar-container">
+          <h1>
+            دسترسی به <span className="ar-hl">۵ مدل AI</span> — با تومان
+          </h1>
           <p>
-            از رایگان شروع کن. هر وقت آماده شدی ارتقاء بده.
-            <br />
-            بدون قرارداد بلندمدت — هر ماه تمدید می‌شود.
+            GPT، Claude، Gemini، Grok و DeepSeek — بدون VPN و کارت خارجی.
+            هر پرسش از ۱ کردیت — یا به زبان ساده: {formatStarterCredits(PACKAGE_LIST[0]?.credits ?? 50)}.
+          </p>
+          <p className="ar-pricing-free-hint">
+            مهمان: {formatFreeAllowanceGuest(MAX_GUEST_BATTLES, MAX_GUEST_DIRECT)} — بدون ثبت‌نام
           </p>
         </div>
       </section>
 
-      {/* Plans */}
-      <div className="ai-container">
-        <div className="ai-plans-grid" style={{ marginBottom: 60 }}>
-          {PLANS.map((plan) => (
-            <div
-              key={plan.id}
-              className={`ai-plan-card${plan.featured ? " featured" : ""}`}
+      <div className="ar-container-wide">
+        {failed && (
+          <div className="ar-banner error" style={{ marginBottom: 20 }}>
+            <IconX size={14} />
+            پرداخت ناموفق بود یا لغو شد. دوباره تلاش کن.
+          </div>
+        )}
+        {err && (
+          <div className="ar-banner error" style={{ marginBottom: 20 }}>
+            <IconX size={14} />
+            {err}
+          </div>
+        )}
+
+        <div className="ar-promo-box">
+          <label htmlFor="promo-code">کد تخفیف یا معرفی</label>
+          <div className="ar-promo-row">
+            <input
+              id="promo-code"
+              type="text"
+              placeholder="مثلاً PAGEA20 یا AI-XXXXXX"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              dir="ltr"
+            />
+            <button
+              type="button"
+              className="ar-btn ar-btn-ghost ar-btn-sm"
+              onClick={() => validateCode(selectedPkg)}
+              disabled={validating || !code.trim()}
             >
-              {plan.featured && plan.badge && (
-                <div className="ai-plan-badge">{plan.badge}</div>
-              )}
-              <div>
-                <div className="ai-plan-name">{plan.name}</div>
-                <div className="ai-plan-price" style={{ marginTop: 8 }}>
-                  {plan.price ? (
-                    <>
-                      {plan.price}
-                      <span className="per"> تومان/ماه</span>
-                    </>
-                  ) : (
-                    <span className="free-label">رایگان</span>
-                  )}
-                </div>
-                <div className="ai-plan-desc" style={{ marginTop: 8 }}>
-                  {plan.desc}
-                </div>
-              </div>
-
-              <ul className="ai-plan-features">
-                {plan.features.map((f, i) => (
-                  <li key={i}>
-                    <span className={f.ok ? "check" : "cross"}>
-                      {f.ok ? <IconCheck size={15} /> : <IconX size={14} />}
-                    </span>
-                    <span style={{ color: f.ok ? "var(--ai-text)" : "var(--ai-text3)" }}>
-                      {f.label}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="ai-plan-cta">
-                <Link
-                  href={plan.ctaHref}
-                  className={`ai-btn ai-btn-block${plan.featured ? " ai-btn-primary" : " ai-btn-ghost"}`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
+              {validating ? "…" : "اعمال"}
+            </button>
+          </div>
+          {codeErr && <div className="ar-promo-err">{codeErr}</div>}
+          {preview?.label && (
+            <div className="ar-promo-ok">
+              <IconCheck size={13} />
+              {preview.label} — {preview.discount.toLocaleString("fa-IR")} تومان تخفیف
             </div>
-          ))}
+          )}
         </div>
 
-        {/* Note */}
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: 13,
-            color: "var(--ai-text3)",
-            paddingBottom: 48,
-          }}
-        >
-          پرداخت در نسخه فعلی فعال نشده — با ثبت‌نام رایگان شروع کن.
+        <div className="ar-plans-grid">
+          {PACKAGE_LIST.map((pkg) => {
+            const p = priceFor(pkg.id);
+            const showDiscount = p && p.discount > 0 && pkg.id === selectedPkg && code.trim();
+            return (
+              <div
+                key={pkg.id}
+                className={`ar-plan-card${pkg.featured ? " featured" : ""}${pkg.id === "starter" ? " starter-hero" : ""}`}
+                onMouseEnter={() => setSelectedPkg(pkg.id)}
+              >
+                {pkg.id === "starter" && <div className="ar-plan-badge">پیشنهاد لانچ</div>}
+                {pkg.featured && pkg.badge && pkg.id !== "starter" && (
+                  <div className="ar-plan-badge">{pkg.badge}</div>
+                )}
+
+                <div>
+                  <div className="ar-plan-name">{pkg.name}</div>
+                  <div className="ar-plan-price" style={{ marginTop: 8 }}>
+                    {showDiscount && (
+                      <span className="ar-price-old">
+                        {p!.listPrice.toLocaleString("fa-IR")}
+                      </span>
+                    )}
+                    {(showDiscount ? p!.finalPrice : pkg.priceToman).toLocaleString("fa-IR")}
+                    <span className="per"> تومان</span>
+                  </div>
+                  <div className="ar-plan-desc" style={{ marginTop: 8 }}>
+                    {pkg.desc}
+                  </div>
+                </div>
+
+                <span className="ar-plan-credits">
+                  <IconDiamond size={13} />
+                  {formatStarterCredits(pkg.credits)}
+                </span>
+
+                <ul className="ar-plan-features">
+                  {pkg.features.map((f, i) => (
+                    <li key={i}>
+                      <span className="check">
+                        <IconCheck size={14} />
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  className={`ar-btn ar-btn-block${pkg.featured || pkg.id === "starter" ? " ar-btn-primary" : " ar-btn-ghost"}`}
+                  onClick={() => buy(pkg.id)}
+                  disabled={busy !== null}
+                >
+                  {busy === pkg.id ? "در حال اتصال به درگاه…" : "خرید با زیبال"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="ar-pricing-studios">
+          <h2>هزینه کردیت استودیوها</h2>
+          <table className="ar-pricing-studio-table">
+            <thead>
+              <tr>
+                <th>استودیو</th>
+                <th>مدل</th>
+                <th>کردیت</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>تصویر</td>
+                <td>سبک / خلاق / دقیق</td>
+                <td>۳ – ۶</td>
+              </tr>
+              <tr>
+                <td>ویدیو (۵ ثانیه)</td>
+                <td>Seedance / Kling / Sora / Veo</td>
+                <td>۱۰ / ۵۰ / ۱۲۵ / ۱۵۰</td>
+              </tr>
+              <tr>
+                <td>صدا (TTS)</td>
+                <td>GPT Audio Mini / Pro</td>
+                <td>۲ / ۵</td>
+              </tr>
+              <tr>
+                <td>رونویسی</td>
+                <td>GPT-4o Transcribe</td>
+                <td>۲ / دقیقه</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="ar-pricing-bundle">
+          <div className="ar-pricing-bundle-title">Content & Sales Bundle</div>
+          <p className="ar-pricing-bundle-desc">
+            ۳۰ ریلز + ۳۰ کپشن + ۲۰ دایرکت + کمپین‌ها + ۱ ماه AI Pro — برای محتوا و فروش، نه فقط چت خام.
+          </p>
+          <Link href="/ai/content-sales" className="ar-btn ar-btn-primary ar-btn-sm">
+            مشاهده پکیج · ۵۹۰ هزار تومان
+          </Link>
+        </div>
+
+        <div className="ar-pricing-note">
+          پرداخت امن از طریق درگاه زیبال انجام می‌شود.
           <br />
-          برای ارتقاء با پشتیبانی آرایه تماس بگیر.
+          با کد معرفی دوست، ۱۰٪ تخفیف می‌گیری — معرف هم ۱۰ کردیت پاداش می‌گیرد.
+          <br />
+          پرسش‌ها بلافاصله بعد از پرداخت به حسابت اضافه می‌شوند و منقضی نمی‌شوند.
         </div>
       </div>
     </div>

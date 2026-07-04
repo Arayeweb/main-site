@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSession, type AdminRole } from "@/lib/auth";
 import { normalizeContact } from "@/lib/validateContact";
+import { serverDebugLog } from "@/lib/debugLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ function str(v: unknown, max = 500): string | null {
 // لیست لیدهای CRM با فیلتر وضعیت/مالک/جستجو و صفحه‌بندی.
 export async function GET(req: NextRequest) {
   const session = salesSession(req);
+  serverDebugLog('api/sales/leads:GET', 'session_check', { hasSession: !!session, role: session?.role ?? null }, 'H3');
   if (!session) return unauthorized();
 
   const sp = req.nextUrl.searchParams;
@@ -76,9 +78,11 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await query;
     if (error) {
+      serverDebugLog('api/sales/leads:GET', 'db_error', { error: error.message }, 'H5');
       console.error("[api/sales/leads] GET error:", error.message);
       return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
     }
+    serverDebugLog('api/sales/leads:GET', 'success', { count: (data || []).length }, 'H1');
     return NextResponse.json({
       ok: true,
       leads: data || [],

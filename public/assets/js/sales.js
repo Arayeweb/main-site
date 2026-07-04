@@ -28,14 +28,10 @@
     chatbot: "چت‌بات",
     telegram_bot: "ربات تلگرام",
     partner_signup_form: "همکار فروش",
-    spaces_hero: "فرم هرو فضاها",
-    spaces_form: "فرم کامل فضاها",
-    spaces_chatbot: "چت‌بات فضاها",
   };
   var PAGE_LABELS = {
     index: "صفحه اصلی", clinic: "کلینیک", doctors: "پزشکان",
-    restaurant: "رستوران", spaces: "فضاها", googlesabt: "ثبت در گوگل",
-    academy: "آکادمی", konkour: "کنکور",
+    restaurant: "رستوران", googlesabt: "ثبت در گوگل",
   };
 
   /* ---------- helpers ---------- */

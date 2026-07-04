@@ -128,6 +128,16 @@ html,body{height:100%;}
   box-shadow:0 10px 22px -10px rgba(255,109,0,.7);
 }
 .bc-cta.balad:hover{box-shadow:0 14px 28px -10px rgba(255,109,0,.85);}
+.bc-cta.snap{
+  color:#fff;background:linear-gradient(135deg,#00d170,#00a85a);
+  box-shadow:0 10px 22px -10px rgba(0,209,112,.7);
+}
+.bc-cta.snap:hover{box-shadow:0 14px 28px -10px rgba(0,209,112,.85);}
+.bc-cta.osm{
+  color:#fff;background:linear-gradient(135deg,#7ebc6f,#5a9e4b);
+  box-shadow:0 10px 22px -10px rgba(94,158,75,.7);
+}
+.bc-cta.osm:hover{box-shadow:0 14px 28px -10px rgba(94,158,75,.85);}
 .bc-cta.whatsapp{
   color:#fff;background:linear-gradient(135deg,#25d366,#1da851);
   box-shadow:0 10px 22px -10px rgba(37,211,102,.7);

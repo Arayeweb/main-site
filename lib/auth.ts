@@ -38,8 +38,27 @@ export function verifyPassword(plain: string, stored: string): boolean {
 // ---------- توکن نشست کاربران پنل ----------
 // قالب: base64url(payloadJSON).hmacHex ؛ payload شامل sub، role، exp (ms).
 
-export type AdminRole = "admin" | "sales" | "support";
-export const ROLES: AdminRole[] = ["admin", "sales", "support"];
+// نقش‌های پنل آژانس: admin | sales | support
+// نقش‌های پنل عملیات Araaye AI (app/admin/ai-ops): ai_superadmin | ai_finance | ai_support | ai_ops
+export type AdminRole =
+  | "admin"
+  | "sales"
+  | "support"
+  | "ai_superadmin"
+  | "ai_finance"
+  | "ai_support"
+  | "ai_ops";
+export const ROLES: AdminRole[] = [
+  "admin",
+  "sales",
+  "support",
+  "ai_superadmin",
+  "ai_finance",
+  "ai_support",
+  "ai_ops",
+];
+
+export const AI_OPS_ROLES: AdminRole[] = ["ai_superadmin", "ai_finance", "ai_support", "ai_ops"];
 
 export interface AdminSession {
   userId: string;

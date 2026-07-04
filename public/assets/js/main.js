@@ -17,6 +17,12 @@
   const track = (window.track = function (event, props) {
     const payload = Object.assign({ event: event, ts: Date.now(), page: location.pathname }, props || {});
     window.dataLayer.push(payload);
+    fetch("/api/analytics/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(function () {});
     if (ANALYTICS_ENDPOINT) {
       fetch(ANALYTICS_ENDPOINT, {
         method: "POST",

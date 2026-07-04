@@ -6,7 +6,7 @@
   <title>پنل مدیریت | آرایه</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0E1A2B" />
-  <link rel="icon" href="/assets/logo-icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="preload" href="/assets/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/assets/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/assets/css/styles.css" />
@@ -444,6 +444,9 @@
                 <option value="chatbot">چت‌بات</option>
                 <option value="telegram_bot">ربات تلگرام</option>
                 <option value="partner_signup_form">همکاری در فروش</option>
+                <option value="googlesabt_multistep">ثبت گوگل — فرم</option>
+                <option value="googlesabt_checkout">ثبت گوگل — در انتظار پرداخت</option>
+                <option value="googlesabt_payment_confirmed">ثبت گوگل — پرداخت شده</option>
               </select>
               <select id="leadPageFilter">
                 <option value="">همه صفحات</option>
@@ -451,7 +454,6 @@
                 <option value="clinic">کلینیک</option>
                 <option value="restaurant">رستوران</option>
                 <option value="doctors">پزشکان</option>
-                <option value="spaces">فضاها (Spaces)</option>
                 <option value="googlesabt">ثبت در گوگل</option>
               </select>
               <input type="text" id="leadUtmFilter" placeholder="utm_source…" />
@@ -491,7 +493,7 @@
           <div class="admin-card" id="newLinkCard" hidden>
             <div class="admin-card-head"><span class="admin-card-code">ساخت لینک کوتاه</span></div>
             <div class="admin-grid" style="margin-top:14px">
-              <div class="field col-full"><label>لینک مقصد (کامل با UTM) *</label><input type="text" data-nl="target_url" placeholder="https://araaye.com/spaces?utm_source=instagram&utm_medium=bio&utm_campaign=spring" dir="ltr" /></div>
+              <div class="field col-full"><label>لینک مقصد (کامل با UTM) *</label><input type="text" data-nl="target_url" placeholder="https://araaye.com/doctors?utm_source=instagram&utm_medium=bio&utm_campaign=spring" dir="ltr" /></div>
               <div class="field"><label>کد دلخواه (خالی = خودکار)</label><input type="text" data-nl="slug" placeholder="ig-spring" dir="ltr" /></div>
               <div class="field"><label>یادداشت (اختیاری)</label><input type="text" data-nl="title" placeholder="مثلاً کمپین بهار اینستاگرام" /></div>
             </div>
@@ -788,6 +790,14 @@
             <h2>کارت ویزیت دیجیتال</h2>
             <a class="btn btn-ghost btn-sm" href="/bizcard" target="_blank">↗ صفحه عمومی</a>
           </div>
+          <div class="bc-card-box" style="margin-bottom:18px;background:#e8f0fe;border-color:#c6d3ff">
+            <h2 style="color:#4285F4;font-size:.95rem">Workflow ثبت گوگل (پکیج محبوب+)</h2>
+            <p style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:8px">
+              ۱) لید <b>googlesabt_payment_confirmed</b> را در تب لیدها پیدا کنید<br>
+              ۲) کارت جدید بسازید — لینک maps/neshan/balad/snap/osm را پر کنید<br>
+              ۳) کارت را approve کنید → تحویل <b>/b/slug</b> به مشتری
+            </p>
+          </div>
 
           <div class="bc-wrap">
 
@@ -830,6 +840,14 @@
                   <div>
                     <label>لینک بلد</label>
                     <input id="bc_balad_url" type="url" placeholder="https://balad.ir/..." />
+                  </div>
+                  <div>
+                    <label>لینک اسنپ</label>
+                    <input id="bc_snap_url" type="url" placeholder="https://snapp.ir/..." />
+                  </div>
+                  <div>
+                    <label>لینک OpenStreetMap</label>
+                    <input id="bc_osm_url" type="url" placeholder="https://www.openstreetmap.org/..." />
                   </div>
                   <div>
                     <label>اینستاگرام</label>
@@ -1099,7 +1117,7 @@
         btn.textContent = "در حال ثبت...";
 
         var body = {};
-        ["bc_business_name","bc_slug","bc_category","bc_phone","bc_maps_url","bc_neshan_url","bc_balad_url","bc_address","bc_hours","bc_instagram","bc_telegram","bc_website"]
+        ["bc_business_name","bc_slug","bc_category","bc_phone","bc_maps_url","bc_neshan_url","bc_balad_url","bc_snap_url","bc_osm_url","bc_address","bc_hours","bc_instagram","bc_telegram","bc_website"]
           .forEach(function(id) {
             var v = document.getElementById(id).value.trim();
             if (v) body[id.replace("bc_","")] = v;

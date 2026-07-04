@@ -1,0 +1,57 @@
+export type PanelType = 'manager' | 'sales' | 'support';
+
+export interface SidebarItem {
+  label: string;
+  href: string;
+  iconName: string;
+}
+
+export const managerSidebarItems: SidebarItem[] = [
+  { label: 'داشبورد', href: '/admin/manager', iconName: 'LayoutDashboard' },
+  { label: 'مشتریان', href: '/admin/manager/clients', iconName: 'Users' },
+  { label: 'پروژه‌ها', href: '/admin/manager/projects', iconName: 'FolderOpen' },
+  { label: 'تسک‌ها', href: '/admin/manager/tasks', iconName: 'CheckSquare' },
+  { label: 'قراردادها', href: '/admin/manager/contracts', iconName: 'FileCheck' },
+  { label: 'پیشنهادها', href: '/admin/manager/proposals', iconName: 'FileText' },
+  { label: 'کمپین‌ها', href: '/admin/manager/campaigns', iconName: 'Megaphone' },
+  { label: 'آمار و بازاریابی', href: '/admin/manager/analytics', iconName: 'LineChart' },
+  { label: 'منابع لید', href: '/admin/manager/lead-sources', iconName: 'Link2' },
+  { label: 'درخواست تغییرات', href: '/admin/manager/change-requests', iconName: 'GitPullRequest' },
+  { label: 'پلن‌های پشتیبانی', href: '/admin/manager/maintenance', iconName: 'Wrench' },
+  { label: 'پرداخت‌ها', href: '/admin/manager/payments', iconName: 'CreditCard' },
+  { label: 'تیم', href: '/admin/manager/team', iconName: 'UserCheck' },
+  { label: 'تنظیمات', href: '/admin/manager/settings', iconName: 'Settings' },
+];
+
+export const salesSidebarItems: SidebarItem[] = [
+  { label: 'داشبورد فروش', href: '/admin/sales', iconName: 'BarChart2' },
+  { label: 'لیدها', href: '/admin/sales/leads', iconName: 'UserPlus' },
+  { label: 'پایپ‌لاین', href: '/admin/sales/pipeline', iconName: 'Kanban' },
+  { label: 'پیگیری‌های امروز', href: '/admin/sales/followups', iconName: 'Bell' },
+  { label: 'مشتریان', href: '/admin/sales/clients', iconName: 'Users' },
+  { label: 'پیشنهاد قیمت‌ها', href: '/admin/sales/proposals', iconName: 'FileText' },
+  { label: 'قراردادها', href: '/admin/sales/contracts', iconName: 'FileCheck' },
+  { label: 'کمپین‌ها', href: '/admin/sales/campaigns', iconName: 'Megaphone' },
+  { label: 'منابع لید', href: '/admin/sales/lead-sources', iconName: 'Link2' },
+];
+
+export const supportSidebarItems: SidebarItem[] = [
+  { label: 'داشبورد پشتیبانی', href: '/admin/support', iconName: 'HeadphonesIcon' },
+  { label: 'تیکت‌ها', href: '/admin/support/tickets', iconName: 'Ticket' },
+  { label: 'مشتریان', href: '/admin/support/clients', iconName: 'Users' },
+  { label: 'پروژه‌ها', href: '/admin/support/projects', iconName: 'FolderOpen' },
+  { label: 'درخواست تغییرات', href: '/admin/support/change-requests', iconName: 'GitPullRequest' },
+  { label: 'پلن‌های پشتیبانی', href: '/admin/support/maintenance', iconName: 'Wrench' },
+];
+
+export const PANEL_LABELS: Record<PanelType, string> = {
+  manager: 'مدیریت',
+  sales: 'فروش',
+  support: 'پشتیبانی',
+};
+
+export function getSidebarItems(panel: PanelType): SidebarItem[] {
+  if (panel === 'manager') return managerSidebarItems;
+  if (panel === 'sales') return salesSidebarItems;
+  return supportSidebarItems;
+}

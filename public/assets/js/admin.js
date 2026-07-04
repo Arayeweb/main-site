@@ -6,10 +6,32 @@
   "use strict";
 
   /* ---------- labels ---------- */
-  var SOURCE_LABELS = { multistep_form: "فرم چندمرحله‌ای", hero_form: "فرم هرو", chatbot: "چت‌بات", telegram_bot: "ربات تلگرام", partner_signup_form: "همکار فروش" };
+  var SOURCE_LABELS = {
+    multistep_form: "فرم چندمرحله‌ای",
+    hero_form: "فرم هرو",
+    chatbot: "چت‌بات",
+    telegram_bot: "ربات تلگرام",
+    partner_signup_form: "همکار فروش",
+    googlesabt_multistep: "ثبت گوگل — فرم",
+    googlesabt_checkout: "ثبت گوگل — در انتظار پرداخت",
+    googlesabt_payment_confirmed: "ثبت گوگل — پرداخت شده ✓",
+    doctors_multistep: "پزشکان — فرم",
+    doctors_checkout: "پزشکان — در انتظار پرداخت",
+    doctors_payment_confirmed: "پزشکان — پرداخت شده ✓",
+  };
   var BUDGET_LABELS = { lt15: "زیر ۱۵م.ت", "15-40": "۱۵–۴۰م.ت", "40-100": "۴۰–۱۰۰م.ت", gt100: "بالای ۱۰۰م.ت", unsure: "نامشخص" };
-  var PLAN_LABELS = { bronze: "برنزی", silver: "نقره‌ای", gold: "طلایی" };
-  var PAGE_LABELS = { index: "صفحه اصلی", clinic: "کلینیک", restaurant: "رستوران", doctors: "پزشکان", spaces: "فضاها (Spaces)", googlesabt: "ثبت در گوگل" };
+  var PLAN_LABELS = {
+    bronze: "برنزی",
+    silver: "نقره‌ای",
+    gold: "طلایی",
+    basic: "دیده شو",
+    popular: "محبوب",
+    vip: "کامل",
+    matab: "مطب",
+    clinic: "کلینیک",
+    center: "مرکز درمانی",
+  };
+  var PAGE_LABELS = { index: "صفحه اصلی", clinic: "کلینیک", restaurant: "رستوران", doctors: "پزشکان", googlesabt: "ثبت در گوگل" };
   var PROJECT_STATUS = {
     intake: "دریافت اطلاعات",
     design: "طراحی",
@@ -584,6 +606,13 @@
     var utmHtml = utmParts.length
       ? '<div class="utm-row">UTM: <b>' + utmParts.map(esc).join("</b> / <b>") + "</b></div>"
       : "";
+    var detailHtml = l.detail
+      ? '<div class="utm-row" style="margin-top:6px;font-size:.8rem;color:var(--muted)">' + esc(l.detail) + "</div>"
+      : "";
+    var gsHint = "";
+    if (l.source === "googlesabt_payment_confirmed") {
+      gsHint = '<div class="utm-row" style="margin-top:8px;padding:8px 10px;background:#e8f0fe;border-radius:8px;font-size:.78rem;color:#1b6ef3;font-weight:700">→ لید پرداخت‌شده: در تب کارت ویزیت، bizcard بسازید و maps/neshan/balad/snap/osm را پر کنید سپس approve.</div>';
+    }
     return (
       '<div class="admin-card lead-' + esc(l.source || "") + '">' +
         '<div class="admin-card-head">' +
@@ -603,6 +632,8 @@
           (l.intent ? '<span>قصد: <b>' + esc(l.intent) + "</b></span>" : "") +
         "</div>" +
         utmHtml +
+        detailHtml +
+        gsHint +
       "</div>"
     );
   }

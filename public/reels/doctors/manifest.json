@@ -1,0 +1,59 @@
+{
+  "product": "Araaye Doctors",
+  "url": "https://araaye.com/doctors",
+  "format": "Instagram Reels 9:16 + Hero embed",
+  "language": "fa-IR",
+  "generated_with": "Higgsfield (seedance_2_0 + marketing_studio_video)",
+  "hero_reel": "reel-01-patient-books-2am.mp4",
+  "reels": [
+    {
+      "id": 1,
+      "file": "reel-01-patient-books-2am.mp4",
+      "format": "POV Hook",
+      "viral_pattern": "POV + passive income / while you sleep",
+      "hook_fa": "POV: ساعت ۲ بامداد — بیمار نوبت گرفت و شما خوابید",
+      "script_fa": "دیگه تلفن نوبت نمی‌گیرید. بیمار خودش زمان خالی رو می‌بینه و رزرو می‌کنه. سایت مطب با نوبت‌دهی آنلاین — آرایه.",
+      "caption_fa": "نوبت‌دهی ۲۴ ساعته بدون تلفن 📱\nسایت مطب + چت‌بات + دامنه و سرور\n\naraaye.com/doctors\n\n#مطب #پزشک #نوبت_دهی",
+      "duration_sec": 8,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 2,
+      "file": "reel-02-before-after-schedule.mp4",
+      "format": "Before/After",
+      "viral_pattern": "Empty calendar → full bookings",
+      "hook_fa": "قبل: تقویم خالی. بعد: ۳ هفته پر",
+      "script_fa": "قبل: فقط تلفن و پیامک دستی. بعد: سایت با نوبت آنلاین و یادآوری خودکار. تحویل نسخه اول ۲ روز.",
+      "caption_fa": "تفاوت واقعی سایت بیمارآور 🩺\nاز ۱۴/۹ میلیون — پیش‌پرداخت آنلاین\n\n#کلینیک #دندانپزشک",
+      "duration_sec": 10,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 3,
+      "file": "reel-03-doctor-ugc-shocked.mp4",
+      "format": "UGC Testimonial",
+      "viral_pattern": "Shocked reaction + proof",
+      "hook_fa": "فکر نمی‌کردم بیمار از گوگل بیاد…",
+      "script_fa": "دکتر ایرانی در مطب، نگاه به لپ‌تاپ با تعجب. نشان می‌دهد بیماران آنلاین نوبت گرفته‌اند. UGC authentic.",
+      "caption_fa": "نتیجه واقعی همکاران ما ✓\nنمونه سایت رایگان → araaye.com/demo\n\n#پزشک_ایرانی #سایت_مطب",
+      "duration_sec": 12,
+      "model": "marketing_studio_video"
+    },
+    {
+      "id": 4,
+      "file": "reel-04-chatbot-patients.mp4",
+      "format": "Problem-Solution",
+      "viral_pattern": "Same question 50x → chatbot answers",
+      "hook_fa": "هزینه ویزیت چنده؟ — دیگه جواب نده",
+      "script_fa": "چت‌بات روی اطلاعات مطب شما آموزش می‌بینه. بیمار سؤال می‌پرسه، جواب فوری. شما فقط ویزیت.",
+      "caption_fa": "چت‌بات پاسخگوی بیماران 🤖\nهمه‌چیز با آرایه — دامنه، سرور، درگاه\n\n#چت_بات #مطب_آنلاین",
+      "duration_sec": 8,
+      "model": "seedance_2_0"
+    }
+  ],
+  "posting_strategy": {
+    "best_times_iran": ["11:00-13:00", "20:00-22:00"],
+    "frequency": "3-4 per week on Instagram + embed hero reel on /doctors",
+    "cta": "araaye.com/doctors — قیمت مطب من را بگیر"
+  }
+}

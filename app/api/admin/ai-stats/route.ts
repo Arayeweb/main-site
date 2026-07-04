@@ -30,21 +30,41 @@ export async function GET(req: NextRequest) {
       planCounts[p] = (planCounts[p] || 0) + 1;
     }
 
-    // Total conversations
+    // Total battles
     const { count: totalConvs } = await supabase
-      .from("ai_conversations")
+      .from("ai_battles")
       .select("*", { count: "exact", head: true });
 
-    // Conversations by mode
-    const { data: convsByMode } = await supabase
-      .from("ai_conversations")
-      .select("mode");
+    // Battles by tier
+    const { data: battlesByTier } = await supabase
+      .from("ai_battles")
+      .select("tier");
 
     const modeCounts: Record<string, number> = {};
-    for (const c of convsByMode || []) {
-      const m = (c.mode as string) || "quick";
+    for (const c of battlesByTier || []) {
+      const m = (c.tier as string) || "economy";
       modeCounts[m] = (modeCounts[m] || 0) + 1;
     }
+
+    // Revenue (paid orders) vs API cost — margin monitoring
+    const { data: paidOrders } = await supabase
+      .from("ai_orders")
+      .select("amount_toman")
+      .eq("status", "paid");
+    const totalRevenueToman = (paidOrders || []).reduce(
+      (sum, o) => sum + ((o.amount_toman as number) || 0),
+      0
+    );
+
+    const { data: costRows } = await supabase
+      .from("ai_battles")
+      .select("cost_usd")
+      .order("created_at", { ascending: false })
+      .range(0, 4999);
+    const totalCostUsd = (costRows || []).reduce(
+      (sum, r) => sum + Number(r.cost_usd || 0),
+      0
+    );
 
     // Usage stats — last 1000 rows for performance
     const { data: usageRows } = await supabase
@@ -122,6 +142,8 @@ export async function GET(req: NextRequest) {
       total_users: totalUsers ?? 0,
       total_conversations: totalConvs ?? 0,
       total_tokens: totalTokens,
+      total_revenue_toman: totalRevenueToman,
+      total_cost_usd: Number(totalCostUsd.toFixed(4)),
       users_by_plan: planCounts,
       conversations_by_mode: modeCounts,
       tokens_by_mode: tokensByMode,

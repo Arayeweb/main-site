@@ -1,0 +1,28 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import ChatWidget from "./ChatWidget";
+import StickyMobileCta from "./home/StickyMobileCta";
+
+// Renders public-site chrome (ChatWidget) only on non-admin routes.
+// /ai محصول مستقل است — ویجت چت سایت اصلی نباید روی آن بیاید.
+// /seo چت‌بات اختصاصی سئو دارد (SeoChatWidget) — ویجت عمومی نباید بیاید.
+// /doctors چت‌بات اختصاصی پزشکان دارد (DoctorsChatWidget) — ویجت عمومی نباید بیاید.
+// /demo نمونه‌سایت‌های دموی فروش هستند — ویجت سایت اصلی روی آن‌ها گیج‌کننده است.
+export default function PublicOnlyChrome() {
+  const pathname = usePathname();
+  if (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/ai") ||
+    pathname.startsWith("/seo") ||
+    pathname.startsWith("/doctors") ||
+    pathname.startsWith("/demo")
+  )
+    return null;
+  return (
+    <>
+      <ChatWidget />
+      {pathname === "/" ? <StickyMobileCta /> : null}
+    </>
+  );
+}

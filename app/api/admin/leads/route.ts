@@ -5,8 +5,17 @@ import { getSession } from "@/lib/auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SOURCES = new Set(["multistep_form", "chatbot", "hero_form", "telegram_bot", "partner_signup_form"]);
-const PAGES = new Set(["index", "clinic", "doctors", "restaurant", "spaces", "googlesabt"]);
+const SOURCES = new Set([
+  "multistep_form",
+  "chatbot",
+  "hero_form",
+  "telegram_bot",
+  "partner_signup_form",
+  "googlesabt_multistep",
+  "googlesabt_checkout",
+  "googlesabt_payment_confirmed",
+]);
+const PAGES = new Set(["index", "clinic", "doctors", "restaurant", "googlesabt"]);
 const PAGE_SIZE = 50;
 
 function requireAny(req: NextRequest) {
@@ -32,7 +41,7 @@ export async function GET(req: NextRequest) {
     let query = supabase
       .from("leads")
       .select(
-        "id, created_at, source, page, name, contact, goal, budget, plan, channel, intent, utm_source, utm_medium, utm_campaign, utm_content, utm_term, referrer"
+        "id, created_at, source, page, name, contact, goal, budget, plan, channel, intent, detail, utm_source, utm_medium, utm_campaign, utm_content, utm_term, referrer, raw"
       )
       .order("created_at", { ascending: false })
       .range(offset, offset + PAGE_SIZE - 1);

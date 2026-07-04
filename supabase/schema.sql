@@ -60,6 +60,30 @@ create index if not exists page_views_utm_campaign_idx on public.page_views (utm
 
 alter table public.page_views enable row level security;
 
+-- رویدادهای GTM / analytics (ثبت از pushGtmEvent)
+create table if not exists public.analytics_events (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  event_name   text not null,
+  page         text,
+  source       text,
+  location     text,
+  package      text,
+  promo_code   text,
+  utm_source   text,
+  utm_medium   text,
+  utm_campaign text,
+  utm_content  text,
+  utm_term     text,
+  payload      jsonb,
+  user_agent   text
+);
+
+create index if not exists analytics_events_created_at_idx on public.analytics_events (created_at desc);
+create index if not exists analytics_events_event_name_idx on public.analytics_events (event_name, created_at desc);
+
+alter table public.analytics_events enable row level security;
+
 -- RLS فعال و بدون policy عمومی:
 -- مرورگر/anon نمی‌تواند مستقیم بنویسد یا بخواند. فقط service_role (API route سمت سرور) دسترسی دارد.
 alter table public.leads enable row level security;
@@ -285,6 +309,8 @@ alter table public.bizcards add column if not exists logo_url text;
 alter table public.bizcards add column if not exists theme_color text not null default 'blue';
 alter table public.bizcards add column if not exists neshan_url text;
 alter table public.bizcards add column if not exists balad_url text;
+alter table public.bizcards add column if not exists snap_url text;
+alter table public.bizcards add column if not exists osm_url text;
 alter table public.bizcards add column if not exists updated_at timestamptz;
 
 -- ساخت bucket آپلود تصویر در Supabase Dashboard → Storage:
@@ -310,6 +336,9 @@ create table if not exists public.ai_users (
   plan             text not null default 'free', -- free | pro | business
   credits          int  not null default 5,      -- اعتبار باقی‌مانده
   brainstorm_demos int  not null default 2,      -- دمو رایگان همفکری برای کاربر free
+  utm_source       text,
+  utm_medium       text,
+  utm_campaign     text,
   created_at       timestamptz default now(),
   last_login_at    timestamptz
 );
@@ -364,6 +393,136 @@ create table if not exists public.ai_usage (
 );
 create index if not exists ai_usage_user_idx on public.ai_usage (user_id, created_at desc);
 alter table public.ai_usage enable row level security;
+
+-- ---------------------------------------------------------
+-- Araaye Arena — Battle Mode (نسخه جدید araaye.com/ai)
+-- ---------------------------------------------------------
+
+-- نبردها/مقایسه‌ها: هر ردیف = یک پرامپت + پاسخ(ها) + رأی کاربر
+-- حالت‌ها: نبرد ناشناس (tier=economy|standard|premium)،
+-- مقایسه انتخابی (tier=side_by_side)، گفتگوی مستقیم (tier=direct — model_b/response_b خالی)
+create table if not exists public.ai_battles (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid references public.ai_users(id) on delete cascade,
+  guest_token  text,
+  prompt       text not null,
+  model_a      text not null,
+  model_b      text not null default '',
+  response_a   text not null,
+  response_b   text not null default '',
+  tier         text not null default 'economy',
+  mode_kind    text not null default 'text',
+  credit_cost  int  not null default 1,
+  cost_usd     numeric(10,6),
+  tokens_used  int,
+  winner       text,
+  voted_at     timestamptz,
+  is_public    boolean not null default false,
+  share_slug   text unique,
+  attachments  jsonb not null default '[]',
+  thread_id    uuid references public.ai_battles(id) on delete cascade,
+  persona_key  text,
+  created_at   timestamptz default now()
+);
+create index if not exists ai_battles_user_idx on public.ai_battles (user_id, created_at desc);
+create index if not exists ai_battles_thread_idx on public.ai_battles (thread_id, created_at asc);
+create index if not exists ai_battles_share_slug_idx on public.ai_battles (share_slug) where share_slug is not null;
+create index if not exists ai_battles_guest_token_idx on public.ai_battles (guest_token) where guest_token is not null;
+alter table public.ai_battles enable row level security;
+
+create table if not exists public.ai_promo_codes (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  code         text not null unique,
+  kind         text not null default 'percent',
+  value        numeric(14,0) not null,
+  max_uses     int not null default 1000,
+  used_count   int not null default 0,
+  expires_at   timestamptz,
+  active       boolean not null default true
+);
+create index if not exists ai_promo_codes_code_idx on public.ai_promo_codes (upper(code));
+alter table public.ai_promo_codes enable row level security;
+
+insert into public.ai_promo_codes (code, kind, value, max_uses)
+values
+  ('WELCOME10', 'percent', 10, 1000),
+  ('SUMMER20', 'percent', 20, 500),
+  ('PAGEA20', 'percent', 20, 50),
+  ('PAGEB20', 'percent', 20, 50),
+  ('PAGEC20', 'percent', 20, 50),
+  ('PAGED20', 'percent', 20, 50),
+  ('PAGEE20', 'percent', 20, 50)
+on conflict (code) do nothing;
+
+create table if not exists public.ai_referral_codes (
+  id               uuid primary key default gen_random_uuid(),
+  created_at       timestamptz not null default now(),
+  user_id          uuid not null unique references public.ai_users(id) on delete cascade,
+  code             text not null unique,
+  total_referrals  int not null default 0,
+  credits_earned   int not null default 0
+);
+create index if not exists ai_referral_codes_code_idx on public.ai_referral_codes (upper(code));
+alter table public.ai_referral_codes enable row level security;
+
+create table if not exists public.ai_referral_redemptions (
+  id                uuid primary key default gen_random_uuid(),
+  created_at        timestamptz not null default now(),
+  user_id           uuid not null unique references public.ai_users(id) on delete cascade,
+  referral_code_id  uuid not null references public.ai_referral_codes(id) on delete cascade,
+  order_id          uuid not null references public.ai_orders(id) on delete cascade
+);
+create index if not exists ai_referral_redemptions_code_idx on public.ai_referral_redemptions (referral_code_id);
+alter table public.ai_referral_redemptions enable row level security;
+
+-- سفارش‌های خرید پکیج اعتباری (زیبال)
+create table if not exists public.ai_orders (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references public.ai_users(id) on delete cascade,
+  package_id      text not null,
+  amount_toman    int  not null,
+  list_amount_toman int,
+  discount_toman  int not null default 0,
+  promo_code      text,
+  referral_code   text,
+  referrer_user_id uuid references public.ai_users(id) on delete set null,
+  utm_source text,
+  utm_medium text,
+  utm_campaign text,
+  credits_granted int  not null,
+  zibal_track_id  text unique,
+  status          text not null default 'pending',
+  paid_at         timestamptz,
+  created_at      timestamptz default now()
+);
+create index if not exists ai_orders_user_idx on public.ai_orders (user_id, created_at desc);
+create index if not exists ai_orders_track_idx on public.ai_orders (zibal_track_id);
+alter table public.ai_orders enable row level security;
+
+-- Storage bucket آپلود تصویر AI (vision + image gen)
+-- Dashboard → Storage → ai-uploads | Public | Max 4MB | jpeg/png/webp
+-- Path: {user_id}/{uuid}.{ext} — upload فقط از API با service role
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('ai-uploads', 'ai-uploads', true, 4194304, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do nothing;
+
+-- تیکت‌های پشتیبانی کاربران AI (araaye.com/ai/support)
+create table if not exists public.ai_support_tickets (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references public.ai_users(id) on delete cascade,
+  subject     text not null,
+  body        text not null,
+  status      text not null default 'open',   -- open | answered | closed
+  priority    text not null default 'normal', -- low | normal | high
+  admin_reply text,
+  replied_at  timestamptz,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create index if not exists ai_support_tickets_user_idx on public.ai_support_tickets (user_id, created_at desc);
+create index if not exists ai_support_tickets_status_idx on public.ai_support_tickets (status, created_at desc);
+alter table public.ai_support_tickets enable row level security;
 
 -- =========================================================
 -- سیستم معرفی (Referral / Affiliate)
@@ -449,3 +608,327 @@ create index if not exists freelance_scanned_idx on public.freelance_projects (s
 create index if not exists freelance_status_idx  on public.freelance_projects (status);
 create index if not exists freelance_source_idx  on public.freelance_projects (source);
 alter table public.freelance_projects enable row level security;
+
+-- ===== پنل عملیاتی آرایه (CRM) =====
+-- see also: supabase/migrations/20250702_admin_ops.sql
+
+create table if not exists public.crm_clients (
+  id              uuid primary key default gen_random_uuid(),
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now(),
+  name            text not null,
+  client_type     text not null default 'other',
+  phone           text,
+  email           text,
+  address         text,
+  city            text,
+  website         text,
+  instagram       text,
+  lead_source     text,
+  sales_owner     text,
+  project_owner   text,
+  status          text not null default 'active_client',
+  internal_note   text,
+  total_revenue   numeric(14,0) not null default 0,
+  last_contact_at timestamptz
+);
+create index if not exists crm_clients_status_idx on public.crm_clients (status);
+create index if not exists crm_clients_name_idx on public.crm_clients (name);
+alter table public.crm_clients enable row level security;
+
+create table if not exists public.crm_tasks (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+  title        text not null,
+  description  text,
+  project_id   uuid references public.support_projects (id) on delete set null,
+  client_id    uuid references public.crm_clients (id) on delete set null,
+  project_name text,
+  client_name  text,
+  assigned_to  text,
+  priority     text not null default 'medium',
+  status       text not null default 'todo',
+  due_date     date,
+  checklist    jsonb not null default '[]'
+);
+create index if not exists crm_tasks_status_idx on public.crm_tasks (status);
+create index if not exists crm_tasks_due_idx on public.crm_tasks (due_date);
+alter table public.crm_tasks enable row level security;
+
+create table if not exists public.crm_contracts (
+  id                uuid primary key default gen_random_uuid(),
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now(),
+  contract_number   text not null unique,
+  client_id         uuid references public.crm_clients (id) on delete set null,
+  client_name       text not null,
+  contract_type     text not null default 'website_design',
+  amount            numeric(14,0) not null default 0,
+  start_date        date,
+  end_date          date,
+  signature_status  text not null default 'draft',
+  payment_status    text not null default 'unpaid',
+  scope_of_work     text,
+  deliverables      jsonb not null default '[]',
+  payment_terms     text,
+  support_terms     text,
+  project_id        uuid references public.support_projects (id) on delete set null,
+  notes             text
+);
+create index if not exists crm_contracts_client_idx on public.crm_contracts (client_id);
+create index if not exists crm_contracts_status_idx on public.crm_contracts (signature_status);
+alter table public.crm_contracts enable row level security;
+
+create table if not exists public.crm_change_requests (
+  id                    uuid primary key default gen_random_uuid(),
+  created_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now(),
+  title                 text not null,
+  description           text,
+  client_id             uuid references public.crm_clients (id) on delete set null,
+  client_name           text not null,
+  project_id            uuid references public.support_projects (id) on delete set null,
+  project_name          text,
+  request_type          text not null default 'other',
+  status                text not null default 'new',
+  cost                  numeric(14,0) not null default 0,
+  assigned_to           text,
+  included_in_contract  boolean not null default false,
+  is_paid               boolean not null default false,
+  estimated_cost        numeric(14,0) not null default 0,
+  estimated_time        text,
+  customer_approval     text not null default 'pending'
+);
+create index if not exists crm_change_requests_status_idx on public.crm_change_requests (status);
+alter table public.crm_change_requests enable row level security;
+
+create table if not exists public.crm_maintenance_plans (
+  id                    uuid primary key default gen_random_uuid(),
+  created_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now(),
+  client_id             uuid references public.crm_clients (id) on delete set null,
+  client_name           text not null,
+  plan_type             text not null default 'basic_support',
+  monthly_fee           numeric(14,0) not null default 0,
+  start_date            date,
+  renewal_date          date,
+  payment_status        text not null default 'pending',
+  support_status        text not null default 'active',
+  included_services     jsonb not null default '[]',
+  project_id            uuid references public.support_projects (id) on delete set null,
+  upsell_opportunities  jsonb not null default '[]'
+);
+create index if not exists crm_maintenance_status_idx on public.crm_maintenance_plans (support_status);
+alter table public.crm_maintenance_plans enable row level security;
+
+create table if not exists public.company_settings (
+  id         int primary key default 1 check (id = 1),
+  updated_at timestamptz not null default now(),
+  data       jsonb not null default '{}'
+);
+alter table public.company_settings enable row level security;
+insert into public.company_settings (id, data) values (1, '{}') on conflict (id) do nothing;
+
+alter table public.support_projects add column if not exists client_id uuid references public.crm_clients (id) on delete set null;
+alter table public.support_projects add column if not exists owner_name text;
+alter table public.support_projects add column if not exists contract_amount numeric(14,0) default 0;
+alter table public.support_projects add column if not exists payment_status text default 'unpaid';
+alter table public.support_projects add column if not exists project_type text;
+-- =========================================================
+-- Araaye AI — پنل عملیات ادمین (app/admin/ai-ops)
+-- نقش‌ها از جدول admin_users موجود استفاده می‌کنند (role می‌تواند یکی از
+-- ai_superadmin | ai_finance | ai_support | ai_ops باشد — نگاه کنید به lib/auth.ts).
+-- این مهاجرت فقط جداول genuinely جدید را اضافه می‌کند؛ ai_users/ai_battles/
+-- ai_orders/ai_usage/ai_promo_codes/ai_support_tickets/... از قبل موجودند.
+-- =========================================================
+
+-- ---------- نقش/دسترسی ماژول‌های پنل AI-ops (برای نمایش UI/مرجع) ----------
+create table if not exists public.ai_admin_permissions (
+  role       text primary key,
+  modules    jsonb not null default '[]', -- لیست کلید ماژول‌های مجاز
+  updated_at timestamptz not null default now()
+);
+
+insert into public.ai_admin_permissions (role, modules) values
+  ('ai_superadmin', '["overview","users","plans","credits","models","providers","prompts","conversations","costs","payments","coupons","tickets","notifications","content","logs","settings","team","security"]'),
+  ('ai_finance',    '["overview","plans","credits","costs","payments","coupons"]'),
+  ('ai_support',    '["overview","users","tickets","notifications","conversations"]'),
+  ('ai_ops',        '["overview","models","providers","prompts","content","logs","settings","users"]')
+on conflict (role) do update set modules = excluded.modules;
+
+alter table public.ai_admin_permissions enable row level security;
+
+-- ---------- لاگ حسابرسی اقدامات ادمین در پنل AI-ops ----------
+create table if not exists public.ai_admin_audit_log (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  admin_id    uuid references public.admin_users(id) on delete set null,
+  admin_name  text,
+  admin_role  text,
+  action      text not null,          -- مثلا 'credit.grant' | 'user.suspend' | 'model.update'
+  entity_type text,                   -- 'ai_users' | 'ai_model_registry' | ...
+  entity_id   text,
+  meta        jsonb not null default '{}'
+);
+create index if not exists ai_admin_audit_log_created_idx on public.ai_admin_audit_log (created_at desc);
+create index if not exists ai_admin_audit_log_entity_idx on public.ai_admin_audit_log (entity_type, entity_id);
+alter table public.ai_admin_audit_log enable row level security;
+
+-- ---------- رجیستری مدل‌ها (نسخه پایگاه‌داده‌ای lib/aiModels.ts) ----------
+create table if not exists public.ai_model_registry (
+  id                 text primary key,      -- برابر AIModelInfo.id در lib/aiModels.ts
+  route_id           text not null,
+  kind               text not null,         -- direct | compare | image
+  brand              text not null,
+  name               text not null,
+  persona_name       text,
+  tier               text not null,         -- economy | mid | premium
+  cost_per_1k_tokens numeric(10,6) not null default 0,
+  credit_cost        int,                   -- برای مدل‌های تصویر
+  enabled            boolean not null default true,
+  notes              text,
+  created_at         timestamptz not null default now(),
+  updated_at         timestamptz not null default now()
+);
+alter table public.ai_model_registry enable row level security;
+
+-- ---------- ارائه‌دهنده‌های API (OpenRouter و مسیرهای برند) ----------
+create table if not exists public.ai_providers (
+  id               text primary key,        -- 'openai' | 'anthropic' | 'google' | 'x-ai' | 'deepseek' | 'meta' | 'mistral' | 'openrouter'
+  name             text not null,
+  base_url         text,
+  api_key_env      text,                    -- نام env var (بدون مقدار — امنیت)
+  api_key_masked   text,                    -- نمایش ماسک‌شده مثل sk-...ab12
+  status           text not null default 'operational', -- operational | degraded | down
+  enabled          boolean not null default true,
+  error_rate       numeric(6,4) not null default 0,      -- 0..1
+  avg_latency_ms   int,
+  uptime_percent   numeric(5,2) not null default 100,
+  last_checked_at  timestamptz,
+  notes            text,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+alter table public.ai_providers enable row level security;
+
+insert into public.ai_providers (id, name, base_url, status, enabled) values
+  ('openai', 'OpenAI', 'https://api.openai.com', 'operational', true),
+  ('anthropic', 'Anthropic', 'https://api.anthropic.com', 'operational', true),
+  ('google', 'Google (Gemini)', 'https://generativelanguage.googleapis.com', 'operational', true),
+  ('x-ai', 'xAI (Grok)', 'https://api.x.ai', 'operational', true),
+  ('deepseek', 'DeepSeek', 'https://api.deepseek.com', 'operational', true),
+  ('meta-llama', 'Meta (Llama via OpenRouter)', 'https://openrouter.ai', 'operational', true),
+  ('mistralai', 'Mistral', 'https://api.mistral.ai', 'operational', true)
+on conflict (id) do nothing;
+
+-- ---------- کتابخانه پرامپت/شخصیت ----------
+create table if not exists public.ai_prompt_templates (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+  name         text not null,
+  category     text not null default 'persona', -- persona | system | marketing | support
+  persona_key  text,                              -- مثلا 'precise' | 'critic' — اگر معادل شخصیت باشد
+  content      text not null,
+  is_active    boolean not null default true,
+  usage_count  int not null default 0,
+  created_by   uuid references public.admin_users(id) on delete set null
+);
+create index if not exists ai_prompt_templates_category_idx on public.ai_prompt_templates (category);
+alter table public.ai_prompt_templates enable row level security;
+
+-- ---------- اعلان‌های سیستمی/broadcast به کاربران ----------
+create table if not exists public.ai_notifications (
+  id            uuid primary key default gen_random_uuid(),
+  created_at    timestamptz not null default now(),
+  title         text not null,
+  body          text not null,
+  audience      text not null default 'all',  -- all | plan | user
+  target_plan   text,                          -- اگر audience=plan
+  target_user_id uuid references public.ai_users(id) on delete set null, -- اگر audience=user
+  status        text not null default 'draft', -- draft | scheduled | sent
+  scheduled_at  timestamptz,
+  sent_at       timestamptz,
+  sent_count    int not null default 0,
+  created_by    uuid references public.admin_users(id) on delete set null
+);
+create index if not exists ai_notifications_status_idx on public.ai_notifications (status, created_at desc);
+alter table public.ai_notifications enable row level security;
+
+-- ---------- دفتر کل کردیت (اعطا/کسر دستی توسط ادمین + رخدادهای سیستمی) ----------
+create table if not exists public.ai_credit_ledger (
+  id               uuid primary key default gen_random_uuid(),
+  created_at       timestamptz not null default now(),
+  user_id          uuid not null references public.ai_users(id) on delete cascade,
+  delta            int not null,             -- مثبت = افزایش، منفی = کاهش
+  balance_after    int,
+  reason           text not null,            -- 'admin_grant' | 'admin_revoke' | 'package_purchase' | 'referral_bonus' | 'usage'
+  note             text,
+  related_order_id uuid references public.ai_orders(id) on delete set null,
+  admin_id         uuid references public.admin_users(id) on delete set null
+);
+create index if not exists ai_credit_ledger_user_idx on public.ai_credit_ledger (user_id, created_at desc);
+alter table public.ai_credit_ledger enable row level security;
+
+-- ---------- کاتالوگ پلن (نسخه پایگاه‌داده‌ای lib/aiPackages.ts) ----------
+create table if not exists public.ai_plans (
+  id           text primary key,   -- free | starter | pro | business
+  name         text not null,
+  price_toman  int not null default 0,
+  credits      int not null default 0,
+  description  text,
+  features     jsonb not null default '[]',
+  is_active    boolean not null default true,
+  is_featured  boolean not null default false,
+  updated_at   timestamptz not null default now()
+);
+insert into public.ai_plans (id, name, price_toman, credits, description, features, is_active, is_featured) values
+  ('free', 'رایگان', 0, 5, 'شروع رایگان برای آشنایی با محصول.', '["۵ کردیت ابتدایی", "نبرد اقتصادی مدل‌ها"]', true, false),
+  ('starter', 'استارتر', 79000, 50, 'برای شروع و استفاده شخصی.', '["≈ ۵۰ پرسش چت", "۵ شخصیت هوش مصنوعی", "استودیو تصویر"]', true, false),
+  ('pro', 'Pro', 229000, 180, 'برای فریلنسرها و کسب‌وکارهای کوچک.', '["≈ ۱۸۰ پرسش", "مدل‌های پرچم‌دار", "اولویت پاسخ‌دهی"]', true, true),
+  ('business', 'Business', 549000, 500, 'برای تیم‌ها و استفاده حرفه‌ای.', '["≈ ۵۰۰ پرسش", "کامل‌ترین دسترسی", "کمترین قیمت به‌ازای پرسش"]', true, false)
+on conflict (id) do nothing;
+alter table public.ai_plans enable row level security;
+
+-- ---------- بلوک‌های محتوای قابل ویرایش (لندینگ/اعلامیه/قوانین لیدربورد) ----------
+create table if not exists public.ai_content_blocks (
+  id           text primary key,   -- 'landing_hero' | 'leaderboard_rules' | 'announcement_banner' | ...
+  title        text not null,
+  body         text not null default '',
+  kind         text not null default 'markdown', -- markdown | html | json
+  is_published boolean not null default true,
+  updated_at   timestamptz not null default now(),
+  updated_by   uuid references public.admin_users(id) on delete set null
+);
+insert into public.ai_content_blocks (id, title, body, kind, is_published) values
+  ('announcement_banner', 'بنر اعلامیه', '', 'markdown', false),
+  ('leaderboard_rules', 'قوانین لیدربورد', 'امتیاز بر اساس تعداد رأی‌های برد در نبردهای عمومی محاسبه می‌شود.', 'markdown', true),
+  ('landing_intro', 'معرفی صفحه اصلی AI', 'چند مدل هوش مصنوعی را همزمان مقایسه کن.', 'markdown', true)
+on conflict (id) do nothing;
+alter table public.ai_content_blocks enable row level security;
+
+-- ---------- تنظیمات کلی پنل AI-ops (تک‌ردیفی، مثل company_settings) ----------
+create table if not exists public.ai_settings (
+  id         int primary key default 1 check (id = 1),
+  updated_at timestamptz not null default now(),
+  data       jsonb not null default '{}'
+);
+insert into public.ai_settings (id, data) values (1, '{
+  "default_plan": "free",
+  "free_signup_credits": 5,
+  "rate_limit_per_minute": 12,
+  "feature_flags": { "image_studio": true, "code_studio": true, "battle_mode": true, "referrals": true },
+  "max_battle_cost_usd": 0.25
+}') on conflict (id) do nothing;
+alter table public.ai_settings enable row level security;
+
+-- ---------- وضعیت کاربر برای تعلیق/مسدودسازی + امتیاز سوءاستفاده ----------
+alter table public.ai_users add column if not exists status text not null default 'active'; -- active | suspended | banned
+alter table public.ai_users add column if not exists abuse_score numeric(6,2) not null default 0;
+alter table public.ai_users add column if not exists admin_note text;
+create index if not exists ai_users_status_idx on public.ai_users (status);
+
+-- ---------- نگاشت email در admin_users برای نقش‌های ai_* (فقط یادداشت) ----------
+-- نقش‌های مجاز admin_users.role از این پس شامل: admin, sales, support,
+-- ai_superadmin, ai_finance, ai_support, ai_ops (بدون محدودیت CHECK — ستون متنی است).

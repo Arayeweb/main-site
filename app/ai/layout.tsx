@@ -1,29 +1,41 @@
 import type { Metadata, Viewport } from "next";
 import "./ai.css";
+import ArenaLayoutClient from "./ArenaLayoutClient";
+import ArenaRscChrome from "./ArenaRscChrome";
+import AiCampaignTracking from "@/components/ai/AiCampaignTracking";
 
 export const metadata: Metadata = {
-  title: "اتاق فکر هوشمند | آرایه",
+  title: "آرایه AI | دسترسی به ۵ مدل هوش مصنوعی با پرداخت تومان",
   description:
-    "یک سؤال بپرس؛ چند هوش مصنوعی با هم فکر کنند و جواب بهتر بدهند.",
+    "GPT، Claude، Gemini، Grok و DeepSeek در یک جا — بدون VPN و کارت خارجی. گفتگو کن، مدل عوض کن، یا دو مدل را مقایسه کن.",
   manifest: "/ai.webmanifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "آرایه AI",
   },
   icons: {
-    icon: "/assets/logo-icon-192.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/assets/logo-icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
     apple: "/assets/apple-touch-icon.png",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0A0A0B",
+  themeColor: "#F7F5EF",
   width: "device-width",
   initialScale: 1,
-  viewportFit: "cover",
 };
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
-  return <div className="ai-root">{children}</div>;
+  return (
+    <div className="ar-root">
+      <ArenaRscChrome />
+      <AiCampaignTracking />
+      <ArenaLayoutClient>{children}</ArenaLayoutClient>
+    </div>
+  );
 }

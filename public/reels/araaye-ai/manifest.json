@@ -1,0 +1,126 @@
+{
+  "product": "Araaye AI",
+  "url": "https://araaye.com/ai",
+  "format": "Instagram Reels 9:16",
+  "language": "fa-IR",
+  "generated_with": "Higgsfield (seedance_2_0 + marketing_studio_video)",
+  "reels": [
+    {
+      "id": 1,
+      "file": "reel-01-pov-vpn-free.mp4",
+      "format": "POV Hook",
+      "viral_pattern": "POV + realization",
+      "hook_fa": "POV: VPN رو خاموش کردی و ChatGPT هنوز کار می‌کنه",
+      "script_fa": "من ۲ سال VPN روشن نگه می‌داشتم فقط برای AI. بعد فهمیدم آرایه AI بدون VPN و با تومان کار می‌کنه. ۵ پرسش رایگان — لینک تو bio.",
+      "caption_fa": "دیگه VPN نمی‌خواد 🔥\n۵ مدل AI — GPT، Gemini، Claude، DeepSeek، Llama\nپرداخت تومان 🇮🇷\n\n#هوش_مصنوعی #ChatGPT #آرایه #AIایران #فریلنسر",
+      "duration_sec": 8,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 2,
+      "file": "reel-02-contrarian-stop-paying.mp4",
+      "format": "Contrarian Hook",
+      "viral_pattern": "Stop buying X — do this instead",
+      "hook_fa": "دیگه برای ChatGPT دلار نده",
+      "script_fa": "Stop. قبل از اینکه دوباره VPN بخری و کارت خارجی پیدا کنی — ۵ مدل AI رو با یک اشتراک تومانی بگیر. از ۷۹ هزار تومان.",
+      "caption_fa": "یک اشتراک. ۵ مدل. پرداخت تومان.\nچرا ۵ اپ جدا؟ 🤔\n\nلینک تو bio → araaye.com/ai\n\n#هوشمصنوعی #استارتاپ #کارآفرینی",
+      "duration_sec": 10,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 3,
+      "file": "reel-03-shocked-five-free.mp4",
+      "format": "Shocked Reaction UGC",
+      "viral_pattern": "Mid-expression hook + instant payoff",
+      "hook_fa": "صبر کن... این رایگانه؟!",
+      "script_fa": "۵ پرسش رایگان دادم بهش. یه بیزنس‌پلن کامل نوشت. بدون VPN. بدون کارت. همین الان امتحان کن.",
+      "caption_fa": "من باورم نمی‌شد تا خودم تست کردم 😳\n۵ پرسش رایگان — بدون ثبت‌نام پیچیده\n\n#UGC #AItools #فریلنسری",
+      "duration_sec": 12,
+      "model": "marketing_studio_video"
+    },
+    {
+      "id": 4,
+      "file": "reel-04-battle-mode-vote.mp4",
+      "format": "Gamified Demo",
+      "viral_pattern": "Interactive / choose your winner",
+      "hook_fa": "کدوم AI بهتر جواب داد؟ تو رأی بده",
+      "script_fa": "دو مدل ناشناس. یک سؤال. تو رأی می‌دی. این «نبرد مدل‌ها» توی آرایه AI — جایی که AI رو واقعاً مقایسه می‌کنی.",
+      "caption_fa": "Battle Mode ⚔️\nGPT vs Claude vs Gemini — تو قاضی باش\n\nکامنت بذار: کدوم مدل رو بیشتر استفاده می‌کنی؟\n\n#AIModel #مقایسه #آرایهAI",
+      "duration_sec": 10,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 5,
+      "file": "reel-05-problem-solution-vpn.mp4",
+      "format": "Problem-Solution Fast Pass",
+      "viral_pattern": "Pain → hard cut → solution",
+      "hook_fa": "VPN قطع شد... دوباره AI مرد",
+      "script_fa": "اگه این سناریو آشناست — آرایه AI ساخته شده برای تو. بدون VPN. بدون دردسر. ۵ مدل. یک پنل.",
+      "caption_fa": "دیگه نترس VPN قطع بشه ⚡\nآرایه AI = AI ایرانی با پرداخت تومان\n\n#VPN #هوشمصنوعی #حل_مشکل",
+      "duration_sec": 8,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 6,
+      "file": "reel-06-number-hook-five-models.mp4",
+      "format": "Number Hook",
+      "viral_pattern": "Specific numbers = authority",
+      "hook_fa": "۵ مدل. ۱ اشتراک. ۷۹,۰۰۰ تومان.",
+      "script_fa": "GPT + Gemini + Claude + DeepSeek + Llama. همه توی یک اپ. پرداخت با تومان. ۵ پرسش رایگان برای شروع.",
+      "caption_fa": "عددها دروغ نمی‌گن 📊\n۵ مدل AI پرچمدار\nاز ۷۹ هزار تومان\n\n#قیمت #AI #تومان",
+      "duration_sec": 6,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 7,
+      "file": "reel-07-stomp-reveal.mp4",
+      "format": "Stomp to Reveal",
+      "viral_pattern": "July 2026 trend — stomp transition",
+      "hook_fa": "۵ اپ AI؟ نه.",
+      "script_fa": "[stomp] — یک اپ. ۵ مدل. مقایسه کن. نبرد بده. با تومان بخر. آرایه AI.",
+      "caption_fa": "Stomp trend ولی برای AI 😤\nتمیز. ساده. ایرانی.\n\n#ترند #اینستاگرام #Reels",
+      "duration_sec": 8,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 8,
+      "file": "reel-08-before-after-workflow.mp4",
+      "format": "Before/After Transformation",
+      "viral_pattern": "Chaos → clarity reveal",
+      "hook_fa": "قبل vs بعد — workflow من با AI",
+      "script_fa": "قبل: VPN + ۵ تب + کارت خارجی + استرس. بعد: آرایه AI — یک سؤال، هر مدلی که بخوای، تومان.",
+      "caption_fa": "Which one are you? 👇\nBEFORE: 😩 AFTER: 😎\n\n#beforeafter #productivity #AIworkflow",
+      "duration_sec": 12,
+      "model": "seedance_2_0"
+    },
+    {
+      "id": 9,
+      "file": "reel-09-how-to-compare-models.mp4",
+      "format": "How-To UGC Tutorial",
+      "viral_pattern": "Educational saves + shares",
+      "hook_fa": "چطور ۲ مدل AI رو همزمان مقایسه کنی",
+      "script_fa": "قدم ۱: سؤالتو بنویس. قدم ۲: دو مدل انتخاب کن. قدم ۳: جواب‌ها رو کنار هم ببین. توی آرایه AI — ۵ پرسش رایگان.",
+      "caption_fa": "Save کن برای بعد 💾\nمقایسه مدل‌ها = بهترین جواب\n\n#آموزش #هوشمصنوعی #ترفند",
+      "duration_sec": 15,
+      "model": "marketing_studio_video"
+    },
+    {
+      "id": 10,
+      "file": "reel-10-instant-payoff-free-trial.mp4",
+      "format": "Instant Payoff Hook",
+      "viral_pattern": "Result first, setup second",
+      "hook_fa": "این لندینگ‌پیج رو AI نوشت — در ۱۰ ثانیه",
+      "script_fa": "اول نتیجه. بعد ابزار. آرایه AI — ۵ مدل، ۵ پرسش رایگان، بدون VPN. لینک تو bio.",
+      "caption_fa": "Instant payoff 🔥\nتیتر + زیرتیتر + ۳ مزیت = ۱۰ ثانیه\n\naraaye.com/ai\n\n#copywriting #landingpage #AI",
+      "duration_sec": 8,
+      "model": "seedance_2_0"
+    }
+  ],
+  "posting_strategy": {
+    "best_times_iran": ["12:00-14:00", "20:00-23:00"],
+    "frequency": "1-2 per day for first 2 weeks",
+    "length_target": "7-15 seconds for highest completion rate",
+    "hook_window_sec": 1.5,
+    "cta": "لینک تو bio → araaye.com/ai"
+  }
+}

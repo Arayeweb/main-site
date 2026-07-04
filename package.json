@@ -6,19 +6,52 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:regression": "vitest run tests/regression",
+    "test:e2e": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 playwright test",
+    "test:e2e:ui": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 playwright test --ui",
+    "test:e2e:headed": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 playwright test --headed",
+    "test:e2e:clean": "rm -rf .next test-results playwright-report && npm run test:e2e",
+    "test:all": "vitest run && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 playwright test"
   },
   "dependencies": {
+    "@codemirror/lang-css": "^6.3.1",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codesandbox/sandpack-react": "^2.20.0",
+    "@radix-ui/react-dialog": "^1.1.18",
+    "@radix-ui/react-dropdown-menu": "^2.1.19",
     "@supabase/supabase-js": "^2.45.0",
+    "@uiw/react-codemirror": "^4.25.10",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jszip": "^3.10.1",
+    "lucide-react": "^1.23.0",
     "next": "^14.2.5",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "recharts": "^3.9.1",
+    "remark-gfm": "^4.0.1",
+    "resend": "^6.16.0",
+    "tailwind-merge": "^3.6.0",
+    "undici": "^6.27.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
-    "typescript": "^5.5.3"
+    "autoprefixer": "^10.5.2",
+    "postcss": "^8.5.16",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.5.3",
+    "vitest": "^3.2.4"
   }
 }

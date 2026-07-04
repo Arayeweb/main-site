@@ -1,0 +1,127 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { agentDebugLog } from './lib/agentDebug';
+import { ADMIN_GATE_COOKIE, isAdminGateEnabled, verifyAdminGateCookieEdge } from './lib/adminGateEdge';
+
+// Edge-compatible token verification using Web Crypto API (no Node.js crypto)
+// Token format: base64url(payloadJSON).hmacHex — same as lib/auth.ts signUserToken
+
+const ADMIN_COOKIE = 'ary_admin';
+const PUBLIC_ADMIN_PATHS = ['/admin/gate'];
+const ROLE_DEFAULT_PANEL: Record<string, string> = {
+  admin: '/admin/select-panel',
+  sales: '/admin/sales',
+  support: '/admin/support',
+  ai_superadmin: '/admin/ai-ops',
+  ai_finance: '/admin/ai-ops',
+  ai_support: '/admin/ai-ops',
+  ai_ops: '/admin/ai-ops',
+};
+
+async function verifyToken(token: string | undefined): Promise<{ role: string } | null> {
+  if (!token) return null;
+
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (!secret) return null;
+
+  const dot = token.lastIndexOf('.');
+  if (dot <= 0) return null;
+
+  const body = token.slice(0, dot);
+  const sigHex = token.slice(dot + 1);
+
+  try {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      enc.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(body));
+    const expected = Array.from(new Uint8Array(sigBuf))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    // Timing-safe compare
+    if (expected.length !== sigHex.length) return null;
+    let diff = 0;
+    for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ sigHex.charCodeAt(i);
+    if (diff !== 0) return null;
+
+    const payload = JSON.parse(atob(body.replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.role || !payload.exp || payload.exp <= Date.now()) return null;
+
+    return { role: payload.role };
+  } catch {
+    return null;
+  }
+}
+
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  const token = req.cookies.get(ADMIN_COOKIE)?.value;
+  const session = await verifyToken(token);
+  const gateOk = await verifyAdminGateCookieEdge(req.cookies.get(ADMIN_GATE_COOKIE)?.value);
+  const isPublicPath = PUBLIC_ADMIN_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + '?')
+  );
+  const isLoginPath = pathname === '/admin/login' || pathname.startsWith('/admin/login?');
+
+  // #region agent log
+  fetch('http://127.0.0.1:7292/ingest/5edfe92e-8eff-41b7-9393-ff5814f12f32',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3d11db'},body:JSON.stringify({sessionId:'3d11db',location:'middleware.ts:verify',message:'middleware session check',data:{pathname,hasToken:!!token,sessionOk:!!session,role:session?.role??null,hasSecret:!!process.env.ADMIN_SESSION_SECRET},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
+  // #endregion
+  agentDebugLog(
+    'middleware.ts:session',
+    'admin_middleware_session_check',
+    {
+      pathname,
+      hasToken: Boolean(token),
+      sessionOk: Boolean(session),
+      role: session?.role ?? null,
+      isPublicPath,
+      gateOk,
+      gateEnabled: isAdminGateEnabled(),
+      hasAdminSessionSecret: Boolean(process.env.ADMIN_SESSION_SECRET),
+    },
+    'H1'
+  );
+
+  if (isAdminGateEnabled() && !gateOk && !isPublicPath) {
+    const gateUrl = req.nextUrl.clone();
+    gateUrl.pathname = '/admin/gate';
+    gateUrl.searchParams.set('next', pathname);
+    return NextResponse.redirect(gateUrl);
+  }
+
+  if (isLoginPath && isAdminGateEnabled() && !gateOk) {
+    const gateUrl = req.nextUrl.clone();
+    gateUrl.pathname = '/admin/gate';
+    gateUrl.searchParams.set('next', pathname);
+    return NextResponse.redirect(gateUrl);
+  }
+
+  if (!session && !isPublicPath && !isLoginPath) {
+    const loginUrl = req.nextUrl.clone();
+    loginUrl.pathname = '/admin/login';
+    loginUrl.searchParams.set('next', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (session && (isPublicPath || isLoginPath)) {
+    const dest = req.nextUrl.searchParams.get('next') ?? ROLE_DEFAULT_PANEL[session.role] ?? '/admin/select-panel';
+    const url = req.nextUrl.clone();
+    url.pathname = dest;
+    url.searchParams.delete('next');
+    return NextResponse.redirect(url);
+  }
+
+  const res = NextResponse.next();
+  res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return res;
+}
+
+export const config = {
+  matcher: ['/admin/:path*'],
+};

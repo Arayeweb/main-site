@@ -1,39 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSession } from "@/lib/auth";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-function requireAny(req: NextRequest) {
-  return getSession(req);
-}
-function unauthorized() {
-  return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
-}
-
-// Supabase به‌صورت پیش‌فرض حداکثر ۱۰۰۰ ردیف برمی‌گرداند؛
-// برای آمار صحیح باید همهٔ ردیف‌ها صفحه‌به‌صفحه خوانده شوند.
-async function fetchAll(
-  table: string,
-  columns: string,
-  supabase: ReturnType<typeof getSupabaseAdmin>
-): Promise<{ data: Record<string, unknown>[]; error: string | null }> {
-  const PAGE = 1000;
-  const all: Record<string, unknown>[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
-      .from(table)
-      .select(columns)
-      .order("created_at", { ascending: false })
-      .range(from, from + PAGE - 1);
-    if (error) return { data: all, error: error.message };
-    const batch = (data || []) as unknown as Record<string, unknown>[];
-    all.push(...batch);
-    if (batch.length < PAGE) break;
-  }
-  return { data: all, error: null };
-}
+import { fetchAllRows, groupCount } from "@/lib/analyticsDb";
 
 async function countExact(
   table: string,
@@ -49,29 +17,22 @@ async function countExact(
   return count;
 }
 
-function groupCount(items: Record<string, unknown>[], key: string): { key: string; count: number }[] {
-  const map = new Map<string, number>();
-  for (const item of items) {
-    const v = (item[key] as string) || "";
-    if (!v) continue;
-    map.set(v, (map.get(v) || 0) + 1);
-  }
-  return Array.from(map.entries())
-    .map(([k, count]) => ({ key: k, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 20);
+function unauthorized() {
+  return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
 }
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
-  if (!requireAny(req)) return unauthorized();
+  if (!getSession(req)) return unauthorized();
 
   try {
     const supabase = getSupabaseAdmin();
 
-    // Count queries — reliable totals even if fetchAll fails
     const [leadsRes, pvRes, leadsCount, pvCount] = await Promise.all([
-      fetchAll("leads", "source, page, utm_source, utm_medium, utm_campaign, created_at", supabase),
-      fetchAll("page_views", "page, utm_source, utm_medium, utm_campaign, created_at", supabase),
+      fetchAllRows("leads", "source, page, utm_source, utm_medium, utm_campaign, created_at", supabase),
+      fetchAllRows("page_views", "page, utm_source, utm_medium, utm_campaign, created_at", supabase),
       countExact("leads", supabase),
       countExact("page_views", supabase),
     ]);

@@ -13,6 +13,8 @@ interface Bizcard {
   maps_url: string | null;
   neshan_url: string | null;
   balad_url: string | null;
+  snap_url: string | null;
+  osm_url: string | null;
   address: string | null;
   instagram: string | null;
   telegram: string | null;
@@ -56,7 +58,7 @@ export default async function BizcardPage({ params }: { params: { slug: string }
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("bizcards")
-    .select("slug,business_name,category,phone,whatsapp,maps_url,neshan_url,balad_url,address,instagram,telegram,website,hours,logo_url,theme_color")
+    .select("slug,business_name,category,phone,whatsapp,maps_url,neshan_url,balad_url,snap_url,osm_url,address,instagram,telegram,website,hours,logo_url,theme_color")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -136,6 +138,18 @@ export default async function BizcardPage({ params }: { params: { slug: string }
               <a className="bc-cta balad" href={card.balad_url} target="_blank" rel="noopener noreferrer">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                 مسیریابی در بلد
+              </a>
+            )}
+            {card.snap_url && (
+              <a className="bc-cta snap" href={card.snap_url} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                مسیریابی در اسنپ
+              </a>
+            )}
+            {card.osm_url && (
+              <a className="bc-cta osm" href={card.osm_url} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                مسیریابی OpenStreetMap
               </a>
             )}
             {card.phone && (

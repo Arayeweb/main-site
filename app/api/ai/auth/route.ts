@@ -7,7 +7,10 @@ import {
   signAIToken,
   verifyPassword,
 } from "@/lib/aiAuth";
+import { findActiveContentSalesOrder, maskPhone } from "@/lib/contentSalesOrder";
+import { generateReferralCode } from "@/lib/aiPromo";
 import { normalizeContact } from "@/lib/validateContact";
+import { getGuestState, MAX_GUEST_BATTLES, MAX_GUEST_DIRECT } from "@/lib/aiGuest";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -91,9 +94,19 @@ export async function POST(req: NextRequest) {
 
     const password_hash = hashPassword(password);
 
+    const utmSource = str(body.utm_source, 200);
+    const utmMedium = str(body.utm_medium, 200);
+    const utmCampaign = str(body.utm_campaign, 200);
+
     const { data: user, error } = await supabase
       .from("ai_users")
-      .insert({ phone, password_hash })
+      .insert({
+        phone,
+        password_hash,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+      })
       .select("id, plan, credits")
       .single();
 
@@ -102,9 +115,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
     }
 
+    // ساخت کد معرفی AI-XXXXXX
+    let referralCode: string | null = null;
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const code = generateReferralCode();
+      const { error: refErr } = await supabase.from("ai_referral_codes").insert({
+        user_id: user.id,
+        code,
+      });
+      if (!refErr) {
+        referralCode = code;
+        break;
+      }
+    }
+
     const res = NextResponse.json({
       ok: true,
       user: { id: user.id, plan: user.plan, credits: user.credits },
+      referralCode,
     });
     setAICookie(res, signAIToken(user.id as string, user.plan as string));
     return res;
@@ -178,18 +206,31 @@ export async function PUT(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const session = getAISession(req);
   if (!session) {
-    return NextResponse.json({ ok: true, authed: false });
+    const guest = getGuestState(req);
+    const guestBattlesRemaining = guest?.remaining ?? MAX_GUEST_BATTLES;
+    const guestDirectRemaining = guest?.directRemaining ?? MAX_GUEST_DIRECT;
+    return NextResponse.json({
+      ok: true,
+      authed: false,
+      guestBattlesRemaining,
+      guestDirectRemaining,
+    });
   }
 
   try {
     const supabase = getSupabaseAdmin();
     const { data } = await supabase
       .from("ai_users")
-      .select("id, plan, credits, brainstorm_demos")
+      .select("id, plan, credits, phone")
       .eq("id", session.userId)
       .maybeSingle();
 
     if (!data) return NextResponse.json({ ok: true, authed: false });
+
+    const bundleOrder = await findActiveContentSalesOrder(supabase, {
+      aiUserId: data.id as string,
+      phone: data.phone as string,
+    });
 
     return NextResponse.json({
       ok: true,
@@ -198,8 +239,10 @@ export async function GET(req: NextRequest) {
         id: data.id,
         plan: data.plan,
         credits: data.credits,
-        brainstorm_demos: data.brainstorm_demos,
+        phoneMasked: maskPhone(data.phone as string),
       },
+      hasContentSalesBundle: !!bundleOrder,
+      contentSalesAppUrl: bundleOrder ? "/ai/content-sales/app" : null,
     });
   } catch {
     return NextResponse.json({ ok: true, authed: false });

@@ -1,0 +1,44 @@
+/* Arena design tokens — single source of truth */
+.ar-root,
+.ar-mselect-sheet-backdrop,
+.ar-sheet-backdrop {
+  --ar-bg: #F7F5EF;
+  --ar-bg2: #F1EEE5;
+  --ar-card: #FFFFFF;
+  --ar-border: #E6E2D5;
+  --ar-border2: #D6D1C0;
+  --ar-text: #201F1A;
+  --ar-text2: #6C6960;
+  --ar-text3: #A3A093;
+  --ar-ink: #1C1B17;
+  --ar-ink-hover: #34322B;
+  --ar-accent: #FFD52E;
+  --ar-accent-soft: #FFF3C2;
+  --ar-accent-ink: #8A6D1A;
+  --ar-surface: #FFFFFF;
+  --ar-surface2: #F1EEE5;
+  --ar-error: #C4453D;
+  --ar-error-soft: #FBEAE8;
+  --ar-success: #2E7D5B;
+  --ar-success-soft: #E8F4EC;
+  --ar-tier-mid-bg: #E8F0FA;
+  --ar-tier-mid-fg: #3B6EA5;
+  --ar-pill-image-bg: #FFF4E5;
+  --ar-pill-image-fg: #B45309;
+  --ar-pill-video-bg: #FCE8EF;
+  --ar-pill-video-fg: #BE3A6A;
+  --ar-pill-persona-fg: #9A7B00;
+  --ar-pill-music-bg: #EDE9FE;
+  --ar-pill-music-fg: #5B21B6;
+  --ar-pill-battle-bg: #EEECE6;
+  --ar-focus-ring: var(--ar-accent);
+  --ar-radius: 14px;
+  --ar-on-ink: #FCFBF7;
+}
+
+.ar-mselect-sheet-backdrop,
+.ar-sheet-backdrop {
+  direction: rtl;
+  font-family: "Vazirmatn", -apple-system, "Segoe UI", Tahoma, sans-serif;
+  color: var(--ar-text);
+}

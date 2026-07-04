@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSession, hashPassword } from "@/lib/auth";
+import { serverDebugLog } from "@/lib/debugLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,18 +50,48 @@ function genProjectCode(): string {
 
 // لیست همه‌ی پروژه‌ها (رمز هرگز برنمی‌گردد؛ فقط has_password).
 export async function GET(req: NextRequest) {
-  if (!requireAny(req)) return unauthorized();
+  const session = requireAny(req);
+  serverDebugLog('api/admin/projects:GET', 'session_check', { hasSession: !!session, role: session?.role ?? null }, 'H3');
+  if (!session) return unauthorized();
+
+  const id = req.nextUrl.searchParams.get("id");
+  const clientId = req.nextUrl.searchParams.get("client_id");
+  const selectFields =
+    "id, created_at, updated_at, project_code, access_password, customer_name, customer_contact, title, service_type, status, progress_percent, estimated_delivery_at, last_note";
+
   try {
     const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase
-      .from("support_projects")
-      .select(
-        "id, created_at, updated_at, project_code, access_password, customer_name, customer_contact, title, service_type, status, progress_percent, estimated_delivery_at, last_note"
-      )
-      .order("updated_at", { ascending: false })
-      .limit(500);
+
+    if (id) {
+      const { data, error } = await supabase.from("support_projects").select(selectFields).eq("id", id).maybeSingle();
+      if (error) {
+        serverDebugLog('api/admin/projects:GET', 'db_error', { error: error.message, mode: 'by_id' }, 'H5');
+        console.error("[api/admin/projects] GET id error:", error.message);
+        return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
+      }
+      if (!data) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+      const { access_password, ...rest } = data as Record<string, unknown>;
+      return NextResponse.json({ ok: true, project: { ...rest, has_password: Boolean(access_password) } });
+    }
+
+    let query = supabase.from("support_projects").select(selectFields).order("updated_at", { ascending: false }).limit(500);
+    // client_id filter only when migration 20250702_admin_ops has been applied
+    if (clientId) {
+      const filtered = await supabase.from("support_projects").select(selectFields).eq("customer_contact", clientId).limit(500);
+      if (!filtered.error) {
+        const projects = (filtered.data || []).map((p) => {
+          const { access_password, ...rest } = p as Record<string, unknown>;
+          return { ...rest, has_password: Boolean(access_password) };
+        });
+        serverDebugLog('api/admin/projects:GET', 'success', { count: projects.length, filter: 'customer_contact' }, 'H1');
+        return NextResponse.json({ ok: true, projects });
+      }
+    }
+
+    const { data, error } = await query;
 
     if (error) {
+      serverDebugLog('api/admin/projects:GET', 'db_error', { error: error.message, mode: 'list' }, 'H5');
       console.error("[api/admin/projects] GET error:", error.message);
       return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
     }
@@ -69,6 +100,7 @@ export async function GET(req: NextRequest) {
       const { access_password, ...rest } = p as Record<string, unknown>;
       return { ...rest, has_password: Boolean(access_password) };
     });
+    serverDebugLog('api/admin/projects:GET', 'success', { count: projects.length }, 'H1');
     return NextResponse.json({ ok: true, projects });
   } catch (e) {
     console.error("[api/admin/projects] GET error:", e);
