@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     ? String(body.mode)
     : "battle") as ArenaMode;
 
-  if (isGuest && mode !== "battle") {
+  if (isGuest) {
     return new Response(sse({ type: "error", error: "login_required" }), {
       status: 401,
       headers: { "Content-Type": "text/event-stream" },

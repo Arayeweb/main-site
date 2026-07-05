@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const persona = getPersona(params.slug);
   if (!persona) return { title: "شخصیت | آرایه AI" };
   const title = `چت با ${persona.nameFa} فارسی | آرایه AI`;
-  const description = `${persona.taglineFa} — یک پیام رایگان برای مهمان. ${persona.greetingFa.slice(0, 100)}`;
+  const description = `${persona.taglineFa} — ثبت‌نام رایگان برای شروع گفتگو. ${persona.greetingFa.slice(0, 100)}`;
   return {
     title,
     description,

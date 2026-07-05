@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import AiPostHogIdentify from "@/components/analytics/AiPostHogIdentify";
 import { ArenaAuthProvider } from "./ArenaAuthContext";
 import ArenaShell from "./ArenaShell";
 
@@ -12,6 +13,7 @@ export default function ArenaLayoutClient({ children }: { children: React.ReactN
   }
   return (
     <ArenaAuthProvider>
+      <AiPostHogIdentify />
       <ArenaShell>{children}</ArenaShell>
     </ArenaAuthProvider>
   );

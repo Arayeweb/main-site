@@ -3,6 +3,7 @@ import "./ai.css";
 import ArenaLayoutClient from "./ArenaLayoutClient";
 import ArenaRscChrome from "./ArenaRscChrome";
 import AiCampaignTracking from "@/components/ai/AiCampaignTracking";
+import AiPostHogProvider from "@/components/analytics/AiPostHogProvider";
 
 export const metadata: Metadata = {
   title: "آرایه AI | دسترسی به ۵ مدل هوش مصنوعی با پرداخت تومان",
@@ -32,10 +33,12 @@ export const viewport: Viewport = {
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ar-root">
-      <ArenaRscChrome />
-      <AiCampaignTracking />
-      <ArenaLayoutClient>{children}</ArenaLayoutClient>
-    </div>
+    <AiPostHogProvider>
+      <div className="ar-root">
+        <ArenaRscChrome />
+        <AiCampaignTracking />
+        <ArenaLayoutClient>{children}</ArenaLayoutClient>
+      </div>
+    </AiPostHogProvider>
   );
 }

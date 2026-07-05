@@ -53,7 +53,7 @@ import {
 import { canUseMode, canUseModel, MODE_MIN_PLAN } from "@/lib/aiCredits";
 import { PLAN_LABELS } from "@/lib/aiPackages";
 import { getModel } from "@/lib/aiModels";
-import { formatFreeAllowanceGuest, formatStarterCredits, MAX_GUEST_DIRECT } from "@/lib/aiFreeMessaging";
+import { formatStarterCredits, FREE_PLAN_EQUIVALENTS } from "@/lib/aiFreeMessaging";
 import PersonaHomeRow from "./PersonaHomeRow";
 import { captureCampaignParams, trackAiPurchase, trackAiSignup } from "@/lib/aiTracking";
 import { getStoredPromoCode, pickUtmForDb, getUtmParams } from "@/lib/utm";
@@ -399,33 +399,26 @@ export default function ArenaHomePage({
     });
   }
 
+  function promptGuestLogin(q?: string) {
+    if (q) setPendingPrompt(q);
+    setSendErr("");
+    setShowSheet(true);
+    setTimeout(() => phoneRef.current?.focus(), 100);
+  }
+
   function handleSubmit() {
     const q = prompt.trim();
     if (!q && attachments.length === 0) return;
+    if (authBoot === "guest") {
+      promptGuestLogin(q);
+      return;
+    }
     if (authBoot === "user" && !canUseMode(plan, mode)) {
       setSendErr("mode_locked");
       return;
     }
     if (mode === "side_by_side" && modelA === modelB) {
       setSendErr("same_model");
-      return;
-    }
-    if (authBoot === "guest" && mode === "side_by_side") {
-      setPendingPrompt(q);
-      setShowSheet(true);
-      setTimeout(() => phoneRef.current?.focus(), 100);
-      return;
-    }
-    if (authBoot === "guest" && mode === "direct" && guestDirectRemaining === 0) {
-      setSendErr("guest_direct_limit");
-      setShowSheet(true);
-      setTimeout(() => phoneRef.current?.focus(), 100);
-      return;
-    }
-    if (authBoot === "guest" && mode === "battle" && guestRemaining === 0) {
-      setSendErr("guest_limit");
-      setShowSheet(true);
-      setTimeout(() => phoneRef.current?.focus(), 100);
       return;
     }
     if (mode === "direct") {
@@ -484,24 +477,21 @@ export default function ArenaHomePage({
   }
 
   function useSuggestion(p: string) {
+    if (authBoot === "guest") {
+      promptGuestLogin(p);
+      return;
+    }
     setPrompt(p);
     textareaRef.current?.focus();
   }
 
   function pickSuggestion(p: string, openCodeStudio = false) {
+    if (authBoot === "guest") {
+      promptGuestLogin(p);
+      return;
+    }
     if (openCodeStudio && authBoot === "user") {
       router.push(`/ai/code?q=${encodeURIComponent(p)}`);
-      return;
-    }
-    if (authBoot === "guest" && mode === "side_by_side") {
-      setPendingPrompt(p);
-      setShowSheet(true);
-      setTimeout(() => phoneRef.current?.focus(), 100);
-      return;
-    }
-    if (authBoot === "guest" && mode === "direct" && guestDirectRemaining === 0) {
-      setPendingPrompt(p);
-      setShowSheet(true);
       return;
     }
     if (authBoot === "user" && !canUseMode(plan, mode)) {
@@ -890,13 +880,13 @@ export default function ArenaHomePage({
       >
         <div className="ar-composer-box">{body}</div>
         {sendErr === "guest_limit" && (
-          <div className="ar-composer-err">۲ نبرد رایگان تمام شد — برای ادامه ثبت‌نام کن.</div>
+          <div className="ar-composer-err">برای ارسال پیام وارد شو یا ثبت‌نام کن.</div>
         )}
         {sendErr === "guest_direct_limit" && (
           <div className="ar-composer-err">
-            {MAX_GUEST_DIRECT.toLocaleString("fa-IR")} پیام رایگان تمام شد —{" "}
+            برای ارسال پیام{" "}
             <button type="button" className="ar-link-btn" onClick={() => setShowSheet(true)}>
-              ثبت‌نام کن
+              وارد شو
             </button>
           </div>
         )}
@@ -1127,28 +1117,6 @@ export default function ArenaHomePage({
         </div>
       ) : authBoot === "guest" ? (
         <>
-      {session ? (
-        <div className="ar-home-workspace ar-guest-session">
-          <div className="ar-main--chat">
-            {session.type === "direct" ? (
-              <DirectChatView
-                modelId="economy"
-                bootstrapPrompt={session.bootstrapPrompt}
-                bootstrapAttachments={session.bootstrapAttachments}
-                guestMode
-              />
-            ) : (
-              <CompareSessionView
-                mode={session.mode}
-                bootstrapPrompt={session.bootstrapPrompt}
-                webSearch={session.webMode}
-                modelAId={session.modelA}
-                modelBId={session.modelB}
-              />
-            )}
-          </div>
-        </div>
-      ) : (
       <main className="ar-container ar-guest-home">
         {renderBanners()}
 
@@ -1192,9 +1160,7 @@ export default function ArenaHomePage({
             چت فارسی، <span className="ar-hl">بدون VPN</span> — پرداخت تومان
           </h1>
           <p className="ar-hero-proof">
-            {guestDirectRemaining !== null && guestRemaining !== null
-              ? `${formatFreeAllowanceGuest(guestRemaining, guestDirectRemaining)} — بعد ثبت‌نام ۵ پرسش`
-              : `${formatFreeAllowanceGuest(2, MAX_GUEST_DIRECT)} — بعد ثبت‌نام ۵ پرسش`}
+            ثبت‌نام رایگان — {FREE_PLAN_EQUIVALENTS.signupBonus} هدیه برای شروع
           </p>
           <Link href="/ai/leaderboard" className="ar-hero-link">
             لیدربورد مدل‌ها ←
@@ -1257,7 +1223,6 @@ export default function ArenaHomePage({
           </div>
         </section>
       </main>
-      )}
 
       <footer className="ar-footer">
         <div className="ar-container">

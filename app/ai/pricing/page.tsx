@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PACKAGE_LIST } from "@/lib/aiPackages";
-import { formatFreeAllowanceGuest, formatStarterCredits, MAX_GUEST_DIRECT, MAX_GUEST_BATTLES } from "@/lib/aiFreeMessaging";
+import { formatStarterCredits, FREE_PLAN_EQUIVALENTS } from "@/lib/aiFreeMessaging";
 import { trackAiBeginCheckout } from "@/lib/aiTracking";
 import {
   ARENA_PROMO_STORAGE_KEY,
@@ -216,7 +216,7 @@ export default function PricingPage() {
             هر پرسش از ۱ کردیت — یا به زبان ساده: {formatStarterCredits(PACKAGE_LIST[0]?.credits ?? 50)}.
           </p>
           <p className="ar-pricing-free-hint">
-            مهمان: {formatFreeAllowanceGuest(MAX_GUEST_BATTLES, MAX_GUEST_DIRECT)} — بدون ثبت‌نام
+            ثبت‌نام رایگان — {FREE_PLAN_EQUIVALENTS.signupBonus} هدیه برای شروع
           </p>
         </div>
       </section>

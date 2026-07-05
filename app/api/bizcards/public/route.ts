@@ -65,8 +65,6 @@ export async function POST(req: NextRequest) {
     maps_url:    str(body.maps_url, 2000),
     neshan_url:  str(body.neshan_url, 2000),
     balad_url:   str(body.balad_url, 2000),
-    snap_url:    str(body.snap_url, 2000),
-    osm_url:     str(body.osm_url, 2000),
     address:     str(body.address, 500),
     instagram:   str(body.instagram, 100),
     telegram:    str(body.telegram, 100),

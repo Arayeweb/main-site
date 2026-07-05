@@ -121,6 +121,10 @@ export default function DirectChatView({
     activeThreadId: string | null,
     opts?: { replaceTurnId?: string; attach?: PendingAttachment[]; code?: boolean; web?: boolean }
   ) {
+    if (guestMode) {
+      window.dispatchEvent(new Event("ai:open-login"));
+      return;
+    }
     if (streaming) return;
     const attach = opts?.attach || attachments;
     const useCode = opts?.code ?? codeMode;

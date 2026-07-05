@@ -11,7 +11,7 @@ export default function PersonasGalleryPage() {
       <header className="ar-personas-hero ar-personas-hero--v2">
         <p className="ar-personas-kicker">Character.ai فارسی</p>
         <h1>گفتگو با شخصیت‌های مشهور</h1>
-        <p>با فیگورهای الهام‌گرفته از چهره‌های تاریخ و فناوری حرف بزن — یک پیام رایگان برای مهمان.</p>
+        <p>با فیگورهای الهام‌گرفته از چهره‌های تاریخ و فناوری حرف بزن — ثبت‌نام رایگان برای شروع.</p>
         <p className="ar-persona-disclaimer ar-persona-disclaimer--banner">{PERSONA_DISCLAIMER_FA}</p>
       </header>
 

@@ -60,20 +60,9 @@ export async function POST(req: NextRequest) {
     ? String(body.mode)
     : "battle") as ArenaMode;
 
-  // مهمان فقط battle
+  // مهمان باید وارد شود
   if (isGuest) {
-    if (mode !== "battle") {
-      return NextResponse.json({ ok: false, error: "login_required" }, { status: 401 });
-    }
-    let guest = getGuestState(req) || createGuestState();
-    if (guest.remaining <= 0) {
-      return NextResponse.json(
-        { ok: false, error: "guest_limit", guestBattlesRemaining: 0 },
-        { status: 401 }
-      );
-    }
-  } else if (mode !== "battle") {
-    // logged-in non-battle handled below
+    return NextResponse.json({ ok: false, error: "login_required" }, { status: 401 });
   }
 
   const threadId = typeof body.threadId === "string" && body.threadId ? body.threadId : null;

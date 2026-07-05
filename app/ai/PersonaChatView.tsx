@@ -96,6 +96,10 @@ export default function PersonaChatView({
     activeThreadId: string | null,
     opts?: { replaceTurnId?: string }
   ) {
+    if (guestMode) {
+      window.dispatchEvent(new Event("ai:open-login"));
+      return;
+    }
     if (streaming) return;
     if (!q.trim()) return;
 

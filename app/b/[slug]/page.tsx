@@ -1,28 +1,11 @@
 import { notFound } from "next/navigation";
+import { fetchActiveBizcardBySlug, type BizcardRow } from "@/lib/bizcardDb";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { normalizeReactStyle } from "@/lib/style";
 
 export const dynamic = "force-dynamic";
 
-interface Bizcard {
-  slug: string;
-  business_name: string;
-  category: string | null;
-  phone: string | null;
-  whatsapp: string | null;
-  maps_url: string | null;
-  neshan_url: string | null;
-  balad_url: string | null;
-  snap_url: string | null;
-  osm_url: string | null;
-  address: string | null;
-  instagram: string | null;
-  telegram: string | null;
-  website: string | null;
-  hours: string | null;
-  logo_url: string | null;
-  theme_color: string | null;
-}
+type Bizcard = BizcardRow;
 
 const THEMES: Record<string, { brand: string; deep: string }> = {
   blue:   { brand: "#2f6df6", deep: "#1b4fd6" },
@@ -56,12 +39,11 @@ export default async function BizcardPage({ params }: { params: { slug: string }
   if (!slug) notFound();
 
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("bizcards")
-    .select("slug,business_name,category,phone,whatsapp,maps_url,neshan_url,balad_url,snap_url,osm_url,address,instagram,telegram,website,hours,logo_url,theme_color")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle();
+  const { data, error } = await fetchActiveBizcardBySlug(supabase, slug);
+
+  // #region agent log
+  fetch('http://127.0.0.1:7595/ingest/5edfe92e-8eff-41b7-9393-ff5814f12f32',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d579a7'},body:JSON.stringify({sessionId:'d579a7',location:'app/b/[slug]/page.tsx:BizcardPage',message:'bizcard fetch result',data:{slug,hasData:!!data,errorCode:error?.code??null,errorMsg:error?.message??null,businessName:data?.business_name??null},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+  // #endregion
 
   if (error || !data) notFound();
   const card = data as Bizcard;
