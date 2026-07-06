@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
+/** Dedicated port avoids clashes with a manual `npm run dev` on 3000. */
+const e2ePort = process.env.PLAYWRIGHT_PORT || "3100";
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${e2ePort}`;
 
 /** Use installed Google Chrome locally — avoids `playwright install` (~500MB). Set PLAYWRIGHT_USE_BUNDLED=1 in CI. */
 const useSystemChrome = !process.env.PLAYWRIGHT_USE_BUNDLED;
@@ -36,9 +38,14 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {
-        command: "npm run dev",
+        command: `PORT=${e2ePort} npm run dev`,
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
+        env: {
+          ...process.env,
+          E2E_MODE: "1",
+          NEXT_PUBLIC_E2E_MODE: "1",
+        },
       },
 });

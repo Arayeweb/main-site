@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import AiPostHogIdentify from "@/components/analytics/AiPostHogIdentify";
 import { ArenaAuthProvider } from "./ArenaAuthContext";
@@ -14,7 +15,9 @@ export default function ArenaLayoutClient({ children }: { children: React.ReactN
   return (
     <ArenaAuthProvider>
       <AiPostHogIdentify />
-      <ArenaShell>{children}</ArenaShell>
+      <Suspense fallback={<div className="ar-shell"><main className="ar-main">{children}</main></div>}>
+        <ArenaShell>{children}</ArenaShell>
+      </Suspense>
     </ArenaAuthProvider>
   );
 }

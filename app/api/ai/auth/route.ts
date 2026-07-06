@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import {
   AI_COOKIE,
@@ -8,6 +9,8 @@ import {
   verifyPassword,
 } from "@/lib/aiAuth";
 import { findActiveContentSalesOrder, maskPhone } from "@/lib/contentSalesOrder";
+import { isE2eMode } from "@/lib/e2eMode";
+import { withPublicTimeout } from "@/lib/publicDataFetch";
 import { generateReferralCode } from "@/lib/aiPromo";
 import { normalizeContact } from "@/lib/validateContact";
 import { getGuestState, MAX_GUEST_BATTLES, MAX_GUEST_DIRECT } from "@/lib/aiGuest";
@@ -53,29 +56,29 @@ function setAICookie(res: NextResponse, token: string) {
 export async function POST(req: NextRequest) {
   const ip = clientIp(req);
   if (rateLimited(ip)) {
-    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+    return jsonNoStore({ ok: false, error: "rate_limited" }, { status: 429 });
   }
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "bad_json" }, { status: 400 });
+    return jsonNoStore({ ok: false, error: "bad_json" }, { status: 400 });
   }
 
   const rawPhone = str(body.phone, 20);
   const password = str(body.password, 200);
 
   if (!rawPhone || !password) {
-    return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 422 });
+    return jsonNoStore({ ok: false, error: "missing_fields" }, { status: 422 });
   }
   if (password.length < 6) {
-    return NextResponse.json({ ok: false, error: "password_too_short" }, { status: 422 });
+    return jsonNoStore({ ok: false, error: "password_too_short" }, { status: 422 });
   }
 
   const { kind, value: phone } = normalizeContact(rawPhone);
   if (kind !== "phone") {
-    return NextResponse.json({ ok: false, error: "invalid_phone" }, { status: 422 });
+    return jsonNoStore({ ok: false, error: "invalid_phone" }, { status: 422 });
   }
 
   try {
@@ -89,7 +92,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (existing) {
-      return NextResponse.json({ ok: false, error: "phone_taken" }, { status: 409 });
+      return jsonNoStore({ ok: false, error: "phone_taken" }, { status: 409 });
     }
 
     const password_hash = hashPassword(password);
@@ -112,7 +115,7 @@ export async function POST(req: NextRequest) {
 
     if (error || !user) {
       console.error("[api/ai/auth POST]", error);
-      return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+      return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
     }
 
     // ساخت کد معرفی AI-XXXXXX
@@ -129,7 +132,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const res = NextResponse.json({
+    const res = jsonNoStore({
       ok: true,
       user: { id: user.id, plan: user.plan, credits: user.credits },
       referralCode,
@@ -138,7 +141,7 @@ export async function POST(req: NextRequest) {
     return res;
   } catch (e) {
     console.error("[api/ai/auth POST]", e);
-    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
   }
 }
 
@@ -146,26 +149,26 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const ip = clientIp(req);
   if (rateLimited(ip)) {
-    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+    return jsonNoStore({ ok: false, error: "rate_limited" }, { status: 429 });
   }
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "bad_json" }, { status: 400 });
+    return jsonNoStore({ ok: false, error: "bad_json" }, { status: 400 });
   }
 
   const rawPhone = str(body.phone, 20);
   const password = str(body.password, 200);
 
   if (!rawPhone || !password) {
-    return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 422 });
+    return jsonNoStore({ ok: false, error: "missing_fields" }, { status: 422 });
   }
 
   const { kind, value: phone } = normalizeContact(rawPhone);
   if (kind !== "phone") {
-    return NextResponse.json({ ok: false, error: "invalid_phone" }, { status: 422 });
+    return jsonNoStore({ ok: false, error: "invalid_phone" }, { status: 422 });
   }
 
   try {
@@ -178,11 +181,11 @@ export async function PUT(req: NextRequest) {
 
     if (error) {
       console.error("[api/ai/auth PUT]", error);
-      return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+      return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
     }
 
     if (!data || !verifyPassword(password, data.password_hash as string)) {
-      return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });
+      return jsonNoStore({ ok: false, error: "invalid_credentials" }, { status: 401 });
     }
 
     await supabase
@@ -190,7 +193,7 @@ export async function PUT(req: NextRequest) {
       .update({ last_login_at: new Date().toISOString() })
       .eq("id", data.id);
 
-    const res = NextResponse.json({
+    const res = jsonNoStore({
       ok: true,
       user: { id: data.id, plan: data.plan, credits: data.credits },
     });
@@ -198,7 +201,7 @@ export async function PUT(req: NextRequest) {
     return res;
   } catch (e) {
     console.error("[api/ai/auth PUT]", e);
-    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
   }
 }
 
@@ -209,7 +212,7 @@ export async function GET(req: NextRequest) {
     const guest = getGuestState(req);
     const guestBattlesRemaining = guest?.remaining ?? MAX_GUEST_BATTLES;
     const guestDirectRemaining = guest?.directRemaining ?? MAX_GUEST_DIRECT;
-    return NextResponse.json({
+    return jsonNoStore({
       ok: true,
       authed: false,
       guestBattlesRemaining,
@@ -219,20 +222,29 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
-    const { data } = await supabase
-      .from("ai_users")
-      .select("id, plan, credits, phone")
-      .eq("id", session.userId)
-      .maybeSingle();
+    const userResult = await withPublicTimeout(
+      supabase
+        .from("ai_users")
+        .select("id, plan, credits, phone")
+        .eq("id", session.userId)
+        .maybeSingle(),
+      "auth/session-user"
+    );
 
-    if (!data) return NextResponse.json({ ok: true, authed: false });
+    const data = userResult?.data;
+    if (!data) return jsonNoStore({ ok: true, authed: false });
 
-    const bundleOrder = await findActiveContentSalesOrder(supabase, {
-      aiUserId: data.id as string,
-      phone: data.phone as string,
-    });
+    const bundleOrder = isE2eMode()
+      ? null
+      : await withPublicTimeout(
+          findActiveContentSalesOrder(supabase, {
+            aiUserId: data.id as string,
+            phone: data.phone as string,
+          }),
+          "auth/content-bundle"
+        );
 
-    return NextResponse.json({
+    return jsonNoStore({
       ok: true,
       authed: true,
       user: {
@@ -245,13 +257,13 @@ export async function GET(req: NextRequest) {
       contentSalesAppUrl: bundleOrder ? "/ai/content-sales/app" : null,
     });
   } catch {
-    return NextResponse.json({ ok: true, authed: false });
+    return jsonNoStore({ ok: true, authed: false });
   }
 }
 
 // خروج
 export async function DELETE() {
-  const res = NextResponse.json({ ok: true });
+  const res = jsonNoStore({ ok: true });
   res.cookies.set(AI_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",

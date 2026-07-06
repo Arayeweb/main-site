@@ -33,8 +33,10 @@ export class InMemorySupabase {
   };
 }
 
+type FilterOp = "eq" | "or" | "in" | "is" | "json_eq";
+
 class QueryBuilder {
-  private filters: Array<{ col: string; val: unknown; op: "eq" | "or" | "in" | "is" }> = [];
+  private filters: Array<{ col: string; val: unknown; op: FilterOp; jsonOp?: string }> = [];
   private orderCol: string | null = null;
   private orderAsc = true;
   private limitN: number | null = null;
@@ -42,7 +44,9 @@ class QueryBuilder {
   private rangeTo: number | null = null;
   private pendingInsert: Row | Row[] | null = null;
   private pendingUpdate: Row | null = null;
-  private op: "select" | "insert" | "update" = "select";
+  private pendingUpsert: Row | null = null;
+  private upsertConflictCols: string[] = [];
+  private op: "select" | "insert" | "update" | "upsert" = "select";
   private postInsertSelect = false;
 
   constructor(
@@ -70,6 +74,14 @@ class QueryBuilder {
     return this;
   }
 
+  upsert(data: Row, opts?: { onConflict?: string }) {
+    this.op = "upsert";
+    this.pendingUpsert = data;
+    this.upsertConflictCols =
+      opts?.onConflict?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
+    return this;
+  }
+
   eq(col: string, val: unknown) {
     this.filters.push({ col, val, op: "eq" });
     return this;
@@ -87,6 +99,11 @@ class QueryBuilder {
 
   or(_expr: string) {
     this.filters.push({ col: "_or", val: _expr, op: "or" });
+    return this;
+  }
+
+  filter(col: string, op: string, val: unknown) {
+    this.filters.push({ col, val, op: "json_eq", jsonOp: op });
     return this;
   }
 
@@ -115,6 +132,16 @@ class QueryBuilder {
   private match(row: Row): boolean {
     return this.filters.every((f) => {
       if (f.op === "or") return true;
+      if (f.op === "json_eq") {
+        const jsonOp = f.jsonOp ?? "eq";
+        const parts = f.col.split("->>");
+        const parent = parts[0];
+        const key = parts[1]?.replace(/'/g, "") ?? "";
+        const meta = row[parent] as Record<string, unknown> | undefined;
+        const actual = meta?.[key];
+        if (jsonOp === "eq") return String(actual) === String(f.val);
+        return false;
+      }
       if (f.op === "in") {
         const vals = f.val as unknown[];
         return vals.includes(row[f.col]);
@@ -196,9 +223,39 @@ class QueryBuilder {
     return list;
   }
 
+  private findUpsertRow(data: Row): Row | null {
+    if (this.upsertConflictCols.length === 0) return null;
+    return (
+      this.rows().find((row) =>
+        this.upsertConflictCols.every((col) => row[col] === data[col])
+      ) ?? null
+    );
+  }
+
   private async execute(): Promise<{ data: Row | Row[] | null; error: null | { message: string } }> {
+    if (this.op === "upsert") {
+      const data = this.pendingUpsert!;
+      const existing = this.findUpsertRow(data);
+      if (existing) {
+        Object.assign(existing, data);
+        return { data: existing, error: null };
+      }
+      const row = {
+        id: data.id ?? crypto.randomUUID(),
+        created_at: data.created_at ?? new Date().toISOString(),
+        plan: "free",
+        credits: 5,
+        ...data,
+      };
+      this.rows().push(row);
+      return { data: row, error: null };
+    }
+
     if (this.op === "insert") {
       const inserted = this.doInsert();
+      if (this.postInsertSelect) {
+        return { data: inserted, error: null };
+      }
       return { data: inserted.length === 1 ? inserted[0] : inserted, error: null };
     }
 

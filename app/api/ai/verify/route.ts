@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { noStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { AI_PACKAGES, higherPlan, type AIPlan } from "@/lib/aiPackages";
 import { REFERRAL_REFERRER_CREDITS } from "@/lib/aiPromo";
@@ -10,6 +11,10 @@ export const dynamic = "force-dynamic";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 const AMOUNT_TOLERANCE = 10;
 
+function redirectNoStore(url: string) {
+  return noStore(NextResponse.redirect(url));
+}
+
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const trackId = sp.get("trackId");
@@ -17,7 +22,7 @@ export async function GET(req: NextRequest) {
   const success = sp.get("success");
 
   if (!trackId) {
-    return NextResponse.redirect(`${SITE_URL}/ai/pricing?payment=error`);
+    return redirectNoStore(`${SITE_URL}/ai/pricing?payment=error`);
   }
 
   const supabase = getSupabaseAdmin();
@@ -31,22 +36,22 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (!order) {
-    return NextResponse.redirect(`${SITE_URL}/ai/pricing?payment=error`);
+    return redirectNoStore(`${SITE_URL}/ai/pricing?payment=error`);
   }
 
   if (order.status === "paid") {
-    return NextResponse.redirect(`${SITE_URL}/ai?payment=success`);
+    return redirectNoStore(`${SITE_URL}/ai?payment=success`);
   }
 
   if (status === "NOK" || success === "false") {
     await supabase.from("ai_orders").update({ status: "failed" }).eq("id", order.id);
-    return NextResponse.redirect(`${SITE_URL}/ai/pricing?payment=failed`);
+    return redirectNoStore(`${SITE_URL}/ai/pricing?payment=failed`);
   }
 
   const verify = await zibalVerify(trackId);
   if (!verify.ok || !verify.paid) {
     await supabase.from("ai_orders").update({ status: "failed" }).eq("id", order.id);
-    return NextResponse.redirect(`${SITE_URL}/ai/pricing?payment=failed`);
+    return redirectNoStore(`${SITE_URL}/ai/pricing?payment=failed`);
   }
 
   const paidAmount = verify.amount ?? 0;
@@ -56,7 +61,7 @@ export async function GET(req: NextRequest) {
       `[api/ai/verify] amount mismatch: paid=${paidAmount} expected=${expectedAmount} track=${trackId}`
     );
     await supabase.from("ai_orders").update({ status: "failed" }).eq("id", order.id);
-    return NextResponse.redirect(`${SITE_URL}/ai/pricing?payment=error`);
+    return redirectNoStore(`${SITE_URL}/ai/pricing?payment=error`);
   }
 
   const pkg = AI_PACKAGES[order.package_id as string];
@@ -145,5 +150,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(`${SITE_URL}/ai?payment=success`);
+  return redirectNoStore(`${SITE_URL}/ai?payment=success`);
 }

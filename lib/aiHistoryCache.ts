@@ -29,6 +29,11 @@ export function writeHistoryCache(items: HistoryItem[]) {
 
 export function prependHistoryCache(item: HistoryItem) {
   const prev = readHistoryCache();
-  if (prev.some((x) => x.id === item.id)) return;
+  const idx = prev.findIndex((x) => x.id === item.id);
+  if (idx >= 0) {
+    const merged = { ...prev[idx], ...item, latestRunId: item.latestRunId ?? prev[idx].latestRunId };
+    writeHistoryCache([merged, ...prev.filter((_, i) => i !== idx)]);
+    return;
+  }
   writeHistoryCache([item, ...prev]);
 }

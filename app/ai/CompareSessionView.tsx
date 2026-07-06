@@ -10,18 +10,42 @@ import {
   UserAvatar,
 } from "./icons";
 import MarkdownMessage from "./MarkdownMessage";
+import PlanUpsellBanner from "./PlanUpsellBanner";
 import { replaceThreadUrl } from "@/lib/aiThreadUrl";
+import { getModel, modelName } from "@/lib/aiModels";
+import {
+  startRunStream,
+  stopRunStream,
+  classifyRunStreamError,
+  runStreamErrorMessage,
+} from "@/lib/ai/client/runStream";
+import type { RunSSEEvent } from "@/lib/ai/streaming/sse";
+import type { StaticRunHydration } from "@/lib/ai/runs/types";
+import ArenaComposer from "./ArenaComposer";
 
 type PublicModel = { id: string; name: string; poweredBy?: string; brand: string };
-type Winner = "a" | "b" | "tie";
-type Mode = "battle" | "side_by_side";
 
-function historyTier(mode: Mode) {
-  return mode === "side_by_side" ? "side_by_side" : "battle";
+type CompareTurn = {
+  runId: string | null;
+  prompt: string;
+  modelIds: string[];
+  responses: Record<string, string>;
+  modelErrors: Record<string, string>;
+  selectedVote: string | null;
+};
+
+function hydrationToTurn(h: StaticRunHydration): CompareTurn {
+  return {
+    runId: h.runId,
+    prompt: h.prompt,
+    modelIds: h.models,
+    responses: h.answers,
+    modelErrors: h.modelErrors,
+    selectedVote: h.selectedVote,
+  };
 }
 
 export default function CompareSessionView({
-  mode,
   bootstrapPrompt = null,
   webSearch = false,
   battleId: initialBattleId = null,
@@ -33,9 +57,12 @@ export default function CompareSessionView({
   winner: initialWinner = null,
   modelAId,
   modelBId,
+  conversationId: initialConversationId = null,
+  threadRuns = [],
   onCreditsChange,
 }: {
-  mode: Mode;
+  /** Legacy prop — compare sessions only; council uses CouncilSessionView */
+  mode?: "battle" | "side_by_side";
   bootstrapPrompt?: string | null;
   webSearch?: boolean;
   battleId?: string | null;
@@ -44,21 +71,48 @@ export default function CompareSessionView({
   responseB?: string;
   modelA?: PublicModel | null;
   modelB?: PublicModel | null;
-  winner?: Winner | null;
+  winner?: string | null;
   modelAId?: string;
   modelBId?: string;
+  conversationId?: string | null;
+  threadRuns?: StaticRunHydration[];
   onCreditsChange?: (n: number) => void;
 }) {
   const bootRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const runIdRef = useRef<string | null>(null);
+  const streamAbortRef = useRef<(() => void) | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const conversationRef = useRef<string | null>(initialConversationId);
 
-  const [battleId, setBattleId] = useState<string | null>(initialBattleId);
+  const [conversationId, setConversationId] = useState<string | null>(initialConversationId);
+  const [archivedTurns, setArchivedTurns] = useState<CompareTurn[]>(() =>
+    threadRuns.length ? threadRuns.map(hydrationToTurn) : []
+  );
+  const [followUpInput, setFollowUpInput] = useState("");
+  const [runId, setRunId] = useState<string | null>(initialBattleId);
   const [prompt, setPrompt] = useState(initialPrompt || bootstrapPrompt || "");
-  const [responseA, setResponseA] = useState(initialResponseA);
-  const [responseB, setResponseB] = useState(initialResponseB);
-  const [modelA, setModelA] = useState<PublicModel | null>(initialModelA);
-  const [modelB, setModelB] = useState<PublicModel | null>(initialModelB);
-  const [winner, setWinner] = useState<Winner | null>(initialWinner);
+  const [responses, setResponses] = useState<Record<string, string>>(() => {
+    const m: Record<string, string> = {};
+    if (initialModelA?.id) m[initialModelA.id] = initialResponseA;
+    if (initialModelB?.id) m[initialModelB.id] = initialResponseB;
+    if (modelAId && initialResponseA) m[modelAId] = initialResponseA;
+    if (modelBId && initialResponseB) m[modelBId] = initialResponseB;
+    return m;
+  });
+  const [modelIds, setModelIds] = useState<string[]>(() => {
+    if (initialModelA?.id && initialModelB?.id) return [initialModelA.id, initialModelB.id];
+    if (modelAId && modelBId) return [modelAId, modelBId];
+    return [];
+  });
+  const [modelErrors, setModelErrors] = useState<Record<string, string>>({});
+  const [selectedVote, setSelectedVote] = useState<string | null>(
+    initialWinner === "a"
+      ? initialModelA?.id ?? modelAId ?? null
+      : initialWinner === "b"
+        ? initialModelB?.id ?? modelBId ?? null
+        : null
+  );
   const [loading, setLoading] = useState(!!bootstrapPrompt && !initialBattleId);
   const [streaming, setStreaming] = useState(!!bootstrapPrompt && !initialBattleId);
   const [err, setErr] = useState("");
@@ -67,172 +121,163 @@ export default function CompareSessionView({
   const [sharing, setSharing] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
-  const votable = !winner && !loading && !!responseA;
+  const canFollowUp =
+    !!conversationId && !!modelAId && !!modelBId && !bootstrapPrompt && !streaming && !loading;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [loading, responseA, responseB, winner]);
+  }, [loading, responses, streaming, modelErrors, archivedTurns, followUpInput]);
 
-  function notifyHistory(id: string, title: string) {
+  function notifyHistory(conversationAnchor: string, latestRunId: string, title: string) {
     window.dispatchEvent(
       new CustomEvent("ai:thread-created", {
         detail: {
-          id,
+          id: conversationAnchor,
+          latestRunId,
           title: title.slice(0, 80),
-          tier: historyTier(mode),
+          tier: "side_by_side",
           createdAt: new Date().toISOString(),
+          source: "run",
         },
       })
     );
     window.setTimeout(() => window.dispatchEvent(new Event("ai:refresh")), 400);
   }
 
+  async function runCompareStream(
+    userPrompt: string,
+    opts: { isBootstrap?: boolean; isFollowUp?: boolean }
+  ) {
+    if (!modelAId || !modelBId) return;
+    setLoading(true);
+    setStreaming(true);
+    setErr("");
+    setPrompt(userPrompt);
+    setModelIds([modelAId, modelBId]);
+    setResponses({ [modelAId]: "", [modelBId]: "" });
+    setModelErrors({});
+    setSelectedVote(null);
+    setRunId(null);
+
+    const ac = new AbortController();
+    abortRef.current = ac;
+    const conv = conversationRef.current ?? conversationId;
+    const liveResponses: Record<string, string> = { [modelAId]: "", [modelBId]: "" };
+    const liveErrors: Record<string, string> = {};
+
+    const result = await startRunStream(
+      {
+        mode: "compare",
+        models: [modelAId, modelBId],
+        modelA: modelAId,
+        modelB: modelBId,
+        prompt: userPrompt,
+        conversationId: conv,
+        webSearch,
+      },
+      {
+        onRunId: (id) => {
+          runIdRef.current = id;
+          setRunId(id);
+        },
+        onEvent: (ev: RunSSEEvent) => {
+          if (ev.type === "run_started") {
+            setModelIds(ev.models);
+            if (!conv) {
+              conversationRef.current = ev.runId;
+              setConversationId(ev.runId);
+            }
+          } else if (ev.type === "model_delta") {
+            liveResponses[ev.model] = (liveResponses[ev.model] ?? "") + ev.text;
+            setResponses((prev) => ({
+              ...prev,
+              [ev.model]: (prev[ev.model] ?? "") + ev.text,
+            }));
+          } else if (ev.type === "model_error") {
+            liveErrors[ev.model] = runStreamErrorMessage(ev.errorCode);
+            setModelErrors((prev) => ({
+              ...prev,
+              [ev.model]: runStreamErrorMessage(ev.errorCode),
+            }));
+          } else if (ev.type === "usage_update") {
+            onCreditsChange?.(ev.creditsRemaining);
+          }
+        },
+      },
+      ac.signal
+    );
+
+    streamAbortRef.current = result.abort;
+
+    if (result.lastErrorCode) {
+      const code = classifyRunStreamError(result.lastErrorCode);
+      if (code === "unauthorized") {
+        setErr("login");
+        window.dispatchEvent(new Event("ai:open-login"));
+      } else if (code === "insufficient_credits") setErr("credits_out");
+      else if (code === "plan_upgrade_required") setErr("mode_locked");
+      else if (code === "rate_limited" || code === "too_many_concurrent") setErr("rate_limited");
+      else if (code === "provider_error") setErr("ai_error");
+      else setErr("server_error");
+    } else if (result.status === "completed" && result.runId) {
+      const finalRunId = result.runId;
+      const finalConv = conversationRef.current ?? conversationId ?? finalRunId;
+      conversationRef.current = finalConv;
+      setConversationId(finalConv);
+      replaceThreadUrl(`/ai/runs/${finalRunId}`);
+      setArchivedTurns((prev) => [
+        ...prev,
+        {
+          runId: finalRunId,
+          prompt: userPrompt,
+          modelIds: [modelAId, modelBId],
+          responses: { ...liveResponses },
+          modelErrors: { ...liveErrors },
+          selectedVote: null,
+        },
+      ]);
+      setPrompt("");
+      setResponses({});
+      setModelIds([]);
+      setRunId(null);
+      notifyHistory(finalConv, finalRunId, userPrompt);
+    } else if (result.status === "cancelled") {
+      setErr("cancelled");
+    }
+
+    setLoading(false);
+    setStreaming(false);
+    runIdRef.current = null;
+    streamAbortRef.current = null;
+    abortRef.current = null;
+  }
+
   useEffect(() => {
-    if (!bootstrapPrompt || bootRef.current || initialBattleId) return;
+    if (!bootstrapPrompt || bootRef.current || initialBattleId || threadRuns.length > 0) return;
+    if (!modelAId || !modelBId) return;
     bootRef.current = true;
-    setPrompt(bootstrapPrompt);
-
-    (async () => {
-      setLoading(true);
-      setStreaming(true);
-      setErr("");
-      setResponseA("");
-      setResponseB("");
-
-      try {
-        const body: Record<string, unknown> = {
-          prompt: bootstrapPrompt,
-          mode,
-          webSearch,
-        };
-        if (mode === "side_by_side") {
-          body.modelA = modelAId;
-          body.modelB = modelBId;
-        }
-
-        const res = await fetch("/api/ai/battle/stream", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-
-        if (res.status === 401) {
-          const data = await res.json().catch(() => null);
-          if (data?.error === "guest_limit") {
-            setErr("guest_limit");
-            window.dispatchEvent(new Event("ai:guest-limit"));
-          } else {
-            setErr("login");
-            window.dispatchEvent(new Event("ai:open-login"));
-          }
-          setLoading(false);
-          setStreaming(false);
-          return;
-        }
-        if (res.status === 402) {
-          setErr("credits_out");
-          setLoading(false);
-          setStreaming(false);
-          return;
-        }
-        if (res.status === 403) {
-          setErr("mode_locked");
-          setLoading(false);
-          setStreaming(false);
-          return;
-        }
-        if (!res.ok || !res.body) {
-          setErr("server_error");
-          setLoading(false);
-          setStreaming(false);
-          return;
-        }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-
-          const chunks = buffer.split("\n\n");
-          buffer = chunks.pop() || "";
-
-          for (const chunk of chunks) {
-            const line = chunk.trim();
-            if (!line.startsWith("data:")) continue;
-            let data: Record<string, unknown>;
-            try {
-              data = JSON.parse(line.slice(5).trim());
-            } catch {
-              continue;
-            }
-
-            if (data.type === "delta" && typeof data.text === "string") {
-              const side = data.side === "b" ? "b" : "a";
-              if (side === "a") {
-                setResponseA((prev) => prev + data.text);
-              } else {
-                setResponseB((prev) => prev + data.text);
-              }
-            } else if (data.type === "error") {
-              const code = String(data.error ?? "");
-              if (code === "guest_limit") {
-                setErr("guest_limit");
-                window.dispatchEvent(new Event("ai:guest-limit"));
-              } else if (code === "plan_upgrade_required") {
-                setErr("mode_locked");
-              } else if (code === "insufficient_credits") {
-                setErr("credits_out");
-              } else if (code === "ai_error") {
-                setErr("ai_error");
-              } else {
-                setErr("server_error");
-              }
-              setLoading(false);
-              setStreaming(false);
-              return;
-            } else if (data.type === "done") {
-              const id = String(data.id);
-              setBattleId(id);
-              setResponseA(String(data.responseA ?? ""));
-              setResponseB(String(data.responseB ?? ""));
-              if (data.modelA) setModelA(data.modelA as PublicModel);
-              if (data.modelB) setModelB(data.modelB as PublicModel);
-              if (typeof data.creditsRemaining === "number") onCreditsChange?.(data.creditsRemaining);
-              if (typeof data.guestBattlesRemaining === "number") {
-                window.dispatchEvent(
-                  new CustomEvent("ai:guest-remaining", { detail: data.guestBattlesRemaining })
-                );
-              }
-              replaceThreadUrl(`/ai/battle/${id}`);
-              notifyHistory(id, bootstrapPrompt);
-              setLoading(false);
-              setStreaming(false);
-              return;
-            }
-          }
-        }
-      } catch {
-        setErr("server_error");
-      }
-      setLoading(false);
-      setStreaming(false);
-    })();
+    void runCompareStream(bootstrapPrompt, { isBootstrap: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bootstrapPrompt]);
 
-  async function vote(w: Winner) {
-    if (!battleId || voting || winner) return;
+  function sendFollowUp() {
+    const q = followUpInput.trim();
+    if (!q || !canFollowUp) return;
+    setFollowUpInput("");
+    void runCompareStream(q, { isFollowUp: true });
+  }
+
+  async function voteForModel(modelId: string, targetRunId: string) {
+    if (!targetRunId || voting) return;
+    const already = selectedVote || archivedTurns.some((t) => t.runId === targetRunId && t.selectedVote);
+    if (already) return;
     setVoting(true);
     setVoteErr("");
     try {
-      const res = await fetch("/api/ai/battle/vote", {
+      const res = await fetch("/api/feedback/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ battleId, winner: w }),
+        body: JSON.stringify({ runId: targetRunId, selectedModel: modelId }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
@@ -240,23 +285,23 @@ export default function CompareSessionView({
         setVoting(false);
         return;
       }
-      setWinner(data.winner);
-      setModelA(data.modelA);
-      setModelB(data.modelB);
+      setSelectedVote(modelId);
+      setArchivedTurns((prev) =>
+        prev.map((t) => (t.runId === targetRunId ? { ...t, selectedVote: modelId } : t))
+      );
     } catch {
       setVoteErr("ثبت رأی ناموفق بود.");
     }
     setVoting(false);
   }
 
-  async function shareBattle() {
-    if (!battleId || sharing) return;
+  async function shareBattle(targetRunId: string) {
+    if (!targetRunId || sharing) return;
     setSharing(true);
     try {
-      const res = await fetch("/api/ai/battle/share", {
+      const res = await fetch(`/api/ai/runs/${targetRunId}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ battleId }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok || !data.shareUrl) {
@@ -277,89 +322,186 @@ export default function CompareSessionView({
     setSharing(false);
   }
 
-  function answerCard(side: "a" | "b") {
-    const response = side === "a" ? responseA : responseB;
-    const model = side === "a" ? modelA : modelB;
-    const isWinner = winner !== null && winner === side;
-    const label = side === "a" ? "A" : "B";
-    const isStreamingSide = streaming && !response;
+  async function handleStop() {
+    const id = runIdRef.current;
+    abortRef.current?.abort();
+    streamAbortRef.current?.();
+    if (id) await stopRunStream(id, () => undefined);
+    setStreaming(false);
+    setLoading(false);
+    setErr("cancelled");
+  }
+
+  function modelMeta(id: string): PublicModel | null {
+    if (initialModelA?.id === id) return initialModelA;
+    if (initialModelB?.id === id) return initialModelB;
+    const m = getModel(id);
+    if (!m) return null;
+    return { id: m.id, name: m.name, poweredBy: m.poweredBy, brand: m.brand ?? "" };
+  }
+
+  function answerCard(
+    modelId: string,
+    turn: { responses: Record<string, string>; modelErrors: Record<string, string>; selectedVote: string | null },
+    isLive: boolean
+  ) {
+    const response = turn.responses[modelId] ?? "";
+    const model = modelMeta(modelId);
+    const isWinner = turn.selectedVote === modelId;
+    const modelErr = turn.modelErrors[modelId];
+    const isStreamingSide = isLive && streaming && !response && !modelErr;
 
     return (
-      <div className={`ar-compare-col${isWinner ? " winner" : ""}`}>
+      <div className={`ar-compare-col${isWinner ? " winner" : ""}`} key={modelId}>
         <div className="ar-compare-col-head">
           {model ? (
             <>
               <ModelAvatar modelId={model.id} size={28} />
               <span className="name-block">
                 <span className="name">{model.name}</span>
-                {model.poweredBy && (
-                  <span className="powered-by">{model.poweredBy}</span>
-                )}
+                {model.poweredBy && <span className="powered-by">{model.poweredBy}</span>}
               </span>
             </>
           ) : (
             <>
-              <span className="ar-anon-badge sm">{label}</span>
-              <span className="name">مدل {label}</span>
+              <span className="ar-anon-badge sm">{modelId.slice(0, 2)}</span>
+              <span className="name">{modelName(modelId)}</span>
             </>
           )}
           {isWinner && (
             <span className="ar-win-tag sm">
               <IconCheck size={11} />
-              برنده
+              انتخاب شما
             </span>
           )}
         </div>
         <div className="ar-compare-col-body">
-          <MarkdownMessage
-            text={response || (isStreamingSide ? "" : "…")}
-            streaming={streaming && !!response}
-          />
-          {isStreamingSide && <div className="ar-img-skeleton">در حال نوشتن…</div>}
+          {modelErr ? (
+            <div className="ar-composer-err">{modelErr}</div>
+          ) : (
+            <>
+              <MarkdownMessage text={response || (isStreamingSide ? "" : "…")} streaming={isLive && streaming && !!response} />
+              {isStreamingSide && <div className="ar-img-skeleton">در حال نوشتن…</div>}
+            </>
+          )}
         </div>
+      </div>
+    );
+  }
+
+  const showGrid =
+    modelIds.length > 0 &&
+    (streaming || modelIds.some((id) => responses[id] || modelErrors[id]));
+
+  const activeTurn: CompareTurn | null =
+    prompt || streaming || loading
+      ? {
+          runId,
+          prompt,
+          modelIds,
+          responses,
+          modelErrors,
+          selectedVote,
+        }
+      : null;
+
+  function renderTurnBlock(turn: CompareTurn, live: boolean) {
+    const show = turn.modelIds.length > 0 && turn.modelIds.some((id) => turn.responses[id] || turn.modelErrors[id] || live);
+    const turnVotable =
+      !!turn.runId &&
+      !turn.selectedVote &&
+      turn.modelIds.some((id) => turn.responses[id]?.trim()) &&
+      !live &&
+      !loading &&
+      !streaming;
+    const liveVotable =
+      live &&
+      !!turn.runId &&
+      !turn.selectedVote &&
+      !loading &&
+      !streaming &&
+      turn.modelIds.some((id) => turn.responses[id]?.trim());
+    return (
+      <div className="ar-turn" key={turn.runId ?? turn.prompt}>
+        <div className="ar-msg-user-row">
+          <UserAvatar initial="ش" size={34} />
+          <div className="ar-msg-user-bubble">{turn.prompt}</div>
+        </div>
+        {live && loading && !show && (
+          <div className="ar-loading-note">
+            <IconSwords size={16} />
+            در حال مقایسه…
+          </div>
+        )}
+        {show && (
+          <div className="ar-compare-grid">
+            {turn.modelIds.map((id) => answerCard(id, turn, live))}
+          </div>
+        )}
+        {liveVotable && (
+          <div className="ar-vote-bar">
+            <span>کدام بهتر بود؟</span>
+            {turn.modelIds.map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => voteForModel(id, turn.runId!)}
+                disabled={voting || !!turn.modelErrors[id]}
+              >
+                {modelMeta(id)?.name ?? modelName(id)}
+              </button>
+            ))}
+          </div>
+        )}
+        {turnVotable && (
+          <div className="ar-vote-bar">
+            <span>کدام بهتر بود؟</span>
+            {turn.modelIds.map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => voteForModel(id, turn.runId!)}
+                disabled={voting || !!turn.modelErrors[id]}
+              >
+                {modelMeta(id)?.name ?? modelName(id)}
+              </button>
+            ))}
+          </div>
+        )}
+        {turn.selectedVote && turn.runId && (
+          <div className="ar-battle-result">
+            انتخاب شما: {modelMeta(turn.selectedVote)?.name ?? modelName(turn.selectedVote)}
+            <button
+              type="button"
+              className="ar-share-btn"
+              onClick={() => shareBattle(turn.runId!)}
+              disabled={sharing}
+            >
+              <IconShare size={14} />
+              {copiedShare ? "کپی شد!" : "اشتراک"}
+            </button>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="ar-compare-wrap">
-      <div
-        className="ar-sr-only"
-        aria-live="polite"
-        aria-atomic="false"
-      >
-        {streaming ? `${responseA.slice(-60)} ${responseB.slice(-60)}`.trim() : ""}
+      {streaming && (
+        <div className="ar-council-stop-bar">
+          <button type="button" className="ar-council-stop-btn" onClick={handleStop}>
+            توقف تولید
+          </button>
+        </div>
+      )}
+      <div className="ar-sr-only" aria-live="polite" aria-atomic="false">
+        {streaming ? modelIds.map((id) => responses[id]?.slice(-40)).join(" ") : ""}
       </div>
       <div className="ar-chat-scroll" ref={scrollRef}>
-        <div className="ar-turn">
-          <div className="ar-msg-user-row">
-            <UserAvatar initial="ش" size={34} />
-            <div className="ar-msg-user-bubble">{prompt}</div>
-          </div>
+        {archivedTurns.map((turn) => renderTurnBlock(turn, false))}
+        {activeTurn && renderTurnBlock(activeTurn, true)}
 
-          {loading && !responseA && !responseB && (
-            <div className="ar-loading-note">
-              <IconSwords size={16} />
-              {mode === "battle" ? "دو مدل در حال پاسخ…" : "در حال مقایسه…"}
-            </div>
-          )}
-
-          {(responseA || responseB || streaming) && (
-            <div className="ar-compare-grid">
-              {answerCard("a")}
-              {answerCard("b")}
-            </div>
-          )}
-        </div>
-
-        {err === "guest_limit" && (
-          <div className="ar-composer-err">
-            ۲ نبرد رایگان تمام شد —{" "}
-            <button type="button" className="ar-link-btn" onClick={() => window.dispatchEvent(new Event("ai:open-login"))}>
-              ثبت‌نام کن
-            </button>
-          </div>
-        )}
         {err === "login" && (
           <div className="ar-composer-err">
             برای این حالت{" "}
@@ -373,46 +515,35 @@ export default function CompareSessionView({
             کردیت کافی نیست — <Link href="/ai/pricing">خرید کردیت</Link>
           </div>
         )}
-        {err === "mode_locked" && (
-          <div className="ar-composer-err">
-            این حالت در پلن فعلی نیست — <Link href="/ai/pricing">ارتقاء پلن</Link>
-          </div>
-        )}
+        {err === "mode_locked" && <PlanUpsellBanner variant="mode" onDismiss={() => setErr("")} />}
         {err === "ai_error" && (
-          <div className="ar-composer-err">مدل‌ها پاسخ ندادند. دوباره تلاش کن.</div>
+          <div className="ar-composer-err">{runStreamErrorMessage("provider_error")}</div>
+        )}
+        {err === "rate_limited" && (
+          <div className="ar-composer-err">{runStreamErrorMessage("rate_limited")}</div>
+        )}
+        {err === "cancelled" && (
+          <div className="ar-composer-err">{runStreamErrorMessage("cancelled")}</div>
         )}
         {err === "server_error" && (
-          <div className="ar-composer-err">خطایی پیش آمد. دوباره تلاش کن.</div>
+          <div className="ar-composer-err">{runStreamErrorMessage("server_error")}</div>
         )}
 
-        {votable && mode === "battle" && (
-          <div className="ar-vote-bar">
-            <span>کدام بهتر بود؟</span>
-            <button type="button" onClick={() => vote("a")} disabled={voting}>
-              مدل A
-            </button>
-            <button type="button" onClick={() => vote("tie")} disabled={voting}>
-              مساوی
-            </button>
-            <button type="button" onClick={() => vote("b")} disabled={voting}>
-              مدل B
-            </button>
-          </div>
-        )}
         {voteErr && <div className="ar-composer-err">{voteErr}</div>}
-
-        {winner && (
-          <div className="ar-battle-result">
-            {winner === "tie" ? "مساوی!" : `برنده: مدل ${winner.toUpperCase()}`}
-            {battleId && (
-              <button type="button" className="ar-share-btn" onClick={shareBattle} disabled={sharing}>
-                <IconShare size={14} />
-                {copiedShare ? "کپی شد!" : "اشتراک"}
-              </button>
-            )}
-          </div>
-        )}
       </div>
+      {canFollowUp && (
+        <div className="ar-chat-composer">
+          <ArenaComposer
+            input={followUpInput}
+            onInputChange={setFollowUpInput}
+            onSubmit={sendFollowUp}
+            streaming={streaming}
+            showAttach={false}
+            showMic={false}
+            placeholder="ادامه مقایسه…"
+          />
+        </div>
+      )}
     </div>
   );
 }

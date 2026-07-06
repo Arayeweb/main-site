@@ -1,0 +1,268 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { parseStartPayload } from "@/lib/telegram/types";
+import { textPreview } from "@/lib/telegram/sanitize";
+import { TELEGRAM_PACKAGES, getTelegramPackage } from "@/lib/telegram/packages";
+import { pricingMessage, maskPhone } from "@/lib/telegram/copy";
+import { normalizeContact } from "@/lib/validateContact";
+import { clearChatContext } from "@/lib/telegram/state";
+import { createTelegramSupabase, seedTelegramUser } from "../mocks/telegramSupabase";
+import { settlePaymentByTrackId } from "@/lib/telegram/payment";
+
+const sendMessage = vi.fn().mockResolvedValue({ ok: true });
+const getChatMember = vi.fn().mockResolvedValue({ ok: true, joined: true });
+const answerCallbackQuery = vi.fn().mockResolvedValue({ ok: true });
+
+vi.mock("@/lib/telegram/api", () => ({
+  sendMessage: (...args: unknown[]) => sendMessage(...args),
+  getChatMember: (...args: unknown[]) => getChatMember(...args),
+  answerCallbackQuery: (...args: unknown[]) => answerCallbackQuery(...args),
+  setMyCommands: vi.fn().mockResolvedValue({ ok: true }),
+  escapeHtml: (s: string) => s,
+}));
+
+const mockStreamChat = vi.fn();
+
+vi.mock("@/lib/ai/providers/openrouter", () => ({
+  openRouterProvider: {
+    id: "openrouter",
+    streamChat: (...args: unknown[]) => mockStreamChat(...args),
+  },
+}));
+
+vi.mock("@/lib/zibal", () => ({
+  zibalRequest: vi.fn().mockResolvedValue({
+    ok: true,
+    trackId: "track-1",
+    redirectUrl: "https://gateway.zibal.ir/start/track-1",
+  }),
+  zibalVerify: vi.fn().mockResolvedValue({
+    ok: true,
+    paid: true,
+    amount: 299000,
+  }),
+}));
+
+let tgDb: ReturnType<typeof createTelegramSupabase>;
+
+vi.mock("@/lib/supabase", () => ({
+  getSupabaseAdmin: () => tgDb.client,
+}));
+
+vi.mock("@/lib/auth", () => ({
+  hashPassword: (p: string) => `hash:${p}`,
+}));
+
+vi.mock("@/lib/aiPromo", () => ({
+  generateReferralCode: () => "AI-TEST01",
+}));
+
+import {
+  handleStart,
+  handleTextMessage,
+  handleTelegramUpdate,
+} from "@/lib/telegram/handler";
+import { getFreeQuotaStatus } from "@/lib/telegram/quota";
+
+async function* successStream(text = "پاسخ تست") {
+  yield { type: "delta", text };
+  yield {
+    type: "done",
+    text,
+    inputTokens: 1,
+    outputTokens: 2,
+    cachedTokens: 0,
+    costUsd: 0,
+    ttftMs: 1,
+    latencyMs: 2,
+  };
+}
+
+describe("telegram acquisition — unit", () => {
+  beforeEach(() => {
+    tgDb = createTelegramSupabase();
+    sendMessage.mockClear();
+    getChatMember.mockReset().mockResolvedValue({ ok: true, joined: true });
+    mockStreamChat.mockReset().mockImplementation(() => successStream());
+    process.env.TELEGRAM_REQUIRED_CHANNEL_ID = "";
+    process.env.TELEGRAM_REQUIRED_SALES_CHANNEL_ID = "";
+    process.env.TELEGRAM_FREE_DAILY_LIMIT = "3";
+    process.env.ZIBAL_MERCHANT = "zibal";
+    process.env.NEXT_PUBLIC_SITE_URL = "https://araaye.com";
+  });
+
+  it("1. /start creates telegram_user", async () => {
+    await handleStart(100, 42, { id: 42, first_name: "Ali" }, "/start");
+    expect(tgDb.db.tables.telegram_users.length).toBe(1);
+    expect(tgDb.db.tables.telegram_users[0].telegram_id).toBe(42);
+    expect(sendMessage).toHaveBeenCalled();
+  });
+
+  it("2. forced join blocks non-member", async () => {
+    process.env.TELEGRAM_REQUIRED_CHANNEL_ID = "@araaye";
+    getChatMember.mockResolvedValueOnce({ ok: true, joined: false });
+    await handleStart(100, 7, { id: 7, first_name: "Sara" }, "/start");
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain("عضو");
+    expect(tgDb.db.tables.telegram_events.some((e) => e.event === "forced_join_shown")).toBe(true);
+  });
+
+  it("3. joined user receives welcome", async () => {
+    await handleStart(100, 8, { id: 8, first_name: "Reza" }, "/start");
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain("به آرایه خوش آمدی");
+  });
+
+  it("4. free daily limit works", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 10, free_daily_used: 0 });
+    const status = await getFreeQuotaStatus(10);
+    expect(status.ok).toBe(true);
+    expect(status.canUse).toBe(true);
+    expect(status.remaining).toBeGreaterThan(0);
+  });
+
+  it("5. free limit exceeded shows pricing CTA", async () => {
+    const yesterday = new Date(Date.now() - 86400000).toISOString();
+    seedTelegramUser(tgDb.db, {
+      telegram_id: 11,
+      free_daily_used: 3,
+      araaye_user_id: null,
+      created_at: yesterday,
+    });
+    await handleTextMessage(100, 11, tgDb.db.tables.telegram_users[0] as never, "سلام");
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain("سهمیه رایگان");
+    expect(mockStreamChat).not.toHaveBeenCalled();
+  });
+
+  it("6. pricing packages render", () => {
+    const msg = pricingMessage();
+    expect(msg).toContain("بسته شروع");
+    expect(msg).toContain("۹۹");
+    expect(getTelegramPackage("base")?.credits).toBe(400);
+    expect(Object.keys(TELEGRAM_PACKAGES).length).toBe(4);
+  });
+
+  it("7. phone validation works", () => {
+    const valid = normalizeContact("09123456789");
+    expect(valid.kind).toBe("phone");
+    const invalid = normalizeContact("123");
+    expect(invalid.kind).toBe("invalid");
+    expect(maskPhone("09123456789")).toContain("xxxx");
+  });
+
+  it("8. payment order is created", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 12, state: "confirm_order" });
+    const user = tgDb.db.tables.telegram_users[0];
+    tgDb.db.tables.telegram_payment_orders.push({
+      id: "order-1",
+      telegram_user_id: user.id,
+      package_id: "base",
+      amount_toman: 299000,
+      credits: 400,
+      phone: "09121111111",
+      status: "pending",
+      zibal_track_id: null,
+      created_at: new Date().toISOString(),
+      paid_at: null,
+    });
+    expect(tgDb.db.tables.telegram_payment_orders.length).toBe(1);
+  });
+
+  it("9. credits are not granted before payment verification", async () => {
+    tgDb.db.tables.ai_users.push({
+      id: "ai-1",
+      phone: "09122222222",
+      credits: 5,
+      plan: "free",
+      password_hash: "x",
+    });
+    tgDb.db.tables.telegram_payment_orders.push({
+      id: "order-2",
+      telegram_user_id: "tg-1",
+      package_id: "base",
+      amount_toman: 299000,
+      credits: 400,
+      phone: "09122222222",
+      status: "pending",
+      zibal_track_id: "track-pending",
+      created_at: new Date().toISOString(),
+      paid_at: null,
+    });
+    seedTelegramUser(tgDb.db, { id: "tg-1", telegram_id: 99 });
+    expect(tgDb.db.tables.ai_users[0].credits).toBe(5);
+  });
+
+  it("10. duplicate payment callback is idempotent", async () => {
+    tgDb.db.tables.ai_users.push({
+      id: "ai-2",
+      phone: "09123333333",
+      credits: 10,
+      plan: "free",
+      password_hash: "x",
+    });
+    tgDb.db.tables.telegram_payment_orders.push({
+      id: "order-3",
+      telegram_user_id: "tg-2",
+      package_id: "base",
+      amount_toman: 299000,
+      credits: 400,
+      phone: "09123333333",
+      status: "paid",
+      zibal_track_id: "track-paid",
+      created_at: new Date().toISOString(),
+      paid_at: new Date().toISOString(),
+    });
+    seedTelegramUser(tgDb.db, { id: "tg-2", telegram_id: 88, phone: "09123333333" });
+
+    const r1 = await settlePaymentByTrackId("track-paid", "OK", "true");
+    expect(r1.ok).toBe(true);
+    expect(r1.alreadyPaid).toBe(true);
+    expect(tgDb.db.tables.ai_users[0].credits).toBe(10);
+  });
+
+  it("11. clear resets Telegram context only", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 13 });
+    const user = tgDb.db.tables.telegram_users[0];
+    user.chat_context = [{ role: "user", content: "hi" }];
+    tgDb.db.tables.telegram_payment_orders.push({
+      id: "order-keep",
+      telegram_user_id: user.id,
+      package_id: "base",
+      amount_toman: 1,
+      credits: 1,
+      status: "paid",
+    });
+    await clearChatContext(user.id as string);
+    const updated = tgDb.db.tables.telegram_users[0];
+    expect(updated.chat_context).toEqual([]);
+    expect(tgDb.db.tables.telegram_payment_orders.length).toBe(1);
+  });
+
+  it("12. unsupported media returns web CTA", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 14 });
+    await handleTelegramUpdate({
+      update_id: 1,
+      message: {
+        message_id: 1,
+        chat: { id: 100 },
+        from: { id: 14, first_name: "M" },
+        photo: [{}],
+      },
+    });
+    const text = sendMessage.mock.calls[0]?.[1] as string;
+    expect(text).toContain("فعلاً داخل تلگرام فقط چت متنی");
+  });
+
+  it("13. start payload campaign is tracked", () => {
+    const p = parseStartPayload("/start ad_channel1");
+    expect(p.source).toBe("ad");
+    expect(p.campaign).toBe("channel1");
+    const p2 = parseStartPayload("/start ref_summer");
+    expect(p2.ref).toBe("summer");
+  });
+
+  it("textPreview truncates long prompts", () => {
+    const long = "a".repeat(200);
+    expect(textPreview(long, 50).length).toBeLessThanOrEqual(51);
+  });
+});

@@ -60,7 +60,7 @@ export function canUseModel(plan: string, model: AIModelInfo): boolean {
 /** حداقل پلن لازم برای هر حالت workspace */
 export const MODE_MIN_PLAN: Record<ArenaMode, AIPlan> = {
   battle: "free",
-  direct: "starter",
+  direct: "free",
   side_by_side: "starter",
 };
 

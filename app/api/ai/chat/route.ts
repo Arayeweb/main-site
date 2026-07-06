@@ -14,6 +14,7 @@ import {
 } from "@/lib/aiCredits";
 import { hasVision } from "@/lib/aiModels";
 import { getPersona } from "@/lib/aiPersonas";
+import { planRank } from "@/lib/aiPackages";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -95,6 +96,12 @@ export async function POST(req: NextRequest) {
   }
 
   const plan = (user.plan as string) || "free";
+  if (body.studio === "code_studio" && planRank(plan) < planRank("starter")) {
+    return new Response(sse({ type: "error", error: "plan_upgrade_required" }), {
+      status: 403,
+      headers: { "Content-Type": "text/event-stream" },
+    });
+  }
   if (!canUseMode(plan, "direct")) {
     return new Response(sse({ type: "error", error: "plan_upgrade_required" }), {
       status: 403,

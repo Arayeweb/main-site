@@ -1,0 +1,35 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { AI_COOKIE, verifyAIToken } from "@/lib/aiAuth";
+import { loadRunById, serializeRun } from "@/lib/ai/runs/loadRun";
+import { loadConversationThreadByRunId } from "@/lib/ai/runs/conversationContext";
+import { threadToHydration } from "@/lib/ai/runs/types";
+import { friendlyError } from "@/lib/ai/streaming/sse";
+import RunSessionClient from "./RunSessionClient";
+
+export const dynamic = "force-dynamic";
+
+export default async function RunPage({ params }: { params: { id: string } }) {
+  const token = cookies().get(AI_COOKIE)?.value;
+  const session = token ? verifyAIToken(token) : null;
+  if (!session) redirect("/ai");
+
+  const bundle = await loadRunById(params.id);
+  if (!bundle || bundle.run.user_id !== session.userId) {
+    redirect("/ai");
+  }
+
+  const threadData = await loadConversationThreadByRunId(params.id, session.userId);
+  const runs = threadData?.runs ?? [serializeRun(bundle)];
+  const conversationId = threadData?.conversationId ?? bundle.run.conversation_id ?? bundle.run.id;
+  const thread = threadToHydration(conversationId, runs);
+  const latest = runs[runs.length - 1];
+  const statusMessage =
+    latest.status === "cancelled"
+      ? friendlyError("cancelled")
+      : latest.status === "failed" || latest.status === "settlement_failed"
+        ? friendlyError("provider_error")
+        : null;
+
+  return <RunSessionClient thread={thread} statusMessage={statusMessage} />;
+}

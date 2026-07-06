@@ -25,15 +25,25 @@ export default async function VideoThreadPage({ params }: { params: { id: string
   const supabase = getSupabaseAdmin();
   const rootId = params.id;
 
-  let rows: Row[] = [];
-  const res = await supabase
-    .from("ai_battles")
-    .select("id, user_id, prompt, response_a, model_a, tier, thread_id, attachments, created_at")
-    .or(`id.eq.${rootId},thread_id.eq.${rootId}`)
-    .order("created_at", { ascending: true })
-    .limit(40);
+  const [res, userP, pendingJobsP] = await Promise.all([
+    supabase
+      .from("ai_battles")
+      .select("id, user_id, prompt, response_a, model_a, tier, thread_id, attachments, created_at")
+      .or(`id.eq.${rootId},thread_id.eq.${rootId}`)
+      .order("created_at", { ascending: true })
+      .limit(40),
+    supabase.from("ai_users").select("plan").eq("id", session.userId).maybeSingle(),
+    supabase
+      .from("ai_media_jobs")
+      .select("id, prompt, model_id, status, thread_id, error, dismissed_at")
+      .eq("user_id", session.userId)
+      .eq("kind", "video")
+      .in("status", ["pending", "processing"])
+      .eq("thread_id", rootId)
+      .order("created_at", { ascending: true }),
+  ]);
 
-  rows = ((res.data || []) as Row[]).filter(
+  let rows: Row[] = ((res.data || []) as Row[]).filter(
     (r) => r.user_id === session.userId && r.tier === "video_gen"
   );
 
@@ -50,11 +60,7 @@ export default async function VideoThreadPage({ params }: { params: { id: string
     rows = [row];
   }
 
-  const { data: user } = await supabase
-    .from("ai_users")
-    .select("plan")
-    .eq("id", session.userId)
-    .maybeSingle();
+  const { data: user } = userP;
 
   const battleIds = rows.map((r) => r.id);
   const { data: mediaJobs } =
@@ -89,14 +95,7 @@ export default async function VideoThreadPage({ params }: { params: { id: string
     };
   });
 
-  const { data: pendingJobs } = await supabase
-    .from("ai_media_jobs")
-    .select("id, prompt, model_id, status, thread_id, error, dismissed_at")
-    .eq("user_id", session.userId)
-    .eq("kind", "video")
-    .in("status", ["pending", "processing"])
-    .eq("thread_id", rootId)
-    .order("created_at", { ascending: true });
+  const { data: pendingJobs } = pendingJobsP;
 
   const pendingTurns = (pendingJobs || [])
     .filter(

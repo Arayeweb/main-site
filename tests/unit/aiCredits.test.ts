@@ -21,9 +21,9 @@ describe("aiCredits — pricing & access", () => {
     expect(BATTLE_CREDIT_COST.premium).toBe(4);
   });
 
-  it("blocks free users from direct and side_by_side modes", () => {
+  it("allows free users direct chat; side_by_side stays starter+", () => {
     expect(canUseMode("free", "battle")).toBe(true);
-    expect(canUseMode("free", "direct")).toBe(false);
+    expect(canUseMode("free", "direct")).toBe(true);
     expect(canUseMode("free", "side_by_side")).toBe(false);
   });
 

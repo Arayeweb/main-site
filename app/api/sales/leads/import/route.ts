@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getSession, type AdminRole } from '@/lib/auth';
 import { normalizeContact } from '@/lib/validateContact';
-import { agentDebugLog } from '@/lib/agentDebug';
+import { agentDebugLog } from '@/lib/agentDebug.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

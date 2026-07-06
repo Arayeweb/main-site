@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { CONTENT_SALES_LAUNCH_PRICE_TOMAN } from "@/lib/contentSalesBundle";
 import { generateAccessToken } from "@/lib/contentSalesAccess";
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "bad_json" }, { status: 400 });
+    return jsonNoStore({ ok: false, error: "bad_json" }, { status: 400 });
   }
 
   const email = str(body.email, 120);
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (!user?.phone) {
-      return NextResponse.json({ ok: false, error: "user_not_found" }, { status: 404 });
+      return jsonNoStore({ ok: false, error: "user_not_found" }, { status: 404 });
     }
 
     phone = user.phone as string;
@@ -54,12 +55,12 @@ export async function POST(req: NextRequest) {
     const rawPhone = str(body.phone, 20);
 
     if (!name || !rawPhone) {
-      return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 422 });
+      return jsonNoStore({ ok: false, error: "missing_fields" }, { status: 422 });
     }
 
     const { kind, value: normalized } = normalizeContact(rawPhone);
     if (kind !== "phone") {
-      return NextResponse.json({ ok: false, error: "invalid_phone" }, { status: 422 });
+      return jsonNoStore({ ok: false, error: "invalid_phone" }, { status: 422 });
     }
 
     phone = normalized;
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
     phone,
   });
   if (existing) {
-    return NextResponse.json(
+    return jsonNoStore(
       {
         ok: false,
         error: "already_purchased",
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (!zibal.ok || !zibal.trackId) {
-    return NextResponse.json(
+    return jsonNoStore(
       { ok: false, error: zibal.error || "gateway_error" },
       { status: 502 }
     );
@@ -114,8 +115,8 @@ export async function POST(req: NextRequest) {
 
   if (orderErr) {
     console.error("[api/ai/content-sales/checkout]", orderErr);
-    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, redirectUrl: zibal.redirectUrl });
+  return jsonNoStore({ ok: true, redirectUrl: zibal.redirectUrl });
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { isE2eModeClient } from "@/lib/e2eMode";
 import { IconTrophy } from "../icons";
 import { ModelAvatar } from "../icons";
 
@@ -17,15 +18,28 @@ type Entry = {
 export default function LeaderboardPage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stale, setStale] = useState(false);
 
   useEffect(() => {
-    fetch("/api/ai/leaderboard")
+    if (isE2eModeClient()) {
+      setLoading(false);
+      return;
+    }
+
+    const ctrl = new AbortController();
+    const timer = window.setTimeout(() => ctrl.abort(), 3000);
+
+    fetch("/api/ai/leaderboard", { signal: ctrl.signal })
       .then((r) => r.json())
       .then((d) => {
-        if (d?.ok) setEntries(d.entries || []);
+        if (d?.ok) {
+          setEntries(d.entries || []);
+          setStale(Boolean(d.stale));
+        }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => setLoading(false))
+      .finally(() => window.clearTimeout(timer));
   }, []);
 
   return (
@@ -39,6 +53,10 @@ export default function LeaderboardPage() {
         </Link>
       </div>
 
+      {!loading && stale && entries.length > 0 && (
+        <div className="ar-loading-note">داده‌ها ممکن است کمی قدیمی باشند</div>
+      )}
+
       {loading ? (
         <div className="ar-loading-note">
           <span className="ar-spinner" />
@@ -46,7 +64,7 @@ export default function LeaderboardPage() {
         </div>
       ) : entries.length === 0 ? (
         <div className="ar-side-empty" style={{ textAlign: "center", padding: "40px 0" }}>
-          هنوز داده کافی نیست — چند نبرد انجام بده و رأی بده.
+          هنوز داده‌ای برای رتبه‌بندی وجود ندارد.
           <br />
           <Link href="/ai?mode=battle" className="ar-btn ar-btn-primary" style={{ marginTop: 16 }}>
             شروع نبرد

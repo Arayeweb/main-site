@@ -16,9 +16,13 @@ vi.mock("@/lib/supabase", () => ({
   getSupabaseAdmin: () => db,
 }));
 
-vi.mock("@/lib/aiEngine", () => ({
-  streamDirect: (...args: unknown[]) => mockStreamDirect(...args),
-}));
+vi.mock("@/lib/aiEngine", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/aiEngine")>();
+  return {
+    ...actual,
+    streamDirect: (...args: unknown[]) => mockStreamDirect(...args),
+  };
+});
 
 import { POST } from "@/app/api/ai/chat/route";
 
@@ -73,8 +77,9 @@ describe("integration — /api/ai/chat (SSE streaming)", () => {
     expect(events[0]).toEqual({ type: "error", error: "missing_prompt" });
   });
 
-  it("blocks free plan from direct chat mode", async () => {
+  it("allows free plan direct chat with economy model", async () => {
     db.tables.ai_users[0].plan = "free";
+    db.tables.ai_users[0].credits = 5;
     const token = signAIToken("user-chat", "free");
     const res = await POST(
       makeRequest("/api/ai/chat", {
@@ -83,10 +88,10 @@ describe("integration — /api/ai/chat (SSE streaming)", () => {
         body: { prompt: "سلام", model: "economy" },
       })
     );
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
     const events = await readSseEvents(res);
-    expect(events[0]).toEqual({ type: "error", error: "plan_upgrade_required" });
-    expect(mockStreamDirect).not.toHaveBeenCalled();
+    expect(events.some((e) => e.type === "delta" || e.type === "done")).toBe(true);
+    expect(mockStreamDirect).toHaveBeenCalled();
   });
 
   it("blocks free plan from Code Studio requests", async () => {

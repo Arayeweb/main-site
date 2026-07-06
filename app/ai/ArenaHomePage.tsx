@@ -11,26 +11,23 @@ import {
   IconSwords,
   IconX,
   IconCheck,
-  IconLayout,
-  IconChart,
-  IconBulb,
-  IconPen,
   IconGlobe,
   IconCode,
   IconColumns,
   IconChat,
-  IconShield,
-  IconPhone,
+  IconLayout,
   IconNewChat,
   IconPaperclip,
-  IconImage,
-  IconVideo,
   IconMenu,
   IconLock,
   IconDots,
-  IconMusic,
+  IconDiamond,
 } from "./icons";
 import ModelSelect from "./ModelSelect";
+import ChatModelBar, { resolvePickedModel, type ModelPick } from "./ChatModelBar";
+import PlanUpsellBanner from "./PlanUpsellBanner";
+import ModeSelector from "./ModeSelector";
+import ResultPreview from "./ResultPreview";
 import { useArenaAuth } from "./ArenaAuthContext";
 import { ArenaChatSkeleton, ArenaPageSkeleton } from "./ArenaSkeleton";
 
@@ -40,9 +37,15 @@ const DirectChatView = dynamic(() => import("./DirectChatView"), {
 const CompareSessionView = dynamic(() => import("./CompareSessionView"), {
   loading: () => <ArenaChatSkeleton />,
 });
+const CouncilSessionView = dynamic(() => import("./CouncilSessionView"), {
+  loading: () => <ArenaChatSkeleton />,
+});
 import { consumeContentSalesBootstrapPrompt } from "@/lib/contentSalesOpenInAi";
 import {
   AI_NEW_CHAT_EVENT,
+  AI_ANALYZE_TEXT_EVENT,
+  ANALYZE_TEXT_PROMPT,
+  consumeAnalyzeTextFlag,
   consumeComposerFocusFlag,
   requestNewChat,
 } from "@/lib/aiNewChat";
@@ -51,10 +54,8 @@ import {
   type PendingAttachment,
 } from "./composerHelpers";
 import { canUseMode, canUseModel, MODE_MIN_PLAN } from "@/lib/aiCredits";
-import { PLAN_LABELS } from "@/lib/aiPackages";
+import { PLAN_LABELS, planRank } from "@/lib/aiPackages";
 import { getModel } from "@/lib/aiModels";
-import { formatStarterCredits, FREE_PLAN_EQUIVALENTS } from "@/lib/aiFreeMessaging";
-import PersonaHomeRow from "./PersonaHomeRow";
 import { captureCampaignParams, trackAiPurchase, trackAiSignup } from "@/lib/aiTracking";
 import { getStoredPromoCode, pickUtmForDb, getUtmParams } from "@/lib/utm";
 
@@ -65,6 +66,7 @@ type Mode = "battle" | "side_by_side" | "direct";
 type ActiveSession =
   | {
       type: "direct";
+      title: string;
       modelId: string;
       bootstrapPrompt: string;
       bootstrapAttachments?: PendingAttachment[];
@@ -74,17 +76,24 @@ type ActiveSession =
     }
   | {
       type: "compare";
-      mode: "battle" | "side_by_side";
+      title: string;
       bootstrapPrompt: string;
       modelA: string;
       modelB: string;
       webMode?: boolean;
+    }
+  | {
+      type: "council";
+      title: string;
+      bootstrapPrompt: string;
+      modelA?: string;
+      modelB?: string;
     };
 
 const MODE_META: Record<Mode, { label: string; desc: string; Icon: typeof IconSwords }> = {
-  direct: { label: "گفتگوی مستقیم", desc: "پرسش از یک مدل مشخص", Icon: IconChat },
-  side_by_side: { label: "مقایسه دو مدل", desc: "دو مدل به انتخاب خودت", Icon: IconColumns },
-  battle: { label: "نبرد مدل‌ها", desc: "دو مدل ناشناس — تو رأی می‌دهی", Icon: IconSwords },
+  direct: { label: "سریع", desc: "یک مدل، پاسخ فوری", Icon: IconChat },
+  side_by_side: { label: "مقایسه", desc: "دو مدل کنار هم", Icon: IconColumns },
+  battle: { label: "همفکری AIها", desc: "چند مدل + نقد + جمع‌بندی", Icon: IconSpark },
 };
 
 function firstUnlockedMode(plan: string): Mode {
@@ -92,57 +101,16 @@ function firstUnlockedMode(plan: string): Mode {
   return order.find((m) => canUseMode(plan, m)) ?? "battle";
 }
 
-function resolveDirectModel(deepMode: boolean, plan: string, picked: string): string {
-  const pickedModel = getModel(picked);
-  if (pickedModel && canUseModel(plan, pickedModel)) return picked;
-  if (!deepMode) {
-    const economy = getModel("economy");
-    if (economy && canUseModel(plan, economy)) return "economy";
-    return picked;
-  }
-  const precise = getModel("precise");
-  if (precise && canUseModel(plan, precise)) return "precise";
-  return "economy";
-}
-
-const SUGGESTIONS = [
-  {
-    Icon: IconLayout,
-    title: "متن لندینگ‌پیج بنویس",
-    desc: "برای معرفی یک محصول جدید",
-    prompt: "برای لندینگ‌پیج یک اپلیکیشن مدیریت مالی شخصی، تیتر اصلی، زیرتیتر و سه مزیت کلیدی بنویس.",
-  },
-  {
-    Icon: IconChart,
-    title: "تحلیل کسب‌وکار",
-    desc: "نقاط قوت و ضعف را بسنج",
-    prompt: "می‌خواهم یک کافه تخصصی قهوه در تهران باز کنم. مهم‌ترین ریسک‌ها و فرصت‌های این کسب‌وکار را تحلیل کن.",
-  },
-  {
-    Icon: IconBulb,
-    title: "ایده‌پردازی محتوا",
-    desc: "برای شبکه‌های اجتماعی",
-    prompt: "۱۰ ایده محتوای اینستاگرام برای یک کلینیک دندانپزشکی پیشنهاد بده که تعامل بالا بگیرد.",
-  },
-  {
-    Icon: IconPen,
-    title: "بازنویسی حرفه‌ای",
-    desc: "متن را قوی‌تر کن",
-    prompt: "این جمله را به سه شکل حرفه‌ای‌تر بازنویسی کن: «ما بهترین خدمات را با قیمت مناسب ارائه می‌دهیم.»",
-  },
-  {
-    Icon: IconGlobe,
-    title: "برنامه سفر بچین",
-    desc: "سه روز، بودجه مشخص",
-    prompt: "یک برنامه سفر سه‌روزه به اصفهان با بودجه متوسط بچین؛ جاهای دیدنی، غذا و جابه‌جایی.",
-  },
-  {
-    Icon: IconCode,
-    title: "تابع لاگین بنویس",
-    desc: "استودیو کد — مثل arena.ai",
-    prompt: "یک تابع لاگین ساده با JWT برای Next.js بنویس",
-    codeStudio: true,
-  },
+const CHAT_CHIPS: {
+  label: string;
+  action?: "focus" | "compare" | "council" | "analyze";
+  href?: string;
+}[] = [
+  { label: "سؤال بپرس", action: "focus" },
+  { label: "مقایسه مدل‌ها", action: "compare" },
+  { label: "همفکری AIها", action: "council" },
+  { label: "ساخت عکس", href: "/ai/image" },
+  { label: "تحلیل متن", action: "analyze" },
 ];
 
 const AUTH_ERRORS: Record<string, string> = {
@@ -197,6 +165,7 @@ export default function ArenaHomePage({
   const [modelA, setModelA] = useState("cmp-deepseek-v4");
   const [modelB, setModelB] = useState("cmp-grok-4");
   const [directModel, setDirectModel] = useState("economy");
+  const [modelPick, setModelPick] = useState<ModelPick>("auto");
 
   // حالت چت inline — hero مخفی
   const [session, setSession] = useState<ActiveSession | null>(null);
@@ -253,7 +222,7 @@ export default function ArenaHomePage({
     if (urlModeValid) {
       setMode(urlMode as Mode);
     } else if (ctxAuthed === false) {
-      setMode("battle");
+      setMode("direct");
     } else if (ctxAuthed === true) {
       setMode(canUseMode(ctxPlan, "direct") ? "direct" : firstUnlockedMode(ctxPlan));
     }
@@ -300,7 +269,7 @@ export default function ArenaHomePage({
 
   useEffect(() => {
     setMounted(true);
-    const mq = window.matchMedia("(max-width: 720px)");
+    const mq = window.matchMedia("(max-width: 900px)");
     const sync = () => setIsMobile(mq.matches);
     sync();
     mq.addEventListener("change", sync);
@@ -314,8 +283,8 @@ export default function ArenaHomePage({
         setToolsOpen(false);
       }
     }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    document.addEventListener("click", onDoc);
+    return () => document.removeEventListener("click", onDoc);
   }, [toolsOpen]);
 
   useEffect(() => {
@@ -371,12 +340,14 @@ export default function ArenaHomePage({
   function startDirectChat(q: string) {
     const attach = [...attachments];
     const useWeb = deepMode ? webMode : false;
+    const resolved = resolvePickedModel(modelPick, deepMode, plan, directModel);
     setPrompt("");
     setSendErr("");
     setAttachments([]);
     setSession({
       type: "direct",
-      modelId: resolveDirectModel(deepMode, plan, directModel),
+      title: q,
+      modelId: resolved,
       bootstrapPrompt: q,
       bootstrapAttachments: attach.length ? attach : undefined,
       codeMode: deepMode ? codeMode : false,
@@ -391,11 +362,24 @@ export default function ArenaHomePage({
     setAttachments([]);
     setSession({
       type: "compare",
-      mode: mode === "side_by_side" ? "side_by_side" : "battle",
+      title: q,
       bootstrapPrompt: wrapPromptWithModes(q, { codeMode }),
       modelA,
       modelB,
       webMode,
+    });
+  }
+
+  function startCouncilChat(q: string) {
+    setPrompt("");
+    setSendErr("");
+    setAttachments([]);
+    setSession({
+      type: "council",
+      title: q,
+      bootstrapPrompt: wrapPromptWithModes(q, { codeMode }),
+      modelA,
+      modelB,
     });
   }
 
@@ -406,9 +390,43 @@ export default function ArenaHomePage({
     setTimeout(() => phoneRef.current?.focus(), 100);
   }
 
+  function requireGuestAuth(): boolean {
+    if (authBoot === "guest") {
+      promptGuestLogin();
+      return true;
+    }
+    return false;
+  }
+
+  function isModeLocked(m: Mode): boolean {
+    if (authBoot === "guest" && m === "side_by_side") return true;
+    if (authBoot === "user" && m === "battle" && planRank(plan) < planRank("pro")) return true;
+    return authBoot === "user" && !canUseMode(plan, m);
+  }
+
+  function handleModeSelect(m: Mode) {
+    if (isModeLocked(m)) {
+      if (authBoot === "guest" && m === "side_by_side") {
+        setShowSheet(true);
+        setTimeout(() => phoneRef.current?.focus(), 100);
+        return;
+      }
+      setSendErr("mode_locked");
+      return;
+    }
+    setMode(m);
+    setSendErr("");
+  }
+
   function handleSubmit() {
     const q = prompt.trim();
-    if (!q && attachments.length === 0) return;
+    if (!q && attachments.length === 0) {
+      if (authBoot === "guest") {
+        promptGuestLogin();
+        return;
+      }
+      return;
+    }
     if (authBoot === "guest") {
       promptGuestLogin(q);
       return;
@@ -423,6 +441,14 @@ export default function ArenaHomePage({
     }
     if (mode === "direct") {
       startDirectChat(q);
+      return;
+    }
+    if (mode === "battle") {
+      if (planRank(plan) < planRank("pro")) {
+        setSendErr("mode_locked");
+        return;
+      }
+      startCouncilChat(q);
       return;
     }
     startCompareChat(q);
@@ -468,6 +494,7 @@ export default function ArenaHomePage({
       setPendingPrompt("");
       if (q) {
         if (mode === "direct") startDirectChat(q);
+        else if (mode === "battle") startCouncilChat(q);
         else startCompareChat(q);
       }
     } catch {
@@ -476,38 +503,35 @@ export default function ArenaHomePage({
     }
   }
 
-  function useSuggestion(p: string) {
-    if (authBoot === "guest") {
-      promptGuestLogin(p);
+  function handleChipClick(chip: (typeof CHAT_CHIPS)[number]) {
+    if (requireGuestAuth()) return;
+    if (chip.href) {
+      router.push(chip.href);
       return;
     }
-    setPrompt(p);
-    textareaRef.current?.focus();
-  }
-
-  function pickSuggestion(p: string, openCodeStudio = false) {
-    if (authBoot === "guest") {
-      promptGuestLogin(p);
+    if (chip.action === "compare") {
+      const nextMode = canUseMode(plan, "side_by_side") ? "side_by_side" : "battle";
+      setMode(nextMode);
+      setSendErr("");
+      focusComposer(true);
       return;
     }
-    if (openCodeStudio && authBoot === "user") {
-      router.push(`/ai/code?q=${encodeURIComponent(p)}`);
+    if (chip.action === "council") {
+      if (authBoot === "user" && planRank(plan) < planRank("pro")) {
+        setSendErr("mode_locked");
+        return;
+      }
+      setMode("battle");
+      setSendErr("");
+      focusComposer(true);
       return;
     }
-    if (authBoot === "user" && !canUseMode(plan, mode)) {
-      setSendErr("mode_locked");
+    if (chip.action === "analyze") {
+      setPrompt("این متن را تحلیل کن و نکات مهم، لحن و پیشنهاد بهبود را بگو:\n\n");
+      focusComposer(false);
       return;
     }
-    if (mode === "side_by_side" && modelA === modelB) {
-      setSendErr("same_model");
-      return;
-    }
-    setSendErr("");
-    if (mode === "direct") {
-      startDirectChat(p);
-      return;
-    }
-    startCompareChat(p);
+    focusComposer(true);
   }
 
   const focusComposer = useCallback((flash = true) => {
@@ -531,15 +555,45 @@ export default function ArenaHomePage({
     focusComposer(true);
   }, [focusComposer]);
 
+  // تغییر حالت در حین چت = شروع گفتگوی تازه با همان حالت
+  const switchModeFromChat = useCallback(
+    (m: Mode) => {
+      setSession(null);
+      setMode(m);
+      setPrompt("");
+      setSendErr("");
+      setModeOpen(false);
+      setPendingPrompt("");
+      focusComposer(true);
+    },
+    [focusComposer]
+  );
+
   useEffect(() => {
     const onNewChat = () => resetHome();
+    const onAnalyze = () => {
+      setSession(null);
+      setMode("direct");
+      setPrompt(ANALYZE_TEXT_PROMPT);
+      focusComposer(false);
+    };
     window.addEventListener(AI_NEW_CHAT_EVENT, onNewChat);
-    return () => window.removeEventListener(AI_NEW_CHAT_EVENT, onNewChat);
-  }, [resetHome]);
+    window.addEventListener(AI_ANALYZE_TEXT_EVENT, onAnalyze);
+    return () => {
+      window.removeEventListener(AI_NEW_CHAT_EVENT, onNewChat);
+      window.removeEventListener(AI_ANALYZE_TEXT_EVENT, onAnalyze);
+    };
+  }, [resetHome, focusComposer]);
 
   useEffect(() => {
     if (consumeComposerFocusFlag()) {
       focusComposer(true);
+    }
+    if (consumeAnalyzeTextFlag()) {
+      setSession(null);
+      setMode("direct");
+      setPrompt(ANALYZE_TEXT_PROMPT);
+      focusComposer(false);
     }
     const csPrompt = consumeContentSalesBootstrapPrompt();
     if (csPrompt) {
@@ -562,8 +616,6 @@ export default function ArenaHomePage({
   }
 
   const CurrentModeIcon = MODE_META[mode].Icon;
-  const isLoggedIn = authBoot === "user";
-
   function renderModePicker(extraClass?: string) {
     const modeItems = (Object.keys(MODE_META) as Mode[]).map((m) => {
       const Meta = MODE_META[m];
@@ -585,6 +637,11 @@ export default function ArenaHomePage({
                 return;
               }
               setSendErr("mode_locked");
+              return;
+            }
+            if (session) {
+              if (m !== mode) switchModeFromChat(m);
+              else setModeOpen(false);
               return;
             }
             setMode(m);
@@ -672,11 +729,73 @@ export default function ArenaHomePage({
     );
   }
 
-  function renderComposer(opts: { docked?: boolean; showMode?: boolean }) {
-    const { docked = false, showMode = true } = opts;
-    const showModelsInComposer = (!docked && showMode) || (docked && mode === "direct");
-
+  function renderComposer(opts: { docked?: boolean; showMode?: boolean; simplified?: boolean }) {
+    const { docked = false, showMode = true, simplified = docked } = opts;
+    const showModelsInComposer = !simplified && ((!docked && showMode) || (docked && mode === "direct"));
     const attachAllowed = authBoot === "user" && mode === "direct";
+    const sendReady = authBoot === "guest" || !!prompt.trim() || attachments.length > 0;
+
+    const overflowMenu = toolsOpen && (
+      <div className="ar-composer-overflow-menu" role="menu">
+        <button
+          type="button"
+          role="menuitem"
+          className={`ar-composer-overflow-item${codeMode ? " active" : ""}`}
+          onClick={() => {
+            setToolsOpen(false);
+            if (requireGuestAuth()) return;
+            router.push("/ai/code");
+          }}
+        >
+          <IconCode size={16} />
+          استودیو کد
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          className={`ar-composer-overflow-item${webMode ? " active" : ""}`}
+          onClick={() => {
+            setToolsOpen(false);
+            if (requireGuestAuth()) return;
+            if (!deepMode) setDeepMode(true);
+            setWebMode((v) => !v);
+          }}
+        >
+          <IconGlobe size={16} />
+          جستجوی وب
+        </button>
+        {(simplified || showMode) && (
+          <>
+            {(Object.keys(MODE_META) as Mode[]).map((m) => {
+              const Meta = MODE_META[m];
+              const locked = authBoot === "user" && !canUseMode(plan, m);
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  role="menuitem"
+                  className={`ar-composer-overflow-item${mode === m ? " active" : ""}`}
+                  onClick={() => {
+                    setToolsOpen(false);
+                    if (requireGuestAuth()) return;
+                    if (locked) {
+                      setSendErr("mode_locked");
+                      return;
+                    }
+                    setMode(m);
+                    setSendErr("");
+                    if (m === "side_by_side") focusComposer(true);
+                  }}
+                >
+                  <Meta.Icon size={16} />
+                  {Meta.label}
+                </button>
+              );
+            })}
+          </>
+        )}
+      </div>
+    );
 
     const body = (
       <>
@@ -701,7 +820,7 @@ export default function ArenaHomePage({
               handleSubmit();
             }
           }}
-          placeholder="هر چی می‌خوای بپرس…"
+          placeholder="سوالت را بنویس؛ آرایه بهترین مسیر پاسخ را انتخاب می‌کند..."
           maxLength={4000}
           rows={docked ? 2 : undefined}
         />
@@ -721,135 +840,111 @@ export default function ArenaHomePage({
             ))}
           </div>
         )}
-        <div className="ar-composer-foot">
+        <div className={`ar-composer-foot${simplified ? " ar-composer-foot--simple" : ""}`}>
           <div className="ar-composer-toolstrip">
             <button
               type="button"
-              className={`ar-composer-tool-btn ar-composer-tool-primary${attachments.length > 0 ? " active" : ""}`}
-              disabled={!attachAllowed || uploading || attachments.length >= 2}
+              className={`ar-composer-tool-btn ar-composer-tool-primary${attachments.length > 0 ? " active" : ""}${!attachAllowed ? " ar-composer-tool-btn--muted" : ""}`}
+              disabled={uploading || (attachAllowed && attachments.length >= 2)}
               title={
                 attachAllowed
                   ? "پیوست تصویر"
                   : authBoot !== "user"
                     ? "برای پیوست وارد شو"
-                    : "فقط در گفتگوی مستقیم"
+                    : "فقط در چت مستقیم"
               }
               aria-label="پیوست تصویر"
-              onClick={() => fileRef.current?.click()}
+              onClick={() => {
+                if (authBoot !== "user") {
+                  promptGuestLogin();
+                  return;
+                }
+                if (!attachAllowed) return;
+                fileRef.current?.click();
+              }}
             >
               <IconPaperclip size={16} />
             </button>
-            <div className="ar-composer-tool-secondary">
-              <button
-                type="button"
-                className={`ar-composer-tool-btn${codeMode ? " active" : ""}`}
-                title="استودیو کد — چت + فایل + ادیتور"
-                aria-label="استودیو کد"
-                onClick={() => {
-                  if (authBoot === "user") {
+            {!simplified && (
+              <div className="ar-composer-tool-secondary">
+                <button
+                  type="button"
+                  className={`ar-composer-tool-btn${codeMode ? " active" : ""}`}
+                  title="استودیو کد"
+                  aria-label="استودیو کد"
+                  onClick={() => {
+                    if (requireGuestAuth()) return;
                     router.push("/ai/code");
-                    return;
-                  }
-                  setCodeMode((v) => !v);
-                }}
-              >
-                <IconCode size={16} />
-              </button>
-              <button
-                type="button"
-                className={`ar-composer-tool-btn${webMode ? " active" : ""}`}
-                title={
-                  deepMode
-                    ? "جستجوی وب واقعی — اطلاعات به‌روز از اینترنت"
-                    : "جستجوی وب فقط در حالت تفکر عمیق"
-                }
-                aria-label="جستجوی وب"
-                disabled={!deepMode}
-                onClick={() => setWebMode((v) => !v)}
-              >
-                <IconGlobe size={16} />
-              </button>
-            </div>
-            <div className="ar-composer-overflow-wrap" ref={toolsRef}>
-              <button
-                type="button"
-                className="ar-composer-tool-btn ar-composer-overflow-btn"
-                aria-label="ابزارهای بیشتر"
-                aria-expanded={toolsOpen}
-                onClick={() => setToolsOpen((v) => !v)}
-              >
-                <IconDots size={16} />
-              </button>
-              {toolsOpen && (
-                <div className="ar-composer-overflow-menu" role="menu">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className={`ar-composer-overflow-item${codeMode ? " active" : ""}`}
-                    onClick={() => {
-                      setToolsOpen(false);
-                      if (authBoot === "user") {
-                        router.push("/ai/code");
-                        return;
-                      }
-                      setCodeMode((v) => !v);
-                    }}
-                  >
-                    <IconCode size={16} />
-                    استودیو کد
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className={`ar-composer-overflow-item${webMode ? " active" : ""}`}
-                    disabled={!deepMode}
-                    onClick={() => {
-                      setToolsOpen(false);
-                      setWebMode((v) => !v);
-                    }}
-                  >
-                    <IconGlobe size={16} />
-                    جستجوی وب
-                  </button>
-                </div>
-              )}
-            </div>
-            {(mode === "direct") && (
-              <div className="ar-speed-switch" role="group" aria-label="سرعت پاسخ">
+                  }}
+                >
+                  <IconCode size={16} />
+                </button>
+                <button
+                  type="button"
+                  className={`ar-composer-tool-btn${webMode ? " active" : ""}`}
+                  title="جستجوی وب"
+                  aria-label="جستجوی وب"
+                  onClick={() => {
+                    if (requireGuestAuth()) return;
+                    if (!deepMode) setDeepMode(true);
+                    setWebMode((v) => !v);
+                  }}
+                >
+                  <IconGlobe size={16} />
+                </button>
+              </div>
+            )}
+            {(mode === "direct" || simplified) && (
+              <div className="ar-speed-switch" role="group" aria-label="کیفیت پاسخ">
                 <button
                   type="button"
                   className={`ar-speed-switch-btn${!deepMode ? " active" : ""}`}
                   aria-pressed={!deepMode}
+                  title="پاسخ سریع — مناسب سؤال‌های روزمره"
                   onClick={() => {
                     setDeepMode(false);
                     setWebMode(false);
                   }}
                 >
-                  سریع
+                  پاسخ سریع
                 </button>
                 <button
                   type="button"
                   className={`ar-speed-switch-btn${deepMode ? " active" : ""}`}
                   aria-pressed={deepMode}
+                  title="پاسخ عمیق — استدلال و تحلیل بیشتر"
                   onClick={() => setDeepMode(true)}
                 >
-                  تفکر عمیق
+                  پاسخ عمیق
                 </button>
               </div>
             )}
-            {showModelsInComposer && renderModePicker()}
-            {showModelsInComposer && mode === "side_by_side" && (
+            <div className="ar-composer-overflow-wrap" ref={toolsRef}>
+              <button
+                type="button"
+                className="ar-composer-tool-btn ar-composer-overflow-btn"
+                aria-label="گزینه‌ها"
+                title="گزینه‌ها — کد، وب، حالت چت"
+                aria-expanded={toolsOpen}
+                onClick={() => setToolsOpen((v) => !v)}
+              >
+                <IconDots size={16} />
+              </button>
+              {overflowMenu}
+            </div>
+            {!simplified && showModelsInComposer && renderModePicker()}
+            {!simplified && showModelsInComposer && mode === "side_by_side" && (
               <>
                 <ModelSelect picker="compare" value={modelA} onChange={setModelA} plan={plan} exclude={modelB} />
                 <ModelSelect picker="compare" value={modelB} onChange={setModelB} plan={plan} exclude={modelA} />
               </>
             )}
-            {showModelsInComposer && mode === "direct" && (
+            {!simplified && showModelsInComposer && mode === "direct" && (
               <ModelSelect picker="direct" value={directModel} onChange={setDirectModel} plan={plan} />
             )}
           </div>
           <div className="ar-composer-actions">
-            {showModelsInComposer && (
+            {!simplified && showModelsInComposer && (
               <button
                 type="button"
                 className="ar-composer-tool-btn"
@@ -862,9 +957,9 @@ export default function ArenaHomePage({
             )}
             <button
               type="button"
-              className={`ar-send-btn${docked ? " ar-send-btn--dock" : ""}`}
+              className={`ar-send-btn${docked ? " ar-send-btn--dock" : ""}${sendReady ? " ar-send-btn--ready" : ""}`}
               onClick={handleSubmit}
-              disabled={(!prompt.trim() && attachments.length === 0) || uploading}
+              disabled={uploading || (authBoot !== "guest" && !prompt.trim() && attachments.length === 0)}
               aria-label="ارسال"
             >
               <IconSend size={docked ? 16 : 17} />
@@ -896,16 +991,6 @@ export default function ArenaHomePage({
             <Link href="/ai/content-sales">Content & Sales Bundle</Link>
             {" · "}
             <Link href="/ai/pricing">خرید کردیت</Link>
-          </div>
-        )}
-        {sendErr === "plan_locked" && (
-          <div className="ar-composer-err">
-            این مدل در پلن فعلی تو نیست — <Link href="/ai/pricing">ارتقاء پلن</Link>
-          </div>
-        )}
-        {sendErr === "mode_locked" && (
-          <div className="ar-composer-err">
-            این حالت در پلن فعلی تو نیست — <Link href="/ai/pricing">خرید پکیج</Link>
           </div>
         )}
         {sendErr === "same_model" && (
@@ -940,35 +1025,186 @@ export default function ArenaHomePage({
     );
   }
 
-  function renderModelBar() {
-    if (mode === "battle" || mode === "direct") return null;
+  function renderEmptyHome() {
     return (
-      <div className="ar-home-modelbar">
-        {mode === "side_by_side" && (
-          <>
-            <ModelSelect
-              variant="bar"
-              sheetOnMobile
-              picker="compare"
-              value={modelA}
-              onChange={setModelA}
-              plan={plan}
-              exclude={modelB}
-              label="مدل A"
-            />
-            <ModelSelect
-              variant="bar"
-              sheetOnMobile
-              picker="compare"
-              value={modelB}
-              onChange={setModelB}
-              plan={plan}
-              exclude={modelA}
-              label="مدل B"
-            />
-          </>
-        )}
-      </div>
+      <>
+        <header className="ar-home-header ar-home-header--empty">
+          <button
+            type="button"
+            className="ar-home-menu"
+            onClick={() => window.dispatchEvent(new Event("ai:open-drawer"))}
+            aria-label="باز کردن منو"
+          >
+            <IconMenu size={19} />
+          </button>
+          <span className="ar-home-header-brand">آرایه AI</span>
+          <span className="ar-home-topbar-spacer" />
+        </header>
+        <div className="ar-home-stack">
+          <div className="ar-home-center">
+            <p className="ar-chat-brand-eyebrow">آرایه AI</p>
+            <h1 className="ar-home-prompt">یک سؤال؛ چند AI؛ یک پاسخ بهتر</h1>
+            <p className="ar-chat-brand-sub">
+              {isMobile
+                ? "چند مدل هم‌زمان پاسخ می‌دهند؛ آرایه بهترین را انتخاب می‌کند."
+                : "GPT، Claude، Gemini و DeepSeek همزمان پاسخ می‌دهند؛ آرایه اختلاف‌ها را نقد و جمع‌بندی می‌کند."}
+            </p>
+            {authBoot === "guest" && (
+              <p className="ar-home-trial-note">۵ پیام رایگان برای شروع</p>
+            )}
+            <div className="ar-hero-badges">
+              <span className="ar-hero-badge">فارسی</span>
+              <span className="ar-hero-badge">بدون VPN</span>
+              <span className="ar-hero-badge">پرداخت تومانی</span>
+            </div>
+          </div>
+          <div className="ar-home-mode-row">
+            <ModeSelector value={mode} onChange={handleModeSelect} isLocked={isModeLocked} compact={isMobile} />
+          </div>
+          <div className="ar-home-composer">
+            {renderComposer({ docked: true, showMode: false, simplified: true })}
+            {(mode === "direct" || authBoot === "guest") && mode !== "battle" && (
+              <ChatModelBar
+                value={modelPick}
+                onChange={(id) => {
+                  setModelPick(id);
+                  setSendErr("");
+                }}
+                plan={plan}
+                onPlanLocked={() => setSendErr("plan_locked")}
+              />
+            )}
+            {mode === "side_by_side" && (
+              <div className="ar-home-modelbar ar-home-modelbar--inline">
+                <ModelSelect
+                  variant="bar"
+                  sheetOnMobile
+                  picker="compare"
+                  value={modelA}
+                  onChange={setModelA}
+                  plan={plan}
+                  exclude={modelB}
+                  label="مدل A"
+                />
+                <ModelSelect
+                  variant="bar"
+                  sheetOnMobile
+                  picker="compare"
+                  value={modelB}
+                  onChange={setModelB}
+                  plan={plan}
+                  exclude={modelA}
+                  label="مدل B"
+                />
+              </div>
+            )}
+            <div className="ar-chat-chips ar-chat-chips--secondary" role="navigation" aria-label="ابزارها">
+              {CHAT_CHIPS.map((chip) =>
+                authBoot === "guest" || !chip.href ? (
+                  <button
+                    key={chip.label}
+                    type="button"
+                    className="ar-chat-chip"
+                    onClick={() => handleChipClick(chip)}
+                  >
+                    {chip.label}
+                  </button>
+                ) : (
+                  <Link key={chip.label} href={chip.href} className="ar-chat-chip">
+                    {chip.label}
+                  </Link>
+                )
+              )}
+            </div>
+            {(sendErr === "plan_locked" || sendErr === "mode_locked") && (
+              <PlanUpsellBanner
+                variant={sendErr === "mode_locked" ? "mode" : "plan"}
+                onDismiss={() => setSendErr("")}
+              />
+            )}
+            <ResultPreview />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  function sessionSummaryLabel(s: ActiveSession): string {
+    if (s.type === "direct") {
+      const name = getModel(s.modelId)?.name ?? "خودکار";
+      return `${name} · ${s.deepMode ? "پاسخ عمیق" : "پاسخ سریع"}`;
+    }
+    if (s.type === "council") {
+      return `${MODE_META.battle.label} · شورای AI`;
+    }
+    const a = getModel(s.modelA)?.name ?? "A";
+    const b = getModel(s.modelB)?.name ?? "B";
+    return `${MODE_META.side_by_side.label} · ${a} vs ${b}`;
+  }
+
+  function renderSessionTopbar() {
+    if (!session) return null;
+    const title = session.title?.trim() || "گفتگو";
+    const summary = sessionSummaryLabel(session);
+    const creditChip =
+      credits !== null ? (
+        <Link href="/ai/pricing" className="ar-chat-topbar-credit" title="کردیت — خرید">
+          <IconDiamond size={12} />
+          <b>{credits.toLocaleString("fa-IR")}</b>
+        </Link>
+      ) : authBoot === "guest" && guestDirectRemaining !== null ? (
+        <span className="ar-chat-topbar-credit ar-chat-topbar-credit--guest">
+          {guestDirectRemaining.toLocaleString("fa-IR")} پیام رایگان
+        </span>
+      ) : null;
+
+    return (
+      <header className="ar-home-header ar-chat-topbar-header">
+        <div className="ar-home-topbar ar-chat-topbar">
+          <button
+            type="button"
+            className="ar-home-menu"
+            onClick={() => window.dispatchEvent(new Event("ai:open-drawer"))}
+            aria-label="باز کردن منو"
+          >
+            <IconMenu size={19} />
+          </button>
+
+          <div className="ar-chat-topbar-title">
+            <span className="ar-chat-topbar-name">{title}</span>
+            <span className="ar-chat-topbar-summary">{summary}</span>
+          </div>
+
+          <div className="ar-chat-topbar-controls">
+            {renderModePicker("ar-chat-topbar-mode")}
+            {session.type === "direct" && (
+              <div className="ar-chat-topbar-model">
+                <ModelSelect
+                  picker="direct"
+                  variant="bar"
+                  sheetOnMobile
+                  value={session.modelId}
+                  onChange={(id) =>
+                    setSession((s) => (s && s.type === "direct" ? { ...s, modelId: id } : s))
+                  }
+                  plan={plan}
+                />
+              </div>
+            )}
+            {creditChip}
+          </div>
+
+          <button
+            type="button"
+            className="ar-home-newchat"
+            onClick={handleNewChat}
+            aria-label="گفتگوی جدید"
+            title="گفتگوی جدید"
+          >
+            <IconNewChat size={17} />
+          </button>
+        </div>
+      </header>
     );
   }
 
@@ -979,32 +1215,10 @@ export default function ArenaHomePage({
           <ArenaPageSkeleton label="در حال بارگذاری" />
         </div>
       )}
-      {isLoggedIn ? (
+      {(authBoot === "user" || authBoot === "guest") && (
         <div className="ar-home-workspace">
           {renderBanners()}
-          <header className="ar-home-header">
-            <div className="ar-home-topbar">
-              <button
-                type="button"
-                className="ar-home-menu"
-                onClick={() => window.dispatchEvent(new Event("ai:open-drawer"))}
-                aria-label="باز کردن منو"
-              >
-                <IconMenu size={19} />
-              </button>
-              {renderModePicker("ar-home-mode")}
-              <button
-                type="button"
-                className="ar-home-newchat"
-                onClick={handleNewChat}
-                aria-label="گفتگوی جدید"
-                title="گفتگوی جدید"
-              >
-                <IconNewChat size={17} />
-              </button>
-            </div>
-            {!session && renderModelBar()}
-          </header>
+          {session && renderSessionTopbar()}
           {session ? (
             <div className="ar-main--chat">
               {session.type === "direct" ? (
@@ -1019,12 +1233,25 @@ export default function ArenaHomePage({
                     setCtxCredits(n);
                   }}
                   plan={plan}
+                  hideModelBar
+                  onModelChange={(id) =>
+                    setSession((s) => (s && s.type === "direct" ? { ...s, modelId: id } : s))
+                  }
                 />
-              ) : (
+              ) : session.type === "compare" ? (
                 <CompareSessionView
-                  mode={session.mode}
                   bootstrapPrompt={session.bootstrapPrompt}
                   webSearch={session.webMode}
+                  modelAId={session.modelA}
+                  modelBId={session.modelB}
+                  onCreditsChange={(n) => {
+                    setCredits(n);
+                    setCtxCredits(n);
+                  }}
+                />
+              ) : (
+                <CouncilSessionView
+                  bootstrapPrompt={session.bootstrapPrompt}
                   modelAId={session.modelA}
                   modelBId={session.modelB}
                   onCreditsChange={(n) => {
@@ -1035,203 +1262,10 @@ export default function ArenaHomePage({
               )}
             </div>
           ) : (
-            <>
-              <div className="ar-home-center">
-                <h2 className="ar-home-prompt">چه کاری می‌خوای انجام بدی؟</h2>
-                <p className="ar-home-sub">
-                  سؤال بپرس، تصویر بساز، یا دو مدل را مقایسه کن —{" "}
-                  {credits !== null
-                    ? formatStarterCredits(credits)
-                    : "≈ ۵۰ پرسش سریع · ≈ ۲ تصویر · ≈ ۱ ویدیو کوتاه"}
-                </p>
-                <div className="ar-quick-pills" role="navigation" aria-label="میانبرها">
-                  <Link href="/ai/image" className="ar-quick-pill ar-quick-pill--image">
-                    <span className="ar-quick-pill-icon" aria-hidden>
-                      <IconImage size={15} />
-                    </span>
-                    <span className="ar-quick-pill-text">ساخت عکس</span>
-                  </Link>
-                  <Link href="/ai/video" className="ar-quick-pill ar-quick-pill--video">
-                    <span className="ar-quick-pill-icon" aria-hidden>
-                      <IconVideo size={15} />
-                    </span>
-                    <span className="ar-quick-pill-text">ساخت ویدیو</span>
-                  </Link>
-                  <Link href="/ai/personas" className="ar-quick-pill ar-quick-pill--persona">
-                    <span className="ar-quick-pill-icon" aria-hidden>
-                      <IconSpark size={15} />
-                    </span>
-                    <span className="ar-quick-pill-text">شخصیت‌ها</span>
-                  </Link>
-                  <Link href="/ai/music" className="ar-quick-pill ar-quick-pill--music">
-                    <span className="ar-quick-pill-icon" aria-hidden>
-                      <IconMusic size={15} />
-                    </span>
-                    <span className="ar-quick-pill-text">ساخت موزیک</span>
-                  </Link>
-                  <button
-                    type="button"
-                    className="ar-quick-pill ar-quick-pill--battle"
-                    onClick={() => {
-                      setMode("battle");
-                      focusComposer(true);
-                    }}
-                  >
-                    <span className="ar-quick-pill-icon" aria-hidden>
-                      <IconSwords size={15} />
-                    </span>
-                    <span className="ar-quick-pill-text">نبرد مدل‌ها</span>
-                  </button>
-                </div>
-                <PersonaHomeRow />
-                <div className="ar-suggest-label">شروع کن</div>
-                <div className="ar-suggest-grid ar-suggest-grid--home">
-                  {SUGGESTIONS.slice(0, 4).map((s, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      className="ar-suggest-card"
-                      onClick={() =>
-                        pickSuggestion(
-                          s.prompt,
-                          "codeStudio" in s && !!(s as { codeStudio?: boolean }).codeStudio
-                        )
-                      }
-                    >
-                      <span className="ar-suggest-icon">
-                        <s.Icon size={16} />
-                      </span>
-                      <span>
-                        <b>{s.title}</b>
-                        <small>{s.desc}</small>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="ar-home-composer">
-                {renderComposer({ docked: true, showMode: false })}
-              </div>
-            </>
+            renderEmptyHome()
           )}
         </div>
-      ) : authBoot === "guest" ? (
-        <>
-      <main className="ar-container ar-guest-home">
-        {renderBanners()}
-
-        <div className="ar-quick-pills ar-quick-pills--guest" role="navigation" aria-label="میانبرها">
-          <Link href="/ai/image" className="ar-quick-pill ar-quick-pill--image">
-            <span className="ar-quick-pill-icon" aria-hidden>
-              <IconImage size={15} />
-            </span>
-            <span className="ar-quick-pill-text">ساخت عکس</span>
-          </Link>
-          <Link href="/ai/video" className="ar-quick-pill ar-quick-pill--video">
-            <span className="ar-quick-pill-icon" aria-hidden>
-              <IconVideo size={15} />
-            </span>
-            <span className="ar-quick-pill-text">ساخت ویدیو</span>
-          </Link>
-          <Link href="/ai/personas" className="ar-quick-pill ar-quick-pill--persona">
-            <span className="ar-quick-pill-icon" aria-hidden>
-              <IconSpark size={15} />
-            </span>
-            <span className="ar-quick-pill-text">شخصیت‌ها</span>
-          </Link>
-          <Link href="/ai/music" className="ar-quick-pill ar-quick-pill--music">
-            <span className="ar-quick-pill-icon" aria-hidden>
-              <IconMusic size={15} />
-            </span>
-            <span className="ar-quick-pill-text">ساخت موزیک</span>
-          </Link>
-        </div>
-
-        {renderComposer({ showMode: true })}
-
-        <PersonaHomeRow />
-
-        <section className="ar-hero ar-hero--slim">
-          <div className="ar-hero-mark">
-            <IconSpark size={18} />
-            آرایه AI
-          </div>
-          <h1>
-            چت فارسی، <span className="ar-hl">بدون VPN</span> — پرداخت تومان
-          </h1>
-          <p className="ar-hero-proof">
-            ثبت‌نام رایگان — {FREE_PLAN_EQUIVALENTS.signupBonus} هدیه برای شروع
-          </p>
-          <Link href="/ai/leaderboard" className="ar-hero-link">
-            لیدربورد مدل‌ها ←
-          </Link>
-        </section>
-
-        <div className="ar-suggest-label">شروع کن</div>
-        <div className="ar-suggest-grid">
-          {SUGGESTIONS.slice(0, 4).map((s, i) => (
-            <button key={i} className="ar-suggest-card" onClick={() => useSuggestion(s.prompt)}>
-              <span className="ar-suggest-icon">
-                <s.Icon size={16} />
-              </span>
-              <span>
-                <b>{s.title}</b>
-                <small>{s.desc}</small>
-              </span>
-            </button>
-          ))}
-        </div>
-        {/* Trust — درباره ما / پشتیبانی / پرداخت امن */}
-        <section className="ar-trust" id="support">
-          <div className="ar-trust-grid">
-            <div className="ar-trust-card">
-              <div className="head">
-                <IconSpark size={16} />
-                درباره ما
-              </div>
-              <p>
-                آرایه AI محصولی از <a href="/">آرایه</a> است — تیم توسعه نرم‌افزار
-                اختصاصی که برای ده‌ها کسب‌وکار ایرانی سایت، CRM و ابزار هوش مصنوعی
-                ساخته است. این محصول با همان استاندارد، دسترسی به بهترین مدل‌های
-                دنیا را بدون VPN و دلار ممکن می‌کند.
-              </p>
-            </div>
-            <div className="ar-trust-card">
-              <div className="head">
-                <IconPhone size={16} />
-                پشتیبانی
-              </div>
-              <p>پاسخ‌گوی سؤال، مشکل پرداخت یا هر ابهامی هستیم:</p>
-              <div className="row">
-                تلفن: <a href="tel:02128426699" dir="ltr">۰۲۱-۲۸۴۲۶۶۹۹</a>
-              </div>
-              <div className="row">
-                ایمیل: <a href="mailto:support@araaye.com" dir="ltr">support@araaye.com</a>
-              </div>
-            </div>
-            <div className="ar-trust-card">
-              <div className="head">
-                <IconShield size={16} />
-                پرداخت امن
-              </div>
-              <p>
-                پرداخت‌ها از طریق درگاه رسمی زیبال انجام می‌شود و کردیت‌ها
-                بلافاصله به حسابت اضافه می‌شوند و منقضی نمی‌شوند. اگر پرداختی
-                ناموفق بود ولی مبلغ کسر شد، طبق قوانین شاپرک برمی‌گردد.
-              </p>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="ar-footer">
-        <div className="ar-container">
-          محصولی از <Link href="/">آرایه</Link> — پاسخ‌ها توسط مدل‌های هوش مصنوعی تولید می‌شوند و ممکن است نادرست باشند.
-        </div>
-      </footer>
-
-        </>
-      ) : null}
+      )}
 
       {/* Auth sheet */}
       {showSheet && (
@@ -1241,17 +1275,17 @@ export default function ArenaHomePage({
             if (e.target === e.currentTarget) setShowSheet(false);
           }}
         >
-          <div className="ar-sheet">
+          <div className="ar-sheet ar-sheet--auth">
             <div className="ar-sheet-head">
-              <h3>{authTab === "register" ? "ثبت‌نام سریع" : "ورود"}</h3>
+              <h3>ورود به آرایه AI</h3>
               <button className="ar-sheet-close" onClick={() => setShowSheet(false)} aria-label="بستن">
-                <IconX size={14} />
+                <IconX size={13} />
               </button>
             </div>
             <p className="ar-sheet-sub">
               {pendingPrompt
-                ? "برای شروع، فقط شماره موبایل و یک رمز لازم است."
-                : "با شماره موبایل و رمز وارد شو."}
+                ? "برای ارسال پیام، با شماره موبایل وارد شو یا ثبت‌نام کن."
+                : "با شماره موبایل وارد شو یا ثبت‌نام کن."}
             </p>
 
             <div className="ar-tabs">
@@ -1282,10 +1316,10 @@ export default function ArenaHomePage({
               />
             </div>
             <div className="ar-field">
-              <label>{authTab === "register" ? "یک رمز بساز (حداقل ۶ کاراکتر)" : "رمز عبور"}</label>
+              <label>رمز عبور</label>
               <input
                 type="password"
-                placeholder="••••••"
+                placeholder={authTab === "register" ? "حداقل ۶ کاراکتر" : "رمز عبور"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAuth()}
@@ -1299,13 +1333,15 @@ export default function ArenaHomePage({
               {authBusy
                 ? "لطفاً صبر کن…"
                 : authTab === "register"
-                  ? "ثبت‌نام و شروع"
+                  ? "شروع رایگان"
                   : "ورود"}
             </button>
 
-            <p className="ar-auth-note">
-              با ثبت‌نام ۵ پرسش رایگان می‌گیری.
-            </p>
+            {authTab === "register" && (
+              <p className="ar-auth-note">
+                ۵ پیام رایگان بعد از ثبت‌نام فعال می‌شود.
+              </p>
+            )}
           </div>
         </div>
       )}

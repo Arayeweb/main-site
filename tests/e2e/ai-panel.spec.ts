@@ -5,12 +5,12 @@ test.describe("Araaye AI — landing & panel", () => {
     await page.goto("/ai");
     await expect(page).toHaveURL(/\/ai/);
     await expect(page.getByRole("button", { name: "ارسال" })).toBeVisible();
-    await expect(page.getByLabel("مدل‌های در دسترس")).toBeVisible();
+    await expect(page.getByRole("group", { name: "انتخاب مدل" })).toBeVisible();
   });
 
   test("guest sees free battle allowance message", async ({ page }) => {
     await page.goto("/ai");
-    await expect(page.getByText(/نبرد رایگان/)).toBeVisible();
+    await expect(page.getByText(/۵ پیام رایگان/)).toBeVisible();
   });
 
   test("pricing page loads package cards", async ({ page }) => {
@@ -30,13 +30,13 @@ test.describe("Araaye AI — auth flow", () => {
       await page.getByRole("button", { name: "باز کردن منو" }).click();
       await page.getByRole("button", { name: /ورود|ثبت‌نام/ }).click();
     }
-    await expect(page.getByRole("heading", { name: /ثبت‌نام|ورود/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /ورود به آرایه AI/ })).toBeVisible();
   });
 
   test("shows validation error for empty auth submit", async ({ page }) => {
     await page.goto("/ai?login=1");
-    await page.getByRole("button", { name: "ثبت‌نام و شروع", exact: true }).click();
-    await expect(page.getByRole("heading", { name: /ثبت‌نام|ورود/ })).toBeVisible();
+    await page.getByRole("button", { name: "شروع رایگان", exact: true }).click();
+    await expect(page.getByRole("heading", { name: /ورود به آرایه AI/ })).toBeVisible();
   });
 
   // TODO: Set E2E_AI_PHONE + E2E_AI_PASSWORD for full register/login against staging Supabase
@@ -48,7 +48,7 @@ test.describe("Araaye AI — auth flow", () => {
     await page.getByRole("button", { name: "ثبت‌نام" }).click();
     await page.locator('input[type="tel"], input[inputmode="numeric"]').first().fill(phone);
     await page.locator('input[type="password"]').fill(password);
-    await page.getByRole("button", { name: "ثبت‌نام و شروع" }).click();
+    await page.getByRole("button", { name: "شروع رایگان" }).click();
     await expect(page.getByText(/کردیت|پرسش/i)).toBeVisible({ timeout: 15_000 });
   });
 });

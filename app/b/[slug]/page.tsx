@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import BizcardChatWidget from "@/components/bizcard/BizcardChatWidget";
 import { fetchActiveBizcardBySlug, type BizcardRow } from "@/lib/bizcardDb";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { normalizeReactStyle } from "@/lib/style";
@@ -40,10 +41,6 @@ export default async function BizcardPage({ params }: { params: { slug: string }
 
   const supabase = getSupabaseAdmin();
   const { data, error } = await fetchActiveBizcardBySlug(supabase, slug);
-
-  // #region agent log
-  fetch('http://127.0.0.1:7595/ingest/5edfe92e-8eff-41b7-9393-ff5814f12f32',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d579a7'},body:JSON.stringify({sessionId:'d579a7',location:'app/b/[slug]/page.tsx:BizcardPage',message:'bizcard fetch result',data:{slug,hasData:!!data,errorCode:error?.code??null,errorMsg:error?.message??null,businessName:data?.business_name??null},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-  // #endregion
 
   if (error || !data) notFound();
   const card = data as Bizcard;
@@ -179,6 +176,21 @@ export default async function BizcardPage({ params }: { params: { slug: string }
           </div>
         </main>
       </div>
+
+      <BizcardChatWidget
+        card={{
+          slug: card.slug,
+          business_name: card.business_name,
+          category: card.category,
+          phone: card.phone,
+          whatsapp: card.whatsapp,
+          address: card.address,
+          hours: card.hours,
+          maps_url: card.maps_url,
+          neshan_url: card.neshan_url,
+          balad_url: card.balad_url,
+        }}
+      />
     </>
   );
 }

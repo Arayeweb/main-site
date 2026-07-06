@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
+import { withPublicTimeout } from "@/lib/publicDataFetch";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,31 +13,40 @@ export async function GET(
 ) {
   const session = getAISession(req);
   if (!session) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
   if (!id) {
-    return NextResponse.json({ ok: false, error: "missing_id" }, { status: 422 });
+    return jsonNoStore({ ok: false, error: "missing_id" }, { status: 422 });
   }
 
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("ai_support_tickets")
-    .select(
-      "id, subject, body, status, priority, admin_reply, replied_at, created_at, updated_at"
-    )
-    .eq("id", id)
-    .eq("user_id", session.userId)
-    .maybeSingle();
+  const result = await withPublicTimeout(
+    supabase
+      .from("ai_support_tickets")
+      .select(
+        "id, subject, body, status, priority, admin_reply, replied_at, created_at, updated_at"
+      )
+      .eq("id", id)
+      .eq("user_id", session.userId)
+      .maybeSingle(),
+    "support/ticket-detail"
+  );
+
+  if (!result) {
+    return jsonNoStore({ ok: false, error: "not_found" }, { status: 404 });
+  }
+
+  const { data, error } = result;
 
   if (error) {
     console.error("[api/ai/support/tickets/[id]] GET", error.message);
-    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
   }
   if (!data) {
-    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+    return jsonNoStore({ ok: false, error: "not_found" }, { status: 404 });
   }
 
-  return NextResponse.json({ ok: true, ticket: data });
+  return jsonNoStore({ ok: true, ticket: data });
 }

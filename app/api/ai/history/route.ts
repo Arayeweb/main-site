@@ -1,7 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
-import { buildHistoryItems, type HistoryRow } from "@/lib/aiHistory";
+import {
+  buildHistoryItems,
+  buildRunHistoryItems,
+  mergeUnifiedHistory,
+  type HistoryRow,
+} from "@/lib/aiHistory";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,7 +15,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const session = getAISession(req);
   if (!session) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -42,7 +48,7 @@ export async function GET(req: NextRequest) {
 
       if (legacy.error) {
         console.error("[api/ai/history]", legacy.error.message, withThread.error?.message);
-        return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+        return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
       }
 
       rows = (legacy.data || []).map((r) => ({
@@ -55,8 +61,31 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({
+  const legacyItems = buildHistoryItems(rows || []);
+
+  let runItems: ReturnType<typeof buildRunHistoryItems> = [];
+  const { data: runRows, error: runErr } = await supabase
+    .from("ai_runs")
+    .select("id, mode, metadata, created_at, conversation_id")
+    .eq("user_id", session.userId)
+    .in("status", ["running", "completed", "cancelled", "failed", "settlement_failed"])
+    .order("created_at", { ascending: false })
+    .limit(120);
+
+  if (!runErr && runRows) {
+    runItems = buildRunHistoryItems(
+      runRows as Array<{
+        id: string;
+        mode: string;
+        metadata: { prompt?: string } | null;
+        created_at: string;
+        conversation_id: string | null;
+      }>
+    );
+  }
+
+  return jsonNoStore({
     ok: true,
-    items: buildHistoryItems(rows || []),
+    items: mergeUnifiedHistory(legacyItems, runItems),
   });
 }

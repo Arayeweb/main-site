@@ -17,6 +17,9 @@ export async function GET(req: NextRequest) {
     const since30 = new Date(now - 30 * DAY_MS).toISOString();
     const prev30Start = new Date(now - 60 * DAY_MS).toISOString();
 
+    const sinceToday = new Date();
+    sinceToday.setHours(0, 0, 0, 0);
+
     const [
       { count: totalUsers },
       { data: usersByPlan },
@@ -28,6 +31,10 @@ export async function GET(req: NextRequest) {
       { data: failedPayments },
       { data: urgentTickets },
       { data: activeUsers30 },
+      { count: tgTotalUsers },
+      { data: tgEvents30 },
+      { data: tgPaidOrders30 },
+      { data: tgDauToday },
     ] = await Promise.all([
       supabase.from("ai_users").select("*", { count: "exact", head: true }),
       supabase.from("ai_users").select("plan"),
@@ -55,6 +62,23 @@ export async function GET(req: NextRequest) {
         .order("created_at", { ascending: false })
         .limit(5),
       supabase.from("ai_users").select("id").gte("last_login_at", since30),
+      supabase.from("telegram_users").select("*", { count: "exact", head: true }),
+      supabase
+        .from("telegram_events")
+        .select("event")
+        .gte("created_at", since30)
+        .range(0, 9999),
+      supabase
+        .from("telegram_payment_orders")
+        .select("amount_toman, created_at")
+        .eq("status", "paid")
+        .gte("created_at", since30),
+      supabase
+        .from("telegram_events")
+        .select("telegram_id")
+        .gte("created_at", sinceToday.toISOString())
+        .not("telegram_id", "is", null)
+        .range(0, 9999),
     ]);
 
     const planCounts: Record<string, number> = {};
@@ -142,6 +166,19 @@ export async function GET(req: NextRequest) {
 
     const failingProviders = (providers || []).filter((p) => p.status !== "operational" || (p.error_rate || 0) > 0.05);
 
+    const tgEventCounts: Record<string, number> = {};
+    for (const ev of tgEvents30 || []) {
+      const name = (ev.event as string) || "unknown";
+      tgEventCounts[name] = (tgEventCounts[name] || 0) + 1;
+    }
+    const tgRevenue30 = (tgPaidOrders30 || []).reduce(
+      (s, o) => s + (Number(o.amount_toman) || 0),
+      0
+    );
+    const tgDauSet = new Set(
+      (tgDauToday || []).map((e: { telegram_id?: number | null }) => e.telegram_id)
+    );
+
     let failedPaymentsOut: { id: string; user_phone: string; amount_toman: number; created_at: string }[] = [];
     if ((failedPayments || []).length > 0) {
       const ids = (failedPayments || []).map((o) => o.user_id as string);
@@ -184,6 +221,19 @@ export async function GET(req: NextRequest) {
           created_at: t.created_at as string,
         })),
         negative_margin_users: negativeMarginUsers,
+      },
+      telegram: {
+        total_users: tgTotalUsers ?? 0,
+        dau_today: tgDauSet.size,
+        events_30d: tgEventCounts,
+        revenue_30d_toman: tgRevenue30,
+        bot_starts_30d: tgEventCounts.bot_started || 0,
+        first_message_users_30d: tgEventCounts.first_message_sent || 0,
+        free_limit_reached_30d: tgEventCounts.free_limit_reached || 0,
+        compare_clicks_30d: tgEventCounts.compare_link_clicked || 0,
+        pricing_opens_30d: tgEventCounts.pricing_opened || 0,
+        payment_links_30d: tgEventCounts.payment_link_created || 0,
+        successful_payments_30d: tgEventCounts.payment_success || 0,
       },
     });
   } catch (e) {

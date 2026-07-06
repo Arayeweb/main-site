@@ -3,7 +3,9 @@
 // =========================================================
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isE2eMode } from "./e2eMode";
 import { modelName } from "./aiModels";
+import { logPublicDataWarning, withPublicTimeout } from "./publicDataFetch";
 
 export interface LeaderboardEntry {
   modelId: string;
@@ -20,14 +22,31 @@ const EXCLUDED_TIERS = new Set(["direct", "image_gen"]);
 export async function fetchLeaderboard(
   supabase: SupabaseClient
 ): Promise<LeaderboardEntry[]> {
-  const { data, error } = await supabase
-    .from("ai_battles")
-    .select("model_a, model_b, winner, tier")
-    .in("winner", ["a", "b"]);
+  return (await fetchLeaderboardOrNull(supabase)) ?? [];
+}
 
-  if (error) {
-    console.error("[aiLeaderboard]", error);
+/** Like fetchLeaderboard, but returns null on query failure/timeout (for stale-if-error caching). */
+export async function fetchLeaderboardOrNull(
+  supabase: SupabaseClient
+): Promise<LeaderboardEntry[] | null> {
+  if (isE2eMode()) {
     return [];
+  }
+
+  const result = await withPublicTimeout(
+    supabase
+      .from("ai_battles")
+      .select("model_a, model_b, winner, tier")
+      .in("winner", ["a", "b"]),
+    "leaderboard"
+  );
+
+  if (!result) return null;
+
+  const { data, error } = result;
+  if (error) {
+    logPublicDataWarning("leaderboard", error);
+    return null;
   }
 
   const stats = new Map<string, { wins: number; losses: number }>();

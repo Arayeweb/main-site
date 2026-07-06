@@ -69,9 +69,6 @@ export async function middleware(req: NextRequest) {
   );
   const isLoginPath = pathname === '/admin/login' || pathname.startsWith('/admin/login?');
 
-  // #region agent log
-  fetch('http://127.0.0.1:7292/ingest/5edfe92e-8eff-41b7-9393-ff5814f12f32',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3d11db'},body:JSON.stringify({sessionId:'3d11db',location:'middleware.ts:verify',message:'middleware session check',data:{pathname,hasToken:!!token,sessionOk:!!session,role:session?.role??null,hasSecret:!!process.env.ADMIN_SESSION_SECRET},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
-  // #endregion
   agentDebugLog(
     'middleware.ts:session',
     'admin_middleware_session_check',

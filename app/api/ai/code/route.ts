@@ -7,10 +7,10 @@ import { persistChatTurn } from "@/lib/aiPersist";
 import {
   MAX_PROMPT_CHARS,
   MODEL_MAX_TOKENS,
-  canUseMode,
   directCost,
   resolveUserModel,
 } from "@/lib/aiCredits";
+import { planRank } from "@/lib/aiPackages";
 import {
   buildCodePrompt,
   type CodeFileMap,
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   }
 
   const plan = (user.plan as string) || "free";
-  if (!canUseMode(plan, "direct")) {
+  if (planRank(plan) < planRank("starter")) {
     return new Response(sse({ type: "error", error: "plan_upgrade_required" }), {
       status: 403,
       headers: { "Content-Type": "text/event-stream" },

@@ -25,12 +25,15 @@ export default async function AudioThreadPage({ params }: { params: { id: string
   const supabase = getSupabaseAdmin();
   const rootId = params.id;
 
-  const res = await supabase
-    .from("ai_battles")
-    .select("id, user_id, prompt, response_a, model_a, tier, thread_id, attachments, created_at")
-    .or(`id.eq.${rootId},thread_id.eq.${rootId}`)
-    .order("created_at", { ascending: true })
-    .limit(40);
+  const [res, userP] = await Promise.all([
+    supabase
+      .from("ai_battles")
+      .select("id, user_id, prompt, response_a, model_a, tier, thread_id, attachments, created_at")
+      .or(`id.eq.${rootId},thread_id.eq.${rootId}`)
+      .order("created_at", { ascending: true })
+      .limit(40),
+    supabase.from("ai_users").select("plan").eq("id", session.userId).maybeSingle(),
+  ]);
 
   const rows = ((res.data || []) as Row[]).filter(
     (r) =>
@@ -42,11 +45,7 @@ export default async function AudioThreadPage({ params }: { params: { id: string
     redirect("/ai/audio");
   }
 
-  const { data: user } = await supabase
-    .from("ai_users")
-    .select("plan")
-    .eq("id", session.userId)
-    .maybeSingle();
+  const { data: user } = userP;
 
   const turns = rows.map((r) => {
     const att = Array.isArray(r.attachments) ? r.attachments : [];

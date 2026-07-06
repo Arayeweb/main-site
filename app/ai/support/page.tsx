@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { IconPhone, IconPlus, IconX } from "../icons";
+import { useArenaAuth } from "../ArenaAuthContext";
 
 type TicketSummary = {
   id: string;
@@ -41,7 +42,7 @@ function formatDate(iso: string) {
 }
 
 export default function SupportPage() {
-  const [authed, setAuthed] = useState<boolean | null>(null);
+  const { authed } = useArenaAuth();
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -61,18 +62,9 @@ export default function SupportPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/ai/auth", { credentials: "same-origin" })
-      .then((r) => r.json())
-      .then((d) => {
-        setAuthed(!!d.authed);
-        if (d.authed) loadTickets();
-        else setLoading(false);
-      })
-      .catch(() => {
-        setAuthed(false);
-        setLoading(false);
-      });
-  }, [loadTickets]);
+    if (authed === true) loadTickets();
+    else if (authed === false) setLoading(false);
+  }, [authed, loadTickets]);
 
   async function submitTicket(e: React.FormEvent) {
     e.preventDefault();

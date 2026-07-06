@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import {
   attachContentSalesCookie,
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
   if (!order) {
     const aiSession = getAISession(req);
     if (!aiSession) {
-      return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+      return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
     }
 
     const { data: user } = await supabase
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
       .maybeSingle();
 
     if (!user) {
-      return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+      return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
     }
 
     order = await findActiveContentSalesOrder(supabase, {
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (!order) {
-      return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+      return jsonNoStore({ ok: false, error: "not_found" }, { status: 404 });
     }
     issuedCookie = true;
   }
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest) {
       .eq("id", order.id);
   }
 
-  const res = NextResponse.json({
+  const res = jsonNoStore({
     ok: true,
     order: {
       buyerName: order.buyer_name,

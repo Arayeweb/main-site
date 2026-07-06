@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { requireAiOpsModule, isAiOpsSession } from "@/lib/aiAdminAuth";
-import { agentDebugLog } from "@/lib/agentDebug";
+import { agentDebugLog } from "@/lib/agentDebug.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

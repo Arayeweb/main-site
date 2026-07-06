@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 
@@ -10,7 +11,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 export async function GET(req: NextRequest) {
   const session = getAISession(req);
   if (!session) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -22,15 +23,15 @@ export async function GET(req: NextRequest) {
 
   if (error) {
     console.error("[api/ai/referral/me]", error);
-    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
   }
 
   if (!data) {
-    return NextResponse.json({ ok: false, error: "no_code" }, { status: 404 });
+    return jsonNoStore({ ok: false, error: "no_code" }, { status: 404 });
   }
 
   const code = data.code as string;
-  return NextResponse.json({
+  return jsonNoStore({
     ok: true,
     code,
     totalReferrals: data.total_referrals,

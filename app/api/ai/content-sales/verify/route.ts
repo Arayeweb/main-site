@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { noStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { attachContentSalesCookie } from "@/lib/contentSalesAccess";
 import { provisionContentSalesAI } from "@/lib/contentSalesProvision";
@@ -11,6 +12,10 @@ export const dynamic = "force-dynamic";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 const AMOUNT_TOLERANCE = 10;
 
+function redirectNoStore(url: string) {
+  return noStore(NextResponse.redirect(url));
+}
+
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const trackId = sp.get("trackId");
@@ -18,7 +23,7 @@ export async function GET(req: NextRequest) {
   const success = sp.get("success");
 
   if (!trackId) {
-    return NextResponse.redirect(`${SITE_URL}/ai/content-sales?payment=error`);
+    return redirectNoStore(`${SITE_URL}/ai/content-sales?payment=error`);
   }
 
   const supabase = getSupabaseAdmin();
@@ -29,33 +34,33 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (!order) {
-    return NextResponse.redirect(`${SITE_URL}/ai/content-sales?payment=error`);
+    return redirectNoStore(`${SITE_URL}/ai/content-sales?payment=error`);
   }
 
   const successUrl = new URL(`${SITE_URL}/ai/content-sales/app`);
   successUrl.searchParams.set("welcome", "1");
 
   if (order.status === "paid" || order.status === "paid_needs_setup") {
-    const res = NextResponse.redirect(successUrl.toString());
+    const res = redirectNoStore(successUrl.toString());
     setCookies(res, order.id as string, order.ai_user_id as string | null);
     return res;
   }
 
   if (status === "NOK" || success === "false") {
     await supabase.from("content_sales_orders").update({ status: "failed" }).eq("id", order.id);
-    return NextResponse.redirect(`${SITE_URL}/ai/content-sales?payment=failed`);
+    return redirectNoStore(`${SITE_URL}/ai/content-sales?payment=failed`);
   }
 
   const verify = await zibalVerify(trackId);
   if (!verify.ok || !verify.paid) {
     await supabase.from("content_sales_orders").update({ status: "failed" }).eq("id", order.id);
-    return NextResponse.redirect(`${SITE_URL}/ai/content-sales?payment=failed`);
+    return redirectNoStore(`${SITE_URL}/ai/content-sales?payment=failed`);
   }
 
   const paidAmount = verify.amount ?? 0;
   if (Math.abs(paidAmount - (order.amount_toman as number)) > AMOUNT_TOLERANCE) {
     await supabase.from("content_sales_orders").update({ status: "failed" }).eq("id", order.id);
-    return NextResponse.redirect(`${SITE_URL}/ai/content-sales?payment=error`);
+    return redirectNoStore(`${SITE_URL}/ai/content-sales?payment=error`);
   }
 
   let orderStatus: "paid" | "paid_needs_setup" = "paid";
@@ -107,7 +112,7 @@ export async function GET(req: NextRequest) {
     consent: true,
   });
 
-  const res = NextResponse.redirect(successUrl.toString());
+  const res = redirectNoStore(successUrl.toString());
   setCookies(res, order.id as string, aiUserId);
   return res;
 }

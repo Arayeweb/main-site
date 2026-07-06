@@ -48,40 +48,41 @@ export default async function PersonaChatPage({ params, searchParams }: Props) {
 
   if (session) {
     const supabase = getSupabaseAdmin();
-    const { data: user } = await supabase
-      .from("ai_users")
-      .select("plan")
-      .eq("id", session.userId)
-      .maybeSingle();
-    plan = (user?.plan as string) || "free";
 
-    if (threadParam) {
-      const { data: rows } = await supabase
-        .from("ai_battles")
-        .select("id, user_id, prompt, response_a, persona_key, tier, created_at, thread_id")
-        .or(`id.eq.${threadParam},thread_id.eq.${threadParam}`)
-        .order("created_at", { ascending: true })
-        .limit(40);
+    const [userP, rowsP] = await Promise.all([
+      supabase.from("ai_users").select("plan").eq("id", session.userId).maybeSingle(),
+      threadParam
+        ? supabase
+            .from("ai_battles")
+            .select("id, user_id, prompt, response_a, persona_key, tier, created_at, thread_id")
+            .or(`id.eq.${threadParam},thread_id.eq.${threadParam}`)
+            .order("created_at", { ascending: true })
+            .limit(40)
+        : Promise.resolve({ data: [] }),
+    ]);
 
-      const mine = (rows || []).filter((r) => r.user_id === session.userId);
-      const personaRows = mine.filter(
-        (r) =>
-          (r.persona_key as string | null) === persona.id ||
-          ((r.tier as string) === "persona" && !(r.persona_key as string | null))
-      );
+    plan = (userP.data?.plan as string) || "free";
 
-      if (personaRows.length === 0 && mine.length > 0) {
-        redirect(`/ai/personas/${persona.id}`);
-      }
+    const mine = ((rowsP.data as unknown[]) || []).filter((r) => (r as { user_id: string }).user_id === session.userId);
+    const personaRows = mine.filter(
+      (r) =>
+        ((r as { persona_key?: string | null }).persona_key as string | null) === persona.id ||
+        (((r as { tier?: string }).tier as string) === "persona" &&
+          !(r as { persona_key?: string | null }).persona_key)
+    ) as typeof mine;
 
-      if (personaRows.length > 0) {
-        threadId = (personaRows[0].thread_id as string) || (personaRows[0].id as string);
-        initialTurns = personaRows.map((r) => ({
-          id: r.id as string,
-          prompt: r.prompt as string,
-          response: r.response_a as string,
-        }));
-      }
+    if (personaRows.length === 0 && mine.length > 0) {
+      redirect(`/ai/personas/${persona.id}`);
+    }
+
+    if (personaRows.length > 0) {
+      const first = personaRows[0] as { thread_id?: string | null; id: string };
+      threadId = first.thread_id || first.id;
+      initialTurns = personaRows.map((r) => ({
+        id: (r as { id: string }).id,
+        prompt: (r as { prompt: string }).prompt,
+        response: (r as { response_a: string }).response_a,
+      }));
     }
   }
 

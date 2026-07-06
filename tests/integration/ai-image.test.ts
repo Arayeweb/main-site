@@ -211,4 +211,65 @@ describe("integration — /api/ai/image", () => {
     const body = await jsonBody<{ status: string }>(res);
     expect(body.status).toBe("processing");
   });
+
+  it("image generation does not double-deduct across separate jobs", async () => {
+    const token = signAIToken("user-img", "starter");
+    await POST(
+      makeRequest("/api/ai/image", {
+        method: "POST",
+        cookies: { [AI_COOKIE]: token },
+        body: { prompt: "first", model: "image-lite" },
+      })
+    );
+    await POST(
+      makeRequest("/api/ai/image", {
+        method: "POST",
+        cookies: { [AI_COOKIE]: token },
+        body: { prompt: "second", model: "image-lite" },
+      })
+    );
+    const totalJobCost = db.tables.ai_media_jobs.reduce(
+      (sum, j) => sum + (j.credit_cost as number),
+      0
+    );
+    expect(db.tables.ai_media_jobs).toHaveLength(2);
+    expect(10 - (db.tables.ai_users[0].credits as number)).toBe(totalJobCost);
+  });
+
+  it("failed image generation refunds credits via claimAndProcess", async () => {
+    const token = signAIToken("user-img", "starter");
+    const createRes = await POST(
+      makeRequest("/api/ai/image", {
+        method: "POST",
+        cookies: { [AI_COOKIE]: token },
+        body: { prompt: "fail me", model: "image-lite" },
+      })
+    );
+    const { jobId } = await jsonBody<{ jobId: string }>(createRes);
+    expect(db.tables.ai_users[0].credits).toBe(7);
+
+    mockClaimAndProcess.mockImplementation(async () => {
+      const user = db.tables.ai_users[0];
+      user.credits = (user.credits as number) + 3;
+      db.tables.ai_credit_ledger.push({
+        user_id: "user-img",
+        delta: 3,
+        balance_after: user.credits,
+        reason: "image_refund",
+        note: `Refund for failed image job ${jobId}`,
+      });
+      db.tables.ai_media_jobs[0].status = "failed";
+      return "failed";
+    });
+
+    await pollGET(
+      makeRequest(`/api/ai/image/${jobId}`, {
+        cookies: { [AI_COOKIE]: token },
+      }),
+      { params: { jobId } }
+    );
+
+    expect(db.tables.ai_users[0].credits).toBe(10);
+    expect(db.tables.ai_credit_ledger.some((e) => e.reason === "image_refund")).toBe(true);
+  });
 });

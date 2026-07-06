@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 import { resolveCode } from "@/lib/aiPromo";
@@ -10,14 +11,14 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   const session = getAISession(req);
   if (!session) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "bad_json" }, { status: 400 });
+    return jsonNoStore({ ok: false, error: "bad_json" }, { status: 400 });
   }
 
   const packageId = String(body.packageId ?? "");
@@ -27,13 +28,13 @@ export async function POST(req: NextRequest) {
   const result = await resolveCode(supabase, code, session.userId, packageId);
 
   if ("error" in result) {
-    return NextResponse.json(
+    return jsonNoStore(
       { ok: false, error: result.error, message: result.message },
       { status: 422 }
     );
   }
 
-  return NextResponse.json({
+  return jsonNoStore({
     ok: true,
     listPrice: result.listAmountToman,
     discount: result.discountToman,

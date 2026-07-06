@@ -13,6 +13,7 @@ import {
   pickUtmForDb,
 } from "@/lib/utm";
 import { IconCheck, IconDiamond, IconX } from "../icons";
+import { useArenaAuth } from "../ArenaAuthContext";
 
 type PricePreview = {
   listPrice: number;
@@ -25,7 +26,7 @@ type PricePreview = {
 export default function PricingPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState("");
-  const [authed, setAuthed] = useState<boolean | null>(null);
+  const { authed } = useArenaAuth();
   const [failed, setFailed] = useState(false);
   const [code, setCode] = useState("");
   const [codeErr, setCodeErr] = useState("");
@@ -35,11 +36,6 @@ export default function PricingPage() {
 
   useEffect(() => {
     getUtmParams();
-
-    fetch("/api/ai/auth")
-      .then((r) => r.json())
-      .then((d) => setAuthed(!!d.authed))
-      .catch(() => setAuthed(false));
 
     const params = new URLSearchParams(window.location.search);
 

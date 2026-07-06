@@ -17,6 +17,14 @@ import { getModel } from "@/lib/aiModels";
 import { wrapPromptWithModes } from "./composerHelpers";
 import MarkdownMessage from "./MarkdownMessage";
 import ArenaComposer from "./ArenaComposer";
+import {
+  startRunStream,
+  stopRunStream,
+  classifyRunStreamError,
+  runStreamErrorMessage,
+} from "@/lib/ai/client/runStream";
+import { buildRunMessages } from "@/lib/ai/client/buildMessages";
+import type { RunSSEEvent } from "@/lib/ai/streaming/sse";
 
 export type ChatTurn = {
   id: string;
@@ -41,6 +49,8 @@ export default function DirectChatView({
   initialCodeMode = false,
   initialWebMode = false,
   onCreditsChange,
+  onModelChange,
+  hideModelBar = false,
   plan = "free",
   guestMode = false,
 }: {
@@ -52,6 +62,8 @@ export default function DirectChatView({
   initialCodeMode?: boolean;
   initialWebMode?: boolean;
   onCreditsChange?: (n: number) => void;
+  onModelChange?: (id: string) => void;
+  hideModelBar?: boolean;
   plan?: string;
   guestMode?: boolean;
 }) {
@@ -75,6 +87,9 @@ export default function DirectChatView({
     | "unauthorized"
     | "no_vision"
     | "guest_direct_limit"
+    | "cancelled"
+    | "rate_limited"
+    | "plan_locked"
   >("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
@@ -83,6 +98,8 @@ export default function DirectChatView({
   const fileRef = useRef<HTMLInputElement>(null);
   const bootRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const runIdRef = useRef<string | null>(null);
+  const streamAbortRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     setChatModel(modelId);
@@ -143,6 +160,8 @@ export default function DirectChatView({
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;
+    runIdRef.current = null;
+    streamAbortRef.current = null;
 
     const tmpId = opts?.replaceTurnId || `tmp-${Date.now()}`;
     const attachUrls = attach.map((a) => a.url);
@@ -169,129 +188,189 @@ export default function DirectChatView({
     }
 
     try {
-      const chatUrl = guestMode ? "/api/ai/chat/guest" : "/api/ai/chat";
-      const res = await fetch(chatUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: ac.signal,
-        body: JSON.stringify({
-          prompt: apiPrompt,
-          ...(guestMode
-            ? {}
-            : {
-                model: chatModel,
-                webSearch: useWeb,
-                attachments: attach.map((a) => ({ url: a.url, mime: a.mime })),
-              }),
-          threadId: activeThreadId,
-        }),
-      });
+      if (guestMode) {
+        const chatUrl = "/api/ai/chat/guest";
+        const res = await fetch(chatUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: ac.signal,
+          body: JSON.stringify({
+            prompt: apiPrompt,
+            threadId: activeThreadId,
+          }),
+        });
 
-      if (res.status === 401) {
-        if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-        const errBody = await res.text().catch(() => "");
-        if (errBody.includes("guest_direct_limit")) setErr("guest_direct_limit");
-        else setErr("unauthorized");
-        setStreaming(false);
-        window.dispatchEvent(new Event("ai:open-login"));
-        return;
-      }
-      if (res.status === 402) {
-        if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-        else setTurns((t) => t.map((x) => (x.id === tmpId ? { ...x, streaming: false } : x)));
-        setErr("credits_out");
-        setStreaming(false);
-        return;
-      }
-      if (res.status === 422) {
-        if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-        setErr("no_vision");
-        setStreaming(false);
-        return;
-      }
-      if (!res.ok || !res.body) {
-        if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-        setErr("server_error");
-        setStreaming(false);
-        return;
-      }
+        if (res.status === 401) {
+          if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+          const errBody = await res.text().catch(() => "");
+          if (errBody.includes("guest_direct_limit")) setErr("guest_direct_limit");
+          else setErr("unauthorized");
+          setStreaming(false);
+          window.dispatchEvent(new Event("ai:open-login"));
+          return;
+        }
+        if (!res.ok || !res.body) {
+          if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+          setErr("server_error");
+          setStreaming(false);
+          return;
+        }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let full = "";
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let full = "";
 
-      while (true) {
-        if (ac.signal.aborted) break;
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const chunks = buffer.split("\n\n");
-        buffer = chunks.pop() || "";
-
-        for (const chunk of chunks) {
-          const line = chunk.trim();
-          if (!line.startsWith("data:")) continue;
-          let data: Record<string, unknown>;
-          try {
-            data = JSON.parse(line.slice(5).trim());
-          } catch {
-            continue;
-          }
-
-          if (data.type === "delta" && typeof data.text === "string") {
-            full += data.text;
-            setTurns((t) =>
-              t.map((x) => (x.id === tmpId ? { ...x, response: full } : x))
-            );
-          } else if (data.type === "error") {
-            if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-            if (data.error === "guest_direct_limit") {
-              setErr("guest_direct_limit");
-              window.dispatchEvent(new Event("ai:open-login"));
-            } else {
-              setErr(
-                data.error === "network_error"
-                  ? "network_error"
-                  : data.error === "ai_error"
-                    ? "ai_error"
-                    : "server_error"
-              );
+        while (true) {
+          if (ac.signal.aborted) break;
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const chunks = buffer.split("\n\n");
+          buffer = chunks.pop() || "";
+          for (const chunk of chunks) {
+            const line = chunk.trim();
+            if (!line.startsWith("data:")) continue;
+            let data: Record<string, unknown>;
+            try {
+              data = JSON.parse(line.slice(5).trim());
+            } catch {
+              continue;
             }
-            setStreaming(false);
-            return;
-          } else if (data.type === "done") {
-            if (typeof data.guestDirectRemaining === "number") {
-              window.dispatchEvent(
-                new CustomEvent("ai:guest-direct-remaining", { detail: data.guestDirectRemaining })
+            if (data.type === "delta" && typeof data.text === "string") {
+              full += data.text;
+              setTurns((t) => t.map((x) => (x.id === tmpId ? { ...x, response: full } : x)));
+            } else if (data.type === "done") {
+              finishTurn(
+                tmpId,
+                q,
+                String(data.id),
+                String(data.threadId),
+                String(data.responseA ?? full),
+                attachUrls,
+                !!data.isNewThread,
+                data.creditsRemaining
               );
+              setStreaming(false);
+              return;
             }
-            if (typeof data.guestBattlesRemaining === "number") {
-              window.dispatchEvent(
-                new CustomEvent("ai:guest-remaining", { detail: data.guestBattlesRemaining })
-              );
-            }
-            finishTurn(
-              tmpId,
-              q,
-              String(data.id),
-              String(data.threadId),
-              String(data.responseA ?? full),
-              attachUrls,
-              !!data.isNewThread,
-              data.creditsRemaining
-            );
-            setStreaming(false);
-            return;
           }
         }
+        setStreaming(false);
+        return;
+      }
+
+      const priorTurns = opts?.replaceTurnId
+        ? turns.filter((t) => t.id !== opts.replaceTurnId)
+        : turns;
+      const useServerHistory = !!activeThreadId && !opts?.replaceTurnId;
+
+      let full = "";
+      const result = await startRunStream(
+        {
+          mode: "direct",
+          model: chatModel,
+          ...(useServerHistory ? {} : { messages: buildRunMessages(priorTurns, q) }),
+          prompt: apiPrompt,
+          conversationId: activeThreadId,
+          webSearch: useWeb,
+          attachments: attach.map((a) => ({ url: a.url, mime: a.mime })),
+        },
+        {
+          onRunId: (id) => {
+            runIdRef.current = id;
+          },
+          onEvent: (ev: RunSSEEvent) => {
+            if (ev.type === "model_delta") {
+              full += ev.text;
+              setTurns((t) =>
+                t.map((x) => (x.id === tmpId ? { ...x, response: full } : x))
+              );
+            } else if (ev.type === "usage_update") {
+              onCreditsChange?.(ev.creditsRemaining);
+            }
+          },
+        },
+        ac.signal
+      );
+
+      streamAbortRef.current = result.abort;
+
+      if (result.lastErrorCode) {
+        const code = classifyRunStreamError(result.lastErrorCode);
+        if (code === "unauthorized") {
+          if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+          setErr("unauthorized");
+          window.dispatchEvent(new Event("ai:open-login"));
+        } else if (code === "insufficient_credits") {
+          if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+          else setTurns((t) => t.map((x) => (x.id === tmpId ? { ...x, streaming: false } : x)));
+          setErr("credits_out");
+        } else if (code === "invalid_model") {
+          if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+          setErr("no_vision");
+        } else if (code === "plan_upgrade_required") {
+          if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+          setErr("plan_locked");
+        } else if (code === "rate_limited" || code === "too_many_concurrent") {
+          if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+          setErr("rate_limited");
+        } else if (code === "cancelled" || result.status === "cancelled") {
+          setTurns((t) =>
+            t.map((x) =>
+              x.id === tmpId ? { ...x, response: full || x.response, streaming: false } : x
+            )
+          );
+          setErr("cancelled");
+        } else if (code === "provider_error") {
+          setTurns((t) =>
+            t.map((x) => (x.id === tmpId ? { ...x, streaming: false } : x))
+          );
+          setErr("ai_error");
+        } else {
+          if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+          setErr("server_error");
+        }
+        setStreaming(false);
+        return;
+      }
+
+      if (result.status === "cancelled" || ac.signal.aborted) {
+        setTurns((t) =>
+          t.map((x) =>
+            x.id === tmpId ? { ...x, response: full || x.response, streaming: false } : x
+          )
+        );
+        setErr("cancelled");
+        setStreaming(false);
+        return;
+      }
+
+      if (result.status === "completed") {
+        const runId = result.runId ?? runIdRef.current ?? tmpId;
+        const conversationId = activeThreadId ?? runId;
+        finishTurn(
+          tmpId,
+          q,
+          runId,
+          conversationId,
+          full,
+          attachUrls,
+          !activeThreadId,
+          undefined
+        );
+      } else {
+        setTurns((t) =>
+          t.map((x) => (x.id === tmpId ? { ...x, streaming: false } : x))
+        );
+        setErr("ai_error");
       }
     } catch (e) {
       if (ac.signal.aborted) {
         setTurns((t) =>
           t.map((x) => (x.id === tmpId ? { ...x, streaming: false } : x))
         );
+        setErr("cancelled");
         setStreaming(false);
         if (abortRef.current === ac) abortRef.current = null;
         return;
@@ -301,10 +380,16 @@ export default function DirectChatView({
     }
     setStreaming(false);
     if (abortRef.current === ac) abortRef.current = null;
+    runIdRef.current = null;
+    streamAbortRef.current = null;
   }
 
-  function stopStream() {
+  async function stopStream() {
+    const runId = runIdRef.current;
+    const abort = streamAbortRef.current;
     abortRef.current?.abort();
+    if (abort) abort();
+    if (runId) await stopRunStream(runId, () => undefined);
   }
 
   function finishTurn(
@@ -337,15 +422,20 @@ export default function DirectChatView({
         new CustomEvent("ai:thread-created", {
           detail: {
             id: tid,
+            latestRunId: id,
             title: q.slice(0, 80),
             tier: "direct",
             createdAt: new Date().toISOString(),
+            source: "run",
           },
         })
       );
-      replaceThreadUrl(`/ai/battle/${tid}`);
     } else if (isNewThread && guestMode) {
       setThreadId(tid);
+    }
+
+    if (!guestMode) {
+      replaceThreadUrl(`/ai/runs/${id}`);
     }
 
     if (typeof creditsRemaining === "number") onCreditsChange?.(creditsRemaining);
@@ -531,16 +621,21 @@ export default function DirectChatView({
       </div>
 
       <div className="ar-chat-composer">
-        <div className="ar-chat-model-bar">
-          <ModelSelect
-            value={chatModel}
-            onChange={setChatModel}
-            plan={plan}
-            picker="direct"
-            visionOnly={attachments.length > 0}
-            sheetOnMobile
-          />
-        </div>
+        {!hideModelBar && (
+          <div className="ar-chat-model-bar">
+            <ModelSelect
+              value={chatModel}
+              onChange={(id) => {
+                setChatModel(id);
+                onModelChange?.(id);
+              }}
+              plan={plan}
+              picker="direct"
+              visionOnly={attachments.length > 0}
+              sheetOnMobile
+            />
+          </div>
+        )}
 
         <input
           ref={fileRef}
@@ -558,7 +653,7 @@ export default function DirectChatView({
           input={input}
           onInputChange={setInput}
           onSubmit={handleComposerAction}
-          onStop={() => abortRef.current?.abort()}
+          onStop={stopStream}
           streaming={streaming}
           uploading={uploading}
           attachments={attachments}
@@ -593,8 +688,17 @@ export default function DirectChatView({
         {err === "network_error" && (
           <div className="ar-chat-err">اتصال به سرور AI برقرار نشد — چند ثانیه بعد دوباره تلاش کن.</div>
         )}
-        {err === "ai_error" && <div className="ar-chat-err">مدل پاسخ نداد. دوباره تلاش کن.</div>}
-        {err === "server_error" && <div className="ar-chat-err">خطایی پیش آمد. دوباره تلاش کن.</div>}
+        {err === "ai_error" && <div className="ar-chat-err">{runStreamErrorMessage("provider_error")}</div>}
+        {err === "cancelled" && (
+          <div className="ar-chat-err">{runStreamErrorMessage("cancelled")}</div>
+        )}
+        {err === "rate_limited" && (
+          <div className="ar-chat-err">{runStreamErrorMessage("rate_limited")}</div>
+        )}
+        {err === "plan_locked" && (
+          <div className="ar-chat-err">{runStreamErrorMessage("plan_upgrade_required")}</div>
+        )}
+        {err === "server_error" && <div className="ar-chat-err">{runStreamErrorMessage("server_error")}</div>}
       </div>
     </div>
   );

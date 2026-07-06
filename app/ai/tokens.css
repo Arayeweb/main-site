@@ -1,39 +1,41 @@
-/* Arena design tokens — single source of truth */
+/* Arena design tokens — single source of truth
+   Premium light SaaS palette (no cream/yellow). */
 .ar-root,
 .ar-mselect-sheet-backdrop,
 .ar-sheet-backdrop {
-  --ar-bg: #F7F5EF;
-  --ar-bg2: #F1EEE5;
+  --ar-bg: #F6F7F9;
+  --ar-bg2: #F1F3F6;
   --ar-card: #FFFFFF;
-  --ar-border: #E6E2D5;
-  --ar-border2: #D6D1C0;
-  --ar-text: #201F1A;
-  --ar-text2: #6C6960;
-  --ar-text3: #A3A093;
-  --ar-ink: #1C1B17;
-  --ar-ink-hover: #34322B;
-  --ar-accent: #FFD52E;
-  --ar-accent-soft: #FFF3C2;
-  --ar-accent-ink: #8A6D1A;
+  --ar-border: #E3E7EE;
+  --ar-border2: #D0D5DD;
+  --ar-text: #111318;
+  --ar-text2: #667085;
+  --ar-text3: #98A2B3;
+  --ar-ink: #111318;
+  --ar-ink-hover: #1D2939;
+  --ar-accent: #635BFF;
+  --ar-accent-hover: #5147E8;
+  --ar-accent-soft: #EEF0FF;
+  --ar-accent-ink: #4A3FE0;
   --ar-surface: #FFFFFF;
-  --ar-surface2: #F1EEE5;
-  --ar-error: #C4453D;
-  --ar-error-soft: #FBEAE8;
-  --ar-success: #2E7D5B;
-  --ar-success-soft: #E8F4EC;
+  --ar-surface2: #F1F3F6;
+  --ar-error: #D92D20;
+  --ar-error-soft: #FEECEB;
+  --ar-success: #12B76A;
+  --ar-success-soft: #E7F9F0;
   --ar-tier-mid-bg: #E8F0FA;
   --ar-tier-mid-fg: #3B6EA5;
-  --ar-pill-image-bg: #FFF4E5;
-  --ar-pill-image-fg: #B45309;
+  --ar-pill-image-bg: #FDF2E3;
+  --ar-pill-image-fg: #B76E00;
   --ar-pill-video-bg: #FCE8EF;
   --ar-pill-video-fg: #BE3A6A;
-  --ar-pill-persona-fg: #9A7B00;
+  --ar-pill-persona-fg: #4A3FE0;
   --ar-pill-music-bg: #EDE9FE;
   --ar-pill-music-fg: #5B21B6;
-  --ar-pill-battle-bg: #EEECE6;
+  --ar-pill-battle-bg: #F1F3F6;
   --ar-focus-ring: var(--ar-accent);
   --ar-radius: 14px;
-  --ar-on-ink: #FCFBF7;
+  --ar-on-ink: #FFFFFF;
 }
 
 .ar-mselect-sheet-backdrop,

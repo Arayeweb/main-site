@@ -6,9 +6,9 @@ import AiCampaignTracking from "@/components/ai/AiCampaignTracking";
 import AiPostHogProvider from "@/components/analytics/AiPostHogProvider";
 
 export const metadata: Metadata = {
-  title: "آرایه AI | دسترسی به ۵ مدل هوش مصنوعی با پرداخت تومان",
+  title: "آرایه AI | یک اکانت برای چند AI — فارسی و بدون VPN",
   description:
-    "GPT، Claude، Gemini، Grok و DeepSeek در یک جا — بدون VPN و کارت خارجی. گفتگو کن، مدل عوض کن، یا دو مدل را مقایسه کن.",
+    "ChatGPT، Claude، Gemini و DeepSeek در یک حساب — بدون VPN و کارت خارجی. چت، مقایسه مدل‌ها و تولید محتوا.",
   manifest: "/ai.webmanifest",
   appleWebApp: {
     capable: true,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F7F5EF",
+  themeColor: "#F6F7F9",
   width: "device-width",
   initialScale: 1,
 };

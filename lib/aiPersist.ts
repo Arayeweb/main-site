@@ -118,7 +118,9 @@ export async function persistImageGen(payload: ImagePersistPayload): Promise<{
 
   if (!user) return null;
 
-  const creditsRemaining = Math.max(0, (user.credits as number) - payload.cost);
+  // اعتبار هنگام ثبت job (POST /api/ai/image) کسر شده — اینجا فقط موجودی فعلی
+  // خوانده می‌شود. کسر دوباره باعث double-deduct می‌شد.
+  const creditsRemaining = Math.max(0, user.credits as number);
   const attachments = [{ url: payload.imageUrl, mime: payload.mime, kind: "output" as const }];
 
   const insertRow: Record<string, unknown> = {
@@ -154,8 +156,6 @@ export async function persistImageGen(payload: ImagePersistPayload): Promise<{
     console.error("[aiPersist] image insert:", insErr);
     return null;
   }
-
-  await supabase.from("ai_users").update({ credits: creditsRemaining }).eq("id", payload.userId);
 
   await supabase.from("ai_usage").insert({
     user_id: payload.userId,

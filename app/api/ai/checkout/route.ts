@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 import { AI_PACKAGES } from "@/lib/aiPackages";
@@ -13,14 +14,14 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 export async function POST(req: NextRequest) {
   const session = getAISession(req);
   if (!session) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "bad_json" }, { status: 400 });
+    return jsonNoStore({ ok: false, error: "bad_json" }, { status: 400 });
   }
 
   const packageId = String(body.packageId ?? "");
@@ -30,13 +31,13 @@ export async function POST(req: NextRequest) {
   const utmCampaign = body.utm_campaign != null ? String(body.utm_campaign).slice(0, 200) : null;
   const pkg = AI_PACKAGES[packageId];
   if (!pkg) {
-    return NextResponse.json({ ok: false, error: "invalid_package" }, { status: 422 });
+    return jsonNoStore({ ok: false, error: "invalid_package" }, { status: 422 });
   }
 
   const supabase = getSupabaseAdmin();
   const resolved = await resolveCode(supabase, code, session.userId, packageId);
   if ("error" in resolved) {
-    return NextResponse.json(
+    return jsonNoStore(
       { ok: false, error: resolved.error, message: resolved.message },
       { status: 422 }
     );
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (!user) {
-    return NextResponse.json({ ok: false, error: "user_not_found" }, { status: 404 });
+    return jsonNoStore({ ok: false, error: "user_not_found" }, { status: 404 });
   }
 
   const finalAmount = resolved.finalAmountToman;
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (!zibal.ok || !zibal.trackId) {
-    return NextResponse.json(
+    return jsonNoStore(
       { ok: false, error: zibal.error || "gateway_error" },
       { status: 502 }
     );
@@ -89,8 +90,8 @@ export async function POST(req: NextRequest) {
 
   if (orderErr) {
     console.error("[api/ai/checkout] order insert:", orderErr);
-    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+    return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, redirectUrl: zibal.redirectUrl });
+  return jsonNoStore({ ok: true, redirectUrl: zibal.redirectUrl });
 }

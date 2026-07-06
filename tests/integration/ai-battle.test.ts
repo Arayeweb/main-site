@@ -79,8 +79,9 @@ describe("integration — /api/ai/battle", () => {
     expect(mockRunBattle).not.toHaveBeenCalled();
   });
 
-  it("blocks free user from direct mode", async () => {
+  it("allows free user direct mode with economy model", async () => {
     db.tables.ai_users[0].plan = "free";
+    db.tables.ai_users[0].credits = 5;
     const token = signAIToken("user-1", "free");
     const res = await POST(
       makeRequest("/api/ai/battle", {
@@ -89,9 +90,9 @@ describe("integration — /api/ai/battle", () => {
         body: { prompt: "سلام", mode: "direct", model: "economy" },
       })
     );
-    const body = await jsonBody<{ error: string }>(res);
-    expect(res.status).toBe(403);
-    expect(body.error).toBe("plan_upgrade_required");
+    const body = await jsonBody<{ ok: boolean }>(res);
+    expect(res.status).toBe(200);
+    expect(body.ok).toBe(true);
   });
 
   it("deducts credits after successful battle", async () => {
@@ -128,17 +129,17 @@ describe("integration — /api/ai/battle", () => {
     expect(db.tables.ai_users[0].credits).toBe(10);
   });
 
-  it("allows guest battle without auth", async () => {
+  it("requires login for guest battle (auth gate)", async () => {
     const res = await POST(
       makeRequest("/api/ai/battle", {
         method: "POST",
         body: { prompt: "نبرد مهمان", mode: "battle" },
       })
     );
-    const body = await jsonBody<{ ok: boolean; guestBattlesRemaining: number }>(res);
-    expect(res.status).toBe(200);
-    expect(body.ok).toBe(true);
-    expect(body.guestBattlesRemaining).toBe(1);
+    const body = await jsonBody<{ error: string }>(res);
+    expect(res.status).toBe(401);
+    expect(body.error).toBe("login_required");
+    expect(mockRunBattle).not.toHaveBeenCalled();
   });
 
   it("requires login for non-battle guest modes", async () => {
