@@ -60,8 +60,11 @@ import {
   handleStart,
   handleTextMessage,
   handleTelegramUpdate,
+  handleCommand,
+  handleCallback,
 } from "@/lib/telegram/handler";
 import { getFreeQuotaStatus } from "@/lib/telegram/quota";
+import { modelPickerMessage } from "@/lib/telegram/chatModels";
 
 async function* successStream(text = "پاسخ تست") {
   yield { type: "delta", text };
@@ -264,5 +267,35 @@ describe("telegram acquisition — unit", () => {
   it("textPreview truncates long prompts", () => {
     const long = "a".repeat(200);
     expect(textPreview(long, 50).length).toBeLessThanOrEqual(51);
+  });
+
+  it("14. چت سریع shows model picker", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 15 });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleCommand(100, 15, user, "cmd_chat");
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain(modelPickerMessage().slice(0, 20));
+    const keyboard = sendMessage.mock.calls[0]?.[2]?.reply_markup?.inline_keyboard;
+    expect(keyboard?.length).toBe(5);
+    expect(keyboard?.[0]?.[0]?.callback_data).toBe("model_economy");
+    expect(keyboard?.[2]?.[0]?.callback_data).toBe("model_precise");
+  });
+
+  it("15. chat state without model asks for picker", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 16, state: "chat" });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleTextMessage(100, 16, user, "سلام");
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain("مدل انتخاب کن");
+    expect(mockStreamChat).not.toHaveBeenCalled();
+  });
+
+  it("16. premium model without credits shows pricing CTA", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 17, state: "chat" });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleCallback(100, 17, user, "model_precise", "cb-1");
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain("پولی");
+    expect(text).toContain("اعتبار");
   });
 });

@@ -19,14 +19,16 @@ export async function runPaidDirectChat(opts: {
   araayeUserId: string;
   prompt: string;
   history: ChatContextEntry[];
+  modelId?: string;
 }): Promise<PaidChatResult> {
+  const modelId = opts.modelId || "economy";
   const plan = await getAraayePlan(opts.araayeUserId);
   const prep = await prepareRun({
     userId: opts.araayeUserId,
     plan,
     mode: "direct",
     prompt: opts.prompt,
-    models: ["economy"],
+    models: [modelId],
     conversationId: null,
     history: historyToMessages(opts.history),
     webSearch: false,

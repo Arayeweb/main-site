@@ -14,7 +14,8 @@ export type FreeChatResult =
 
 export async function runFreeDirectChat(
   prompt: string,
-  history: ChatContextEntry[]
+  history: ChatContextEntry[],
+  modelId = "economy"
 ): Promise<FreeChatResult> {
   const { freeChatMaxTokens, freeChatTimeoutMs } = getTelegramConfig();
   const ac = new AbortController();
@@ -30,7 +31,7 @@ export async function runFreeDirectChat(
   try {
     for await (const ev of openRouterProvider.streamChat(
       {
-        model: "economy",
+        model: modelId,
         messages,
         maxTokens: freeChatMaxTokens,
         webSearch: false,

@@ -2,7 +2,7 @@
 // Telegram acquisition bot — configuration from env
 // =========================================================
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.araaye.com";
 
 export function getTelegramConfig() {
   return {

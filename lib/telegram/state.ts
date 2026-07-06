@@ -76,6 +76,7 @@ export async function clearChatContext(userId: string) {
     .update({
       chat_context: [],
       state: "idle",
+      state_data: {},
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId);

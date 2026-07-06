@@ -7,7 +7,7 @@
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com").replace(/\/$/, "");
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.araaye.com").replace(/\/$/, "");
 
 if (!token) {
   console.error("TELEGRAM_BOT_TOKEN is required");

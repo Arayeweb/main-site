@@ -9,8 +9,8 @@ import { trackEvent } from "./events";
 import { checkRequiredMembership } from "./membership";
 import {
   forcedJoinKeyboard,
-  welcomeKeyboard,
   mainMenuKeyboard,
+  modelPickerKeyboard,
   limitReachedKeyboard,
   compareCtaKeyboard,
   pricingKeyboard,
@@ -47,6 +47,12 @@ import {
   activatePaymentOrder,
 } from "./payment";
 import { getTelegramPackage } from "./packages";
+import {
+  getTelegramChatModel,
+  creditCostForTelegramModel,
+  modelPickerMessage,
+  modelSelectedMessage,
+} from "./chatModels";
 import { getTelegramConfig, compareWebUrl, councilWebUrl } from "./config";
 import { parseStartPayload } from "./types";
 import type { TelegramUserRow } from "./types";
@@ -118,9 +124,15 @@ async function requireMembership(
   return true;
 }
 
-async function sendWelcome(chatId: number, user: TelegramUserRow) {
-  await sendMessage(chatId, COPY.welcome, { reply_markup: welcomeKeyboard() });
-  await sendMessage(chatId, "منوی اصلی:", { reply_markup: mainMenuKeyboard() });
+async function showModelPicker(chatId: number, userId: string) {
+  await setState(userId, "chat", { selectedModelId: null });
+  await sendMessage(chatId, modelPickerMessage(), {
+    reply_markup: modelPickerKeyboard(),
+  });
+}
+
+async function sendWelcome(chatId: number, _user: TelegramUserRow) {
+  await sendMessage(chatId, COPY.welcome, { reply_markup: mainMenuKeyboard() });
 }
 
 export async function handleStart(
@@ -179,8 +191,7 @@ export async function handleCommand(
   switch (cmd) {
     case "/chat":
     case "cmd_chat":
-      await setState(user.id, "chat");
-      await sendMessage(chatId, COPY.chatMode);
+      await showModelPicker(chatId, user.id);
       break;
     case "/compare":
     case "compare":
@@ -190,7 +201,7 @@ export async function handleCommand(
         metadata: { command: cmd },
       });
       await incrementWebClicks(user.id);
-      await sendMessage(chatId, `مقایسه چند AI در نسخه وب:\n${compareWebUrl()}`, {
+      await sendMessage(chatId, `مقایسه چند مدل در نسخه وب:\n${compareWebUrl()}`, {
         reply_markup: compareCtaKeyboard(),
         disable_web_page_preview: false,
       });
@@ -203,7 +214,7 @@ export async function handleCommand(
         metadata: { command: cmd },
       });
       await incrementWebClicks(user.id);
-      await sendMessage(chatId, `همفکری چند AI در نسخه وب:\n${councilWebUrl()}`, {
+      await sendMessage(chatId, `همفکری چند مدل در نسخه وب:\n${councilWebUrl()}`, {
         disable_web_page_preview: false,
       });
       break;
@@ -270,6 +281,30 @@ export async function handleCallback(
       telegramId,
     });
     await sendWelcome(chatId, user);
+    return;
+  }
+
+  if (data.startsWith("model_")) {
+    const modelId = data.slice(6);
+    const model = getTelegramChatModel(modelId);
+    if (!model) return;
+
+    if (model.tier === "premium") {
+      const cost = creditCostForTelegramModel(modelId);
+      let credits = 0;
+      if (user.araaye_user_id) {
+        credits = await getAraayeCredits(user.araaye_user_id);
+      }
+      if (credits < cost) {
+        await sendMessage(chatId, COPY.premiumModelNoCredits(model.label, cost), {
+          reply_markup: limitReachedKeyboard(),
+        });
+        return;
+      }
+    }
+
+    await setState(user.id, "chat", { selectedModelId: modelId });
+    await sendMessage(chatId, modelSelectedMessage(model));
     return;
   }
 
@@ -407,8 +442,17 @@ export async function handleTextMessage(
     return;
   }
 
-  const inChatMode = user.state === "chat" || user.state === "idle";
-  if (!inChatMode && user.state === "confirm_order") {
+  const stateData = await getStateData(user.id);
+  const selectedModelId = stateData.selectedModelId as string | undefined;
+
+  if (user.state === "chat" && !selectedModelId) {
+    await sendMessage(chatId, COPY.modelRequired, {
+      reply_markup: modelPickerKeyboard(),
+    });
+    return;
+  }
+
+  if (user.state === "confirm_order") {
     await sendMessage(chatId, "لطفاً خرید را تأیید کن یا به منو برگرد.");
     return;
   }
@@ -421,14 +465,19 @@ export async function handleTextMessage(
   await setChatRunning(user.id, true);
 
   try {
+    const modelId = (selectedModelId as string) || "economy";
+    const model = getTelegramChatModel(modelId);
     const quota = await getFreeQuotaStatus(telegramId);
     let responseText = "";
     let aiRunId: string | null = null;
     let usedFree = false;
+    const creditCost = creditCostForTelegramModel(modelId);
+    const useFreeTier =
+      model?.tier === "free" && quota.ok && quota.canUse;
 
-    if (quota.ok && quota.canUse) {
+    if (useFreeTier) {
       const history = await getChatContext(user.id);
-      const result = await runFreeDirectChat(text, history);
+      const result = await runFreeDirectChat(text, history, modelId);
       if (!result.ok) {
         await sendMessage(chatId, COPY.aiSlow);
         return;
@@ -448,12 +497,13 @@ export async function handleTextMessage(
       usedFree = true;
     } else if (user.araaye_user_id) {
       const credits = await getAraayeCredits(user.araaye_user_id);
-      if (credits >= 1) {
+      if (credits >= creditCost) {
         const history = await getChatContext(user.id);
         const result = await runPaidDirectChat({
           araayeUserId: user.araaye_user_id,
           prompt: text,
           history,
+          modelId,
         });
         if (!result.ok) {
           if (result.error === "insufficient_credits") {
@@ -464,6 +514,11 @@ export async function handleTextMessage(
               telegramUserId: user.id,
               telegramId,
             });
+          } else if (result.error === "plan_upgrade_required") {
+            await sendMessage(chatId, COPY.premiumModelNoCredits(
+              model?.label || modelId,
+              creditCost
+            ), { reply_markup: limitReachedKeyboard() });
           } else {
             await sendMessage(chatId, COPY.aiSlow);
           }
@@ -472,9 +527,15 @@ export async function handleTextMessage(
         responseText = result.text;
         aiRunId = result.runId;
       } else {
-        await sendMessage(chatId, COPY.freeLimitReached, {
-          reply_markup: limitReachedKeyboard(),
-        });
+        if (model?.tier === "premium") {
+          await sendMessage(chatId, COPY.premiumModelNoCredits(model.label, creditCost), {
+            reply_markup: limitReachedKeyboard(),
+          });
+        } else {
+          await sendMessage(chatId, COPY.freeLimitReached, {
+            reply_markup: limitReachedKeyboard(),
+          });
+        }
         await trackEvent("free_limit_reached", {
           telegramUserId: user.id,
           telegramId,
@@ -482,9 +543,16 @@ export async function handleTextMessage(
         return;
       }
     } else {
-      await sendMessage(chatId, COPY.freeLimitReached, {
-        reply_markup: limitReachedKeyboard(),
-      });
+      if (model?.tier === "premium") {
+        await sendMessage(chatId, COPY.premiumModelNoCredits(
+          model.label,
+          creditCost
+        ), { reply_markup: limitReachedKeyboard() });
+      } else {
+        await sendMessage(chatId, COPY.freeLimitReached, {
+          reply_markup: limitReachedKeyboard(),
+        });
+      }
       await trackEvent("free_limit_reached", {
         telegramUserId: user.id,
         telegramId,
@@ -520,7 +588,7 @@ export async function handleTextMessage(
     await trackEvent("ai_response_sent", {
       telegramUserId: user.id,
       telegramId,
-      metadata: { free: usedFree },
+      metadata: { free: usedFree, model_id: modelId },
     });
 
     await sendMessage(chatId, COPY.compareCta, {

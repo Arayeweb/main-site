@@ -109,8 +109,8 @@ export async function setMyCommands() {
     commands: [
       { command: "start", description: "شروع" },
       { command: "chat", description: "چت سریع" },
-      { command: "compare", description: "مقایسه چند AI" },
-      { command: "council", description: "همفکری چند AI" },
+      { command: "compare", description: "مقایسه چند مدل" },
+      { command: "council", description: "همفکری چند مدل" },
       { command: "pricing", description: "خرید اعتبار" },
       { command: "support", description: "پشتیبانی" },
       { command: "clear", description: "پاک کردن تاریخچه" },

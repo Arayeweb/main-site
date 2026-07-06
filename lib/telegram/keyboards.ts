@@ -5,6 +5,7 @@
 import { getTelegramConfig, compareWebUrl, councilWebUrl, webAppUrl } from "./config";
 import type { InlineKeyboard, ReplyKeyboard } from "./api";
 import { TELEGRAM_PACKAGE_LIST } from "./packages";
+import { TELEGRAM_CHAT_MODELS } from "./chatModels";
 
 export function forcedJoinKeyboard(): InlineKeyboard {
   const { requiredChannelId, salesChannelId } = getTelegramConfig();
@@ -29,13 +30,16 @@ export function forcedJoinKeyboard(): InlineKeyboard {
   return { inline_keyboard: rows };
 }
 
-export function welcomeKeyboard(): InlineKeyboard {
+export function modelPickerKeyboard(): InlineKeyboard {
   return {
     inline_keyboard: [
-      [{ text: "چت سریع", callback_data: "cmd_chat" }],
-      [{ text: "مقایسه چند AI", url: compareWebUrl() }],
-      [{ text: "خرید اعتبار", callback_data: "cmd_pricing" }],
-      [{ text: "پشتیبانی", callback_data: "cmd_support" }],
+      ...TELEGRAM_CHAT_MODELS.map((m) => [
+        {
+          text: `${m.label} — ${m.subtitle}`,
+          callback_data: `model_${m.id}`,
+        },
+      ]),
+      [{ text: "بازگشت", callback_data: "cmd_menu" }],
     ],
   };
 }
@@ -43,9 +47,9 @@ export function welcomeKeyboard(): InlineKeyboard {
 export function mainMenuKeyboard(): InlineKeyboard {
   return {
     inline_keyboard: [
-      [{ text: "چت سریع با AI", callback_data: "cmd_chat" }],
-      [{ text: "مقایسه چند AI", url: compareWebUrl() }],
-      [{ text: "همفکری چند AI", url: councilWebUrl() }],
+      [{ text: "چت سریع", callback_data: "cmd_chat" }],
+      [{ text: "مقایسه چند مدل", url: compareWebUrl() }],
+      [{ text: "همفکری چند مدل", url: councilWebUrl() }],
       [{ text: "خرید اعتبار", callback_data: "cmd_pricing" }],
       [{ text: "پشتیبانی", callback_data: "cmd_support" }],
       [{ text: "پاک کردن تاریخچه", callback_data: "cmd_clear" }],
@@ -64,7 +68,7 @@ export function limitReachedKeyboard(): InlineKeyboard {
 
 export function compareCtaKeyboard(): InlineKeyboard {
   return {
-    inline_keyboard: [[{ text: "مقایسه در نسخه وب", url: compareWebUrl() }]],
+    inline_keyboard: [[{ text: "مقایسه چند مدل در وب", url: compareWebUrl() }]],
   };
 }
 
