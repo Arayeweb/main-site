@@ -1,37 +1,41 @@
 import { seoCompareRows } from "@/lib/seoData";
-import SectionHeader from "@/components/home/SectionHeader";
 
 export default function SeoCompareTable() {
   return (
-    <section className="section-py">
+    <section className="seo-compare-section section-py">
       <div className="container-mx container-px">
-        <SectionHeader
-          badge="چرا آرایه"
-          badgeClassName="bg-teal-50 text-teal-700"
-          title="تفاوت ما با آژانس‌های معمولی"
-        />
+        <div className="seo-compare-header">
+          <span className="seo-section-tag">تفاوت روشن</span>
+          <h2>آژانس سئو در برابر سیستم سرچ تا لید آرایه</h2>
+        </div>
 
-        <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-soft">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-navy-100 bg-navy-50/60">
-                <th className="px-5 py-3.5 text-right text-xs font-bold text-navy-500"> </th>
-                <th className="px-5 py-3.5 text-right text-sm font-extrabold text-teal-600">آرایه</th>
-                <th className="px-5 py-3.5 text-right text-xs font-bold text-navy-400">
-                  آژانس‌های معمولی
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="seo-compare-cards">
+          <div className="seo-compare-col seo-compare-col--generic">
+            <h3>آژانس سئوی معمولی</h3>
+            <ul>
               {seoCompareRows.map((row) => (
-                <tr key={row.label} className="border-b border-navy-100 last:border-0">
-                  <td className="px-5 py-3.5 text-[13px] font-medium text-navy-700">{row.label}</td>
-                  <td className="px-5 py-3.5 text-[13px] font-bold text-teal-700">{row.us}</td>
-                  <td className="px-5 py-3.5 text-[13px] text-navy-400">{row.others}</td>
-                </tr>
+                <li key={row.label}>
+                  <span className="seo-compare-key">{row.label}</span>
+                  <span>{row.generic}</span>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
+
+          <div className="seo-compare-col seo-compare-col--araaye">
+            <h3>سئوی آرایه</h3>
+            <ul>
+              {seoCompareRows.map((row) => (
+                <li key={row.label}>
+                  <span className="seo-compare-key">{row.label}</span>
+                  <span>{row.araaye}</span>
+                </li>
+              ))}
+            </ul>
+            <a href="#lead-form" className="seo-btn-primary seo-compare-cta">
+              مشاوره رایگان بگیرید
+            </a>
+          </div>
         </div>
       </div>
     </section>

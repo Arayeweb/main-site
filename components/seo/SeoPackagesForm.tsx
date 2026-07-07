@@ -167,10 +167,10 @@ export default function SeoPackagesForm() {
     <section id="packages" className="section-py bg-gradient-to-b from-white to-teal-50/40">
       <div className="container-mx container-px">
         <SectionHeader
-          badge="پکیج‌ها و قیمت"
+          badge="شروع همکاری"
           badgeClassName="bg-teal-50 text-teal-700"
-          title="قیمت شفاف؛ بدون جلسه و چانه‌زنی"
-          subtitle="پکیج مناسب کسب‌وکارت را انتخاب کن؛ پرداخت آنلاین امن و شروع کار در کمتر از ۲ ساعت کاری."
+          title="پکیجی متناسب با مرحله رشد کسب‌وکار"
+          subtitle="از شروع مسیر لید تا سیستم کامل سرچ تا CRM — پیشنهاد قیمت دریافت کنید."
         />
 
         {payment ? (
@@ -238,7 +238,7 @@ export default function SeoPackagesForm() {
                       : "border border-navy-200 bg-white text-navy-700 hover:border-teal-300 hover:text-teal-700"
                   }`}
                 >
-                  {isSelected ? "انتخاب شد ✓" : "انتخاب پکیج"}
+                  {isSelected ? "انتخاب شد ✓" : "دریافت پیشنهاد قیمت"}
                 </button>
               </div>
             );

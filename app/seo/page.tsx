@@ -2,36 +2,42 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SeoHero from "@/components/seo/SeoHero";
-import SeoLocalCases from "@/components/seo/SeoLocalCases";
-import SeoFeatures from "@/components/seo/SeoFeatures";
-import SeoPackagesForm from "@/components/seo/SeoPackagesForm";
+import SeoConnectionBridge from "@/components/seo/SeoConnectionBridge";
+import SeoProblem from "@/components/seo/SeoProblem";
+import SeoFlow from "@/components/seo/SeoFlow";
 import SeoCompareTable from "@/components/seo/SeoCompareTable";
-import SeoGuarantee from "@/components/seo/SeoGuarantee";
+import SeoSystem from "@/components/seo/SeoSystem";
+import SeoFeatures from "@/components/seo/SeoFeatures";
+import SeoNiches from "@/components/seo/SeoNiches";
+import SeoProof from "@/components/seo/SeoProof";
+import SeoProcess from "@/components/seo/SeoProcess";
+import SeoPackagesForm from "@/components/seo/SeoPackagesForm";
 import SeoFaq from "@/components/seo/SeoFaq";
+import SeoFinalCta from "@/components/seo/SeoFinalCta";
 import SeoExitIntent from "@/components/seo/SeoExitIntent";
 import SeoStickyCta from "@/components/seo/SeoStickyCta";
 import SeoChatWidget from "@/components/seo/SeoChatWidget";
 import { seoFaq } from "@/lib/seoData";
 
 export const metadata: Metadata = {
-  title: "سئوی محلی سایت | از ۸۹۰ هزار تومان — در جستجوی محلی گوگل دیده شو",
+  title: "سئو برای لید و مشتری | سیستم سرچ تا لید — آرایه",
   description:
-    "خدمات سئوی محلی برای کلینیک‌ها، رستوران‌ها و کسب‌وکارهای خدماتی: بهینه‌سازی نقشه گوگل، محتوای محلی و رفع مشکلات فنی. بررسی رایگان ۲۴ ساعته و پرداخت آنلاین امن.",
+    "آرایه سئو را به لندینگ‌پیج، لید، CRM و فروش وصل می‌کند. سیستم سرچ تا لید برای پزشکان، کلینیک‌ها، وکلا و کسب‌وکارهای خدماتی.",
   alternates: {
     canonical: "/seo",
   },
   openGraph: {
-    title: "سئوی محلی سایت از ۸۹۰ هزار تومان — آرایه",
+    title: "سئو برای لید و مشتری — آرایه",
     description:
-      "بررسی رایگان سئوی محلی، بهینه‌سازی نقشه گوگل و محتوای محلی برای کسب‌وکارهای ایرانی. پرداخت آنلاین امن، شروع در ۲ ساعت.",
+      "آرایه سئو را به لندینگ‌پیج، لید، CRM و فروش وصل می‌کند. از گوگل مشتری بگیرید، نه فقط بازدید.",
     url: "/seo",
     type: "website",
     locale: "fa_IR",
   },
   twitter: {
     card: "summary_large_image",
-    title: "سئوی محلی سایت از ۸۹۰ هزار تومان — آرایه",
-    description: "بررسی رایگان سئوی محلی، بهینه‌سازی نقشه گوگل و محتوای محلی برای کسب‌وکارهای ایرانی.",
+    title: "سئو برای لید و مشتری — آرایه",
+    description: "آرایه سئو را به لندینگ‌پیج، لید، CRM و فروش وصل می‌کند.",
   },
 };
 
@@ -40,13 +46,14 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Service",
-      name: "خدمات سئوی محلی و بهینه‌سازی موتورهای جستجو",
-      serviceType: "Local SEO, Google Business Profile optimization, technical SEO, content SEO",
+      name: "سیستم سئو برای لید و تولید مشتری",
+      serviceType:
+        "SEO, landing page design, lead capture, CRM integration, conversion optimization",
       provider: { "@type": "Organization", name: "آرایه", url: "https://araaye.com/" },
       areaServed: { "@type": "Country", name: "Iran" },
       url: "https://araaye.com/seo",
       description:
-        "بررسی رایگان سئوی محلی، بهینه‌سازی نقشه گوگل، بهینه‌سازی تکنیکال سایت و تولید محتوای محلی برای کسب‌وکارهای ایرانی.",
+        "آرایه سئو را به لندینگ‌پیج، لید، CRM و فروش وصل می‌کند — سیستم کامل سرچ تا لید.",
     },
     {
       "@type": "FAQPage",
@@ -66,15 +73,21 @@ export default function SeoPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar />
+      <Navbar tone="dark-hero" ctaHref="#lead-form" ctaLabel="مشاوره رایگان" />
       <main className="pb-20 sm:pb-0">
         <SeoHero />
-        <SeoLocalCases />
-        <SeoFeatures />
-        <SeoPackagesForm />
+        <SeoConnectionBridge />
+        <SeoProblem />
+        <SeoFlow />
         <SeoCompareTable />
+        <SeoSystem />
+        <SeoFeatures />
+        <SeoNiches />
+        <SeoProof />
+        <SeoProcess />
+        <SeoPackagesForm />
         <SeoFaq />
-        <SeoGuarantee />
+        <SeoFinalCta />
       </main>
       <Footer />
       <SeoChatWidget />

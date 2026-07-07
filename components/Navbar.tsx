@@ -12,9 +12,22 @@ const navLinks = [
   { label: "درباره ما", href: "/#about" },
 ];
 
-export default function Navbar() {
+type NavbarTone = "default" | "dark-hero";
+
+interface NavbarProps {
+  tone?: NavbarTone;
+  ctaHref?: string;
+  ctaLabel?: string;
+}
+
+export default function Navbar({
+  tone = "default",
+  ctaHref = "#cta",
+  ctaLabel = "مشاوره رایگان",
+}: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const onDarkHero = tone === "dark-hero" && !scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -36,22 +49,26 @@ export default function Navbar() {
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
           scrolled
             ? "glass border-b border-navy-100 shadow-soft"
-            : "bg-transparent"
+            : onDarkHero
+              ? "bg-transparent"
+              : "bg-transparent"
         }`}
       >
         <nav className="container-mx container-px flex h-14 items-center justify-between gap-4">
-          {/* Logo */}
           <a href="/" className="shrink-0">
-            <Logo size="sm" />
+            <Logo size="sm" tone={onDarkHero ? "light" : "default"} />
           </a>
 
-          {/* Desktop nav */}
           <ul className="hidden items-center gap-0.5 lg:flex">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <a
                   href={link.href}
-                  className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-navy-500 transition-colors hover:bg-navy-50 hover:text-navy-900"
+                  className={
+                    onDarkHero
+                      ? "rounded-lg px-3 py-1.5 text-[13px] font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                      : "rounded-lg px-3 py-1.5 text-[13px] font-medium text-navy-500 transition-colors hover:bg-navy-50 hover:text-navy-900"
+                  }
                 >
                   {link.label}
                 </a>
@@ -59,13 +76,23 @@ export default function Navbar() {
             ))}
           </ul>
 
-          {/* CTA + mobile toggle */}
           <div className="flex items-center gap-2">
-            <a href="#cta" className="hidden sm:inline-flex items-center justify-center gap-2 rounded-lg bg-navy-900 px-4 py-2 text-[13px] font-bold text-white transition-all duration-200 hover:bg-navy-800 active:scale-[0.98]">
-              مشاوره رایگان
+            <a
+              href={ctaHref}
+              className={
+                onDarkHero
+                  ? "hidden sm:inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-[13px] font-bold text-navy-900 transition-all duration-200 hover:bg-teal-50 active:scale-[0.98]"
+                  : "hidden sm:inline-flex items-center justify-center gap-2 rounded-lg bg-navy-900 px-4 py-2 text-[13px] font-bold text-white transition-all duration-200 hover:bg-navy-800 active:scale-[0.98]"
+              }
+            >
+              {ctaLabel}
             </a>
             <button
-              className="lg:hidden flex h-9 w-9 items-center justify-center rounded-lg text-navy-700 hover:bg-navy-50"
+              className={
+                onDarkHero
+                  ? "lg:hidden flex h-9 w-9 items-center justify-center rounded-lg text-white hover:bg-white/10"
+                  : "lg:hidden flex h-9 w-9 items-center justify-center rounded-lg text-navy-700 hover:bg-navy-50"
+              }
               onClick={() => setOpen(true)}
               aria-label="منو"
             >
@@ -75,7 +102,6 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile menu */}
       {open && (
         <div className="fixed inset-0 z-[60] lg:hidden">
           <div
@@ -109,11 +135,11 @@ export default function Navbar() {
             </ul>
             <div className="border-t border-navy-100 p-4">
               <a
-                href="#cta"
+                href={ctaHref}
                 onClick={() => setOpen(false)}
                 className="btn-primary w-full"
               >
-                مشاوره رایگان
+                {ctaLabel}
               </a>
             </div>
           </div>

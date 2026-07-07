@@ -189,8 +189,8 @@ export default function SeoChatWidget() {
 
   return (
     <>
-      {/* Launcher */}
-      <div className="fixed bottom-5 left-5 z-50 flex flex-col items-end gap-2">
+      {/* Launcher — بالای sticky bar موبایل تا با CTA پایین تداخل نداشته باشد */}
+      <div className="fixed bottom-20 left-4 z-50 flex flex-col items-end gap-2 sm:bottom-5 sm:left-5">
         {nudge && !open && (
           <button
             onClick={openChat}
@@ -226,8 +226,8 @@ export default function SeoChatWidget() {
       {open && (
         <div
           dir="rtl"
-          className="fixed bottom-24 left-5 z-50 w-[calc(100vw-40px)] max-w-sm flex flex-col rounded-2xl border border-teal-100 bg-white shadow-2xl overflow-hidden animate-fade-up"
-          style={{ maxHeight: "min(520px, calc(100dvh - 110px))" }}
+          className="fixed bottom-[5.75rem] left-4 z-50 flex w-[calc(100vw-32px)] max-w-sm flex-col overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-2xl animate-fade-up sm:bottom-24 sm:left-5 sm:w-[calc(100vw-40px)]"
+          style={{ maxHeight: "min(520px, calc(100dvh - 140px))" }}
         >
           {/* Header */}
           <div className="flex items-center justify-between gap-3 border-b border-teal-100 bg-teal-700 px-4 py-3">

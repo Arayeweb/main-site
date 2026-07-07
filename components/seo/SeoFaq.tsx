@@ -3,12 +3,12 @@ import SectionHeader from "@/components/home/SectionHeader";
 
 export default function SeoFaq() {
   return (
-    <section id="faq" className="section-py bg-navy-50/40">
+    <section id="faq" className="section-py scroll-mt-24">
       <div className="container-mx container-px">
         <SectionHeader
           badge="سؤالات پرتکرار"
           badgeClassName="bg-teal-50 text-teal-700"
-          title="هر چیزی که باید درباره سئوی محلی بدانید"
+          title="پیش از شروع همکاری"
         />
 
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
@@ -19,7 +19,10 @@ export default function SeoFaq() {
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-bold text-navy-800 [&::-webkit-details-marker]:hidden">
                 {item.q}
-                <span className="text-lg text-navy-300 transition-transform group-open:rotate-45" aria-hidden>
+                <span
+                  className="text-lg text-navy-300 transition-transform group-open:rotate-45"
+                  aria-hidden
+                >
                   +
                 </span>
               </summary>
