@@ -3,7 +3,7 @@
 // =========================================================
 
 import { normalizeContact } from "@/lib/validateContact";
-import { sendMessage, answerCallbackQuery, setMyCommands } from "./api";
+import { sendMessage, answerCallbackQuery, setMyCommands, sendTypingAction } from "./api";
 import { COPY, orderConfirm, maskPhone, pricingMessage } from "./copy";
 import { trackEvent } from "./events";
 import { checkRequiredMembership } from "./membership";
@@ -56,6 +56,7 @@ import {
 import { getTelegramConfig, compareWebUrl, councilWebUrl } from "./config";
 import { parseStartPayload } from "./types";
 import type { TelegramUserRow } from "./types";
+import { getModel } from "@/lib/aiModels";
 
 export interface TelegramUpdate {
   update_id: number;
@@ -88,6 +89,23 @@ interface TelegramMessage {
 }
 
 let commandsRegistered = false;
+const WAITING_MESSAGE_DELAY_MS = 2500;
+const TELEGRAM_GREETING_REPLY = `سلام، آماده‌ام.
+سوالت را همینجا بنویس تا جوابش را برات آماده کنم.`;
+
+function isPerfEnabled(): boolean {
+  return process.env.TELEGRAM_PERF_LOGS === "1";
+}
+
+function perfLog(label: string, payload: Record<string, unknown>) {
+  if (!isPerfEnabled()) return;
+  console.log(`[telegram/perf] ${label}`, payload);
+}
+
+function isSimpleGreeting(text: string): boolean {
+  const normalized = text.trim().toLowerCase();
+  return ["سلام", "درود", "hi", "hello", "چطوری", "خوبی", "شروع"].includes(normalized);
+}
 
 async function ensureCommands() {
   if (commandsRegistered) return;
@@ -304,6 +322,12 @@ export async function handleCallback(
     }
 
     await setState(user.id, "chat", { selectedModelId: modelId });
+    perfLog("model_selected", {
+      selected_model_key: modelId,
+      actual_provider_model_id: getModel(modelId)?.routeId ?? modelId,
+      provider_name: "openrouter",
+      tier: model.tier,
+    });
     await sendMessage(chatId, modelSelectedMessage(model));
     return;
   }
@@ -413,6 +437,8 @@ export async function handleTextMessage(
   user: TelegramUserRow,
   text: string
 ) {
+  const startedAt = Date.now();
+  const marks: Record<string, number> = { message_received_ms: 0 };
   const { maxFreeMessageChars } = getTelegramConfig();
 
   if (text.startsWith("/")) {
@@ -443,6 +469,7 @@ export async function handleTextMessage(
   }
 
   const stateData = await getStateData(user.id);
+  marks.session_load_ms = Date.now() - startedAt;
   const selectedModelId = stateData.selectedModelId as string | undefined;
 
   if (user.state === "chat" && !selectedModelId) {
@@ -467,21 +494,84 @@ export async function handleTextMessage(
   try {
     const modelId = (selectedModelId as string) || "economy";
     const model = getTelegramChatModel(modelId);
+    const modelInfo = getModel(modelId);
+    const quotaStart = Date.now();
     const quota = await getFreeQuotaStatus(telegramId);
+    marks.quota_credit_check_ms = Date.now() - quotaStart;
     let responseText = "";
     let aiRunId: string | null = null;
     let usedFree = false;
+    let promptTokens = 0;
+    let completionTokens = 0;
+    let providerTtftMs: number | null = null;
+    let providerTotalMs = 0;
+    let fallbackUsed = false;
+    let timeoutUsed = getTelegramConfig().freeChatTimeoutMs;
+    const historyStart = Date.now();
+    const history = await getChatContext(user.id);
+    marks.history_load_ms = Date.now() - historyStart;
+    const historyForPrompt = history.slice(-4);
+    const providerName = "openrouter";
+    const typingStart = Date.now();
+    void sendTypingAction(chatId);
+    marks.telegram_typing_ack_ms = Date.now() - typingStart;
+    let waitingTimer: ReturnType<typeof setTimeout> | null = null;
+    let waitingMessageSent = false;
+    const scheduleWaiting = () => {
+      waitingTimer = setTimeout(() => {
+        waitingMessageSent = true;
+        void sendMessage(chatId, "دارم جواب رو آماده می‌کنم...");
+      }, WAITING_MESSAGE_DELAY_MS);
+    };
     const creditCost = creditCostForTelegramModel(modelId);
     const useFreeTier =
       model?.tier === "free" && quota.ok && quota.canUse;
 
+    if (isSimpleGreeting(text)) {
+      await sendMessage(chatId, TELEGRAM_GREETING_REPLY);
+      marks.telegram_send_ms = Date.now() - startedAt;
+      marks.total_ms = Date.now() - startedAt;
+      perfLog("chat_message", {
+        ...marks,
+        parse_update_ms: 0,
+        prompt_build_ms: 0,
+        provider_request_start_ms: null,
+        provider_ttft_ms: null,
+        provider_total_ms: 0,
+        post_process_ms: 0,
+        db_save_ms: 0,
+        selected_model_key: modelId,
+        actual_provider_model_id: modelInfo?.routeId ?? modelId,
+        provider_name: "local_shortcut",
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        max_tokens: 0,
+        history_messages_count: 0,
+        fallback_used: false,
+        timeout_used: 0,
+      });
+      return;
+    }
+
     if (useFreeTier) {
-      const history = await getChatContext(user.id);
-      const result = await runFreeDirectChat(text, history, modelId);
+      marks.prompt_build_ms = Date.now() - startedAt - (marks.history_load_ms || 0);
+      marks.provider_request_start_ms = Date.now() - startedAt;
+      scheduleWaiting();
+      const result = await runFreeDirectChat(text, historyForPrompt, modelId);
+      if (waitingTimer) clearTimeout(waitingTimer);
       if (!result.ok) {
-        await sendMessage(chatId, COPY.aiSlow);
+        if (result.error === "timeout") {
+          await sendMessage(chatId, "الان پاسخ‌دهی مدل کند شده. چند لحظه بعد دوباره بفرست.");
+        } else {
+          await sendMessage(chatId, COPY.aiSlow);
+        }
         return;
       }
+      providerTtftMs = result.providerTtftMs;
+      providerTotalMs = result.providerTotalMs;
+      promptTokens = result.promptTokens;
+      completionTokens = result.completionTokens;
+      timeoutUsed = result.timeoutUsed;
       const consumed = await consumeFreeQuota(user.id);
       if (!consumed) {
         await sendMessage(chatId, COPY.freeLimitReached, {
@@ -498,13 +588,16 @@ export async function handleTextMessage(
     } else if (user.araaye_user_id) {
       const credits = await getAraayeCredits(user.araaye_user_id);
       if (credits >= creditCost) {
-        const history = await getChatContext(user.id);
+        marks.prompt_build_ms = Date.now() - startedAt - (marks.history_load_ms || 0);
+        marks.provider_request_start_ms = Date.now() - startedAt;
+        scheduleWaiting();
         const result = await runPaidDirectChat({
           araayeUserId: user.araaye_user_id,
           prompt: text,
-          history,
+          history: historyForPrompt,
           modelId,
         });
+        if (waitingTimer) clearTimeout(waitingTimer);
         if (!result.ok) {
           if (result.error === "insufficient_credits") {
             await sendMessage(chatId, COPY.freeLimitReached, {
@@ -519,6 +612,8 @@ export async function handleTextMessage(
               model?.label || modelId,
               creditCost
             ), { reply_markup: limitReachedKeyboard() });
+          } else if (result.error === "timeout") {
+            await sendMessage(chatId, "الان پاسخ‌دهی مدل کند شده. چند لحظه بعد دوباره بفرست.");
           } else {
             await sendMessage(chatId, COPY.aiSlow);
           }
@@ -526,6 +621,11 @@ export async function handleTextMessage(
         }
         responseText = result.text;
         aiRunId = result.runId;
+        providerTtftMs = result.providerTtftMs;
+        providerTotalMs = result.providerTotalMs;
+        promptTokens = result.promptTokens;
+        completionTokens = result.completionTokens;
+        timeoutUsed = result.timeoutUsed;
       } else {
         if (model?.tier === "premium") {
           await sendMessage(chatId, COPY.premiumModelNoCredits(model.label, creditCost), {
@@ -560,6 +660,7 @@ export async function handleTextMessage(
       return;
     }
 
+    const dbSaveStart = Date.now();
     await saveTelegramMessage({
       telegramUserId: user.id,
       direction: "in",
@@ -583,15 +684,35 @@ export async function handleTextMessage(
 
     await appendChatContext(user.id, "user", text);
     await appendChatContext(user.id, "assistant", responseText);
+    marks.db_save_ms = Date.now() - dbSaveStart;
 
+    const sendStart = Date.now();
     await sendMessage(chatId, responseText);
-    await trackEvent("ai_response_sent", {
+    marks.telegram_send_ms = Date.now() - sendStart;
+    marks.post_process_ms = Date.now() - sendStart;
+    marks.provider_total_ms = providerTotalMs;
+    marks.total_ms = Date.now() - startedAt;
+    perfLog("chat_message", {
+      ...marks,
+      parse_update_ms: 0,
+      selected_model_key: modelId,
+      actual_provider_model_id: modelInfo?.routeId ?? modelId,
+      provider_name: providerName,
+      prompt_tokens: promptTokens,
+      completion_tokens: completionTokens,
+      max_tokens: model?.tier === "free" ? 450 : 600,
+      history_messages_count: historyForPrompt.length,
+      fallback_used: fallbackUsed,
+      timeout_used: timeoutUsed,
+      waiting_message_sent: waitingMessageSent,
+    });
+    void trackEvent("ai_response_sent", {
       telegramUserId: user.id,
       telegramId,
       metadata: { free: usedFree, model_id: modelId },
     });
 
-    await sendMessage(chatId, COPY.compareCta, {
+    void sendMessage(chatId, COPY.compareCta, {
       reply_markup: compareCtaKeyboard(),
     });
 

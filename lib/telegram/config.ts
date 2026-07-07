@@ -5,6 +5,11 @@
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.araaye.com";
 
 export function getTelegramConfig() {
+  const timeoutMs = Number(process.env.TELEGRAM_PROVIDER_TIMEOUT_MS || "10000");
+  const normalizedTimeout =
+    process.env.NODE_ENV === "test"
+      ? timeoutMs
+      : Math.min(Math.max(timeoutMs, 8_000), 12_000);
   return {
     botToken: process.env.TELEGRAM_BOT_TOKEN || "",
     webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || "",
@@ -15,9 +20,9 @@ export function getTelegramConfig() {
     freeDailyLimit: Number(process.env.TELEGRAM_FREE_DAILY_LIMIT || "3"),
     firstDayLimit: 5,
     maxFreeMessageChars: 2000,
-    maxChatContextPairs: 6,
-    freeChatMaxTokens: 400,
-    freeChatTimeoutMs: 30_000,
+    maxChatContextPairs: 2,
+    freeChatMaxTokens: Number(process.env.TELEGRAM_FREE_MAX_TOKENS || "450"),
+    freeChatTimeoutMs: normalizedTimeout,
     siteUrl: SITE_URL,
   };
 }

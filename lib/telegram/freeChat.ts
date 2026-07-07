@@ -9,8 +9,27 @@ import { getTelegramConfig } from "./config";
 import type { ChatContextEntry } from "./types";
 
 export type FreeChatResult =
-  | { ok: true; text: string }
+  | {
+      ok: true;
+      text: string;
+      providerTtftMs: number | null;
+      providerTotalMs: number;
+      promptTokens: number;
+      completionTokens: number;
+      providerModelId: string;
+      providerName: "openrouter";
+      timeoutUsed: number;
+    }
   | { ok: false; error: "timeout" | "provider_error" | "empty" };
+
+function toShortPrompt(): string {
+  // Keep Telegram direct path lightweight and deterministic.
+  return `${directSystemPrompt({ webSearch: false })}\n\nپاسخ‌ها کوتاه، مستقیم و بدون مقدمه طولانی باشند.`;
+}
+
+function trimHistory(history: ChatContextEntry[], maxMessages = 4): ChatContextEntry[] {
+  return history.slice(-maxMessages);
+}
 
 export async function runFreeDirectChat(
   prompt: string,
@@ -20,14 +39,18 @@ export async function runFreeDirectChat(
   const { freeChatMaxTokens, freeChatTimeoutMs } = getTelegramConfig();
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), freeChatTimeoutMs);
+  const startedAt = Date.now();
 
   const messages: ChatMessage[] = [
-    { role: "system", content: directSystemPrompt({ webSearch: false }) },
-    ...history.map((h) => ({ role: h.role, content: h.content })),
+    { role: "system", content: toShortPrompt() },
+    ...trimHistory(history).map((h) => ({ role: h.role, content: h.content })),
     { role: "user", content: prompt },
   ];
 
   let text = "";
+  let providerTtftMs: number | null = null;
+  let promptTokens = 0;
+  let completionTokens = 0;
   try {
     for await (const ev of openRouterProvider.streamChat(
       {
@@ -43,7 +66,12 @@ export async function runFreeDirectChat(
         clearTimeout(timer);
         return { ok: false, error: "provider_error" };
       }
-      if (ev.type === "done") text = ev.text || text;
+      if (ev.type === "done") {
+        text = ev.text || text;
+        providerTtftMs = ev.ttftMs ?? null;
+        promptTokens = ev.inputTokens || 0;
+        completionTokens = ev.outputTokens || 0;
+      }
     }
   } catch (e) {
     clearTimeout(timer);
@@ -55,5 +83,15 @@ export async function runFreeDirectChat(
 
   const trimmed = text.trim();
   if (!trimmed) return { ok: false, error: "empty" };
-  return { ok: true, text: trimmed };
+  return {
+    ok: true,
+    text: trimmed,
+    providerTtftMs,
+    providerTotalMs: Date.now() - startedAt,
+    promptTokens,
+    completionTokens,
+    providerModelId: modelId,
+    providerName: "openrouter",
+    timeoutUsed: freeChatTimeoutMs,
+  };
 }

@@ -22,6 +22,8 @@ import {
   IconLock,
   IconDots,
   IconDiamond,
+  IconImage,
+  IconArrowLeft,
 } from "./icons";
 import ModelSelect from "./ModelSelect";
 import ChatModelBar, { resolvePickedModel, type ModelPick } from "./ChatModelBar";
@@ -92,8 +94,8 @@ type ActiveSession =
 
 const MODE_META: Record<Mode, { label: string; desc: string; Icon: typeof IconSwords }> = {
   direct: { label: "سریع", desc: "یک مدل، پاسخ فوری", Icon: IconChat },
-  side_by_side: { label: "مقایسه", desc: "دو مدل کنار هم", Icon: IconColumns },
-  battle: { label: "همفکری AIها", desc: "چند مدل + نقد + جمع‌بندی", Icon: IconSpark },
+  side_by_side: { label: "مقایسه", desc: "چند مدل، پاسخ کنار هم", Icon: IconColumns },
+  battle: { label: "همفکری AIها", desc: "چند AI، نقد و جمع‌بندی بهتر", Icon: IconSpark },
 };
 
 function firstUnlockedMode(plan: string): Mode {
@@ -101,16 +103,18 @@ function firstUnlockedMode(plan: string): Mode {
   return order.find((m) => canUseMode(plan, m)) ?? "battle";
 }
 
-const CHAT_CHIPS: {
-  label: string;
+const FEATURE_CARDS: {
+  key: string;
+  title: string;
+  desc: string;
+  Icon: typeof IconChat;
   action?: "focus" | "compare" | "council" | "analyze";
   href?: string;
 }[] = [
-  { label: "سؤال بپرس", action: "focus" },
-  { label: "مقایسه مدل‌ها", action: "compare" },
-  { label: "همفکری AIها", action: "council" },
-  { label: "ساخت عکس", href: "/ai/image" },
-  { label: "تحلیل متن", action: "analyze" },
+  { key: "compare", title: "مقایسه مدل‌ها", desc: "پاسخ چند AI کنار هم", action: "compare", Icon: IconColumns },
+  { key: "council", title: "همفکری AIها", desc: "نقد، ایده‌پردازی و جمع‌بندی", action: "council", Icon: IconSpark },
+  { key: "image", title: "ساخت عکس", desc: "تولید تصویر با AI", href: "/ai/image", Icon: IconImage },
+  { key: "ask", title: "سوال بپرس", desc: "شروع سریع با یک سوال", action: "focus", Icon: IconChat },
 ];
 
 const AUTH_ERRORS: Record<string, string> = {
@@ -503,20 +507,20 @@ export default function ArenaHomePage({
     }
   }
 
-  function handleChipClick(chip: (typeof CHAT_CHIPS)[number]) {
+  function handleFeatureClick(card: (typeof FEATURE_CARDS)[number]) {
     if (requireGuestAuth()) return;
-    if (chip.href) {
-      router.push(chip.href);
+    if (card.href) {
+      router.push(card.href);
       return;
     }
-    if (chip.action === "compare") {
+    if (card.action === "compare") {
       const nextMode = canUseMode(plan, "side_by_side") ? "side_by_side" : "battle";
       setMode(nextMode);
       setSendErr("");
       focusComposer(true);
       return;
     }
-    if (chip.action === "council") {
+    if (card.action === "council") {
       if (authBoot === "user" && planRank(plan) < planRank("pro")) {
         setSendErr("mode_locked");
         return;
@@ -524,11 +528,6 @@ export default function ArenaHomePage({
       setMode("battle");
       setSendErr("");
       focusComposer(true);
-      return;
-    }
-    if (chip.action === "analyze") {
-      setPrompt("این متن را تحلیل کن و نکات مهم، لحن و پیشنهاد بهبود را بگو:\n\n");
-      focusComposer(false);
       return;
     }
     focusComposer(true);
@@ -1043,11 +1042,11 @@ export default function ArenaHomePage({
         <div className="ar-home-stack">
           <div className="ar-home-center">
             <p className="ar-chat-brand-eyebrow">آرایه AI</p>
-            <h1 className="ar-home-prompt">یک سؤال؛ چند AI؛ یک پاسخ بهتر</h1>
+            <h1 className="ar-home-prompt">
+              یک سؤال؛ چند <span className="ar-home-prompt-accent">AI</span>؛ یک پاسخ بهتر
+            </h1>
             <p className="ar-chat-brand-sub">
-              {isMobile
-                ? "چند مدل هم‌زمان پاسخ می‌دهند؛ آرایه بهترین را انتخاب می‌کند."
-                : "GPT، Claude، Gemini و DeepSeek همزمان پاسخ می‌دهند؛ آرایه اختلاف‌ها را نقد و جمع‌بندی می‌کند."}
+              چند مدل همزمان پاسخ می‌دهند؛ آرایه کمک می‌کند جواب بهتر را سریع‌تر پیدا کنی.
             </p>
             {authBoot === "guest" && (
               <p className="ar-home-trial-note">۵ پیام رایگان برای شروع</p>
@@ -1098,23 +1097,43 @@ export default function ArenaHomePage({
                 />
               </div>
             )}
-            <div className="ar-chat-chips ar-chat-chips--secondary" role="navigation" aria-label="ابزارها">
-              {CHAT_CHIPS.map((chip) =>
-                authBoot === "guest" || !chip.href ? (
+            <div className="ar-feature-grid" role="navigation" aria-label="امکانات آرایه">
+              {FEATURE_CARDS.map((card) => {
+                const isCardLocked =
+                  card.key === "council" && authBoot === "user" && planRank(plan) < planRank("pro");
+                return authBoot === "guest" || !card.href ? (
                   <button
-                    key={chip.label}
+                    key={card.key}
                     type="button"
-                    className="ar-chat-chip"
-                    onClick={() => handleChipClick(chip)}
+                    className={`ar-feature-card${isCardLocked ? " is-locked" : ""}`}
+                    onClick={() => handleFeatureClick(card)}
                   >
-                    {chip.label}
+                    <span className="ar-feature-card-icon" aria-hidden>
+                      <card.Icon size={16} />
+                    </span>
+                    <span className="ar-feature-card-copy">
+                      <b>{card.title}</b>
+                      <small>{card.desc}</small>
+                    </span>
+                    <span className="ar-feature-card-arrow" aria-hidden>
+                      {isCardLocked ? <IconLock size={14} /> : <IconArrowLeft size={14} />}
+                    </span>
                   </button>
                 ) : (
-                  <Link key={chip.label} href={chip.href} className="ar-chat-chip">
-                    {chip.label}
+                  <Link key={card.key} href={card.href} className="ar-feature-card">
+                    <span className="ar-feature-card-icon" aria-hidden>
+                      <card.Icon size={16} />
+                    </span>
+                    <span className="ar-feature-card-copy">
+                      <b>{card.title}</b>
+                      <small>{card.desc}</small>
+                    </span>
+                    <span className="ar-feature-card-arrow" aria-hidden>
+                      <IconArrowLeft size={14} />
+                    </span>
                   </Link>
-                )
-              )}
+                );
+              })}
             </div>
             {(sendErr === "plan_locked" || sendErr === "mode_locked") && (
               <PlanUpsellBanner
@@ -1122,7 +1141,7 @@ export default function ArenaHomePage({
                 onDismiss={() => setSendErr("")}
               />
             )}
-            <ResultPreview />
+            <ResultPreview mode={mode} />
           </div>
         </div>
       </>

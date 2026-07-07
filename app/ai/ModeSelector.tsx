@@ -12,8 +12,8 @@ const MODE_ITEMS: {
   Icon: typeof IconChat;
 }[] = [
   { id: "direct", label: "سریع", compactLabel: "سریع", desc: "یک مدل، پاسخ فوری", Icon: IconChat },
-  { id: "side_by_side", label: "مقایسه", compactLabel: "مقایسه", desc: "دو مدل کنار هم", Icon: IconColumns },
-  { id: "battle", label: "همفکری AIها", compactLabel: "همفکری", desc: "چند مدل + نقد + جمع‌بندی", Icon: IconSpark },
+  { id: "side_by_side", label: "مقایسه", compactLabel: "مقایسه", desc: "چند مدل، پاسخ کنار هم", Icon: IconColumns },
+  { id: "battle", label: "همفکری AIها", compactLabel: "همفکری", desc: "چند AI، نقد و جمع‌بندی بهتر", Icon: IconSpark },
 ];
 
 /**

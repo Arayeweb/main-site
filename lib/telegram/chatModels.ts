@@ -24,7 +24,7 @@ export const TELEGRAM_CHAT_MODELS: TelegramChatModel[] = [
   {
     id: "fast",
     label: "مدل سریع",
-    subtitle: "رایگان · DeepSeek Flash",
+    subtitle: "رایگان · GPT-4o mini",
     tier: "free",
   },
   {

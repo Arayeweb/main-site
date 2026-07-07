@@ -90,12 +90,12 @@ describe("ThrottledStopChecker", () => {
 });
 
 describe("fast model registry", () => {
-  it("maps fast persona to DeepSeek economy route while keeping mid-tier pricing", () => {
+  it("maps fast persona to a distinct fast route while keeping mid-tier pricing", () => {
     const m = getModel("fast")!;
     expect(m.personaName).toBe("هوش مصنوعی سریع");
     expect(m.tier).toBe("mid");
-    expect(modelRouteId("fast")).toBe("deepseek/deepseek-chat-v3.1");
-    expect(modelRouteId("fast")).toBe(getModel("economy")!.routeId);
+    expect(modelRouteId("fast")).toBe("openai/gpt-4o-mini");
+    expect(modelRouteId("fast")).not.toBe(getModel("economy")!.routeId);
   });
 });
 

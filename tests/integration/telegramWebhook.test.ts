@@ -4,12 +4,15 @@ import { createTelegramSupabase, seedTelegramUser } from "../mocks/telegramSupab
 import type { ModelStreamEvent } from "@/lib/ai/providers/interface";
 
 const sendMessage = vi.fn().mockResolvedValue({ ok: true });
+const sendTypingAction = vi.fn().mockResolvedValue({ ok: true });
 const getChatMember = vi.fn().mockResolvedValue({ ok: true, joined: true });
 const mockStreamChat = vi.fn();
 const zibalRequest = vi.fn();
+const prepareRun = vi.fn();
 
 vi.mock("@/lib/telegram/api", () => ({
   sendMessage: (...args: unknown[]) => sendMessage(...args),
+  sendTypingAction: (...args: unknown[]) => sendTypingAction(...args),
   getChatMember: (...args: unknown[]) => getChatMember(...args),
   answerCallbackQuery: vi.fn().mockResolvedValue({ ok: true }),
   setMyCommands: vi.fn().mockResolvedValue({ ok: true }),
@@ -21,6 +24,9 @@ vi.mock("@/lib/ai/providers/openrouter", () => ({
     id: "openrouter",
     streamChat: (...args: unknown[]) => mockStreamChat(...args),
   },
+}));
+vi.mock("@/lib/ai/orchestrator", () => ({
+  prepareRun: (...args: unknown[]) => prepareRun(...args),
 }));
 
 vi.mock("@/lib/zibal", () => ({
@@ -69,6 +75,7 @@ describe("telegram webhook — integration", () => {
     tgDb = createTelegramSupabase();
     sendMessage.mockClear();
     mockStreamChat.mockReset().mockImplementation(() => okStream());
+    prepareRun.mockReset();
     zibalRequest.mockReset().mockResolvedValue({
       ok: true,
       trackId: "zibal-track",
@@ -104,7 +111,7 @@ describe("telegram webhook — integration", () => {
   });
 
   it("2. Telegram update text routes to chat", async () => {
-    seedTelegramUser(tgDb.db, { telegram_id: 20, state: "chat" });
+    seedTelegramUser(tgDb.db, { telegram_id: 20, state: "idle" });
     const res = await webhookPost(
       makeRequest("/api/telegram/webhook", {
         method: "POST",
@@ -152,7 +159,7 @@ describe("telegram webhook — integration", () => {
 
   it("4. provider failure sends friendly error", async () => {
     mockStreamChat.mockImplementation(() => failStream());
-    seedTelegramUser(tgDb.db, { telegram_id: 22, state: "chat" });
+    seedTelegramUser(tgDb.db, { telegram_id: 22, state: "idle" });
     await webhookPost(
       makeRequest("/api/telegram/webhook", {
         method: "POST",
@@ -169,7 +176,7 @@ describe("telegram webhook — integration", () => {
       })
     );
     const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
-    expect(text).toContain("کمی کند");
+    expect(text).toContain("کند شده");
   });
 
   it("5. compare command returns web link", async () => {
@@ -225,5 +232,54 @@ describe("telegram webhook — integration", () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.redirectUrl).toContain("zibal");
     expect(zibalRequest).toHaveBeenCalled();
+  });
+
+  it("7. Telegram direct chat only uses last 4 history messages", async () => {
+    const row = seedTelegramUser(tgDb.db, {
+      telegram_id: 40,
+      state: "idle",
+    });
+    row.chat_context = [
+      { role: "user", content: "1" },
+      { role: "assistant", content: "2" },
+      { role: "user", content: "3" },
+      { role: "assistant", content: "4" },
+      { role: "user", content: "5" },
+      { role: "assistant", content: "6" },
+    ];
+    await webhookPost(
+      makeRequest("/api/telegram/webhook", {
+        method: "POST",
+        headers: { "x-telegram-bot-api-secret-token": "test-secret" },
+        body: { update_id: 7, message: { message_id: 7, chat: { id: 207 }, from: { id: 40 }, text: "t" } },
+      })
+    );
+    const input = mockStreamChat.mock.calls[0]?.[0];
+    expect(input.messages.length).toBe(6); // system + last4 + user
+  });
+
+  it("8. Telegram free path caps max_tokens", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 41, state: "idle" });
+    await webhookPost(
+      makeRequest("/api/telegram/webhook", {
+        method: "POST",
+        headers: { "x-telegram-bot-api-secret-token": "test-secret" },
+        body: { update_id: 8, message: { message_id: 8, chat: { id: 208 }, from: { id: 41 }, text: "t2" } },
+      })
+    );
+    const input = mockStreamChat.mock.calls[0]?.[0];
+    expect(input.maxTokens).toBeLessThanOrEqual(600);
+  });
+
+  it("9. Telegram direct chat does not call compare/council orchestrator", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 42, state: "idle" });
+    await webhookPost(
+      makeRequest("/api/telegram/webhook", {
+        method: "POST",
+        headers: { "x-telegram-bot-api-secret-token": "test-secret" },
+        body: { update_id: 9, message: { message_id: 9, chat: { id: 209 }, from: { id: 42 }, text: "t3" } },
+      })
+    );
+    expect(prepareRun).not.toHaveBeenCalled();
   });
 });

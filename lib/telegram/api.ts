@@ -63,6 +63,13 @@ export async function sendMessage(
   });
 }
 
+export async function sendTypingAction(chatId: number) {
+  return callTelegram("sendChatAction", {
+    chat_id: chatId,
+    action: "typing",
+  });
+}
+
 export async function answerCallbackQuery(
   callbackQueryId: string,
   text?: string

@@ -9,11 +9,13 @@ import { createTelegramSupabase, seedTelegramUser } from "../mocks/telegramSupab
 import { settlePaymentByTrackId } from "@/lib/telegram/payment";
 
 const sendMessage = vi.fn().mockResolvedValue({ ok: true });
+const sendTypingAction = vi.fn().mockResolvedValue({ ok: true });
 const getChatMember = vi.fn().mockResolvedValue({ ok: true, joined: true });
 const answerCallbackQuery = vi.fn().mockResolvedValue({ ok: true });
 
 vi.mock("@/lib/telegram/api", () => ({
   sendMessage: (...args: unknown[]) => sendMessage(...args),
+  sendTypingAction: (...args: unknown[]) => sendTypingAction(...args),
   getChatMember: (...args: unknown[]) => getChatMember(...args),
   answerCallbackQuery: (...args: unknown[]) => answerCallbackQuery(...args),
   setMyCommands: vi.fn().mockResolvedValue({ ok: true }),
@@ -65,6 +67,7 @@ import {
 } from "@/lib/telegram/handler";
 import { getFreeQuotaStatus } from "@/lib/telegram/quota";
 import { modelPickerMessage } from "@/lib/telegram/chatModels";
+import { getModel } from "@/lib/aiModels";
 
 async function* successStream(text = "پاسخ تست") {
   yield { type: "delta", text };
@@ -80,10 +83,16 @@ async function* successStream(text = "پاسخ تست") {
   };
 }
 
+async function* hangingStream() {
+  await new Promise((r) => setTimeout(r, 50));
+  yield { type: "delta", text: "" };
+}
+
 describe("telegram acquisition — unit", () => {
   beforeEach(() => {
     tgDb = createTelegramSupabase();
     sendMessage.mockClear();
+    sendTypingAction.mockClear();
     getChatMember.mockReset().mockResolvedValue({ ok: true, joined: true });
     mockStreamChat.mockReset().mockImplementation(() => successStream());
     process.env.TELEGRAM_REQUIRED_CHANNEL_ID = "";
@@ -91,6 +100,7 @@ describe("telegram acquisition — unit", () => {
     process.env.TELEGRAM_FREE_DAILY_LIMIT = "3";
     process.env.ZIBAL_MERCHANT = "zibal";
     process.env.NEXT_PUBLIC_SITE_URL = "https://araaye.com";
+    process.env.TELEGRAM_PROVIDER_TIMEOUT_MS = "10";
   });
 
   it("1. /start creates telegram_user", async () => {
@@ -123,7 +133,7 @@ describe("telegram acquisition — unit", () => {
     expect(status.remaining).toBeGreaterThan(0);
   });
 
-  it("5. free limit exceeded shows pricing CTA", async () => {
+  it("5. free limit exceeded on non-greeting shows pricing CTA", async () => {
     const yesterday = new Date(Date.now() - 86400000).toISOString();
     seedTelegramUser(tgDb.db, {
       telegram_id: 11,
@@ -131,7 +141,7 @@ describe("telegram acquisition — unit", () => {
       araaye_user_id: null,
       created_at: yesterday,
     });
-    await handleTextMessage(100, 11, tgDb.db.tables.telegram_users[0] as never, "سلام");
+    await handleTextMessage(100, 11, tgDb.db.tables.telegram_users[0] as never, "سوال");
     const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
     expect(text).toContain("سهمیه رایگان");
     expect(mockStreamChat).not.toHaveBeenCalled();
@@ -297,5 +307,39 @@ describe("telegram acquisition — unit", () => {
     const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
     expect(text).toContain("پولی");
     expect(text).toContain("اعتبار");
+  });
+
+  it("17. greeting shortcut پاسخ می‌دهد و provider صدا نمی‌خورد", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 30, state: "idle" });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleTextMessage(100, 30, user, "سلام");
+    expect(mockStreamChat).not.toHaveBeenCalled();
+    expect(sendMessage.mock.calls.some((c) => String(c[1]).includes("آماده‌ام"))).toBe(true);
+  });
+
+  it("18. مدل سریع به provider model سریع map می‌شود", () => {
+    expect(getModel("economy")?.routeId).toBe("deepseek/deepseek-chat-v3.1");
+    expect(getModel("fast")?.routeId).toBe("openai/gpt-4o-mini");
+    expect(getModel("precise")?.routeId).toBe("openai/gpt-4o");
+    expect(getModel("critic")?.routeId).toBe("anthropic/claude-sonnet-4");
+  });
+
+  it("19. typing قبل از provider ارسال می‌شود", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 31, state: "idle" });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleTextMessage(100, 31, user, "سوال تست");
+    expect(sendTypingAction).toHaveBeenCalled();
+    expect(sendTypingAction.mock.invocationCallOrder[0]).toBeLessThan(
+      mockStreamChat.mock.invocationCallOrder[0]
+    );
+  });
+
+  it("20. timeout پیام دوستانه می‌فرستد", async () => {
+    mockStreamChat.mockReset().mockImplementation(() => hangingStream());
+    seedTelegramUser(tgDb.db, { telegram_id: 32, state: "idle" });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleTextMessage(100, 32, user, "سوال timeout");
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain("کند شده");
   });
 });
