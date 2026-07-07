@@ -9,6 +9,7 @@ import StickyMobileCta from "./home/StickyMobileCta";
 // /seo چت‌بات اختصاصی سئو دارد (SeoChatWidget) — ویجت عمومی نباید بیاید.
 // /doctors چت‌بات اختصاصی پزشکان دارد (DoctorsChatWidget) — ویجت عمومی نباید بیاید.
 // /demo نمونه‌سایت‌های دموی فروش هستند — ویجت سایت اصلی روی آن‌ها گیج‌کننده است.
+// /b/* کارت ویزیت آنلاین — BizcardChatWidget اختصاصی دارد.
 export default function PublicOnlyChrome() {
   const pathname = usePathname();
   if (
@@ -16,7 +17,8 @@ export default function PublicOnlyChrome() {
     pathname.startsWith("/ai") ||
     pathname.startsWith("/seo") ||
     pathname.startsWith("/doctors") ||
-    pathname.startsWith("/demo")
+    pathname.startsWith("/demo") ||
+    pathname.startsWith("/b/")
   )
     return null;
   return (

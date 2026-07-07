@@ -938,7 +938,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--ar-bg);
+  background: var(--ar-card);
   padding: 12px;
 }
 

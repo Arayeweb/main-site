@@ -9,11 +9,33 @@ const MODE_ITEMS: {
   label: string;
   compactLabel: string;
   desc: string;
+  mobileCaption: string;
   Icon: typeof IconChat;
 }[] = [
-  { id: "direct", label: "سریع", compactLabel: "سریع", desc: "یک مدل، پاسخ فوری", Icon: IconChat },
-  { id: "side_by_side", label: "مقایسه", compactLabel: "مقایسه", desc: "چند مدل، پاسخ کنار هم", Icon: IconColumns },
-  { id: "battle", label: "همفکری AIها", compactLabel: "همفکری", desc: "چند AI، نقد و جمع‌بندی بهتر", Icon: IconSpark },
+  {
+    id: "direct",
+    label: "سریع",
+    compactLabel: "سریع",
+    desc: "یک مدل، پاسخ فوری",
+    mobileCaption: "مناسب پاسخ‌های روزمره",
+    Icon: IconChat,
+  },
+  {
+    id: "side_by_side",
+    label: "مقایسه",
+    compactLabel: "مقایسه",
+    desc: "چند مدل، پاسخ کنار هم",
+    mobileCaption: "پاسخ چند مدل کنار هم",
+    Icon: IconColumns,
+  },
+  {
+    id: "battle",
+    label: "همفکری AIها",
+    compactLabel: "همفکری",
+    desc: "چند AI، نقد و جمع‌بندی بهتر",
+    mobileCaption: "چند AI بررسی و جمع‌بندی می‌کنند",
+    Icon: IconSpark,
+  },
 ];
 
 /**
@@ -29,6 +51,7 @@ export default function ModeSelector({
   onChange,
   isLocked,
   compact,
+  variant = "segmented",
 }: {
   value: WorkspaceMode;
   onChange: (mode: WorkspaceMode) => void;
@@ -36,12 +59,20 @@ export default function ModeSelector({
   isLocked: (mode: WorkspaceMode) => boolean;
   /** use shorter labels for narrow (mobile) layouts */
   compact?: boolean;
+  /** segmented = desktop bar; pills = compact mobile chips */
+  variant?: "segmented" | "pills";
 }) {
   const active = MODE_ITEMS.find((m) => m.id === value) ?? MODE_ITEMS[0];
+  const caption = variant === "pills" ? active.mobileCaption : active.desc;
+  const usePills = variant === "pills";
 
   return (
-    <div className="ar-mode-selector">
-      <div className="ar-mode-segmented" role="tablist" aria-label="انتخاب حالت گفتگو">
+    <div className={`ar-mode-selector${usePills ? " ar-mode-selector--pills" : ""}`}>
+      <div
+        className={usePills ? "ar-mode-pills" : "ar-mode-segmented"}
+        role="tablist"
+        aria-label="انتخاب حالت گفتگو"
+      >
         {MODE_ITEMS.map((m) => {
           const isActive = value === m.id;
           const locked = isLocked(m.id);
@@ -51,21 +82,27 @@ export default function ModeSelector({
               type="button"
               role="tab"
               aria-selected={isActive}
-              className={`ar-mode-seg${isActive ? " active" : ""}`}
+              className={
+                usePills
+                  ? `ar-mode-pill${isActive ? " active" : ""}${locked ? " locked" : ""}`
+                  : `ar-mode-seg${isActive ? " active" : ""}`
+              }
               onClick={() => onChange(m.id)}
             >
-              <m.Icon size={14} />
-              <span className="ar-mode-seg-label">{compact ? m.compactLabel : m.label}</span>
+              {!usePills && <m.Icon size={14} />}
+              <span className={usePills ? "ar-mode-pill-label" : "ar-mode-seg-label"}>
+                {compact || usePills ? m.compactLabel : m.label}
+              </span>
               {locked && (
-                <span className="ar-mode-seg-pro" aria-hidden>
-                  <IconLock size={8} />
+                <span className={usePills ? "ar-mode-pill-lock" : "ar-mode-seg-pro"} aria-hidden>
+                  <IconLock size={usePills ? 9 : 8} />
                 </span>
               )}
             </button>
           );
         })}
       </div>
-      <p className="ar-mode-caption">{active.desc}</p>
+      <p className="ar-mode-caption">{caption}</p>
     </div>
   );
 }

@@ -34,7 +34,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "ایلان ماسک",
     nameEn: "Elon Musk",
     taglineFa: "فناوری، فضا و آینده",
-    avatar: "/ai/personas/elon-musk.svg",
+    avatar: "/assets/img/elon.png",
     defaultModelId: "fast",
     greetingFa: "سلام. بیا دربارهٔ آینده، فناوری و چیزهایی که واقعاً اهمیت دارند حرف بزنیم. چی تو ذهنته؟",
     systemPrompt: personaBase(
@@ -53,7 +53,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "کریستیانو رونالدو",
     nameEn: "Cristiano Ronaldo",
     taglineFa: "انضباط، تمرین، پیروزی",
-    avatar: "/ai/personas/cristiano-ronaldo.svg",
+    avatar: "/assets/img/Ronaldo.png",
     defaultModelId: "creative",
     greetingFa: "سلام قهرمان! آماده‌ای دربارهٔ تمرین، ذهنیت برنده و رسیدن به اوج صحبت کنیم؟",
     systemPrompt: personaBase(
@@ -72,7 +72,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "استیو جابز",
     nameEn: "Steve Jobs",
     taglineFa: "محصول، سادگی، بینش",
-    avatar: "/ai/personas/steve-jobs.svg",
+    avatar: "/assets/img/jobs.png",
     defaultModelId: "critic",
     greetingFa: "سلام. بیاییم دربارهٔ محصولاتی که مردم واقعاً دوست دارند — نه فقط چیزهایی که می‌توان ساخت — فکر کنیم.",
     systemPrompt: personaBase(
@@ -91,7 +91,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "آلبرت اینشتین",
     nameEn: "Albert Einstein",
     taglineFa: "کنجکاوی، علم، تخیل",
-    avatar: "/ai/personas/albert-einstein.svg",
+    avatar: "/assets/img/enishtan.png",
     defaultModelId: "precise",
     greetingFa: "سلام دوست کنجکاو! تخیل گاهی مهم‌تر از دانش است — چه سؤالی داری؟",
     systemPrompt: personaBase(
@@ -110,7 +110,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "اپرا وینفری",
     nameEn: "Oprah Winfrey",
     taglineFa: "انگیزه، همدلی، رشد",
-    avatar: "/ai/personas/oprah-winfrey.svg",
+    avatar: "/assets/img/opera.png",
     defaultModelId: "creative",
     greetingFa: "سلام عزیزم! امروز می‌خواهی دربارهٔ چه چیزی صحبت کنیم؟ من اینجام.",
     systemPrompt: personaBase(
@@ -129,7 +129,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "بیل گیتس",
     nameEn: "Bill Gates",
     taglineFa: "فناوری و فیلانترپی",
-    avatar: "/ai/personas/bill-gates.svg",
+    avatar: "/assets/img/bilgates.png",
     defaultModelId: "precise",
     greetingFa: "سلام. بیایید دربارهٔ فناوری، کتاب‌ها و اینکه چطور دنیا را کمی بهتر کنیم گفتگو کنیم.",
     systemPrompt: personaBase(
@@ -148,7 +148,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "لئوناردو داوینچی",
     nameEn: "Leonardo da Vinci",
     taglineFa: "هنر، علم، اختراع",
-    avatar: "/ai/personas/leonardo-da-vinci.svg",
+    avatar: "/assets/img/davinchi.png",
     defaultModelId: "creative",
     greetingFa: "سلام! طبیعت بهترین معلم است — چه ایده‌ای می‌خواهی با هم کاوش کنیم؟",
     systemPrompt: personaBase(
@@ -167,7 +167,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "ماری کوری",
     nameEn: "Marie Curie",
     taglineFa: "پژوهش، پایداری، STEM",
-    avatar: "/ai/personas/marie-curie.svg",
+    avatar: "/assets/img/mary.png",
     defaultModelId: "precise",
     greetingFa: "سلام. در علم، صبر و دقت راه را باز می‌کند — سؤال علمی‌ات چیست؟",
     systemPrompt: personaBase(
@@ -186,7 +186,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "نلسون ماندلا",
     nameEn: "Nelson Mandela",
     taglineFa: "رهبری، آشتی، شجاعت",
-    avatar: "/ai/personas/nelson-mandela.svg",
+    avatar: "/assets/img/nelson.png",
     defaultModelId: "critic",
     greetingFa: "سلام. رهبری یعنی خدمت به مردم — دربارهٔ چه چیزی می‌خواهی بیندیشی؟",
     systemPrompt: personaBase(
@@ -205,7 +205,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "ویلیام شکسپیر",
     nameEn: "William Shakespeare",
     taglineFa: "ادبیات، درام، زبان",
-    avatar: "/ai/personas/shakespeare.svg",
+    avatar: "/assets/img/shekspir.png",
     defaultModelId: "creative",
     greetingFa: "سلام بر تو! زبان، عشق و تراژدی و کمدی — چه می‌خواهی بشنوی؟",
     systemPrompt: personaBase(
@@ -224,7 +224,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "سقراط",
     nameEn: "Socrates",
     taglineFa: "فلسفه، پرسش، خرد",
-    avatar: "/ai/personas/socrates.svg",
+    avatar: "/assets/img/soqrat.png",
     defaultModelId: "critic",
     greetingFa: "سلام. من فقط می‌دانم که نمی‌دانم — بیایید با سؤال، حقایق را کاوش کنیم.",
     systemPrompt: personaBase(
@@ -243,7 +243,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "ماری آنتوانت",
     nameEn: "Marie Antoinette",
     taglineFa: "تاریخ، ظرافت، دیدگاه",
-    avatar: "/ai/personas/marie-antoinette.svg",
+    avatar: "/assets/img/maryy.png",
     defaultModelId: "economy",
     greetingFa: "سلام! بیایید دربارهٔ دربار، مد و دیدگاه‌های تاریخی — با کمی شوخی — گفتگو کنیم.",
     systemPrompt: personaBase(

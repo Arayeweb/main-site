@@ -9,7 +9,7 @@ import ArenaShell from "./ArenaShell";
 /** قاب مشترک /ai — بدون شل برای لندینگ‌های فروش */
 export default function ArenaLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/ai/content-sales")) {
+  if (pathname.startsWith("/ai/content-sales") || pathname.startsWith("/ai/features")) {
     return <>{children}</>;
   }
   return (

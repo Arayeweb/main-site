@@ -47,6 +47,7 @@ export default function ModelSelect({
   picker = "direct",
   variant = "chip",
   sheetOnMobile = true,
+  preferOpenDown = false,
 }: {
   value: string;
   onChange: (id: string) => void;
@@ -61,6 +62,8 @@ export default function ModelSelect({
   picker?: "direct" | "compare" | "image" | "video" | "audio" | "transcribe";
   variant?: "chip" | "bar";
   sheetOnMobile?: boolean;
+  /** Keep the desktop popover below the trigger (home compare bar). */
+  preferOpenDown?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -72,9 +75,7 @@ export default function ModelSelect({
   const searchRef = useRef<HTMLInputElement>(null);
   const useSheet = isMobile && (sheetOnMobile || variant === "bar");
 
-  function updatePopPosition() {
-    const el = rootRef.current;
-    if (!el) return;
+  function computePopStyle(el: HTMLElement): CSSProperties {
     const rect = el.getBoundingClientRect();
     const width = variant === "bar" ? Math.min(360, Math.max(rect.width, 280)) : 305;
     const left = Math.min(
@@ -84,27 +85,45 @@ export default function ModelSelect({
     const maxPopHeight = Math.min(window.innerHeight * 0.7, 420);
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
-    const openUp = spaceBelow < maxPopHeight && spaceAbove > spaceBelow;
+    const openUp = !preferOpenDown && spaceBelow < maxPopHeight && spaceAbove > spaceBelow;
 
     if (openUp) {
-      setPopStyle({
+      return {
         position: "fixed",
         left,
         bottom: Math.max(8, window.innerHeight - rect.top + 8),
         width,
         maxHeight: Math.min(maxPopHeight, spaceAbove - 16),
         zIndex: 300,
-      });
-    } else {
-      setPopStyle({
-        position: "fixed",
-        left,
-        top: Math.min(rect.bottom + 8, window.innerHeight - maxPopHeight - 8),
-        width,
-        maxHeight: Math.min(maxPopHeight, spaceBelow - 16),
-        zIndex: 300,
-      });
+      };
     }
+    return {
+      position: "fixed",
+      left,
+      top: Math.min(rect.bottom + 8, window.innerHeight - maxPopHeight - 8),
+      width,
+      maxHeight: Math.min(maxPopHeight, spaceBelow - 16),
+      zIndex: 300,
+    };
+  }
+
+  function updatePopPosition() {
+    const el = rootRef.current;
+    if (!el) return;
+    setPopStyle(computePopStyle(el));
+  }
+
+  function openPicker() {
+    const el = rootRef.current;
+    if (el) setPopStyle(computePopStyle(el));
+    setOpen(true);
+    setQuery("");
+  }
+
+  function closePicker() {
+    setOpen(false);
+    setQuery("");
+    setPopStyle({});
   }
 
   useLayoutEffect(() => {
@@ -117,11 +136,11 @@ export default function ModelSelect({
       window.removeEventListener("resize", onReflow);
       window.removeEventListener("scroll", onReflow, true);
     };
-  }, [open, useSheet, variant]);
+  }, [open, useSheet, variant, preferOpenDown]);
 
   useEffect(() => {
     setMounted(true);
-    const mq = window.matchMedia("(max-width: 720px)");
+    const mq = window.matchMedia("(max-width: 900px)");
     const sync = () => setIsMobile(mq.matches);
     sync();
     mq.addEventListener("change", sync);
@@ -138,7 +157,7 @@ export default function ModelSelect({
       const t = e.target as Node;
       if (rootRef.current?.contains(t)) return;
       if (portalRef.current?.contains(t)) return;
-      setOpen(false);
+      closePicker();
     }
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
@@ -196,8 +215,7 @@ export default function ModelSelect({
 
   function pick(id: string) {
     onChange(id);
-    setOpen(false);
-    setQuery("");
+    closePicker();
   }
 
   const listBody = (
@@ -270,7 +288,7 @@ export default function ModelSelect({
       <button
         type="button"
         className="ar-mselect-bar-btn"
-        onClick={() => { setOpen((v) => !v); setQuery(""); }}
+        onClick={() => (open ? closePicker() : openPicker())}
       >
         {selected ? (
           <>
@@ -288,7 +306,7 @@ export default function ModelSelect({
       <button
         type="button"
         className="ar-mselect-btn"
-        onClick={() => { setOpen((v) => !v); setQuery(""); }}
+        onClick={() => (open ? closePicker() : openPicker())}
       >
         {selected ? (
           <>
@@ -314,10 +332,18 @@ export default function ModelSelect({
       {open &&
         !useSheet &&
         mounted &&
+        Object.keys(popStyle).length > 0 &&
         createPortal(
-          <div ref={portalRef} className="ar-mselect-pop ar-mselect-pop--floating" style={popStyle}>
-            {listBody}
-          </div>,
+          <>
+            <div
+              className="ar-mselect-floating-backdrop"
+              aria-hidden
+              onClick={() => closePicker()}
+            />
+            <div ref={portalRef} className="ar-mselect-pop ar-mselect-pop--floating" style={popStyle}>
+              {listBody}
+            </div>
+          </>,
           document.body
         )}
 

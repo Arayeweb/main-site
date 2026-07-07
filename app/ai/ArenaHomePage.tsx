@@ -22,14 +22,11 @@ import {
   IconLock,
   IconDots,
   IconDiamond,
-  IconImage,
-  IconArrowLeft,
 } from "./icons";
 import ModelSelect from "./ModelSelect";
 import ChatModelBar, { resolvePickedModel, type ModelPick } from "./ChatModelBar";
 import PlanUpsellBanner from "./PlanUpsellBanner";
 import ModeSelector from "./ModeSelector";
-import ResultPreview from "./ResultPreview";
 import { useArenaAuth } from "./ArenaAuthContext";
 import { ArenaChatSkeleton, ArenaPageSkeleton } from "./ArenaSkeleton";
 
@@ -95,7 +92,7 @@ type ActiveSession =
 const MODE_META: Record<Mode, { label: string; desc: string; Icon: typeof IconSwords }> = {
   direct: { label: "سریع", desc: "یک مدل، پاسخ فوری", Icon: IconChat },
   side_by_side: { label: "مقایسه", desc: "چند مدل، پاسخ کنار هم", Icon: IconColumns },
-  battle: { label: "همفکری AIها", desc: "چند AI، نقد و جمع‌بندی بهتر", Icon: IconSpark },
+  battle: { label: "همفکری", desc: "چند AI، نقد و جمع‌بندی بهتر", Icon: IconSpark },
 };
 
 function firstUnlockedMode(plan: string): Mode {
@@ -103,18 +100,25 @@ function firstUnlockedMode(plan: string): Mode {
   return order.find((m) => canUseMode(plan, m)) ?? "battle";
 }
 
-const FEATURE_CARDS: {
+const WORKSPACE_SHORTCUTS: {
   key: string;
-  title: string;
-  desc: string;
-  Icon: typeof IconChat;
-  action?: "focus" | "compare" | "council" | "analyze";
+  label: string;
+  action?: "compare" | "council" | "summarize";
   href?: string;
+  hideWhenMode?: Mode;
 }[] = [
-  { key: "compare", title: "مقایسه مدل‌ها", desc: "پاسخ چند AI کنار هم", action: "compare", Icon: IconColumns },
-  { key: "council", title: "همفکری AIها", desc: "نقد، ایده‌پردازی و جمع‌بندی", action: "council", Icon: IconSpark },
-  { key: "image", title: "ساخت عکس", desc: "تولید تصویر با AI", href: "/ai/image", Icon: IconImage },
-  { key: "ask", title: "سوال بپرس", desc: "شروع سریع با یک سوال", action: "focus", Icon: IconChat },
+  { key: "compare", label: "مقایسه AI", action: "compare", hideWhenMode: "side_by_side" },
+  { key: "council", label: "همفکری", action: "council", hideWhenMode: "battle" },
+  { key: "image", label: "ساخت عکس", href: "/ai/image" },
+  { key: "code", label: "کدنویسی", href: "/ai/code" },
+  { key: "content", label: "تولید محتوا", href: "/ai/content-sales" },
+  { key: "summarize", label: "خلاصه‌سازی", action: "summarize" },
+];
+
+const SUGGESTED_PROMPTS = [
+  "برای تبلیغ محصولم متن بنویس",
+  "این متن را خلاصه کن",
+  "این کد را دیباگ کن",
 ];
 
 const AUTH_ERRORS: Record<string, string> = {
@@ -507,20 +511,23 @@ export default function ArenaHomePage({
     }
   }
 
-  function handleFeatureClick(card: (typeof FEATURE_CARDS)[number]) {
+  function handleShortcutClick(shortcut: (typeof WORKSPACE_SHORTCUTS)[number]) {
     if (requireGuestAuth()) return;
-    if (card.href) {
-      router.push(card.href);
+    if (shortcut.href) {
+      router.push(shortcut.href);
       return;
     }
-    if (card.action === "compare") {
-      const nextMode = canUseMode(plan, "side_by_side") ? "side_by_side" : "battle";
-      setMode(nextMode);
+    if (shortcut.action === "compare") {
+      if (isModeLocked("side_by_side")) {
+        setSendErr("mode_locked");
+        return;
+      }
+      setMode("side_by_side");
       setSendErr("");
       focusComposer(true);
       return;
     }
-    if (card.action === "council") {
+    if (shortcut.action === "council") {
       if (authBoot === "user" && planRank(plan) < planRank("pro")) {
         setSendErr("mode_locked");
         return;
@@ -530,6 +537,16 @@ export default function ArenaHomePage({
       focusComposer(true);
       return;
     }
+    if (shortcut.action === "summarize") {
+      setMode("direct");
+      setPrompt("این متن را خلاصه کن:\n\n");
+      focusComposer(true);
+    }
+  }
+
+  function applySuggestedPrompt(text: string) {
+    if (requireGuestAuth()) return;
+    setPrompt(text);
     focusComposer(true);
   }
 
@@ -728,8 +745,13 @@ export default function ArenaHomePage({
     );
   }
 
-  function renderComposer(opts: { docked?: boolean; showMode?: boolean; simplified?: boolean }) {
-    const { docked = false, showMode = true, simplified = docked } = opts;
+  function renderComposer(opts: {
+    docked?: boolean;
+    showMode?: boolean;
+    simplified?: boolean;
+    placeholder?: string;
+  }) {
+    const { docked = false, showMode = true, simplified = docked, placeholder } = opts;
     const showModelsInComposer = !simplified && ((!docked && showMode) || (docked && mode === "direct"));
     const attachAllowed = authBoot === "user" && mode === "direct";
     const sendReady = authBoot === "guest" || !!prompt.trim() || attachments.length > 0;
@@ -819,7 +841,10 @@ export default function ArenaHomePage({
               handleSubmit();
             }
           }}
-          placeholder="سوالت را بنویس؛ آرایه بهترین مسیر پاسخ را انتخاب می‌کند..."
+          placeholder={
+            placeholder ??
+            "سوالت را بنویس؛ آرایه بهترین مسیر پاسخ را انتخاب می‌کند..."
+          }
           maxLength={4000}
           rows={docked ? 2 : undefined}
         />
@@ -1025,6 +1050,21 @@ export default function ArenaHomePage({
   }
 
   function renderEmptyHome() {
+    const visibleShortcuts = WORKSPACE_SHORTCUTS.filter((s) => s.hideWhenMode !== mode);
+    const creditChip =
+      credits !== null ? (
+        <Link href="/ai/pricing" className="ar-home-header-credit" title="کردیت — خرید">
+          <IconDiamond size={11} />
+          <b>{credits.toLocaleString("fa-IR")}</b>
+        </Link>
+      ) : authBoot === "guest" && guestDirectRemaining !== null ? (
+        <span className="ar-home-header-credit ar-home-header-credit--guest">
+          {guestDirectRemaining.toLocaleString("fa-IR")} رایگان
+        </span>
+      ) : (
+        <span className="ar-home-topbar-spacer" />
+      );
+
     return (
       <>
         <header className="ar-home-header ar-home-header--empty">
@@ -1034,13 +1074,13 @@ export default function ArenaHomePage({
             onClick={() => window.dispatchEvent(new Event("ai:open-drawer"))}
             aria-label="باز کردن منو"
           >
-            <IconMenu size={19} />
+            <IconMenu size={18} />
           </button>
-          <span className="ar-home-header-brand">آرایه AI</span>
-          <span className="ar-home-topbar-spacer" />
+          <span className="ar-home-header-brand">AI آرایه</span>
+          {creditChip}
         </header>
         <div className="ar-home-stack">
-          <div className="ar-home-center">
+          <div className="ar-home-center ar-home-marketing">
             <p className="ar-chat-brand-eyebrow">آرایه AI</p>
             <h1 className="ar-home-prompt">
               یک سؤال؛ چند <span className="ar-home-prompt-accent">AI</span>؛ یک پاسخ بهتر
@@ -1058,10 +1098,21 @@ export default function ArenaHomePage({
             </div>
           </div>
           <div className="ar-home-mode-row">
-            <ModeSelector value={mode} onChange={handleModeSelect} isLocked={isModeLocked} compact={isMobile} />
+            <ModeSelector
+              value={mode}
+              onChange={handleModeSelect}
+              isLocked={isModeLocked}
+              compact={isMobile}
+              variant={isMobile ? "pills" : "segmented"}
+            />
           </div>
-          <div className="ar-home-composer">
-            {renderComposer({ docked: true, showMode: false, simplified: true })}
+          <div className="ar-home-composer ar-home-composer--empty">
+            {renderComposer({
+              docked: true,
+              showMode: false,
+              simplified: true,
+              placeholder: isMobile ? "سوالت را بنویس..." : undefined,
+            })}
             {(mode === "direct" || authBoot === "guest") && mode !== "battle" && (
               <ChatModelBar
                 value={modelPick}
@@ -1084,6 +1135,7 @@ export default function ArenaHomePage({
                   plan={plan}
                   exclude={modelB}
                   label="مدل A"
+                  preferOpenDown
                 />
                 <ModelSelect
                   variant="bar"
@@ -1094,46 +1146,44 @@ export default function ArenaHomePage({
                   plan={plan}
                   exclude={modelA}
                   label="مدل B"
+                  preferOpenDown
                 />
               </div>
             )}
-            <div className="ar-feature-grid" role="navigation" aria-label="امکانات آرایه">
-              {FEATURE_CARDS.map((card) => {
-                const isCardLocked =
-                  card.key === "council" && authBoot === "user" && planRank(plan) < planRank("pro");
-                return authBoot === "guest" || !card.href ? (
-                  <button
-                    key={card.key}
-                    type="button"
-                    className={`ar-feature-card${isCardLocked ? " is-locked" : ""}`}
-                    onClick={() => handleFeatureClick(card)}
-                  >
-                    <span className="ar-feature-card-icon" aria-hidden>
-                      <card.Icon size={16} />
-                    </span>
-                    <span className="ar-feature-card-copy">
-                      <b>{card.title}</b>
-                      <small>{card.desc}</small>
-                    </span>
-                    <span className="ar-feature-card-arrow" aria-hidden>
-                      {isCardLocked ? <IconLock size={14} /> : <IconArrowLeft size={14} />}
-                    </span>
-                  </button>
-                ) : (
-                  <Link key={card.key} href={card.href} className="ar-feature-card">
-                    <span className="ar-feature-card-icon" aria-hidden>
-                      <card.Icon size={16} />
-                    </span>
-                    <span className="ar-feature-card-copy">
-                      <b>{card.title}</b>
-                      <small>{card.desc}</small>
-                    </span>
-                    <span className="ar-feature-card-arrow" aria-hidden>
-                      <IconArrowLeft size={14} />
-                    </span>
+            <div className="ar-shortcut-grid" role="navigation" aria-label="میانبرها">
+              {visibleShortcuts.map((shortcut) => {
+                const isLocked =
+                  shortcut.action === "council" &&
+                  authBoot === "user" &&
+                  planRank(plan) < planRank("pro");
+                return shortcut.href ? (
+                  <Link key={shortcut.key} href={shortcut.href} className="ar-shortcut-btn">
+                    {shortcut.label}
                   </Link>
+                ) : (
+                  <button
+                    key={shortcut.key}
+                    type="button"
+                    className={`ar-shortcut-btn${isLocked ? " is-locked" : ""}`}
+                    onClick={() => handleShortcutClick(shortcut)}
+                  >
+                    {shortcut.label}
+                    {isLocked && <IconLock size={11} />}
+                  </button>
                 );
               })}
+            </div>
+            <div className="ar-prompt-suggestions" aria-label="پیشنهادها">
+              {SUGGESTED_PROMPTS.map((text) => (
+                <button
+                  key={text}
+                  type="button"
+                  className="ar-prompt-suggestion"
+                  onClick={() => applySuggestedPrompt(text)}
+                >
+                  «{text}»
+                </button>
+              ))}
             </div>
             {(sendErr === "plan_locked" || sendErr === "mode_locked") && (
               <PlanUpsellBanner
@@ -1141,7 +1191,6 @@ export default function ArenaHomePage({
                 onDismiss={() => setSendErr("")}
               />
             )}
-            <ResultPreview mode={mode} />
           </div>
         </div>
       </>
