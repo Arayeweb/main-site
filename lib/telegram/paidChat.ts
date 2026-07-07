@@ -9,7 +9,7 @@ import { getModel } from "@/lib/aiModels";
 import { creditsForModel } from "@/lib/ai/usage/estimate";
 import { prepareRunAndReserveCredits } from "@/lib/billing/credits";
 import { settleRun } from "@/lib/ai/usage/settle";
-import { directSystemPrompt } from "@/lib/ai/prompts/direct";
+import { telegramSystemPrompt } from "./prompts";
 import { getTelegramConfig } from "./config";
 import type { ChatContextEntry } from "./types";
 
@@ -71,7 +71,7 @@ export async function runPaidDirectChat(opts: {
     const messages: ChatMessage[] = [
       {
         role: "system",
-        content: `${directSystemPrompt({ webSearch: false })}\n\nجواب‌ها کوتاه، کاربردی و مستقیم باشند.`,
+        content: telegramSystemPrompt(),
       },
       ...historyToMessages(opts.history),
       { role: "user", content: opts.prompt },

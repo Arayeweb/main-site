@@ -31,8 +31,8 @@ describe("integration — /api/ai/verify payment callback", () => {
           id: "order-1",
           user_id: "user-1",
           package_id: "starter",
-          amount_toman: 79000,
-          credits_granted: 50,
+          amount_toman: 99000,
+          credits_granted: 80,
           status: "pending",
           zibal_track_id: "track-abc",
           promo_code: null,
@@ -48,7 +48,7 @@ describe("integration — /api/ai/verify payment callback", () => {
     mockZibalVerify.mockResolvedValue({
       ok: true,
       paid: true,
-      amount: 79000,
+      amount: 99000,
     });
   });
 
@@ -66,7 +66,7 @@ describe("integration — /api/ai/verify payment callback", () => {
     );
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("/ai?payment=success");
-    expect(db.tables.ai_users[0].credits).toBe(55);
+    expect(db.tables.ai_users[0].credits).toBe(85);
     expect(db.tables.ai_users[0].plan).toBe("starter");
     expect(db.tables.ai_orders[0].status).toBe("paid");
   });

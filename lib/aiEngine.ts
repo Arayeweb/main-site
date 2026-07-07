@@ -480,7 +480,10 @@ export async function runImageGen(
 
   const info = getModel(model);
   const route = modelRouteId(model);
-  if (info?.imageApi === "images" || route.startsWith("openai/gpt-image") || (route.includes("gemini") && route.includes("image"))) {
+  // Gemini image models use chat/completions + modalities — not /images.
+  const useDedicatedApi =
+    info?.imageApi === "images" || route.startsWith("openai/gpt-image");
+  if (useDedicatedApi) {
     return runImageGenDedicated(prompt, route, apiKey, opts);
   }
   return runImageGenChat(prompt, route, apiKey, opts);

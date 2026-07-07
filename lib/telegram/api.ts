@@ -47,19 +47,54 @@ export type ReplyKeyboard = {
   one_time_keyboard?: boolean;
 };
 
+export type SendMessageExtra = {
+  reply_markup?: InlineKeyboard | ReplyKeyboard | { remove_keyboard: true; inline_keyboard?: [] };
+  disable_web_page_preview?: boolean;
+};
+
 export async function sendMessage(
   chatId: number,
   text: string,
-  extra: {
-    reply_markup?: InlineKeyboard | ReplyKeyboard | { remove_keyboard: true };
-    disable_web_page_preview?: boolean;
-  } = {}
+  extra: SendMessageExtra = {}
 ) {
   return callTelegram("sendMessage", {
     chat_id: chatId,
     text: escapeHtml(text),
     parse_mode: "HTML",
     ...extra,
+  });
+}
+
+export async function editMessageText(
+  chatId: number,
+  messageId: number,
+  text?: string,
+  extra: {
+    reply_markup?: InlineKeyboard | { inline_keyboard: [] };
+    disable_web_page_preview?: boolean;
+  } = {}
+) {
+  const body: Record<string, unknown> = {
+    chat_id: chatId,
+    message_id: messageId,
+    ...extra,
+  };
+  if (text !== undefined) {
+    body.text = escapeHtml(text);
+    body.parse_mode = "HTML";
+  }
+  return callTelegram("editMessageText", body);
+}
+
+export async function editMessageReplyMarkup(
+  chatId: number,
+  messageId: number,
+  replyMarkup: InlineKeyboard | { inline_keyboard: [] } = { inline_keyboard: [] }
+) {
+  return callTelegram("editMessageReplyMarkup", {
+    chat_id: chatId,
+    message_id: messageId,
+    reply_markup: replyMarkup,
   });
 }
 

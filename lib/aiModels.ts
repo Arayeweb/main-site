@@ -280,8 +280,8 @@ export const IMAGE_MODELS: AIModelInfo[] = [
     blurb: "سریع و کم‌هزینه برای ایده‌های اولیه",
     capabilities: { imageGen: true },
     kind: "image",
-    imageCreditCost: 3,
-    imageApi: "images",
+    imageCreditCost: 10,
+    imageApi: "chat",
   },
   {
     id: "image-nano",
@@ -295,8 +295,8 @@ export const IMAGE_MODELS: AIModelInfo[] = [
     blurb: "سبک‌های هنری و ایده‌پردازی بصری",
     capabilities: { imageGen: true },
     kind: "image",
-    imageCreditCost: 4,
-    imageApi: "images",
+    imageCreditCost: 22,
+    imageApi: "chat",
   },
   {
     id: "image-gpt",
@@ -310,7 +310,7 @@ export const IMAGE_MODELS: AIModelInfo[] = [
     blurb: "جزئیات بالا و متن روی تصویر",
     capabilities: { imageGen: true },
     kind: "image",
-    imageCreditCost: 6,
+    imageCreditCost: 40,
     imageApi: "images",
   },
 ];
@@ -329,7 +329,7 @@ export const VIDEO_MODELS: AIModelInfo[] = [
     capabilities: { videoGen: true },
     kind: "video",
     videoDurations: [4, 5, 8, 10, 12],
-    videoCreditCost: 10,
+    videoCreditCost: 60,
   },
   {
     id: "video-kling",
@@ -344,7 +344,7 @@ export const VIDEO_MODELS: AIModelInfo[] = [
     capabilities: { videoGen: true },
     kind: "video",
     videoDurations: [3, 5, 8, 10, 15],
-    videoCreditCost: 50,
+    videoCreditCost: 150,
   },
   {
     id: "video-sora",
@@ -359,7 +359,7 @@ export const VIDEO_MODELS: AIModelInfo[] = [
     capabilities: { videoGen: true },
     kind: "video",
     videoDurations: [4, 5, 8],
-    videoCreditCost: 125,
+    videoCreditCost: 375,
   },
   {
     id: "video-veo",
@@ -374,7 +374,7 @@ export const VIDEO_MODELS: AIModelInfo[] = [
     capabilities: { videoGen: true },
     kind: "video",
     videoDurations: [4, 6, 8],
-    videoCreditCost: 150,
+    videoCreditCost: 400,
   },
 ];
 

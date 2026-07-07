@@ -1,4 +1,5 @@
 import CtaLink from "./home/CtaLink";
+import { SITE_PHONE_TEL } from "@/lib/siteContact";
 
 export default function CTA() {
   return (
@@ -21,7 +22,7 @@ export default function CTA() {
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <CtaLink
-                href="tel:02128426699"
+                href={SITE_PHONE_TEL}
                 location="cta_primary"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-navy-900 transition-all duration-200 hover:bg-navy-50 hover:shadow-glow active:scale-[0.98]"
               >

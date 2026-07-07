@@ -5,6 +5,7 @@ import { pushGtmEvent } from "@/lib/gtm";
 import { getUtmParams } from "@/lib/utm";
 import { IconCheck, IconPhone } from "@/components/icons";
 import type { SpecialtyKey } from "@/lib/demoData";
+import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL } from "@/lib/siteContact";
 
 const isValidIranianMobile = (value: string): boolean => {
   const digits = value
@@ -164,12 +165,12 @@ export default function DemoLeadForm({
         </button>
 
         <a
-          href="tel:02128426699"
+          href={SITE_PHONE_TEL}
           onClick={() => pushGtmEvent("phone_click", { location: "demo_lead_form", specialty })}
           className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 px-6 py-3 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
         >
           <IconPhone size={16} />
-          ترجیح می‌دهم اول صحبت کنم — ۰۲۱۲۸۴۲۶۶۹۹
+          ترجیح می‌دهم اول صحبت کنم — {SITE_PHONE_DISPLAY}
         </a>
         <p className="mt-3 text-center text-[11px] text-navy-400">بدون اسپم؛ فقط برای هماهنگی همکاری.</p>
       </form>

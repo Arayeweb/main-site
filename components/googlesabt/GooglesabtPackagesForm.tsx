@@ -10,6 +10,7 @@ import {
 } from "@/lib/googlesabtData";
 import { IconCheck, IconPhone } from "@/components/icons";
 import SectionHeader from "@/components/home/SectionHeader";
+import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL } from "@/lib/siteContact";
 
 const toLatinDigits = (s: string) =>
   s
@@ -383,12 +384,12 @@ export default function GooglesabtPackagesForm() {
               </button>
 
               <a
-                href="tel:02128426699"
+                href={SITE_PHONE_TEL}
                 onClick={() => pushGtmEvent("phone_click", { location: "googlesabt_form_success", page: "googlesabt" })}
                 className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 px-6 py-3 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
               >
                 <IconPhone size={16} />
-                ترجیح می‌دهم اول صحبت کنم — ۰۲۱۲۸۴۲۶۶۹۹
+                ترجیح می‌دهم اول صحبت کنم — {SITE_PHONE_DISPLAY}
               </a>
             </div>
           ) : null}

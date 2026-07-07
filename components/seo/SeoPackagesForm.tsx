@@ -5,12 +5,13 @@ import { pushGtmEvent } from "@/lib/gtm";
 import { getUtmParams } from "@/lib/utm";
 import {
   seoPackages,
-  seoBundle,
-  formatToman,
+  formatPackagePrice,
+  getSeoPackage,
   type SeoPackageKey,
 } from "@/lib/seoData";
 import { IconCheck, IconPhone } from "@/components/icons";
 import SectionHeader from "@/components/home/SectionHeader";
+import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL } from "@/lib/siteContact";
 
 const toLatinDigits = (s: string) =>
   s
@@ -35,12 +36,9 @@ interface PkgInfo {
   price: number;
 }
 
-const allPackages: Record<SeoPackageKey, PkgInfo> = {
-  basic: { name: "پایه", price: 890_000 },
-  growth: { name: "رشد", price: 1_690_000 },
-  pro: { name: "حرفه‌ای", price: 2_900_000 },
-  bundle: { name: seoBundle.name, price: seoBundle.price },
-};
+const allPackages: Record<SeoPackageKey, PkgInfo> = Object.fromEntries(
+  seoPackages.map((p) => [p.key, { name: p.name, price: p.price }]),
+) as Record<SeoPackageKey, PkgInfo>;
 
 type PaymentState = "success" | "failed" | "error" | null;
 
@@ -69,12 +67,13 @@ export default function SeoPackagesForm() {
   }, []);
 
   const pkg = allPackages[selected];
+  const pkgMeta = getSeoPackage(selected);
 
   const choosePackage = (key: SeoPackageKey) => {
     setSelected(key);
     setStep(2);
     setError(null);
-    pushGtmEvent(key === "bundle" ? "bundle_selected" : "pkg_selected", {
+    pushGtmEvent("pkg_selected", {
       package: key,
       page: "seo",
     });
@@ -169,8 +168,8 @@ export default function SeoPackagesForm() {
         <SectionHeader
           badge="شروع همکاری"
           badgeClassName="bg-teal-50 text-teal-700"
-          title="پکیجی متناسب با مرحله رشد کسب‌وکار"
-          subtitle="از شروع مسیر لید تا سیستم کامل سرچ تا CRM — پیشنهاد قیمت دریافت کنید."
+          title="پکیج‌های سئوی محلی آرایه"
+          subtitle="از ثبت نقشه گوگل تا سیستم کامل سرچ تا لید — قیمت شفاف و نهایی."
         />
 
         {payment ? (
@@ -184,26 +183,29 @@ export default function SeoPackagesForm() {
           >
             {payment === "success"
               ? "پرداخت با موفقیت انجام شد ✓ تیم آرایه در کمتر از ۲ ساعت کاری با شما تماس می‌گیرد."
-              : "پرداخت انجام نشد. می‌توانید دوباره تلاش کنید یا با ۰۲۱۲۸۴۲۶۶۹۹ تماس بگیرید."}
+              : `پرداخت انجام نشد. می‌توانید دوباره تلاش کنید یا با ${SITE_PHONE_DISPLAY} تماس بگیرید.`}
           </div>
         ) : null}
 
         {/* Packages grid */}
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {seoPackages.map((p) => {
             const isSelected = selected === p.key;
+            const isGmap = p.key === "gmap";
             return (
               <div
                 key={p.key}
                 className={`relative flex flex-col rounded-3xl border-2 bg-white p-6 transition-all duration-300 ${
+                  isGmap ? "md:col-span-2 xl:col-span-3" : ""
+                } ${
                   isSelected
                     ? "border-teal-500 shadow-card -translate-y-1"
                     : "border-navy-100 shadow-soft hover:-translate-y-1 hover:border-teal-200"
                 }`}
               >
-                {p.popular ? (
+                {p.badge ? (
                   <span className="absolute -top-3 right-6 rounded-full bg-teal-600 px-3.5 py-1 text-[11px] font-bold text-white shadow-soft">
-                    محبوب‌ترین
+                    {p.badge}
                   </span>
                 ) : null}
 
@@ -211,16 +213,12 @@ export default function SeoPackagesForm() {
                 <p className="mt-1.5 text-[13px] leading-relaxed text-navy-500">{p.description}</p>
 
                 <div className="mt-4">
-                  <span className="block text-xs text-navy-300 line-through">
-                    {formatToman(p.oldPrice)} تومان
-                  </span>
                   <span className="text-2xl font-extrabold text-teal-600">
-                    {formatToman(p.price)}
-                    <small className="mr-1 text-xs font-medium text-navy-400">تومان</small>
+                    {formatPackagePrice(p)}
                   </span>
                 </div>
 
-                <ul className="mt-4 flex flex-1 flex-col gap-2">
+                <ul className={`mt-4 flex flex-1 flex-col gap-2 ${isGmap ? "md:grid md:grid-cols-2 md:gap-x-6" : ""}`}>
                   {p.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-[13px] leading-relaxed text-navy-600">
                       <IconCheck size={14} className="mt-1 shrink-0 text-teal-500" />
@@ -238,46 +236,11 @@ export default function SeoPackagesForm() {
                       : "border border-navy-200 bg-white text-navy-700 hover:border-teal-300 hover:text-teal-700"
                   }`}
                 >
-                  {isSelected ? "انتخاب شد ✓" : "دریافت پیشنهاد قیمت"}
+                  {isSelected ? "انتخاب شد ✓" : p.checkoutEnabled ? "انتخاب پکیج" : "درخواست مشاوره"}
                 </button>
               </div>
             );
           })}
-        </div>
-
-        {/* Bundle cross-sell */}
-        <div className="mx-auto mt-8 max-w-2xl rounded-3xl border-2 border-amber-200 bg-gradient-to-b from-amber-50 to-white p-7 text-center shadow-soft">
-          <span className="badge mb-3 bg-amber-100 text-amber-700">پیشنهاد ویژه کسب‌وکار محلی</span>
-          <h3 className="text-lg font-extrabold text-navy-900">{seoBundle.name}</h3>
-          <p className="mx-auto mt-2 max-w-md text-[13px] leading-relaxed text-navy-500">
-            {seoBundle.description}
-          </p>
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-            {seoBundle.items.map((item) => (
-              <span
-                key={item}
-                className="rounded-full bg-white px-3.5 py-1.5 text-xs font-bold text-navy-600 shadow-soft"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-          <div className="mt-4">
-            <span className="text-sm text-navy-300 line-through">
-              {formatToman(seoBundle.oldPrice)} تومان
-            </span>
-            <span className="mr-3 text-2xl font-extrabold text-amber-600">
-              {formatToman(seoBundle.price)}
-              <small className="mr-1 text-xs font-medium text-navy-400">تومان</small>
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => choosePackage("bundle")}
-            className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-7 py-3 text-sm font-bold text-white transition-all hover:bg-amber-600 active:scale-[0.98]"
-          >
-            {selected === "bundle" ? "انتخاب شد ✓" : "انتخاب پکیج ترکیبی"}
-          </button>
         </div>
 
         {/* Multistep form */}
@@ -403,8 +366,10 @@ export default function SeoPackagesForm() {
               </div>
               <h3 className="text-lg font-extrabold text-teal-700">درخواستت ثبت شد</h3>
               <p className="mt-2 text-[13px] leading-relaxed text-navy-500">
-                پکیج <b className="text-navy-800">{pkg.name}</b> را انتخاب کردی. برای شروع همان روز،
-                پرداخت آنلاین را انجام بده یا منتظر تماس تیم ما باش (کمتر از ۲ ساعت کاری).
+                پکیج <b className="text-navy-800">{pkg.name}</b> را انتخاب کردی.
+                {pkgMeta.checkoutEnabled
+                  ? " برای شروع همان روز، پرداخت آنلاین را انجام بده یا منتظر تماس تیم ما باش (کمتر از ۲ ساعت کاری)."
+                  : " کارشناس ما در کمتر از ۲ ساعت کاری برای مشاوره و پیشنهاد اختصاصی تماس می‌گیرد."}
               </p>
 
               <div className="mt-5 rounded-2xl border border-navy-100 bg-navy-50/50 p-4 text-right">
@@ -413,8 +378,8 @@ export default function SeoPackagesForm() {
                   <b>{pkg.name}</b>
                 </div>
                 <div className="mt-2 flex justify-between border-t border-navy-100 pt-2 text-sm font-extrabold text-teal-700">
-                  <span>مبلغ قابل پرداخت</span>
-                  <span>{formatToman(pkg.price)} تومان</span>
+                  <span>{pkgMeta.checkoutEnabled ? "مبلغ قابل پرداخت" : "قیمت"}</span>
+                  <span>{formatPackagePrice(pkgMeta)}</span>
                 </div>
               </div>
 
@@ -424,22 +389,26 @@ export default function SeoPackagesForm() {
                 </p>
               ) : null}
 
-              <button
-                type="button"
-                onClick={startCheckout}
-                disabled={paying}
-                className="mt-5 w-full rounded-xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-teal-700 active:scale-[0.98] disabled:opacity-60"
-              >
-                {paying ? "در حال انتقال به درگاه پرداخت..." : `پرداخت آنلاین امن ${formatToman(pkg.price)} تومان`}
-              </button>
+              {pkgMeta.checkoutEnabled ? (
+                <button
+                  type="button"
+                  onClick={startCheckout}
+                  disabled={paying}
+                  className="mt-5 w-full rounded-xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-teal-700 active:scale-[0.98] disabled:opacity-60"
+                >
+                  {paying
+                    ? "در حال انتقال به درگاه پرداخت..."
+                    : `پرداخت آنلاین امن ${formatPackagePrice(pkgMeta)}`}
+                </button>
+              ) : null}
 
               <a
-                href="tel:02128426699"
+                href={SITE_PHONE_TEL}
                 onClick={() => pushGtmEvent("phone_click", { location: "seo_form_success", page: "seo" })}
                 className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 px-6 py-3 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
               >
                 <IconPhone size={16} />
-                ترجیح می‌دهم اول صحبت کنم — ۰۲۱۲۸۴۲۶۶۹۹
+                ترجیح می‌دهم اول صحبت کنم — {SITE_PHONE_DISPLAY}
               </a>
             </div>
           ) : null}

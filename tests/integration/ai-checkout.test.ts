@@ -67,6 +67,20 @@ describe("integration — /api/ai/checkout", () => {
     expect(mockZibalRequest).toHaveBeenCalledOnce();
   });
 
+  it("rejects non-checkout packages (free, business, team)", async () => {
+    const token = signAIToken("user-1", "free");
+    for (const packageId of ["free", "business", "team_mini"]) {
+      const res = await POST(
+        makeRequest("/api/ai/checkout", {
+          method: "POST",
+          cookies: { [AI_COOKIE]: token },
+          body: { packageId },
+        })
+      );
+      expect(res.status).toBe(422);
+    }
+  });
+
   it("rejects invalid package id", async () => {
     const token = signAIToken("user-1", "free");
     const res = await POST(

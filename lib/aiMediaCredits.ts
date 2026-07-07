@@ -1,32 +1,23 @@
 // =========================================================
 // کردیت استودیو ویدیو / صوت — Araaye Arena
-// منبع واحد قیمت‌گذاری مدیا (جدای چت و تصویر)
 // =========================================================
 
+import { getModel, type AIModelInfo } from "./aiModels";
 import {
-  getModel,
-  type AIModelInfo,
-} from "./aiModels";
-import { canUseModel } from "./aiCredits";
+  PLAN_IDS,
+  TIER_MIN_PLAN,
+  VIDEO_CREDIT_RATES,
+  VIDEO_MIN_PLAN,
+} from "./aiPricingConfig";
+import { planRank } from "./aiPackages";
 
-/** نرخ کردیت ویدیو بر اساس id مدل */
-export const VIDEO_CREDIT_RATES: Record<
-  string,
-  { creditsPerSecond: number; minCredits: number }
-> = {
-  "video-seedance": { creditsPerSecond: 2, minCredits: 8 },
-  "video-kling": { creditsPerSecond: 10, minCredits: 40 },
-  "video-sora": { creditsPerSecond: 25, minCredits: 100 },
-  "video-veo": { creditsPerSecond: 30, minCredits: 120 },
-};
+export { VIDEO_CREDIT_RATES };
 
-/** کردیت پایه TTS (تا ۵۰۰ کاراکتر) */
 export const AUDIO_SPEECH_BASE_CREDITS: Record<string, number> = {
   "audio-mini": 2,
   "audio-pro": 5,
 };
 
-/** کردیت رونویسی به ازای هر دقیقه (گرد به بالا) */
 export const TRANSCRIBE_CREDITS_PER_MINUTE = 2;
 
 export const DEFAULT_VIDEO_DURATION_SEC = 5;
@@ -35,8 +26,8 @@ export const TTS_CHARS_PER_CREDIT_BLOCK = 500;
 export function videoGenCost(model: AIModelInfo, durationSec: number): number {
   const rates = VIDEO_CREDIT_RATES[model.id];
   if (!rates) {
-    const fallback = model.videoCreditCost ?? 10;
-    return Math.max(fallback, Math.ceil(durationSec * 2));
+    const fallback = model.videoCreditCost ?? 60;
+    return Math.max(fallback, Math.ceil(durationSec * 12));
   }
   const dur = Math.max(1, Math.round(durationSec));
   return Math.max(rates.minCredits, Math.ceil(dur * rates.creditsPerSecond));
@@ -55,13 +46,21 @@ export function transcribeCost(model: AIModelInfo, durationSec: number): number 
   return perMin * minutes;
 }
 
+export function canUseVideoModel(plan: string, model: AIModelInfo): boolean {
+  const minPlan = VIDEO_MIN_PLAN[model.id];
+  if (minPlan) {
+    return planRank(plan) >= planRank(minPlan);
+  }
+  return planRank(plan) >= planRank(TIER_MIN_PLAN[model.tier]);
+}
+
 export function resolveVideoModel(
   id: string | null | undefined,
   plan: string
 ): AIModelInfo | { error: "invalid_model" | "plan_upgrade_required" } {
   const m = id ? getModel(id) : undefined;
   if (!m || m.kind !== "video") return { error: "invalid_model" };
-  if (!canUseModel(plan, m)) return { error: "plan_upgrade_required" };
+  if (!canUseVideoModel(plan, m)) return { error: "plan_upgrade_required" };
   return m;
 }
 
@@ -71,7 +70,9 @@ export function resolveAudioModel(
 ): AIModelInfo | { error: "invalid_model" | "plan_upgrade_required" } {
   const m = id ? getModel(id) : undefined;
   if (!m || m.kind !== "audio") return { error: "invalid_model" };
-  if (!canUseModel(plan, m)) return { error: "plan_upgrade_required" };
+  if (planRank(plan) < planRank(TIER_MIN_PLAN[m.tier])) {
+    return { error: "plan_upgrade_required" };
+  }
   return m;
 }
 
@@ -85,7 +86,9 @@ export function resolveMusicModel(
 ): AIModelInfo | { error: "invalid_model" | "plan_upgrade_required" } {
   const m = id ? getModel(id) : undefined;
   if (!m || m.kind !== "music") return { error: "invalid_model" };
-  if (!canUseModel(plan, m)) return { error: "plan_upgrade_required" };
+  if (planRank(plan) < planRank(TIER_MIN_PLAN[m.tier])) {
+    return { error: "plan_upgrade_required" };
+  }
   return m;
 }
 
@@ -95,11 +98,12 @@ export function resolveTranscribeModel(
 ): AIModelInfo | { error: "invalid_model" | "plan_upgrade_required" } {
   const m = id ? getModel(id) : undefined;
   if (!m || m.kind !== "transcribe") return { error: "invalid_model" };
-  if (!canUseModel(plan, m)) return { error: "plan_upgrade_required" };
+  if (planRank(plan) < planRank(TIER_MIN_PLAN[m.tier])) {
+    return { error: "plan_upgrade_required" };
+  }
   return m;
 }
 
-/** مدت‌های مجاز ویدیو — اعتبارسنجی سمت سرور */
 export function validateVideoDuration(
   model: AIModelInfo,
   durationSec: number
@@ -108,4 +112,13 @@ export function validateVideoDuration(
   const dur = Math.round(durationSec);
   if (!allowed.includes(dur)) return { error: "invalid_duration" };
   return dur;
+}
+
+/** ویدیو ۱۰۸۰p فقط Max و Business */
+export function is1080pVideoModel(modelId: string): boolean {
+  return modelId === "video-veo";
+}
+
+export function canUse1080pVideo(plan: string): boolean {
+  return planRank(plan) >= planRank(PLAN_IDS.MAX);
 }

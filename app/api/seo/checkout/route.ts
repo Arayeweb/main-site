@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { getSeoCheckoutPackages } from "@/lib/seoData";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,13 +11,8 @@ const ZIBAL_API = "https://api.zibal.ir/v1";
 const ZIBAL_GATEWAY = "https://gateway.zibal.ir/start";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
-// Valid SEO packages with their prices (toman)
-const SEO_PACKAGES: Record<string, { name: string; price: number }> = {
-  basic: { name: "پایه", price: 890000 },
-  growth: { name: "رشد", price: 1690000 },
-  pro: { name: "حرفه‌ای", price: 2900000 },
-  bundle: { name: "ترکیبی سئو+گوگل", price: 3100000 },
-};
+// Valid SEO packages with their prices (toman) — synced from lib/seoData.ts
+const SEO_PACKAGES = getSeoCheckoutPackages();
 
 function str(v: unknown, max = 500): string | null {
   if (v === undefined || v === null) return null;

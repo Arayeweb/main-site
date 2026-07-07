@@ -13,12 +13,13 @@ import {
   MAX_PROMPT_CHARS,
 } from "@/lib/aiCredits";
 import { getModel } from "@/lib/aiModels";
+import { webSearchSurcharge } from "@/lib/aiPricingConfig";
 
 describe("aiCredits — pricing & access", () => {
   it("calculates battle credit cost per tier", () => {
     expect(BATTLE_CREDIT_COST.economy).toBe(1);
     expect(BATTLE_CREDIT_COST.standard).toBe(2);
-    expect(BATTLE_CREDIT_COST.premium).toBe(4);
+    expect(BATTLE_CREDIT_COST.premium).toBe(8);
   });
 
   it("allows free users direct chat; side_by_side stays starter+", () => {
@@ -32,21 +33,29 @@ describe("aiCredits — pricing & access", () => {
     expect(canUseMode("pro", "side_by_side")).toBe(true);
   });
 
-  it("computes side_by_side cost from the more expensive model tier", () => {
+  it("computes side_by_side cost from the more expensive model", () => {
     const economy = getModel("economy")!;
     const precise = getModel("precise")!;
-    expect(sideBySideCost(economy, precise)).toBe(4);
+    expect(sideBySideCost(economy, precise)).toBe(15);
     expect(sideBySideCost(economy, economy)).toBe(1);
   });
 
-  it("computes direct cost by model tier", () => {
+  it("computes direct cost per model id", () => {
     expect(directCost(getModel("economy")!)).toBe(1);
-    expect(directCost(getModel("precise")!)).toBe(2);
+    expect(directCost(getModel("fast")!)).toBe(2);
+    expect(directCost(getModel("creative")!)).toBe(5);
+    expect(directCost(getModel("precise")!)).toBe(15);
+    expect(directCost(getModel("critic")!)).toBe(15);
+  });
+
+  it("adds web search surcharge", () => {
+    const economy = getModel("economy")!;
+    expect(directCost(economy, { webSearch: true })).toBe(1 + webSearchSurcharge());
   });
 
   it("computes image generation credit cost", () => {
-    const creative = getModel("creative")!;
-    expect(imageGenCost(creative)).toBeGreaterThan(0);
+    expect(imageGenCost(getModel("image-lite")!)).toBe(10);
+    expect(imageGenCost(getModel("image-gpt")!)).toBe(40);
   });
 
   it("enforces plan requirements for premium direct models", () => {

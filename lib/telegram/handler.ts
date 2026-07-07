@@ -3,7 +3,7 @@
 // =========================================================
 
 import { normalizeContact } from "@/lib/validateContact";
-import { sendMessage, answerCallbackQuery, setMyCommands, sendTypingAction } from "./api";
+import { sendMessage, answerCallbackQuery, setMyCommands, sendTypingAction, editMessageText } from "./api";
 import { COPY, orderConfirm, maskPhone, pricingMessage } from "./copy";
 import { trackEvent } from "./events";
 import { checkRequiredMembership } from "./membership";
@@ -19,6 +19,13 @@ import {
   paymentUrlKeyboard,
   mediaWebCtaKeyboard,
 } from "./keyboards";
+import {
+  deliverBotResponse,
+  editOrSendMessage,
+  removeInlineKeyboard,
+  sendLoadingMessage,
+} from "./messages";
+import type { InlineKeyboard } from "./api";
 import {
   upsertTelegramUser,
   saveTelegramMessage,
@@ -64,7 +71,7 @@ export interface TelegramUpdate {
   callback_query?: {
     id: string;
     from: TelegramUser;
-    message?: { chat: { id: number } };
+    message?: { message_id: number; chat: { id: number } };
     data?: string;
   };
 }
@@ -89,9 +96,39 @@ interface TelegramMessage {
 }
 
 let commandsRegistered = false;
-const WAITING_MESSAGE_DELAY_MS = 2500;
 const TELEGRAM_GREETING_REPLY = `سلام، آماده‌ام.
 سوالت را همینجا بنویس تا جوابش را برات آماده کنم.`;
+
+function modelStateData(modelId: string): Record<string, unknown> {
+  return {
+    selectedModelId: modelId,
+    mode: "quick_chat",
+    selectedModel: modelId,
+    selectedAt: new Date().toISOString(),
+  };
+}
+
+async function sendOrEditMenuMessage(
+  chatId: number,
+  messageId: number | undefined,
+  text: string,
+  reply_markup?: InlineKeyboard
+) {
+  await editOrSendMessage(chatId, messageId, text, reply_markup ? { reply_markup } : {});
+}
+
+async function editCallbackMessage(
+  chatId: number,
+  messageId: number | undefined,
+  text: string,
+  reply_markup?: InlineKeyboard
+) {
+  if (messageId) {
+    await editMessageText(chatId, messageId, text, reply_markup ? { reply_markup } : {});
+    return;
+  }
+  await sendMessage(chatId, text, reply_markup ? { reply_markup } : {});
+}
 
 function isPerfEnabled(): boolean {
   return process.env.TELEGRAM_PERF_LOGS === "1";
@@ -142,11 +179,13 @@ async function requireMembership(
   return true;
 }
 
-async function showModelPicker(chatId: number, userId: string) {
-  await setState(userId, "chat", { selectedModelId: null });
-  await sendMessage(chatId, modelPickerMessage(), {
-    reply_markup: modelPickerKeyboard(),
-  });
+async function showModelPicker(
+  chatId: number,
+  userId: string,
+  messageId?: number
+) {
+  await setState(userId, "chat", { selectedModelId: null, mode: "quick_chat" });
+  await sendOrEditMenuMessage(chatId, messageId, modelPickerMessage(), modelPickerKeyboard());
 }
 
 async function sendWelcome(chatId: number, _user: TelegramUserRow) {
@@ -202,14 +241,15 @@ export async function handleCommand(
   chatId: number,
   telegramId: number,
   user: TelegramUserRow,
-  cmd: string
+  cmd: string,
+  messageId?: number
 ) {
   const { supportUsername, siteUrl } = getTelegramConfig();
 
   switch (cmd) {
     case "/chat":
     case "cmd_chat":
-      await showModelPicker(chatId, user.id);
+      await showModelPicker(chatId, user.id, messageId);
       break;
     case "/compare":
     case "compare":
@@ -219,10 +259,12 @@ export async function handleCommand(
         metadata: { command: cmd },
       });
       await incrementWebClicks(user.id);
-      await sendMessage(chatId, `مقایسه چند مدل در نسخه وب:\n${compareWebUrl()}`, {
-        reply_markup: compareCtaKeyboard(),
-        disable_web_page_preview: false,
-      });
+      await sendOrEditMenuMessage(
+        chatId,
+        messageId,
+        `مقایسه چند مدل در نسخه وب:\n${compareWebUrl()}`,
+        compareCtaKeyboard()
+      );
       break;
     case "/council":
     case "council":
@@ -232,9 +274,12 @@ export async function handleCommand(
         metadata: { command: cmd },
       });
       await incrementWebClicks(user.id);
-      await sendMessage(chatId, `همفکری چند مدل در نسخه وب:\n${councilWebUrl()}`, {
-        disable_web_page_preview: false,
-      });
+      await sendOrEditMenuMessage(
+        chatId,
+        messageId,
+        `همفکری چند مدل در نسخه وب:\n${councilWebUrl()}`,
+        undefined
+      );
       break;
     case "/pricing":
     case "cmd_pricing":
@@ -242,9 +287,7 @@ export async function handleCommand(
         telegramUserId: user.id,
         telegramId,
       });
-      await sendMessage(chatId, pricingMessage(), {
-        reply_markup: pricingKeyboard(),
-      });
+      await sendOrEditMenuMessage(chatId, messageId, pricingMessage(), pricingKeyboard());
       break;
     case "/support":
     case "cmd_support":
@@ -252,7 +295,11 @@ export async function handleCommand(
         telegramUserId: user.id,
         telegramId,
       });
-      await sendMessage(chatId, COPY.support(supportUsername, siteUrl));
+      await sendOrEditMenuMessage(
+        chatId,
+        messageId,
+        COPY.support(supportUsername, siteUrl)
+      );
       break;
     case "/clear":
     case "cmd_clear":
@@ -261,10 +308,10 @@ export async function handleCommand(
         telegramUserId: user.id,
         telegramId,
       });
-      await sendMessage(chatId, COPY.clearDone);
+      await sendOrEditMenuMessage(chatId, messageId, COPY.clearDone);
       break;
     case "cmd_menu":
-      await sendMessage(chatId, "منوی اصلی:", { reply_markup: mainMenuKeyboard() });
+      await sendOrEditMenuMessage(chatId, messageId, "منوی اصلی:", mainMenuKeyboard());
       break;
     default:
       break;
@@ -276,29 +323,30 @@ export async function handleCallback(
   telegramId: number,
   user: TelegramUserRow,
   data: string,
-  callbackQueryId: string
+  callbackQueryId: string,
+  messageId?: number
 ) {
   await answerCallbackQuery(callbackQueryId);
 
   if (data === "joined_check") {
     const membership = await checkRequiredMembership(telegramId, user.id);
     if (!membership.ok) {
-      await sendMessage(chatId, COPY.membershipRetry, {
-        reply_markup: forcedJoinKeyboard(),
-      });
+      await editCallbackMessage(chatId, messageId, COPY.membershipRetry, forcedJoinKeyboard());
       return;
     }
     if (!membership.allJoined) {
-      await sendMessage(chatId, COPY.notJoined, {
-        reply_markup: forcedJoinKeyboard(),
-      });
+      await editCallbackMessage(chatId, messageId, COPY.notJoined, forcedJoinKeyboard());
       return;
     }
     await trackEvent("forced_join_completed", {
       telegramUserId: user.id,
       telegramId,
     });
-    await sendWelcome(chatId, user);
+    if (messageId) {
+      await editCallbackMessage(chatId, messageId, COPY.welcome, mainMenuKeyboard());
+    } else {
+      await sendWelcome(chatId, user);
+    }
     return;
   }
 
@@ -314,21 +362,30 @@ export async function handleCallback(
         credits = await getAraayeCredits(user.araaye_user_id);
       }
       if (credits < cost) {
-        await sendMessage(chatId, COPY.premiumModelNoCredits(model.label, cost), {
-          reply_markup: limitReachedKeyboard(),
-        });
+        await removeInlineKeyboard(chatId, messageId);
+        await editCallbackMessage(
+          chatId,
+          messageId,
+          COPY.premiumModelNoCredits(model.label, cost),
+          limitReachedKeyboard()
+        );
         return;
       }
     }
 
-    await setState(user.id, "chat", { selectedModelId: modelId });
+    await setState(user.id, "chat", modelStateData(modelId));
     perfLog("model_selected", {
       selected_model_key: modelId,
       actual_provider_model_id: getModel(modelId)?.routeId ?? modelId,
       provider_name: "openrouter",
       tier: model.tier,
     });
-    await sendMessage(chatId, modelSelectedMessage(model));
+    await editCallbackMessage(
+      chatId,
+      messageId,
+      modelSelectedMessage(model),
+      { inline_keyboard: [] }
+    );
     return;
   }
 
@@ -342,6 +399,7 @@ export async function handleCallback(
       metadata: { package_id: packageId },
     });
     await setState(user.id, "awaiting_phone", { pendingPackageId: packageId });
+    await removeInlineKeyboard(chatId, messageId);
     await sendMessage(chatId, COPY.phonePrompt, {
       reply_markup: phoneShareKeyboard(),
     });
@@ -353,6 +411,7 @@ export async function handleCallback(
     const stateData = await getStateData(user.id);
     const phone = (stateData.phone as string) || user.phone;
     if (!phone) {
+      await removeInlineKeyboard(chatId, messageId);
       await sendMessage(chatId, COPY.phonePrompt, {
         reply_markup: phoneShareKeyboard(),
       });
@@ -365,18 +424,22 @@ export async function handleCallback(
       phone,
     });
     if (!result.ok) {
-      await sendMessage(chatId, COPY.paymentLinkError);
+      await editCallbackMessage(chatId, messageId, COPY.paymentLinkError);
+      await removeInlineKeyboard(chatId, messageId);
       return;
     }
-    await sendMessage(chatId, "برای پرداخت روی دکمه زیر بزن:", {
-      reply_markup: paymentUrlKeyboard(result.redirectUrl),
-    });
+    await editCallbackMessage(
+      chatId,
+      messageId,
+      "برای پرداخت روی دکمه زیر بزن:",
+      paymentUrlKeyboard(result.redirectUrl)
+    );
     await setState(user.id, "idle");
     return;
   }
 
   if (data.startsWith("cmd_") || data === "compare") {
-    await handleCommand(chatId, telegramId, user, data);
+    await handleCommand(chatId, telegramId, user, data, messageId);
   }
 }
 
@@ -491,6 +554,8 @@ export async function handleTextMessage(
 
   await setChatRunning(user.id, true);
 
+  let loadingMessageId: number | null = null;
+
   try {
     const modelId = (selectedModelId as string) || "economy";
     const model = getTelegramChatModel(modelId);
@@ -515,17 +580,13 @@ export async function handleTextMessage(
     const typingStart = Date.now();
     void sendTypingAction(chatId);
     marks.telegram_typing_ack_ms = Date.now() - typingStart;
-    let waitingTimer: ReturnType<typeof setTimeout> | null = null;
-    let waitingMessageSent = false;
-    const scheduleWaiting = () => {
-      waitingTimer = setTimeout(() => {
-        waitingMessageSent = true;
-        void sendMessage(chatId, "دارم جواب رو آماده می‌کنم...");
-      }, WAITING_MESSAGE_DELAY_MS);
-    };
     const creditCost = creditCostForTelegramModel(modelId);
     const useFreeTier =
       model?.tier === "free" && quota.ok && quota.canUse;
+
+    const reportAiError = async (message: string, keyboard?: InlineKeyboard) => {
+      await deliverBotResponse(chatId, loadingMessageId, message, keyboard ? { reply_markup: keyboard } : {});
+    };
 
     if (isSimpleGreeting(text)) {
       await sendMessage(chatId, TELEGRAM_GREETING_REPLY);
@@ -553,17 +614,57 @@ export async function handleTextMessage(
       return;
     }
 
+    if (!useFreeTier) {
+      if (model?.tier === "premium") {
+        let credits = 0;
+        if (user.araaye_user_id) {
+          credits = await getAraayeCredits(user.araaye_user_id);
+        }
+        if (credits < creditCost) {
+          await sendMessage(chatId, COPY.premiumModelNoCredits(model.label, creditCost), {
+            reply_markup: limitReachedKeyboard(),
+          });
+          await trackEvent("free_limit_reached", {
+            telegramUserId: user.id,
+            telegramId,
+          });
+          return;
+        }
+      } else if (!user.araaye_user_id) {
+        await sendMessage(chatId, COPY.freeLimitReached, {
+          reply_markup: limitReachedKeyboard(),
+        });
+        await trackEvent("free_limit_reached", {
+          telegramUserId: user.id,
+          telegramId,
+        });
+        return;
+      } else {
+        const credits = await getAraayeCredits(user.araaye_user_id);
+        if (credits < creditCost) {
+          await sendMessage(chatId, COPY.freeLimitReached, {
+            reply_markup: limitReachedKeyboard(),
+          });
+          await trackEvent("free_limit_reached", {
+            telegramUserId: user.id,
+            telegramId,
+          });
+          return;
+        }
+      }
+    }
+
+    loadingMessageId = await sendLoadingMessage(chatId);
+
     if (useFreeTier) {
       marks.prompt_build_ms = Date.now() - startedAt - (marks.history_load_ms || 0);
       marks.provider_request_start_ms = Date.now() - startedAt;
-      scheduleWaiting();
       const result = await runFreeDirectChat(text, historyForPrompt, modelId);
-      if (waitingTimer) clearTimeout(waitingTimer);
       if (!result.ok) {
         if (result.error === "timeout") {
-          await sendMessage(chatId, "الان پاسخ‌دهی مدل کند شده. چند لحظه بعد دوباره بفرست.");
+          await reportAiError("الان پاسخ‌دهی مدل کند شده. چند لحظه بعد دوباره بفرست.");
         } else {
-          await sendMessage(chatId, COPY.aiSlow);
+          await reportAiError(COPY.aiSlow);
         }
         return;
       }
@@ -574,9 +675,7 @@ export async function handleTextMessage(
       timeoutUsed = result.timeoutUsed;
       const consumed = await consumeFreeQuota(user.id);
       if (!consumed) {
-        await sendMessage(chatId, COPY.freeLimitReached, {
-          reply_markup: limitReachedKeyboard(),
-        });
+        await reportAiError(COPY.freeLimitReached, limitReachedKeyboard());
         await trackEvent("free_limit_reached", {
           telegramUserId: user.id,
           telegramId,
@@ -586,73 +685,42 @@ export async function handleTextMessage(
       responseText = result.text;
       usedFree = true;
     } else if (user.araaye_user_id) {
-      const credits = await getAraayeCredits(user.araaye_user_id);
-      if (credits >= creditCost) {
-        marks.prompt_build_ms = Date.now() - startedAt - (marks.history_load_ms || 0);
-        marks.provider_request_start_ms = Date.now() - startedAt;
-        scheduleWaiting();
-        const result = await runPaidDirectChat({
-          araayeUserId: user.araaye_user_id,
-          prompt: text,
-          history: historyForPrompt,
-          modelId,
-        });
-        if (waitingTimer) clearTimeout(waitingTimer);
-        if (!result.ok) {
-          if (result.error === "insufficient_credits") {
-            await sendMessage(chatId, COPY.freeLimitReached, {
-              reply_markup: limitReachedKeyboard(),
-            });
-            await trackEvent("free_limit_reached", {
-              telegramUserId: user.id,
-              telegramId,
-            });
-          } else if (result.error === "plan_upgrade_required") {
-            await sendMessage(chatId, COPY.premiumModelNoCredits(
-              model?.label || modelId,
-              creditCost
-            ), { reply_markup: limitReachedKeyboard() });
-          } else if (result.error === "timeout") {
-            await sendMessage(chatId, "الان پاسخ‌دهی مدل کند شده. چند لحظه بعد دوباره بفرست.");
-          } else {
-            await sendMessage(chatId, COPY.aiSlow);
-          }
-          return;
-        }
-        responseText = result.text;
-        aiRunId = result.runId;
-        providerTtftMs = result.providerTtftMs;
-        providerTotalMs = result.providerTotalMs;
-        promptTokens = result.promptTokens;
-        completionTokens = result.completionTokens;
-        timeoutUsed = result.timeoutUsed;
-      } else {
-        if (model?.tier === "premium") {
-          await sendMessage(chatId, COPY.premiumModelNoCredits(model.label, creditCost), {
-            reply_markup: limitReachedKeyboard(),
+      marks.prompt_build_ms = Date.now() - startedAt - (marks.history_load_ms || 0);
+      marks.provider_request_start_ms = Date.now() - startedAt;
+      const result = await runPaidDirectChat({
+        araayeUserId: user.araaye_user_id,
+        prompt: text,
+        history: historyForPrompt,
+        modelId,
+      });
+      if (!result.ok) {
+        if (result.error === "insufficient_credits") {
+          await reportAiError(COPY.freeLimitReached, limitReachedKeyboard());
+          await trackEvent("free_limit_reached", {
+            telegramUserId: user.id,
+            telegramId,
           });
+        } else if (result.error === "plan_upgrade_required") {
+          await reportAiError(
+            COPY.premiumModelNoCredits(model?.label || modelId, creditCost),
+            limitReachedKeyboard()
+          );
+        } else if (result.error === "timeout") {
+          await reportAiError("الان پاسخ‌دهی مدل کند شده. چند لحظه بعد دوباره بفرست.");
         } else {
-          await sendMessage(chatId, COPY.freeLimitReached, {
-            reply_markup: limitReachedKeyboard(),
-          });
+          await reportAiError(COPY.aiSlow);
         }
-        await trackEvent("free_limit_reached", {
-          telegramUserId: user.id,
-          telegramId,
-        });
         return;
       }
+      responseText = result.text;
+      aiRunId = result.runId;
+      providerTtftMs = result.providerTtftMs;
+      providerTotalMs = result.providerTotalMs;
+      promptTokens = result.promptTokens;
+      completionTokens = result.completionTokens;
+      timeoutUsed = result.timeoutUsed;
     } else {
-      if (model?.tier === "premium") {
-        await sendMessage(chatId, COPY.premiumModelNoCredits(
-          model.label,
-          creditCost
-        ), { reply_markup: limitReachedKeyboard() });
-      } else {
-        await sendMessage(chatId, COPY.freeLimitReached, {
-          reply_markup: limitReachedKeyboard(),
-        });
-      }
+      await reportAiError(COPY.freeLimitReached, limitReachedKeyboard());
       await trackEvent("free_limit_reached", {
         telegramUserId: user.id,
         telegramId,
@@ -687,7 +755,7 @@ export async function handleTextMessage(
     marks.db_save_ms = Date.now() - dbSaveStart;
 
     const sendStart = Date.now();
-    await sendMessage(chatId, responseText);
+    await deliverBotResponse(chatId, loadingMessageId, responseText);
     marks.telegram_send_ms = Date.now() - sendStart;
     marks.post_process_ms = Date.now() - sendStart;
     marks.provider_total_ms = providerTotalMs;
@@ -704,7 +772,7 @@ export async function handleTextMessage(
       history_messages_count: historyForPrompt.length,
       fallback_used: fallbackUsed,
       timeout_used: timeoutUsed,
-      waiting_message_sent: waitingMessageSent,
+      loading_message_id: loadingMessageId,
     });
     void trackEvent("ai_response_sent", {
       telegramUserId: user.id,
@@ -712,12 +780,8 @@ export async function handleTextMessage(
       metadata: { free: usedFree, model_id: modelId },
     });
 
-    void sendMessage(chatId, COPY.compareCta, {
-      reply_markup: compareCtaKeyboard(),
-    });
-
     if (user.state !== "chat") {
-      await setState(user.id, "chat");
+      await setState(user.id, "chat", modelStateData(modelId));
     }
   } finally {
     await setChatRunning(user.id, false);
@@ -733,7 +797,7 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
 
     const user = await upsertTelegramUser(telegramId, cq.from);
     if (!user) return;
-    await handleCallback(chatId, telegramId, user, cq.data, cq.id);
+    await handleCallback(chatId, telegramId, user, cq.data, cq.id, cq.message?.message_id);
     return;
   }
 

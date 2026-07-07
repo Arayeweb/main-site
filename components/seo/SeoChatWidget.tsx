@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
 import { getUtmParams } from "@/lib/utm";
+import { seoPackages, formatPackagePrice, getSeoPackage } from "@/lib/seoData";
 
 /* ------------------------------------------------------------------ */
 /*  چت‌بات سئو — پورت منطق rule-based از public/assets/js/seo.js        */
@@ -21,28 +22,39 @@ type FaqKey =
   | "trial"
   | "guarantee"
   | "local"
-  | "basic"
+  | "starter"
+  | "growth"
   | "pro"
   | "default"
   | "contact_saved";
+
+const priceList = seoPackages
+  .map((p) => `• ${p.name}: ${formatPackagePrice(p)}`)
+  .join("\n");
+
+const starterPkg = getSeoPackage("starter");
+const growthPkg = getSeoPackage("growth");
+const proPkg = getSeoPackage("pro");
 
 const FAQ: Record<FaqKey, string> = {
   hello:
     "سلام! من دستیار سئوی آرایه‌ام. می‌تونم درباره پکیج‌ها، قیمت‌ها، بررسی رایگان، زمان نتیجه‌گیری و ضمانت کمکت کنم.\n\nسؤالت چیه؟ یا همین الان شماره‌ت رو بفرست تا کارشناس تماس بگیره.",
   price:
-    "پکیج‌های سئوی محلی ما:\n• پایه: ۸۹۰,۰۰۰ تومان (بررسی تخصصی + بهینه‌سازی + ۳ محتوا)\n• رشد: ۱,۶۹۰,۰۰۰ تومان (۵ صفحه کلیدی محلی + پروفایل گوگل + ۶ محتوا)\n• حرفه‌ای: ۲,۹۰۰,۰۰۰ تومان (سئوی کامل + ۱۰ محتوا + ضمانت ۶ ماهه)\n• ترکیبی سئو+گوگل: ۳,۱۰۰,۰۰۰ تومان\n\nبررسی رایگان هم داریم. شماره‌ت رو بفرست تا کارشناس راهنماییت کنه.",
+    `پکیج‌های سئوی محلی ما:\n${priceList}\n\nبررسی رایگان هم داریم. شماره‌ت رو بفرست تا کارشناس راهنماییت کنه.`,
   time:
     "بهبودهای تکنیکال طی ۱-۲ هفته اعمال می‌شن. نتایج جستجوی محلی از ماه دوم شروع و در ۳-۶ ماه به اوج می‌رسه.\n\nسؤال دیگه‌ای داری؟",
   trial:
     "بررسی رایگان سئوی محلی شامل:\n• بررسی سرعت سایت\n• ساختار URL و متا تگ‌ها\n• وضعیت پروفایل گوگل (نقشه)\n• ریسپانسیو بودن\n• گزارش مکتوب مشکلات + پیشنهاد رفع\n\nتحویل در ۲۴ ساعت. کافیه شماره‌ت رو بفرستی تا شروع کنیم.",
   guarantee:
-    "پکیج حرفه‌ای ضمانت ۶ ماهه نتایج داره؛ اگر نتیجه نگیری، کار رو رایگان ادامه می‌دیم.\n\nپکیج پایه هم ضمانت رضایت ۷ روزه با بازگشت کامل وجه داره.",
+    "پکیج Local Pro ضمانت ۶ ماهه نتایج داره؛ اگر نتیجه نگیری، کار رو رایگان ادامه می‌دیم.\n\nپکیج Google Map هم ضمانت رضایت ۷ روزه با بازگشت کامل وجه داره.",
   local:
     "سئوی محلی یعنی وقتی مشتری نزدیکت جستجو می‌کنه — مثل «دندانپزشک نزدیک من» — اول تو رو ببینه.\n\nما پروفایل کسب‌وکارت در نقشه گوگل، کلمات کلیدی محلی و محتوای سایتت رو بهینه می‌کنیم.\n\nشماره‌ت رو بفرست تا بررسی رایگان بگیری.",
-  basic:
-    "پکیج پایه شامل:\n• بررسی تخصصی کامل + بهینه‌سازی تکنیکال\n• بهینه‌سازی ۱ صفحه کلیدی محلی\n• ۳ محتوای سئوشده\n• ثبت در سرچ کنسول\n• گزارش ماهانه\n\nقیمت: ۸۹۰,۰۰۰ تومان\n\nشماره‌ت رو بفرست تا شروع کنیم.",
+  starter:
+    `پکیج Local Starter شامل:\n• بهینه‌سازی ۳ کلمه محلی\n• ۲ محتوای سئوشده در ماه\n• بهینه‌سازی صفحات خدمات پایه\n• گزارش ماهانه لید و تماس\n\nقیمت: ${formatPackagePrice(starterPkg)}\n\nشماره‌ت رو بفرست تا شروع کنیم.`,
+  growth:
+    `پکیج Local Growth (پیشنهادی) شامل:\n• همه امکانات Starter\n• لندینگ‌پیج محلی سئو‌شده\n• ۵ کلمه محلی پول‌ساز\n• اتصال فرم و CRM\n\nقیمت: ${formatPackagePrice(growthPkg)}\n\nشماره‌ت رو بفرست تا کارشناس راهنماییت کنه.`,
   pro:
-    "پکیج حرفه‌ای شامل:\n• بهینه‌سازی کل سایت + معماری محتوا\n• ۱۰ محتوای سئوشده\n• استراتژی کامل بک‌لینک\n• مانیتورینگ روزانه رتبه\n• ضمانت ۶ ماهه نتایج\n\nقیمت: ۲,۹۰۰,۰۰۰ تومان\n\nشماره‌ت رو بفرست تا کارشناس راهنماییت کنه.",
+    `پکیج Local Pro شامل:\n• سیستم کامل سرچ تا لید\n• ۱۰+ صفحه هدفمند\n• اتوماسیون پیگیری لید\n• پشتیبانی اختصاصی\n\nقیمت: ${formatPackagePrice(proPkg)}\n\nشماره‌ت رو بفرست تا کارشناس راهنماییت کنه.`,
   default:
     "سؤال خوبیه! می‌تونم درباره قیمت پکیج‌ها، بررسی رایگان، سئوی محلی و نقشه گوگل، زمان نتیجه و ضمانت کمکت کنم.\n\nیا شماره‌ت رو بفرست تا کارشناس ما مستقیم راهنماییت کنه.",
   contact_saved:
@@ -71,9 +83,10 @@ function matchFaq(text: string): FaqKey {
   if (/محلی|نقشه|مپ|گوگل مپ|نزدیک|local|map/.test(t)) return "local";
   if (/چقدر|زمان|مدت|کی |طول|time/.test(t)) return "time";
   if (/ضمانت|گارانتی|تضمین|guarantee/.test(t)) return "guarantee";
-  if (/پایه|basic|ارزان/.test(t)) return "basic";
-  if (/حرفه|pro|کامل|بک‌لینک|بکلینک|backlink/.test(t)) return "pro";
-  if (/محتوا|content|مقاله/.test(t)) return "basic";
+  if (/پایه|starter|شروع|ارزان/.test(t)) return "starter";
+  if (/رشد|growth|پیشنهاد/.test(t)) return "growth";
+  if (/حرفه|pro|کامل/.test(t)) return "pro";
+  if (/محتوا|content|مقاله/.test(t)) return "starter";
   return "default";
 }
 
@@ -129,7 +142,8 @@ export default function SeoChatWidget() {
 
   function submitChatLead(phone: string) {
     const topic = lastTopic.current;
-    const plan = topic === "basic" || topic === "pro" ? topic : undefined;
+    const plan =
+      topic === "starter" || topic === "growth" || topic === "pro" ? topic : undefined;
     fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -166,13 +180,13 @@ export default function SeoChatWidget() {
       return;
     }
     const key = matchFaq(text);
-    if (key === "basic" || key === "pro" || key === "price") lastTopic.current = key;
+    if (key === "starter" || key === "growth" || key === "pro" || key === "price") lastTopic.current = key;
     addBotMsg(FAQ[key]);
   }
 
   function handleQuick(item: { key: FaqKey; label: string }) {
     setMessages((prev) => [...prev, { who: "user", text: item.label }]);
-    if (item.key === "basic" || item.key === "pro" || item.key === "price") {
+    if (item.key === "starter" || item.key === "growth" || item.key === "pro" || item.key === "price") {
       lastTopic.current = item.key;
     }
     setTimeout(() => addBotMsg(FAQ[item.key]), 250);

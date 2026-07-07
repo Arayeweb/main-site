@@ -17,14 +17,13 @@ import {
   MODEL_MAX_TOKENS,
   TIER_MAX_TOKENS,
   canUseMode,
-  directCost,
   pickBattleModels,
   pickBattleTier,
   resolveCompareModel,
-  resolveUserModel,
   sideBySideCost,
   type ArenaMode,
 } from "@/lib/aiCredits";
+import { webSearchSurcharge } from "@/lib/aiPricingConfig";
 import { getModel, modelName, modelPoweredBy } from "@/lib/aiModels";
 
 export const runtime = "nodejs";
@@ -130,7 +129,7 @@ export async function POST(req: NextRequest) {
   if (mode === "battle") {
     const tier = pickBattleTier(plan);
     const [a, b] = pickBattleModels(tier);
-    cost = isGuest ? 0 : BATTLE_CREDIT_COST[tier];
+    cost = isGuest ? 0 : BATTLE_CREDIT_COST[tier] + (webSearch ? webSearchSurcharge() : 0);
     tierValue = tier;
     modelAId = a.id;
     modelBId = b.id;
@@ -150,7 +149,7 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "text/event-stream" },
       });
     }
-    cost = sideBySideCost(a, b);
+    cost = sideBySideCost(a, b, { webSearch });
     tierValue = "side_by_side";
     modelAId = a.id;
     modelBId = b.id;

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const utmMedium = body.utm_medium != null ? String(body.utm_medium).slice(0, 200) : null;
   const utmCampaign = body.utm_campaign != null ? String(body.utm_campaign).slice(0, 200) : null;
   const pkg = AI_PACKAGES[packageId];
-  if (!pkg) {
+  if (!pkg || !pkg.checkoutEnabled) {
     return jsonNoStore({ ok: false, error: "invalid_package" }, { status: 422 });
   }
 

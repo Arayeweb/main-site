@@ -208,6 +208,7 @@ export async function prepareRun(
     (req.imageUrls?.length ?? 0) > 0 && models.some((id) => hasVision(id));
   const reservedCredits = estimateRunCredits(req.mode, models, {
     hasVision: hasVisionInput,
+    webSearch: req.webSearch === true,
   });
 
   perf?.mark("plan_loaded");

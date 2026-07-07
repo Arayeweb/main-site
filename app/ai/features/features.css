@@ -1155,8 +1155,8 @@
   margin-bottom: 10px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--ar-accent-soft);
-  color: var(--ar-accent-ink);
+  background: var(--ar-accent);
+  color: #fff;
   font-size: 11px;
   font-weight: 700;
 }

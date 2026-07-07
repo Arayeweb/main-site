@@ -117,12 +117,12 @@ describe("integration — /api/ai/image", () => {
     expect(res.status).toBe(200);
     expect(body.ok).toBe(true);
     expect(body.jobId).toBeTruthy();
-    expect(body.creditsRemaining).toBe(7);
-    expect(body.creditCost).toBe(3);
+    expect(body.creditsRemaining).toBe(0);
+    expect(body.creditCost).toBe(10);
     expect(db.tables.ai_media_jobs).toHaveLength(1);
     expect(db.tables.ai_media_jobs[0].status).toBe("pending");
     expect(db.tables.ai_media_jobs[0].kind).toBe("image");
-    expect(db.tables.ai_users[0].credits).toBe(7);
+    expect(db.tables.ai_users[0].credits).toBe(0);
     expect(mockRunImageGen).not.toHaveBeenCalled();
   });
 
@@ -151,7 +151,7 @@ describe("integration — /api/ai/image", () => {
       model_id: "image-lite",
       prompt: "sunset",
       status: "pending",
-      credit_cost: 3,
+      credit_cost: 10,
       output_url: null,
       battle_id: null,
       thread_id: null,
@@ -196,7 +196,7 @@ describe("integration — /api/ai/image", () => {
       model_id: "image-lite",
       prompt: "cat",
       status: "processing",
-      credit_cost: 3,
+      credit_cost: 10,
     });
 
     mockClaimAndProcess.mockResolvedValue("busy");
@@ -213,6 +213,7 @@ describe("integration — /api/ai/image", () => {
   });
 
   it("image generation does not double-deduct across separate jobs", async () => {
+    db.tables.ai_users[0].credits = 25;
     const token = signAIToken("user-img", "starter");
     await POST(
       makeRequest("/api/ai/image", {
@@ -233,7 +234,7 @@ describe("integration — /api/ai/image", () => {
       0
     );
     expect(db.tables.ai_media_jobs).toHaveLength(2);
-    expect(10 - (db.tables.ai_users[0].credits as number)).toBe(totalJobCost);
+    expect(25 - (db.tables.ai_users[0].credits as number)).toBe(totalJobCost);
   });
 
   it("failed image generation refunds credits via claimAndProcess", async () => {
@@ -246,14 +247,14 @@ describe("integration — /api/ai/image", () => {
       })
     );
     const { jobId } = await jsonBody<{ jobId: string }>(createRes);
-    expect(db.tables.ai_users[0].credits).toBe(7);
+    expect(db.tables.ai_users[0].credits).toBe(0);
 
     mockClaimAndProcess.mockImplementation(async () => {
       const user = db.tables.ai_users[0];
-      user.credits = (user.credits as number) + 3;
+      user.credits = (user.credits as number) + 10;
       db.tables.ai_credit_ledger.push({
         user_id: "user-img",
-        delta: 3,
+        delta: 10,
         balance_after: user.credits,
         reason: "image_refund",
         note: `Refund for failed image job ${jobId}`,

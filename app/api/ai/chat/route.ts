@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
   }
 
   const visionExtra = attachments.length > 0 ? 1 : 0;
-  const cost = directCost(m) + visionExtra;
+  const cost = directCost(m, { webSearch, visionExtra });
 
   if ((user.credits as number) < cost) {
     return new Response(sse({ type: "error", error: "insufficient_credits" }), {

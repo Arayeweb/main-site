@@ -92,7 +92,7 @@ describe("integration — /api/ai/video", () => {
       makeRequest("/api/ai/video", {
         method: "POST",
         cookies: { [AI_COOKIE]: token },
-        body: { prompt: "کویر", model: "video-kling", duration: 5 },
+        body: { prompt: "کویر", model: "video-seedance", duration: 5 },
       })
     );
     const body = await jsonBody<{ error: string }>(res);
@@ -147,11 +147,11 @@ describe("integration — /api/ai/video", () => {
 
     expect(res.status).toBe(200);
     expect(body.ok).toBe(true);
-    expect(body.creditCost).toBe(10);
-    expect(body.creditsRemaining).toBe(90);
+    expect(body.creditCost).toBe(60);
+    expect(body.creditsRemaining).toBe(40);
     expect(db.tables.ai_media_jobs).toHaveLength(1);
     expect(db.tables.ai_media_jobs[0].status).toBe("processing");
-    expect(db.tables.ai_users[0].credits).toBe(90);
+    expect(db.tables.ai_users[0].credits).toBe(40);
     expect(mockSubmitVideoJob).toHaveBeenCalledWith(
       "غروب کویر",
       "video-seedance",
@@ -169,7 +169,7 @@ describe("integration — /api/ai/video", () => {
       prompt: "test",
       status: "processing",
       polling_url: "https://openrouter.ai/poll/1",
-      credit_cost: 10,
+      credit_cost: 60,
     });
     mockPollVideoJob.mockResolvedValue({ status: "processing", progress: 40 });
 
@@ -198,7 +198,7 @@ describe("integration — /api/ai/video", () => {
       prompt: "کوهستان",
       status: "processing",
       polling_url: "https://openrouter.ai/poll/2",
-      credit_cost: 10,
+      credit_cost: 60,
     });
     mockPollVideoJob.mockResolvedValue({
       status: "completed",
@@ -231,7 +231,7 @@ describe("integration — /api/ai/video", () => {
   });
 
   it("poll failure refunds credits", async () => {
-    db.tables.ai_users[0].credits = 90;
+    db.tables.ai_users[0].credits = 40;
     const jobId = "job-fail-1";
     db.tables.ai_media_jobs.push({
       id: jobId,
@@ -241,7 +241,7 @@ describe("integration — /api/ai/video", () => {
       prompt: "fail",
       status: "processing",
       polling_url: "https://openrouter.ai/poll/3",
-      credit_cost: 10,
+      credit_cost: 60,
     });
     mockPollVideoJob.mockResolvedValue({
       status: "failed",
@@ -261,7 +261,7 @@ describe("integration — /api/ai/video", () => {
     expect(body.status).toBe("failed");
     expect(db.tables.ai_users[0].credits).toBe(100);
     expect(db.tables.ai_credit_ledger).toHaveLength(1);
-    expect(db.tables.ai_credit_ledger[0].delta).toBe(10);
+    expect(db.tables.ai_credit_ledger[0].delta).toBe(60);
   });
 
   it("second poll on completed job does not duplicate battle", async () => {
@@ -274,7 +274,7 @@ describe("integration — /api/ai/video", () => {
       prompt: "idempotent",
       status: "processing",
       polling_url: "https://openrouter.ai/api/v1/videos/or-1",
-      credit_cost: 10,
+      credit_cost: 60,
     });
     mockPollVideoJob.mockResolvedValue({
       status: "completed",

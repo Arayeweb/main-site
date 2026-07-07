@@ -206,7 +206,7 @@
 
       /* ---------- auto WhatsApp follow-up (speed-to-lead) ---------- */
       var waMsg = encodeURIComponent("سلام، من " + name + " هستم. درخواست سئو (پکیج " + pkg.name + ") رو ثبت کردم. لطفاً راهنمایی کنید.");
-      var waUrl = "https://wa.me/989000000000?text=" + waMsg;
+      var waUrl = "https://wa.me/98991300788?text=" + waMsg;
       // Show a WhatsApp follow-up button in success step
       var successStep = document.querySelector('.success-step');
       if (successStep && !document.getElementById('waFollowUp')) {

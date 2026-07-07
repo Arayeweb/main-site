@@ -459,6 +459,15 @@
   margin-bottom: 8px;
   flex-wrap: wrap;
 }
+.ar-chat-model-bar .ar-mselect--bar {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+}
+.ar-chat-model-bar .ar-mselect-bar-btn {
+  width: 100%;
+  max-width: 100%;
+}
 .ar-chat-model-bar .ar-mselect-btn {
   max-width: 100%;
 }

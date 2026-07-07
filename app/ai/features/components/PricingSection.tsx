@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { AI_PACKAGES } from "@/lib/aiPackages";
+import { PUBLIC_PLAN_LIST, formatPriceToman } from "@/lib/aiPricingConfig";
 import { FREE_PLAN_EQUIVALENTS } from "@/lib/aiFreeMessaging";
 import { IconCheck } from "../../icons";
 import Reveal from "./Reveal";
 
-const PRO = AI_PACKAGES.pro;
-const BUSINESS = AI_PACKAGES.business;
+const FREE = PUBLIC_PLAN_LIST.find((p) => p.id === "free")!;
+const PRO = PUBLIC_PLAN_LIST.find((p) => p.id === "pro")!;
+const MAX = PUBLIC_PLAN_LIST.find((p) => p.id === "max")!;
 
 export default function PricingSection() {
   return (
@@ -18,11 +19,11 @@ export default function PricingSection() {
         <div className="feat-pricing-grid">
           <Reveal>
             <article className="feat-plan-glass">
-              <h3>رایگان</h3>
+              <h3>{FREE.nameFa ?? FREE.name}</h3>
               <div className="feat-plan-price">
                 ۰<span className="per"> تومان</span>
               </div>
-              <p className="feat-plan-desc">برای آشنایی و تست.</p>
+              <p className="feat-plan-desc">{FREE.desc}</p>
               <ul className="feat-plan-features">
                 <li>
                   <IconCheck size={14} />
@@ -30,7 +31,7 @@ export default function PricingSection() {
                 </li>
                 <li>
                   <IconCheck size={14} />
-                  چت سریع با مدل‌های پایه
+                  چت با مدل‌های اقتصادی
                 </li>
                 <li>
                   <IconCheck size={14} />
@@ -46,9 +47,9 @@ export default function PricingSection() {
           <Reveal delay={80}>
             <article className="feat-plan-glass featured">
               <span className="feat-plan-badge">{PRO.badge ?? "محبوب"}</span>
-              <h3>حرفه‌ای</h3>
+              <h3>{PRO.nameFa ?? PRO.name}</h3>
               <div className="feat-plan-price">
-                {PRO.priceToman.toLocaleString("fa-IR")}
+                {formatPriceToman(PRO.priceToman)}
                 <span className="per"> تومان</span>
               </div>
               <p className="feat-plan-desc">{PRO.desc}</p>
@@ -61,29 +62,29 @@ export default function PricingSection() {
                 ))}
               </ul>
               <Link href="/ai/pricing?package=pro" className="ar-btn ar-btn-primary ar-btn-block">
-                انتخاب حرفه‌ای
+                خرید پلن
               </Link>
             </article>
           </Reveal>
 
           <Reveal delay={160}>
             <article className="feat-plan-glass">
-              <h3>کسب‌وکار</h3>
+              <h3>{MAX.nameFa ?? MAX.name}</h3>
               <div className="feat-plan-price">
-                {BUSINESS.priceToman.toLocaleString("fa-IR")}
+                {formatPriceToman(MAX.priceToman)}
                 <span className="per"> تومان</span>
               </div>
-              <p className="feat-plan-desc">{BUSINESS.desc}</p>
+              <p className="feat-plan-desc">{MAX.desc}</p>
               <ul className="feat-plan-features">
-                {BUSINESS.features.map((f) => (
+                {MAX.features.slice(0, 4).map((f) => (
                   <li key={f}>
                     <IconCheck size={14} />
                     {f}
                   </li>
                 ))}
               </ul>
-              <Link href="/ai/pricing?package=business" className="ar-btn ar-btn-ghost ar-btn-block">
-                انتخاب کسب‌وکار
+              <Link href="/ai/pricing?package=max" className="ar-btn ar-btn-ghost ar-btn-block">
+                خرید پلن
               </Link>
             </article>
           </Reveal>

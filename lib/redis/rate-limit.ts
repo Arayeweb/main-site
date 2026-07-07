@@ -1,7 +1,5 @@
 // =========================================================
 // Rate limit بر اساس پلن و mode — sliding window ساعتی.
-// اگر Redis در دسترس نباشد fallback درون‌حافظه‌ای استفاده می‌شود
-// (بهتر از هیچ؛ در multi-instance فقط تقریبی است).
 // =========================================================
 
 import { planRank } from "@/lib/aiPackages";
@@ -10,24 +8,35 @@ import { getRedis } from "./client";
 
 const WINDOW_SEC = 3600;
 
-/** سقف ساعتی هر mode بر اساس پلن */
-const HOURLY_LIMITS: Record<RunMode, [free: number, starter: number, pro: number, business: number]> = {
-  direct: [10, 30, 60, 150],
-  compare: [1, 10, 30, 60],
-  council: [0, 0, 10, 25],
+type PlanBucket = 0 | 1 | 2 | 3 | 4;
+
+/** سقف ساعتی هر mode: free | starter | plus | pro | max+ */
+const HOURLY_LIMITS: Record<RunMode, [number, number, number, number, number]> = {
+  direct: [10, 30, 45, 60, 150],
+  compare: [1, 10, 20, 30, 60],
+  council: [0, 0, 5, 10, 25],
 };
 
-/** حداکثر run همزمان بر اساس پلن */
-export const MAX_CONCURRENCY: [number, number, number, number] = [1, 1, 2, 4];
+/** حداکثر run همزمان: free | starter | plus | pro | max+ */
+export const MAX_CONCURRENCY: [number, number, number, number, number] = [
+  1, 1, 2, 2, 4,
+];
+
+function planBucket(plan: string): PlanBucket {
+  const rank = planRank(plan);
+  if (rank <= 0) return 0;
+  if (rank === 1) return 1;
+  if (rank === 2) return 2;
+  if (rank === 3) return 3;
+  return 4;
+}
 
 export function hourlyLimit(plan: string, mode: RunMode): number {
-  const rank = Math.min(Math.max(planRank(plan), 0), 3) as 0 | 1 | 2 | 3;
-  return HOURLY_LIMITS[mode][rank];
+  return HOURLY_LIMITS[mode][planBucket(plan)];
 }
 
 export function maxConcurrency(plan: string): number {
-  const rank = Math.min(Math.max(planRank(plan), 0), 3) as 0 | 1 | 2 | 3;
-  return MAX_CONCURRENCY[rank];
+  return MAX_CONCURRENCY[planBucket(plan)];
 }
 
 export type RateLimitResult = {
@@ -35,7 +44,6 @@ export type RateLimitResult = {
   remaining: number;
 };
 
-// fallback درون‌حافظه‌ای وقتی Redis نیست
 const memHits = new Map<string, number[]>();
 
 function memCheck(key: string, limit: number): RateLimitResult {
@@ -50,9 +58,6 @@ function memCheck(key: string, limit: number): RateLimitResult {
   return { allowed: true, remaining: limit - arr.length };
 }
 
-/**
- * بررسی و مصرف یک واحد از rate limit کاربر برای mode داده‌شده.
- */
 export async function checkRateLimit(
   userId: string,
   plan: string,

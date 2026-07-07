@@ -18,6 +18,8 @@ import {
   type AIModelInfo,
   type ModelTier,
 } from "@/lib/aiModels";
+import { canUseModel } from "@/lib/aiCredits";
+import { canUseVideoModel } from "@/lib/aiMediaCredits";
 import { planRank } from "@/lib/aiPackages";
 import { BrandGlyph, IconLock, IconCheck, IconX } from "./icons";
 
@@ -70,10 +72,12 @@ export default function ModelSelect({
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [popStyle, setPopStyle] = useState<CSSProperties>({});
+  const [dockAsSheet, setDockAsSheet] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const useSheet = isMobile && (sheetOnMobile || variant === "bar");
+  const useSheet =
+    (isMobile && (sheetOnMobile || variant === "bar")) || dockAsSheet;
 
   function computePopStyle(el: HTMLElement): CSSProperties {
     const rect = el.getBoundingClientRect();
@@ -115,7 +119,17 @@ export default function ModelSelect({
 
   function openPicker() {
     const el = rootRef.current;
-    if (el) setPopStyle(computePopStyle(el));
+    let dock = false;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      dock =
+        sheetOnMobile &&
+        !isMobile &&
+        rect.top > window.innerHeight * 0.48;
+      if (!dock) setPopStyle(computePopStyle(el));
+      else setPopStyle({});
+    }
+    setDockAsSheet(dock);
     setOpen(true);
     setQuery("");
   }
@@ -124,6 +138,7 @@ export default function ModelSelect({
     setOpen(false);
     setQuery("");
     setPopStyle({});
+    setDockAsSheet(false);
   }
 
   useLayoutEffect(() => {
@@ -218,6 +233,12 @@ export default function ModelSelect({
     closePicker();
   }
 
+  function isModelLocked(m: AIModelInfo): boolean {
+    if (resolvedPicker === "video") return !canUseVideoModel(plan, m);
+    if (resolvedPicker === "image") return !canUseModel(plan, m);
+    return rank < TIER_MIN_RANK[m.tier];
+  }
+
   const listBody = (
     <>
       <input
@@ -229,7 +250,7 @@ export default function ModelSelect({
       />
       <div className="ar-mselect-list">
         {list.map((m) => {
-          const locked = rank < TIER_MIN_RANK[m.tier];
+          const locked = isModelLocked(m);
           const disabled = locked || m.id === exclude;
           return (
             <button

@@ -11,6 +11,8 @@ import {
   videoModels,
 } from "@/lib/aiModels";
 import { videoGenCost, DEFAULT_VIDEO_DURATION_SEC } from "@/lib/aiCredits";
+import { canUseVideoModel } from "@/lib/aiMediaCredits";
+import { useArenaAuth } from "./ArenaAuthContext";
 import { replaceThreadUrl } from "@/lib/aiThreadUrl";
 import MediaProgressStages from "./MediaProgressStages";
 
@@ -63,7 +65,7 @@ export default function VideoStudioView({
   initialTurns = [],
   bootstrapPrompt = null,
   onCreditsChange,
-  plan = "free",
+  plan: planProp = "free",
 }: {
   threadId?: string | null;
   initialTurns?: VideoTurn[];
@@ -71,6 +73,10 @@ export default function VideoStudioView({
   onCreditsChange?: (n: number) => void;
   plan?: string;
 }) {
+  const { plan: authPlan, setCredits: authSetCredits } = useArenaAuth();
+  const plan = authPlan || planProp;
+  const applyCredits = onCreditsChange ?? authSetCredits;
+
   const [threadId, setThreadId] = useState<string | null>(initialThreadId);
   const [turns, setTurns] = useState<VideoTurn[]>(initialTurns);
   const [input, setInput] = useState("");
@@ -102,6 +108,7 @@ export default function VideoStudioView({
   const modelInfo = getModel(videoModel);
   const durationOptions = modelInfo?.videoDurations ?? [4, 5, 8];
   const perVideoCost = modelInfo ? videoGenCost(modelInfo, duration) : 10;
+  const hasVideoAccess = videoModels().some((m) => canUseVideoModel(plan, m));
 
   const loadGallery = useCallback(() => {
     setGalleryLoading(true);
@@ -123,6 +130,13 @@ export default function VideoStudioView({
       setDuration(durationOptions[0] ?? DEFAULT_VIDEO_DURATION_SEC);
     }
   }, [videoModel, durationOptions, duration]);
+
+  useEffect(() => {
+    const current = getModel(videoModel);
+    if (current && canUseVideoModel(plan, current)) return;
+    const first = videoModels().find((m) => canUseVideoModel(plan, m));
+    if (first) setVideoModel(first.id);
+  }, [plan, videoModel]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
@@ -152,42 +166,7 @@ export default function VideoStudioView({
     void fetch(`/api/ai/video/${jobId}/dismiss`, {
       method: "POST",
       credentials: "same-origin",
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        // #region agent log
-        fetch("http://127.0.0.1:7595/ingest/5edfe92e-8eff-41b7-9393-ff5814f12f32", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "d89e34" },
-          body: JSON.stringify({
-            sessionId: "d89e34",
-            runId: "post-fix",
-            hypothesisId: "H12",
-            location: "VideoStudioView.tsx:dismissJob:api",
-            message: "dismiss API response",
-            data: { jobId, ok: d?.ok, error: d?.error },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-        // #endregion
-      })
-      .catch(() => {});
-
-    // #region agent log
-    fetch("http://127.0.0.1:7595/ingest/5edfe92e-8eff-41b7-9393-ff5814f12f32", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "d89e34" },
-      body: JSON.stringify({
-        sessionId: "d89e34",
-        runId: "post-fix",
-        hypothesisId: "H9-H10",
-        location: "VideoStudioView.tsx:dismissJob",
-        message: "user dismissed video job polling",
-        data: { jobId, tmpId, streamingCountBefore: streamingCount },
-        timestamp: Date.now(),
-      }),
     }).catch(() => {});
-    // #endregion
   }
 
   function scheduleJobPoll(jobId: string, fn: () => void) {
@@ -283,29 +262,6 @@ export default function VideoStudioView({
         const res = await fetch(`/api/ai/video/${jobId}`, { credentials: "same-origin" });
         const data = await res.json().catch(() => null);
 
-        // #region agent log
-        fetch("http://127.0.0.1:7595/ingest/5edfe92e-8eff-41b7-9393-ff5814f12f32", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "d89e34" },
-          body: JSON.stringify({
-            sessionId: "d89e34",
-            runId: "post-fix",
-            hypothesisId: "H16",
-            location: "VideoStudioView.tsx:pollJob:response",
-            message: "client poll response",
-            data: {
-              jobId,
-              tmpId,
-              httpOk: res.ok,
-              status: data?.status,
-              hasVideoUrl: Boolean(data?.videoUrl),
-              error: data?.error,
-            },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-        // #endregion
-
         if (dismissedJobsRef.current.has(jobId)) {
           clearJobPoll(jobId);
           return;
@@ -378,7 +334,7 @@ export default function VideoStudioView({
             replaceThreadUrl(`/ai/video/${tid}`);
           }
 
-          if (typeof data.creditsRemaining === "number") onCreditsChange?.(data.creditsRemaining);
+          if (typeof data.creditsRemaining === "number") applyCredits(data.creditsRemaining);
           setGallery((g) => [
             {
               id: String(data.battleId || tmpId),
@@ -545,7 +501,7 @@ export default function VideoStudioView({
             : x
         )
       );
-      if (typeof data.creditsRemaining === "number") onCreditsChange?.(data.creditsRemaining);
+      if (typeof data.creditsRemaining === "number") applyCredits(data.creditsRemaining);
       void pollJob(String(data.jobId), tmpId, q, activeThreadId);
     } catch {
       setTurns((t) => t.filter((x) => x.id !== tmpId));
@@ -729,7 +685,7 @@ export default function VideoStudioView({
         <div ref={endRef} />
       </div>
 
-      <div className="ar-chat-composer ar-image-composer">
+      <div className="ar-chat-composer ar-image-composer ar-generator-composer">
         <input
           ref={fileRef}
           type="file"
@@ -772,32 +728,8 @@ export default function VideoStudioView({
               maxLength={4000}
               disabled={submitting || enhancing}
             />
-            <div className="ar-composer-foot">
-              <div className="ar-composer-toolstrip ar-image-toolstrip">
-                <button
-                  type="button"
-                  className={`ar-composer-tool-btn ar-composer-tool-primary${attachment ? " active" : ""}`}
-                  disabled={uploading || submitting || Boolean(attachment)}
-                  title="تصویر مرجع (فریم اول)"
-                  aria-label="افزودن فایل"
-                  onClick={() => fileRef.current?.click()}
-                >
-                  <IconPaperclip size={16} />
-                </button>
-                <button
-                  type="button"
-                  className={`ar-composer-tool-btn${enhancing ? " active" : ""}`}
-                  disabled={!input.trim() || enhancing || submitting}
-                  title="بهبود پرامپت — موضوع دقیق حفظ می‌شود"
-                  aria-label="بهبود پرامپت"
-                  onClick={() => void improvePrompt()}
-                >
-                  {enhancing ? (
-                    <span className="ar-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
-                  ) : (
-                    <IconSpark size={16} />
-                  )}
-                </button>
+            <div className="ar-composer-foot ar-generator-foot">
+              <div className="ar-generator-model-row">
                 <ModelSelect
                   variant="bar"
                   value={videoModel}
@@ -807,39 +739,70 @@ export default function VideoStudioView({
                   sheetOnMobile
                   label="موتور ویدیو"
                 />
-                <select
-                  className="ar-video-duration-select"
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  disabled={submitting || enhancing}
-                  aria-label="مدت ویدیو"
-                >
-                  {durationOptions.map((d) => (
-                    <option key={d} value={d}>
-                      {d} ثانیه
-                    </option>
-                  ))}
-                </select>
                 {modelInfo && (
                   <span className="ar-image-tool-meta">
                     {perVideoCost.toLocaleString("fa-IR")} کردیت
                   </span>
                 )}
               </div>
-              <div className="ar-composer-actions">
-                <button
-                  type="button"
-                  className="ar-send-btn ar-send-btn--dock"
-                  onClick={send}
-                  disabled={!input.trim() || submitting || enhancing || uploading}
-                  aria-label="ساخت ویدیو"
-                >
-                  {submitting ? (
-                    <span className="ar-spinner" style={{ borderTopColor: "#FCFBF7" }} />
-                  ) : (
-                    <IconSend size={16} />
-                  )}
-                </button>
+              <div className="ar-generator-toolbar-row">
+                <div className="ar-composer-toolstrip ar-image-toolstrip ar-generator-controls">
+                  <button
+                    type="button"
+                    className={`ar-composer-tool-btn ar-composer-tool-primary${attachment ? " active" : ""}`}
+                    disabled={uploading || submitting || Boolean(attachment)}
+                    title="تصویر مرجع (فریم اول)"
+                    aria-label="افزودن فایل"
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    <IconPaperclip size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    className={`ar-composer-tool-btn${enhancing ? " active" : ""}`}
+                    disabled={!input.trim() || enhancing || submitting}
+                    title="بهبود پرامپت — موضوع دقیق حفظ می‌شود"
+                    aria-label="بهبود پرامپت"
+                    onClick={() => void improvePrompt()}
+                  >
+                    {enhancing ? (
+                      <span className="ar-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                    ) : (
+                      <IconSpark size={16} />
+                    )}
+                  </button>
+                  <select
+                    className="ar-video-duration-select ar-gen-select"
+                    value={duration}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    disabled={submitting || enhancing}
+                    aria-label="مدت ویدیو"
+                  >
+                    {durationOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d} ثانیه
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="ar-composer-actions">
+                  <button
+                    type="button"
+                    className="ar-send-btn ar-send-btn--dock ar-generate-btn"
+                    onClick={send}
+                    disabled={!input.trim() || submitting || enhancing || uploading || !hasVideoAccess}
+                    aria-label="ساخت ویدیو"
+                  >
+                    {submitting ? (
+                      <span className="ar-spinner" style={{ borderTopColor: "#FCFBF7" }} />
+                    ) : (
+                      <>
+                        <IconSend size={16} />
+                        <span>تولید کن</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -857,6 +820,11 @@ export default function VideoStudioView({
         {err === "plan_locked" && (
           <div className="ar-composer-err ar-image-composer-err">
             این موتور در پلن فعلی نیست — <Link href="/ai/pricing">ارتقاء پلن</Link>
+          </div>
+        )}
+        {!hasVideoAccess && err !== "plan_locked" && (
+          <div className="ar-composer-err ar-image-composer-err">
+            ساخت ویدیو از پلن شروع در دسترس است — <Link href="/ai/pricing">مشاهده پلن‌ها</Link>
           </div>
         )}
         {err === "credits_out" && (

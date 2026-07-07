@@ -59,12 +59,10 @@ export function modelPickerMessage(): string {
 }
 
 export function modelSelectedMessage(model: TelegramChatModel): string {
+  const shortName = model.subtitle.split("·").pop()?.trim() || model.label;
   if (model.tier === "free") {
-    return `مدل «${model.label}» انتخاب شد.
-سوالت را بفرست.`;
+    return `${shortName} فعاله. سوالت را بفرست.`;
   }
   const cost = creditCostForTelegramModel(model.id);
-  return `مدل «${model.label}» انتخاب شد.
-هر پاسخ ≈ ${cost} اعتبار.
-سوالت را بفرست.`;
+  return `${shortName} فعاله (≈${cost} اعتبار هر پاسخ). سوالت را بفرست.`;
 }

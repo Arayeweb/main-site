@@ -1551,8 +1551,54 @@
   background: linear-gradient(to top, var(--ar-bg) 85%, transparent);
 }
 
+.ar-generator-foot {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 6px 10px 10px;
+}
+
+.ar-generator-model-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.ar-generator-model-row .ar-mselect--bar {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ar-generator-model-row .ar-mselect-bar-btn {
+  width: 100%;
+  max-width: 100%;
+}
+
+.ar-generator-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.ar-generator-toolbar-row .ar-composer-toolstrip {
+  flex: 1;
+  min-width: 0;
+}
+
 .ar-generator-controls {
   row-gap: 6px;
+}
+
+@media (min-width: 720px) {
+  .ar-generator-model-row {
+    max-width: min(420px, 100%);
+  }
 }
 
 /* ---------- Audio gallery ---------- */

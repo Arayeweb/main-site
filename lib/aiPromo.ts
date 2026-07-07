@@ -3,7 +3,7 @@
 // =========================================================
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { AI_PACKAGES } from "./aiPackages";
+import { AI_PACKAGES, isCheckoutPackage } from "./aiPackages";
 
 export const REFERRAL_BUYER_DISCOUNT_PERCENT = 10;
 export const REFERRAL_REFERRER_CREDITS = 10;
@@ -42,7 +42,7 @@ export async function resolveCode(
   packageId: string
 ): Promise<ResolveCodeResult | ResolveCodeError> {
   const pkg = AI_PACKAGES[packageId];
-  if (!pkg) return { error: "invalid_package" };
+  if (!pkg || !isCheckoutPackage(packageId)) return { error: "invalid_package" };
 
   const listAmountToman = pkg.priceToman;
   const code = normalizeCode(codeRaw);

@@ -334,7 +334,7 @@ create table if not exists public.ai_users (
   phone            text not null unique,         -- 09xxxxxxxxx
   password_hash    text not null,                -- scrypt$...$...
   plan             text not null default 'free', -- free | pro | business
-  credits          int  not null default 5,      -- اعتبار باقی‌مانده
+  credits          int  not null default 20,     -- اعتبار باقی‌مانده
   brainstorm_demos int  not null default 2,      -- دمو رایگان همفکری برای کاربر free
   utm_source       text,
   utm_medium       text,
@@ -884,10 +884,13 @@ create table if not exists public.ai_plans (
   updated_at   timestamptz not null default now()
 );
 insert into public.ai_plans (id, name, price_toman, credits, description, features, is_active, is_featured) values
-  ('free', 'رایگان', 0, 5, 'شروع رایگان برای آشنایی با محصول.', '["۵ کردیت ابتدایی", "نبرد اقتصادی مدل‌ها"]', true, false),
-  ('starter', 'استارتر', 79000, 50, 'برای شروع و استفاده شخصی.', '["≈ ۵۰ پرسش چت", "۵ شخصیت هوش مصنوعی", "استودیو تصویر"]', true, false),
-  ('pro', 'Pro', 229000, 180, 'برای فریلنسرها و کسب‌وکارهای کوچک.', '["≈ ۱۸۰ پرسش", "مدل‌های پرچم‌دار", "اولویت پاسخ‌دهی"]', true, true),
-  ('business', 'Business', 549000, 500, 'برای تیم‌ها و استفاده حرفه‌ای.', '["≈ ۵۰۰ پرسش", "کامل‌ترین دسترسی", "کمترین قیمت به‌ازای پرسش"]', true, false)
+  ('free', 'رایگان', 0, 20, '۲۰ کردیت هدیه برای تست اولیه', '["۲۰ کردیت هدیه", "مدل‌های اقتصادی"]', true, false),
+  ('starter', 'شروع', 99000, 80, 'مناسب تست و استفاده سبک', '["۸۰ کردیت", "مدل‌های اقتصادی"]', true, false),
+  ('plus', 'پلاس', 249000, 240, 'مناسب استفاده روزمره', '["۲۴۰ کردیت", "مدل‌های میانی"]', true, false),
+  ('pro', 'حرفه‌ای', 499000, 550, 'بهترین گزینه برای اکثر کاربران', '["۵۵۰ کردیت", "مدل‌های پیشرفته"]', true, true),
+  ('max', 'مکس', 990000, 1200, 'مناسب مصرف بالا', '["۱۲۰۰ کردیت", "Sora و ۱۰۸۰p"]', true, false),
+  ('team_mini', 'تیم کوچک', 1900000, 2500, 'تیم‌های کوچک', '["۲۵۰۰ کردیت", "۳ کاربر"]', true, false),
+  ('business', 'سازمانی', 4900000, 6500, 'تیم و مصرف بالا', '["۶۵۰۰+ کردیت", "اتصال اختصاصی"]', true, false)
 on conflict (id) do nothing;
 alter table public.ai_plans enable row level security;
 
@@ -916,7 +919,7 @@ create table if not exists public.ai_settings (
 );
 insert into public.ai_settings (id, data) values (1, '{
   "default_plan": "free",
-  "free_signup_credits": 5,
+  "free_signup_credits": 20,
   "rate_limit_per_minute": 12,
   "feature_flags": { "image_studio": true, "code_studio": true, "battle_mode": true, "referrals": true },
   "max_battle_cost_usd": 0.25

@@ -2,7 +2,7 @@
 // Free trial Direct chat — economy model, no credit charge
 // =========================================================
 
-import { directSystemPrompt } from "@/lib/ai/prompts/direct";
+import { telegramSystemPrompt } from "./prompts";
 import { openRouterProvider } from "@/lib/ai/providers/openrouter";
 import type { ChatMessage } from "@/lib/ai/providers/interface";
 import { getTelegramConfig } from "./config";
@@ -23,8 +23,7 @@ export type FreeChatResult =
   | { ok: false; error: "timeout" | "provider_error" | "empty" };
 
 function toShortPrompt(): string {
-  // Keep Telegram direct path lightweight and deterministic.
-  return `${directSystemPrompt({ webSearch: false })}\n\nپاسخ‌ها کوتاه، مستقیم و بدون مقدمه طولانی باشند.`;
+  return telegramSystemPrompt();
 }
 
 function trimHistory(history: ChatContextEntry[], maxMessages = 4): ChatContextEntry[] {

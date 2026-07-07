@@ -167,19 +167,19 @@ describe("streaming/multiplexer", () => {
 });
 
 describe("usage/estimate", () => {
-  it("maps tiers to credits: economy=1, mid=3, premium=6", () => {
+  it("maps models to per-model chat credits", () => {
     expect(creditsForModel(getModel("economy")!)).toBe(1);
-    expect(creditsForModel(getModel("fast")!)).toBe(3);
-    expect(creditsForModel(getModel("precise")!)).toBe(6);
+    expect(creditsForModel(getModel("fast")!)).toBe(2);
+    expect(creditsForModel(getModel("precise")!)).toBe(15);
   });
 
   it("direct run costs the single model price", () => {
     expect(estimateRunCredits("direct", ["economy"])).toBe(1);
-    expect(estimateRunCredits("direct", ["precise"])).toBe(6);
+    expect(estimateRunCredits("direct", ["precise"])).toBe(15);
   });
 
   it("compare run sums both models", () => {
-    expect(estimateRunCredits("compare", ["cmp-gpt-55", "cmp-claude-opus"])).toBe(12);
+    expect(estimateRunCredits("compare", ["cmp-gpt-55", "cmp-claude-opus"])).toBe(30);
   });
 
   it("council adds moderator overhead", () => {
@@ -189,7 +189,11 @@ describe("usage/estimate", () => {
   });
 
   it("adds vision surcharge", () => {
-    expect(estimateRunCredits("direct", ["precise"], { hasVision: true })).toBe(7);
+    expect(estimateRunCredits("direct", ["precise"], { hasVision: true })).toBe(16);
+  });
+
+  it("adds web search surcharge", () => {
+    expect(estimateRunCredits("direct", ["economy"], { webSearch: true })).toBe(4);
   });
 });
 
@@ -273,7 +277,7 @@ describe("streaming/sse", () => {
 
   it("maps unknown error codes to a safe Persian message", () => {
     expect(friendlyError("weird_internal_thing")).toBe(friendlyError("server_error"));
-    expect(friendlyError("insufficient_credits")).toContain("اعتبار");
+    expect(friendlyError("insufficient_credits")).toContain("کردیت");
   });
 });
 

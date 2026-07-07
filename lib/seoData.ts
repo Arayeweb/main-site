@@ -1,75 +1,103 @@
 // داده‌های صفحه سئوی آرایه — پکیج‌ها، محتوا، FAQ و کپی.
-// قیمت‌ها باید با SEO_PACKAGES در app/api/seo/checkout/route.ts هماهنگ بماند.
+// قیمت checkout از getSeoCheckoutPackages() در همین فایل می‌آید.
 
-export type SeoPackageKey = "basic" | "growth" | "pro" | "bundle";
+export type SeoPackageKey = "gmap" | "starter" | "growth" | "pro" | "custom";
 
 export interface SeoPackage {
   key: SeoPackageKey;
   name: string;
   price: number;
-  oldPrice: number;
+  pricePeriod: "once" | "month";
+  pricePrefix?: "from";
+  checkoutEnabled: boolean;
   description: string;
   features: string[];
   popular?: boolean;
+  badge?: string;
 }
 
 export const seoPackages: SeoPackage[] = [
   {
-    key: "basic",
-    name: "Starter SEO",
-    price: 890_000,
-    oldPrice: 1_290_000,
-    description: "شروع مسیر لید از گوگل — مناسب کسب‌وکارهایی که هنوز ساختار درست ندارند.",
+    key: "gmap",
+    name: "ثبت و بهینه‌سازی Google Map",
+    price: 2_900_000,
+    pricePeriod: "once",
+    checkoutEnabled: true,
+    description: "ثبت و بهینه‌سازی کامل پروفایل کسب‌وکار در نقشه گوگل — نقطه شروع برای دیده‌شدن محلی.",
     features: [
-      "بررسی سایت و فرصت‌های لید از جستجو",
-      "تحقیق کلماتی که مشتری واقعاً جستجو می‌کند",
-      "ساخت یا اصلاح صفحات خدماتی",
-      "سئوی فنی پایه",
-      "گزارش ماهانه",
+      "ثبت و تأیید کسب‌وکار در Google Maps",
+      "بهینه‌سازی NAP، دسته‌بندی و ساعت کاری",
+      "عکس، توضیحات و لینک‌های تماس",
+      "راه‌اندازی نظرات و پرسش‌وپاسخ",
+      "گزارش تحویل و چک‌لیست نهایی",
+    ],
+  },
+  {
+    key: "starter",
+    name: "Local Starter",
+    price: 6_900_000,
+    pricePeriod: "month",
+    checkoutEnabled: true,
+    description: "شروع سئوی محلی ماهانه — برای کسب‌وکاری که می‌خواهد از گوگل ورودی منظم بگیرد.",
+    features: [
+      "تحقیق و بهینه‌سازی ۳ کلمه محلی",
+      "۲ محتوای سئوشده در ماه",
+      "بهینه‌سازی صفحات خدمات پایه",
+      "گزارش ماهانه لید و تماس",
+      "پشتیبانی تلگرام",
     ],
   },
   {
     key: "growth",
-    name: "Growth SEO",
-    price: 1_690_000,
-    oldPrice: 2_290_000,
-    description: "برای کسب‌وکاری که می‌خواهد از گوگل تماس و فرم بگیرد — نه فقط بازدید.",
+    name: "Local Growth",
+    price: 11_900_000,
+    pricePeriod: "month",
+    checkoutEnabled: true,
+    description: "پکیج پیشنهادی — سئوی محلی + لندینگ + مسیر لید برای گرفتن تماس و فرم از گوگل.",
     popular: true,
+    badge: "پیشنهادی",
     features: [
-      "نقشه کلمات و صفحات پول‌ساز",
-      "طراحی لندینگ‌پیج‌های سئو شده",
-      "برنامه محتوای هدفمند",
-      "سئوی فنی کامل",
-      "اتصال فرم و مسیر ثبت لید",
-      "گزارش ماهانه با تمرکز روی لید",
+      "همه امکانات Local Starter",
+      "لندینگ‌پیج محلی سئو‌شده",
+      "۵ کلمه محلی پول‌ساز",
+      "اتصال فرم، تماس و CRM",
+      "بهینه‌سازی نقشه گوگل",
+      "گزارش لید با تمرکز تبدیل",
     ],
   },
   {
     key: "pro",
-    name: "Custom SEO System",
-    price: 2_900_000,
-    oldPrice: 3_900_000,
-    description: "سیستم کامل: سئو + لندینگ + CRM + پیگیری — برای کسب‌وکارهای جدی.",
+    name: "Local Pro",
+    price: 18_900_000,
+    pricePeriod: "month",
+    checkoutEnabled: true,
+    description: "سیستم کامل سرچ تا لید — برای کسب‌وکارهایی که می‌خواهند از گوگل مشتری منظم بگیرند.",
     features: [
-      "معماری کامل سرچ تا لید",
-      "اتصال CRM و اتوماسیون پیگیری",
-      "سئوی محلی و نقشه گوگل",
-      "داشبورد گزارش سفارشی",
-      "بهینه‌سازی مداوم",
+      "همه امکانات Local Growth",
+      "معماری کامل صفحات خدمات و منطقه",
+      "۱۰+ صفحه هدفمند سئو‌شده",
+      "اتوماسیون پیگیری لید",
+      "سئوی فنی و سرعت کامل",
       "پشتیبانی اختصاصی",
     ],
   },
+  {
+    key: "custom",
+    name: "اختصاصی",
+    price: 29_900_000,
+    pricePeriod: "month",
+    pricePrefix: "from",
+    checkoutEnabled: false,
+    description: "برای برندهای چندشعبه، کلینیک‌های بزرگ و پروژه‌های سفارشی با نیازهای خاص.",
+    features: [
+      "استراتژی سفارشی چندشعبه / چندشهر",
+      "تیم اختصاصی اجرا و گزارش",
+      "داشبورد گزارش سفارشی",
+      "SLA و قرارداد سازمانی",
+      "مشاوره و طراحی مسیر رشد",
+    ],
+  },
 ];
-
-export const seoBundle = {
-  key: "bundle" as SeoPackageKey,
-  name: "ترکیبی سئو + ثبت گوگل",
-  price: 3_100_000,
-  oldPrice: 3_880_000,
-  description:
-    "سیستم Custom SEO به‌همراه ثبت و بهینه‌سازی کامل در نقشه گوگل — برای کسب‌وکار محلی.",
-  items: ["سیستم سرچ تا لید", "ثبت نقشه گوگل", "بهینه‌سازی پروفایل"],
-};
 
 export const seoBridgeSteps = [
   { label: "جستجو", desc: "مشتری در گوگل می‌گردد" },
@@ -269,7 +297,7 @@ export const seoFaq: SeoFaqItem[] = [
   },
   {
     q: "آیا لیدها به CRM وصل می‌شوند؟",
-    a: "در پکیج Growth و Custom، فرم‌ها و تماس‌ها به CRM یا سیستم پیگیری شما متصل می‌شوند.",
+    a: "در پکیج Local Growth و اختصاصی، فرم‌ها و تماس‌ها به CRM یا سیستم پیگیری شما متصل می‌شوند.",
   },
   {
     q: "برای چه کسب‌وکارهایی مناسب است؟",
@@ -286,4 +314,26 @@ export const seoReportMetrics = [
 
 export function formatToman(n: number): string {
   return n.toLocaleString("en-US").replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
+}
+
+export function formatPackagePrice(pkg: SeoPackage): string {
+  const prefix = pkg.pricePrefix === "from" ? "از " : "";
+  const suffix = pkg.pricePeriod === "month" ? " / ماه" : "";
+  return `${prefix}${formatToman(pkg.price)} تومان${suffix}`;
+}
+
+export function getSeoPackage(key: SeoPackageKey): SeoPackage {
+  const pkg = seoPackages.find((p) => p.key === key);
+  if (!pkg) throw new Error(`Unknown SEO package: ${key}`);
+  return pkg;
+}
+
+/** قیمت‌های checkout — فقط پکیج‌هایی که پرداخت آنلاین دارند */
+export function getSeoCheckoutPackages(): Record<string, { name: string; price: number }> {
+  const map: Record<string, { name: string; price: number }> = {};
+  for (const p of seoPackages) {
+    if (!p.checkoutEnabled) continue;
+    map[p.key] = { name: p.name, price: p.price };
+  }
+  return map;
 }

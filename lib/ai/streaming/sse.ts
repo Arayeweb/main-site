@@ -45,8 +45,8 @@ export const SSE_HEADERS = {
  */
 export const FRIENDLY_ERRORS: Record<string, string> = {
   unauthorized: "برای استفاده وارد حساب خود شوید.",
-  insufficient_credits: "اعتبار شما کافی نیست. لطفاً اعتبار تهیه کنید.",
-  plan_upgrade_required: "این قابلیت به پلن بالاتر نیاز دارد.",
+  insufficient_credits: "کردیت کافی نیست.",
+  plan_upgrade_required: "برای استفاده از این قابلیت باید پلن خود را ارتقا دهید.",
   rate_limited: "تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.",
   network_error: "اتصال به سرویس هوش مصنوعی برقرار نشد. دوباره تلاش کنید.",
   provider_error: "پاسخ‌دهی مدل با خطا مواجه شد. دوباره تلاش کنید.",

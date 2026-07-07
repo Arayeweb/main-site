@@ -17,6 +17,7 @@ import { getModel } from "@/lib/aiModels";
 import { wrapPromptWithModes } from "./composerHelpers";
 import MarkdownMessage from "./MarkdownMessage";
 import ArenaComposer from "./ArenaComposer";
+import { useArenaAuth } from "./ArenaAuthContext";
 import {
   startRunStream,
   stopRunStream,
@@ -68,6 +69,9 @@ export default function DirectChatView({
   guestMode?: boolean;
 }) {
   const router = useRouter();
+  const { plan: authPlan, setCredits: authSetCredits } = useArenaAuth();
+  const effectivePlan = guestMode ? plan : authPlan || plan;
+  const applyCredits = onCreditsChange ?? authSetCredits;
 
   const [threadId, setThreadId] = useState<string | null>(initialThreadId);
   const [turns, setTurns] = useState<ChatTurn[]>(initialTurns);
@@ -287,7 +291,7 @@ export default function DirectChatView({
                 t.map((x) => (x.id === tmpId ? { ...x, response: full } : x))
               );
             } else if (ev.type === "usage_update") {
-              onCreditsChange?.(ev.creditsRemaining);
+              applyCredits(ev.creditsRemaining);
             }
           },
         },
@@ -438,7 +442,7 @@ export default function DirectChatView({
       replaceThreadUrl(`/ai/runs/${id}`);
     }
 
-    if (typeof creditsRemaining === "number") onCreditsChange?.(creditsRemaining);
+    if (typeof creditsRemaining === "number") applyCredits(creditsRemaining);
     window.setTimeout(() => window.dispatchEvent(new Event("ai:refresh")), 400);
   }
 
@@ -629,8 +633,9 @@ export default function DirectChatView({
                 setChatModel(id);
                 onModelChange?.(id);
               }}
-              plan={plan}
+              plan={effectivePlan}
               picker="direct"
+              variant="bar"
               visionOnly={attachments.length > 0}
               sheetOnMobile
             />

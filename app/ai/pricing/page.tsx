@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PACKAGE_LIST } from "@/lib/aiPackages";
+import {
+  PUBLIC_PLAN_LIST,
+  formatPriceToman,
+  PRICING_EXPLANATION_FA,
+  type AIPackage,
+} from "@/lib/aiPricingConfig";
 import { formatStarterCredits, FREE_PLAN_EQUIVALENTS } from "@/lib/aiFreeMessaging";
+import { siteWhatsAppUrl } from "@/lib/siteContact";
 import { trackAiBeginCheckout } from "@/lib/aiTracking";
 import {
   ARENA_PROMO_STORAGE_KEY,
@@ -23,6 +29,22 @@ type PricePreview = {
   label: string | null;
 };
 
+const CHECKOUT_PLAN_IDS = new Set(
+  PUBLIC_PLAN_LIST.filter((p) => p.checkoutEnabled).map((p) => p.id)
+);
+
+function planDisplayName(pkg: AIPackage): string {
+  return pkg.nameFa ? `${pkg.nameFa}` : pkg.name;
+}
+
+function planCta(pkg: AIPackage): string {
+  if (pkg.id === "free") return "شروع رایگان";
+  if (pkg.contactOnly || !pkg.checkoutEnabled) {
+    return pkg.id === "business" ? "تماس با فروش" : "تماس برای خرید";
+  }
+  return "خرید پلن";
+}
+
 export default function PricingPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState("");
@@ -32,7 +54,7 @@ export default function PricingPage() {
   const [codeErr, setCodeErr] = useState("");
   const [validating, setValidating] = useState(false);
   const [preview, setPreview] = useState<PricePreview | null>(null);
-  const [selectedPkg, setSelectedPkg] = useState(PACKAGE_LIST[0]?.id || "starter");
+  const [selectedPkg, setSelectedPkg] = useState("pro");
 
   useEffect(() => {
     getUtmParams();
@@ -73,7 +95,7 @@ export default function PricingPage() {
       cleanParams.set("payment", params.get("payment")!);
     }
     const pkg = params.get("package");
-    if (pkg && PACKAGE_LIST.some((p) => p.id === pkg)) {
+    if (pkg && PUBLIC_PLAN_LIST.some((p) => p.id === pkg)) {
       setSelectedPkg(pkg);
       cleanParams.set("package", pkg);
     }
@@ -83,7 +105,7 @@ export default function PricingPage() {
 
   async function validateCode(pkgId?: string) {
     const packageId = pkgId || selectedPkg;
-    if (!code.trim()) {
+    if (!code.trim() || !CHECKOUT_PLAN_IDS.has(packageId)) {
       setPreview(null);
       setCodeErr("");
       return;
@@ -129,13 +151,30 @@ export default function PricingPage() {
     if (preview && pkgId === selectedPkg && code.trim()) {
       return preview;
     }
-    const pkg = PACKAGE_LIST.find((p) => p.id === pkgId);
+    const pkg = PUBLIC_PLAN_LIST.find((p) => p.id === pkgId);
     return pkg
       ? { listPrice: pkg.priceToman, discount: 0, finalPrice: pkg.priceToman, codeType: null, label: null }
       : null;
   }
 
   async function buy(packageId: string) {
+    const pkg = PUBLIC_PLAN_LIST.find((p) => p.id === packageId);
+    if (!pkg) return;
+
+    if (pkg.id === "free") {
+      window.location.href = authed === false ? "/ai?login=1" : "/ai";
+      return;
+    }
+
+    if (pkg.contactOnly || !pkg.checkoutEnabled) {
+      const msg =
+        pkg.id === "business"
+          ? "سلام، برای پلن سازمانی Business آرایه AI مشاوره می‌خواهم."
+          : `سلام، برای پلن ${planDisplayName(pkg)} آرایه AI اطلاعات بیشتر می‌خواهم.`;
+      window.open(siteWhatsAppUrl(msg), "_blank", "noopener,noreferrer");
+      return;
+    }
+
     if (busy) return;
     setErr("");
     setSelectedPkg(packageId);
@@ -148,7 +187,7 @@ export default function PricingPage() {
     const p = priceFor(packageId);
     trackAiBeginCheckout({
       packageId,
-      amountToman: p?.finalPrice ?? PACKAGE_LIST.find((x) => x.id === packageId)?.priceToman ?? 0,
+      amountToman: p?.finalPrice ?? pkg.priceToman,
       promoCode: code.trim() || undefined,
     });
 
@@ -187,6 +226,8 @@ export default function PricingPage() {
     }
   }
 
+  const starterPkg = PUBLIC_PLAN_LIST.find((p) => p.id === "starter");
+
   return (
     <div>
       <nav className="ar-nav">
@@ -205,11 +246,13 @@ export default function PricingPage() {
       <section className="ar-pricing-hero">
         <div className="ar-container">
           <h1>
-            دسترسی به <span className="ar-hl">۵ مدل AI</span> — با تومان
+            پلن‌های <span className="ar-hl">آرایه AI</span> — پرداخت با تومان
           </h1>
           <p>
             GPT، Claude، Gemini، Grok و DeepSeek — بدون VPN و کارت خارجی.
-            هر پرسش از ۱ کردیت — یا به زبان ساده: {formatStarterCredits(PACKAGE_LIST[0]?.credits ?? 50)}.
+            {starterPkg
+              ? ` پلن شروع: ${formatStarterCredits(starterPkg.credits)}.`
+              : ""}
           </p>
           <p className="ar-pricing-free-hint">
             ثبت‌نام رایگان — {FREE_PLAN_EQUIVALENTS.signupBonus} هدیه برای شروع
@@ -260,31 +303,42 @@ export default function PricingPage() {
           )}
         </div>
 
-        <div className="ar-plans-grid">
-          {PACKAGE_LIST.map((pkg) => {
+        <div className="ar-plans-grid ar-plans-grid--wide">
+          {PUBLIC_PLAN_LIST.map((pkg) => {
             const p = priceFor(pkg.id);
             const showDiscount = p && p.discount > 0 && pkg.id === selectedPkg && code.trim();
+            const isFeatured = pkg.featured === true;
+            const priceLabel = formatPriceToman(
+              showDiscount ? p!.finalPrice : pkg.priceToman,
+              pkg.startingPrice
+            );
+
             return (
               <div
                 key={pkg.id}
-                className={`ar-plan-card${pkg.featured ? " featured" : ""}${pkg.id === "starter" ? " starter-hero" : ""}`}
+                className={`ar-plan-card${isFeatured ? " featured" : ""}`}
                 onMouseEnter={() => setSelectedPkg(pkg.id)}
               >
-                {pkg.id === "starter" && <div className="ar-plan-badge">پیشنهاد لانچ</div>}
-                {pkg.featured && pkg.badge && pkg.id !== "starter" && (
+                {pkg.badge && isFeatured && (
                   <div className="ar-plan-badge">{pkg.badge}</div>
                 )}
 
                 <div>
-                  <div className="ar-plan-name">{pkg.name}</div>
+                  <div className="ar-plan-name">{planDisplayName(pkg)}</div>
+                  {pkg.nameFa && pkg.name !== pkg.nameFa && (
+                    <div className="ar-plan-name-en" style={{ fontSize: 12, opacity: 0.7 }}>
+                      {pkg.name}
+                    </div>
+                  )}
                   <div className="ar-plan-price" style={{ marginTop: 8 }}>
                     {showDiscount && (
                       <span className="ar-price-old">
                         {p!.listPrice.toLocaleString("fa-IR")}
                       </span>
                     )}
-                    {(showDiscount ? p!.finalPrice : pkg.priceToman).toLocaleString("fa-IR")}
-                    <span className="per"> تومان</span>
+                    {priceLabel}
+                    {pkg.priceToman > 0 && <span className="per"> تومان</span>}
+                    {pkg.id === "business" && <span className="per"> / ماه</span>}
                   </div>
                   <div className="ar-plan-desc" style={{ marginTop: 8 }}>
                     {pkg.desc}
@@ -293,7 +347,9 @@ export default function PricingPage() {
 
                 <span className="ar-plan-credits">
                   <IconDiamond size={13} />
-                  {formatStarterCredits(pkg.credits)}
+                  {pkg.credits.toLocaleString("fa-IR")} کردیت
+                  {pkg.users ? ` · ${pkg.users.toLocaleString("fa-IR")} کاربر` : ""}
+                  {pkg.id === "business" ? "+" : ""}
                 </span>
 
                 <ul className="ar-plan-features">
@@ -308,16 +364,20 @@ export default function PricingPage() {
                 </ul>
 
                 <button
-                  className={`ar-btn ar-btn-block${pkg.featured || pkg.id === "starter" ? " ar-btn-primary" : " ar-btn-ghost"}`}
+                  className={`ar-btn ar-btn-block${isFeatured || pkg.checkoutEnabled ? " ar-btn-primary" : " ar-btn-ghost"}`}
                   onClick={() => buy(pkg.id)}
-                  disabled={busy !== null}
+                  disabled={busy !== null && pkg.checkoutEnabled}
                 >
-                  {busy === pkg.id ? "در حال اتصال به درگاه…" : "خرید با زیبال"}
+                  {busy === pkg.id ? "در حال اتصال به درگاه…" : planCta(pkg)}
                 </button>
               </div>
             );
           })}
         </div>
+
+        <p className="ar-pricing-note" style={{ marginTop: 24, lineHeight: 1.8 }}>
+          {PRICING_EXPLANATION_FA}
+        </p>
 
         <div className="ar-pricing-studios">
           <h2>هزینه کردیت استودیوها</h2>
@@ -325,24 +385,54 @@ export default function PricingPage() {
             <thead>
               <tr>
                 <th>استودیو</th>
-                <th>مدل</th>
+                <th>مدل / سطح</th>
                 <th>کردیت</th>
               </tr>
             </thead>
             <tbody>
               <tr>
+                <td>چت</td>
+                <td>DeepSeek / Gemini Lite</td>
+                <td>۱</td>
+              </tr>
+              <tr>
+                <td>چت</td>
+                <td>GPT mini / Grok</td>
+                <td>۲</td>
+              </tr>
+              <tr>
+                <td>چت</td>
+                <td>Gemini Pro</td>
+                <td>۵</td>
+              </tr>
+              <tr>
+                <td>چت</td>
+                <td>Claude Sonnet / GPT-5.4</td>
+                <td>۸</td>
+              </tr>
+              <tr>
+                <td>چت</td>
+                <td>Opus / GPT-5.5</td>
+                <td>۱۵</td>
+              </tr>
+              <tr>
+                <td>وب‌سرچ</td>
+                <td>جستجوی ساده</td>
+                <td>+۳</td>
+              </tr>
+              <tr>
                 <td>تصویر</td>
                 <td>سبک / خلاق / دقیق</td>
-                <td>۳ – ۶</td>
+                <td>۱۰ – ۴۰</td>
               </tr>
               <tr>
                 <td>ویدیو (۵ ثانیه)</td>
-                <td>Seedance / Kling / Sora / Veo</td>
-                <td>۱۰ / ۵۰ / ۱۲۵ / ۱۵۰</td>
+                <td>اقتصادی / ۷۲۰p / Sora / ۱۰۸۰p</td>
+                <td>۵۰ – ۴۰۰</td>
               </tr>
               <tr>
                 <td>صدا (TTS)</td>
-                <td>GPT Audio Mini / Pro</td>
+                <td>Mini / Pro</td>
                 <td>۲ / ۵</td>
               </tr>
               <tr>
@@ -357,7 +447,7 @@ export default function PricingPage() {
         <div className="ar-pricing-bundle">
           <div className="ar-pricing-bundle-title">Content & Sales Bundle</div>
           <p className="ar-pricing-bundle-desc">
-            ۳۰ ریلز + ۳۰ کپشن + ۲۰ دایرکت + کمپین‌ها + ۱ ماه AI Pro — برای محتوا و فروش، نه فقط چت خام.
+            ۳۰ ریلز + ۳۰ کپشن + ۲۰ دایرکت + کمپین‌ها + ۱ ماه AI Pro — برای محتوا و فروش.
           </p>
           <Link href="/ai/content-sales" className="ar-btn ar-btn-primary ar-btn-sm">
             مشاهده پکیج · ۵۹۰ هزار تومان
@@ -369,7 +459,7 @@ export default function PricingPage() {
           <br />
           با کد معرفی دوست، ۱۰٪ تخفیف می‌گیری — معرف هم ۱۰ کردیت پاداش می‌گیرد.
           <br />
-          پرسش‌ها بلافاصله بعد از پرداخت به حسابت اضافه می‌شوند و منقضی نمی‌شوند.
+          کردیت‌ها بلافاصله بعد از پرداخت به حسابت اضافه می‌شوند و منقضی نمی‌شوند.
         </div>
       </div>
     </div>

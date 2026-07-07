@@ -16,7 +16,8 @@ import {
 import ModelSelect from "./ModelSelect";
 import StudioHeader from "./StudioHeader";
 import { getModel, imageModels } from "@/lib/aiModels";
-import { imageGenCost } from "@/lib/aiCredits";
+import { canUseModel, imageGenCost } from "@/lib/aiCredits";
+import { useArenaAuth } from "./ArenaAuthContext";
 import { replaceThreadUrl } from "@/lib/aiThreadUrl";
 import MediaProgressStages from "./MediaProgressStages";
 
@@ -86,7 +87,7 @@ export default function ImageStudioView({
   initialTurns = [],
   bootstrapPrompt = null,
   onCreditsChange,
-  plan = "free",
+  plan: planProp = "free",
 }: {
   threadId?: string | null;
   initialTurns?: ImageTurn[];
@@ -94,6 +95,10 @@ export default function ImageStudioView({
   onCreditsChange?: (n: number) => void;
   plan?: string;
 }) {
+  const { plan: authPlan, setCredits: authSetCredits } = useArenaAuth();
+  const plan = authPlan || planProp;
+  const applyCredits = onCreditsChange ?? authSetCredits;
+
   const [threadId, setThreadId] = useState<string | null>(initialThreadId);
   const [turns, setTurns] = useState<ImageTurn[]>(initialTurns);
   const [input, setInput] = useState("");
@@ -139,6 +144,13 @@ export default function ImageStudioView({
   useEffect(() => {
     if (tab === "gallery") loadGallery();
   }, [tab, loadGallery]);
+
+  useEffect(() => {
+    const current = getModel(imageModel);
+    if (current && canUseModel(plan, current)) return;
+    const first = imageModels().find((m) => canUseModel(plan, m));
+    if (first) setImageModel(first.id);
+  }, [plan, imageModel]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
@@ -502,7 +514,7 @@ export default function ImageStudioView({
             : x
         )
       );
-      if (typeof data.creditsRemaining === "number") onCreditsChange?.(data.creditsRemaining);
+      if (typeof data.creditsRemaining === "number") applyCredits(data.creditsRemaining);
       void pollJob(String(data.jobId), tmpId, q, activeThreadId);
     } catch {
       setTurns((t) => t.filter((x) => x.id !== tmpId));
@@ -734,32 +746,8 @@ export default function ImageStudioView({
                   maxLength={4000}
                   disabled={submitting || enhancing}
                 />
-                <div className="ar-composer-foot">
-                  <div className="ar-composer-toolstrip ar-image-toolstrip ar-generator-controls">
-                    <button
-                      type="button"
-                      className={`ar-composer-tool-btn ar-composer-tool-primary${attachment ? " active" : ""}`}
-                      disabled={uploading || submitting || Boolean(attachment)}
-                      title="تصویر مرجع"
-                      aria-label="افزودن فایل"
-                      onClick={() => fileRef.current?.click()}
-                    >
-                      <IconPaperclip size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      className={`ar-composer-tool-btn${enhancing ? " active" : ""}`}
-                      disabled={!input.trim() || enhancing || submitting}
-                      title="بهبود پرامپت — موضوع دقیق حفظ می‌شود"
-                      aria-label="بهبود پرامپت"
-                      onClick={() => void improvePrompt()}
-                    >
-                      {enhancing ? (
-                        <span className="ar-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
-                      ) : (
-                        <IconSpark size={16} />
-                      )}
-                    </button>
+                <div className="ar-composer-foot ar-generator-foot">
+                  <div className="ar-generator-model-row">
                     <ModelSelect
                       variant="bar"
                       value={imageModel}
@@ -769,60 +757,88 @@ export default function ImageStudioView({
                       sheetOnMobile
                       label="موتور"
                     />
-                    <select
-                      className="ar-gen-select"
-                      value={sizePreset}
-                      onChange={(e) =>
-                        setSizePreset(e.target.value as (typeof SIZE_PRESETS)[number]["id"])
-                      }
-                      aria-label="سایز"
-                      disabled={submitting || enhancing}
-                    >
-                      {SIZE_PRESETS.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.label}
-                          {sizeHint(s.id)}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="ar-gen-select"
-                      value={qualityPreset}
-                      onChange={(e) =>
-                        setQualityPreset(e.target.value as (typeof QUALITY_PRESETS)[number]["id"])
-                      }
-                      aria-label="کیفیت"
-                      disabled={submitting || enhancing}
-                    >
-                      {QUALITY_PRESETS.map((q) => (
-                        <option key={q.id} value={q.id}>
-                          {q.label}
-                        </option>
-                      ))}
-                    </select>
                     {modelInfo && (
                       <span className="ar-image-tool-meta">
                         {perImageCost.toLocaleString("fa-IR")} کردیت
                       </span>
                     )}
                   </div>
-                  <div className="ar-composer-actions">
-                    <button
-                      type="button"
-                      className="ar-send-btn ar-send-btn--dock ar-generate-btn"
-                      onClick={send}
-                      disabled={!input.trim() || submitting || enhancing}
-                      aria-label="تولید تصویر"
-                    >
-                      {submitting ? (
-                        <span className="ar-spinner" style={{ borderTopColor: "#FCFBF7" }} />
-                      ) : (
-                        <>
-                          <IconSend size={16} />
-                          <span>تولید کن</span>
-                        </>
-                      )}
-                    </button>
+                  <div className="ar-generator-toolbar-row">
+                    <div className="ar-composer-toolstrip ar-image-toolstrip ar-generator-controls">
+                      <button
+                        type="button"
+                        className={`ar-composer-tool-btn ar-composer-tool-primary${attachment ? " active" : ""}`}
+                        disabled={uploading || submitting || Boolean(attachment)}
+                        title="تصویر مرجع"
+                        aria-label="افزودن فایل"
+                        onClick={() => fileRef.current?.click()}
+                      >
+                        <IconPaperclip size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        className={`ar-composer-tool-btn${enhancing ? " active" : ""}`}
+                        disabled={!input.trim() || enhancing || submitting}
+                        title="بهبود پرامپت — موضوع دقیق حفظ می‌شود"
+                        aria-label="بهبود پرامپت"
+                        onClick={() => void improvePrompt()}
+                      >
+                        {enhancing ? (
+                          <span className="ar-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                        ) : (
+                          <IconSpark size={16} />
+                        )}
+                      </button>
+                      <select
+                        className="ar-gen-select"
+                        value={sizePreset}
+                        onChange={(e) =>
+                          setSizePreset(e.target.value as (typeof SIZE_PRESETS)[number]["id"])
+                        }
+                        aria-label="سایز"
+                        disabled={submitting || enhancing}
+                      >
+                        {SIZE_PRESETS.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.label}
+                            {sizeHint(s.id)}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="ar-gen-select"
+                        value={qualityPreset}
+                        onChange={(e) =>
+                          setQualityPreset(e.target.value as (typeof QUALITY_PRESETS)[number]["id"])
+                        }
+                        aria-label="کیفیت"
+                        disabled={submitting || enhancing}
+                      >
+                        {QUALITY_PRESETS.map((q) => (
+                          <option key={q.id} value={q.id}>
+                            {q.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="ar-composer-actions">
+                      <button
+                        type="button"
+                        className="ar-send-btn ar-send-btn--dock ar-generate-btn"
+                        onClick={send}
+                        disabled={!input.trim() || submitting || enhancing}
+                        aria-label="تولید تصویر"
+                      >
+                        {submitting ? (
+                          <span className="ar-spinner" style={{ borderTopColor: "#FCFBF7" }} />
+                        ) : (
+                          <>
+                            <IconSend size={16} />
+                            <span>تولید کن</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
