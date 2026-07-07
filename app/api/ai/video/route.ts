@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
-import { submitVideoJob } from "@/lib/aiEngine";
+import { submitVideoJobWithFallback } from "@/lib/aiEngine";
 import {
   MAX_PROMPT_CHARS,
   resolveVideoModel,
@@ -9,7 +9,9 @@ import {
   videoGenCost,
   DEFAULT_VIDEO_DURATION_SEC,
 } from "@/lib/aiCredits";
+import { videoFallbackModelsForPlan } from "@/lib/aiMediaCredits";
 import { hasVideoGen } from "@/lib/aiModels";
+import { videoSubmitOptsFromJob } from "@/lib/aiVideoJob";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -80,13 +82,24 @@ export async function POST(req: NextRequest) {
   }
 
   let jobSubmit;
+  let usedModelId = m.id;
   try {
-    jobSubmit = await submitVideoJob(prompt, m.id, {
+    const fallbackModels = videoFallbackModelsForPlan(m.id, plan);
+    const submitOpts = {
+      ...videoSubmitOptsFromJob({
+        model_id: m.id,
+        prompt,
+        duration_sec: duration,
+        reference_url: referenceImageUrl,
+      }),
       duration,
       aspectRatio,
       generateAudio,
       referenceImageUrl: referenceImageUrl ?? undefined,
-    });
+    };
+    const result = await submitVideoJobWithFallback(prompt, fallbackModels, submitOpts);
+    jobSubmit = { jobId: result.jobId, pollingUrl: result.pollingUrl };
+    usedModelId = result.modelId;
   } catch (e) {
     console.error("[api/ai/video] submit failed:", e);
     return NextResponse.json({ ok: false, error: "ai_error" }, { status: 502 });
@@ -97,7 +110,7 @@ export async function POST(req: NextRequest) {
     .insert({
       user_id: session.userId,
       kind: "video",
-      model_id: m.id,
+      model_id: usedModelId,
       prompt,
       duration_sec: duration,
       status: "processing",
@@ -105,6 +118,7 @@ export async function POST(req: NextRequest) {
       polling_url: jobSubmit.pollingUrl,
       credit_cost: cost,
       thread_id: threadId,
+      reference_url: referenceImageUrl,
     })
     .select("id")
     .single();

@@ -480,10 +480,8 @@ export async function runImageGen(
 
   const info = getModel(model);
   const route = modelRouteId(model);
-  // Gemini image models use chat/completions + modalities — not /images.
-  const useDedicatedApi =
-    info?.imageApi === "images" || route.startsWith("openai/gpt-image");
-  if (useDedicatedApi) {
+  // All studio image models use OpenRouter /api/v1/images (Gemini + GPT Image).
+  if (info?.kind === "image" || route.startsWith("openai/gpt-image")) {
     return runImageGenDedicated(prompt, route, apiKey, opts);
   }
   return runImageGenChat(prompt, route, apiKey, opts);
@@ -501,7 +499,12 @@ async function runImageGenDedicated(
     output_format: "png",
   };
   if (opts.referenceImageUrl) {
-    body.image = opts.referenceImageUrl;
+    body.input_references = [
+      {
+        type: "image_url",
+        image_url: { url: opts.referenceImageUrl },
+      },
+    ];
   }
 
   const res = await fetchOpenRouterWithRetry(
@@ -520,13 +523,14 @@ async function runImageGenDedicated(
   }
 
   const data = (await res.json()) as {
-    data?: Array<{ b64_json?: string; media_type?: string }>;
+    data?: Array<{ b64_json?: string; url?: string; media_type?: string }>;
     usage?: { total_tokens?: number; cost?: number };
   };
 
   const first = data.data?.[0];
 
   return {
+    imageUrl: first?.url,
     imageBase64: first?.b64_json,
     mime: first?.media_type || "image/png",
     caption: "",
@@ -814,11 +818,10 @@ export async function submitVideoJob(
   const body: Record<string, unknown> = {
     model: route,
     prompt,
-    usage: { include: true },
+    resolution: opts.resolution ?? "720p",
+    aspect_ratio: opts.aspectRatio ?? "16:9",
   };
   if (opts.duration != null) body.duration = opts.duration;
-  if (opts.aspectRatio) body.aspect_ratio = opts.aspectRatio;
-  if (opts.resolution) body.resolution = opts.resolution;
   if (opts.generateAudio != null) body.generate_audio = opts.generateAudio;
 
   if (opts.referenceImageUrl) {
@@ -851,11 +854,40 @@ export async function submitVideoJob(
     polling_url?: string;
   };
 
-  if (!data.id || !data.polling_url) {
+  if (!data.id) {
     throw new Error("video_job_invalid_response");
   }
 
-  return { jobId: data.id, pollingUrl: data.polling_url };
+  const pollingUrl =
+    data.polling_url ?? `https://openrouter.ai/api/v1/videos/${data.id}`;
+
+  return { jobId: data.id, pollingUrl };
+}
+
+export async function submitVideoJobWithFallback(
+  prompt: string,
+  modelIds: string[],
+  opts: VideoGenOpts = {}
+): Promise<VideoJobSubmitResult & { modelId: string }> {
+  if (modelIds.length === 0) throw new Error("video_submit_failed");
+
+  const primary = modelIds[0];
+  let lastError: Error = new Error("video_submit_failed");
+
+  for (const modelId of modelIds) {
+    try {
+      const result = await submitVideoJob(prompt, modelId, opts);
+      if (modelId !== primary) {
+        console.warn(`[submitVideoJobWithFallback] ${primary} → ${modelId} succeeded`);
+      }
+      return { ...result, modelId };
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error("video_submit_failed");
+      console.warn(`[submitVideoJobWithFallback] model ${modelId} failed:`, lastError.message);
+    }
+  }
+
+  throw lastError;
 }
 
 export async function pollVideoJob(pollingUrl: string): Promise<VideoJobPollResult> {

@@ -2,7 +2,7 @@
 // کردیت استودیو ویدیو / صوت — Araaye Arena
 // =========================================================
 
-import { getModel, type AIModelInfo } from "./aiModels";
+import { getModel, videoModelFallbackChain, type AIModelInfo } from "./aiModels";
 import {
   PLAN_IDS,
   TIER_MIN_PLAN,
@@ -52,6 +52,14 @@ export function canUseVideoModel(plan: string, model: AIModelInfo): boolean {
     return planRank(plan) >= planRank(minPlan);
   }
   return planRank(plan) >= planRank(TIER_MIN_PLAN[model.tier]);
+}
+
+/** زنجیره fallback فقط شامل مدل‌هایی که پلن کاربر اجازه می‌دهد */
+export function videoFallbackModelsForPlan(primary: string, plan: string): string[] {
+  return videoModelFallbackChain(primary).filter((id) => {
+    const m = getModel(id);
+    return m?.kind === "video" && canUseVideoModel(plan, m);
+  });
 }
 
 export function resolveVideoModel(

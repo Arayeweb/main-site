@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 import { pollVideoJob, openRouterVideoPollUrl } from "@/lib/aiEngine";
 import { MAX_BATTLE_COST_USD } from "@/lib/aiCredits";
+import { retryVideoJobWithFallback } from "@/lib/aiVideoJob";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ type JobRow = {
   error: string | null;
   battle_id: string | null;
   thread_id: string | null;
+  reference_url?: string | null;
 };
 
 async function refundCredits(
@@ -118,6 +120,32 @@ export async function GET(
   }
 
   if (poll.status === "failed") {
+    const { data: userRow } = await supabase
+      .from("ai_users")
+      .select("plan")
+      .eq("id", row.user_id)
+      .maybeSingle();
+    const plan = (userRow?.plan as string) || "free";
+
+    const retry = await retryVideoJobWithFallback(row, plan);
+    if (retry) {
+      await supabase
+        .from("ai_media_jobs")
+        .update({
+          status: "processing",
+          model_id: retry.modelId,
+          openrouter_job_id: retry.jobId,
+          polling_url: retry.pollingUrl,
+          error: null,
+        })
+        .eq("id", row.id);
+      return NextResponse.json({
+        ok: true,
+        status: "processing",
+        fallbackModel: retry.modelId,
+      });
+    }
+
     await supabase
       .from("ai_media_jobs")
       .update({

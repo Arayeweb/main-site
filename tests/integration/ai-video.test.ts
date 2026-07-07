@@ -11,7 +11,7 @@ const db = createTestSupabase({
   ai_credit_ledger: [],
 });
 
-const mockSubmitVideoJob = vi.fn();
+const mockSubmitVideoJobWithFallback = vi.fn();
 const mockPollVideoJob = vi.fn();
 
 vi.mock("@/lib/supabase", () => ({
@@ -22,7 +22,8 @@ vi.mock("@/lib/aiEngine", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/aiEngine")>();
   return {
     ...actual,
-    submitVideoJob: (...args: unknown[]) => mockSubmitVideoJob(...args),
+    submitVideoJobWithFallback: (...args: unknown[]) =>
+      mockSubmitVideoJobWithFallback(...args),
     pollVideoJob: (...args: unknown[]) => mockPollVideoJob(...args),
   };
 });
@@ -42,10 +43,11 @@ describe("integration — /api/ai/video", () => {
       ai_usage: [],
       ai_credit_ledger: [],
     });
-    mockSubmitVideoJob.mockReset();
-    mockSubmitVideoJob.mockResolvedValue({
+    mockSubmitVideoJobWithFallback.mockReset();
+    mockSubmitVideoJobWithFallback.mockResolvedValue({
       jobId: "or-job-1",
       pollingUrl: "https://openrouter.ai/api/v1/videos/or-job-1",
+      modelId: "video-seedance",
     });
     mockPollVideoJob.mockReset();
     vi.stubGlobal(
@@ -98,7 +100,7 @@ describe("integration — /api/ai/video", () => {
     const body = await jsonBody<{ error: string }>(res);
     expect(res.status).toBe(402);
     expect(body.error).toBe("insufficient_credits");
-    expect(mockSubmitVideoJob).not.toHaveBeenCalled();
+    expect(mockSubmitVideoJobWithFallback).not.toHaveBeenCalled();
   });
 
   it("blocks premium Sora on starter plan", async () => {
@@ -152,9 +154,9 @@ describe("integration — /api/ai/video", () => {
     expect(db.tables.ai_media_jobs).toHaveLength(1);
     expect(db.tables.ai_media_jobs[0].status).toBe("processing");
     expect(db.tables.ai_users[0].credits).toBe(40);
-    expect(mockSubmitVideoJob).toHaveBeenCalledWith(
+    expect(mockSubmitVideoJobWithFallback).toHaveBeenCalledWith(
       "غروب کویر",
-      "video-seedance",
+      ["video-seedance"],
       expect.objectContaining({ duration: 5 })
     );
   });

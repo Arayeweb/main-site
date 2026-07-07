@@ -281,7 +281,7 @@ export const IMAGE_MODELS: AIModelInfo[] = [
     capabilities: { imageGen: true },
     kind: "image",
     imageCreditCost: 10,
-    imageApi: "chat",
+    imageApi: "images",
   },
   {
     id: "image-nano",
@@ -296,7 +296,7 @@ export const IMAGE_MODELS: AIModelInfo[] = [
     capabilities: { imageGen: true },
     kind: "image",
     imageCreditCost: 22,
-    imageApi: "chat",
+    imageApi: "images",
   },
   {
     id: "image-gpt",
@@ -314,6 +314,29 @@ export const IMAGE_MODELS: AIModelInfo[] = [
     imageApi: "images",
   },
 ];
+
+/** ترتیب fallback وقتی ساخت تصویر با مدل انتخاب‌شده ناموفق باشد */
+export const IMAGE_MODEL_FALLBACK_CHAIN: string[] = ["image-lite", "image-nano", "image-gpt"];
+
+export function imageModelFallbackChain(primary: string): string[] {
+  const idx = IMAGE_MODEL_FALLBACK_CHAIN.indexOf(primary);
+  if (idx === -1) return [primary];
+  return IMAGE_MODEL_FALLBACK_CHAIN.slice(idx);
+}
+
+/** ترتیب fallback وقتی ساخت ویدیو با مدل انتخاب‌شده ناموفق باشد */
+export const VIDEO_MODEL_FALLBACK_CHAIN: string[] = [
+  "video-seedance",
+  "video-kling",
+  "video-sora",
+  "video-veo",
+];
+
+export function videoModelFallbackChain(primary: string): string[] {
+  const idx = VIDEO_MODEL_FALLBACK_CHAIN.indexOf(primary);
+  if (idx === -1) return [primary];
+  return VIDEO_MODEL_FALLBACK_CHAIN.slice(idx);
+}
 
 export const VIDEO_MODELS: AIModelInfo[] = [
   {

@@ -12,17 +12,11 @@ describe("runImageGen — API routing", () => {
     process.env.OPENROUTER_API_KEY = "test-key";
   });
 
-  it("routes Gemini image models to chat completions", async () => {
+  it("routes Gemini image models to dedicated images API", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
-        choices: [
-          {
-            message: {
-              images: [{ image_url: { url: "https://cdn.example.com/img.png" } }],
-            },
-          },
-        ],
+        data: [{ b64_json: "abc123" }],
         usage: { total_tokens: 10, cost: 0.001 },
       }),
     });
@@ -31,10 +25,30 @@ describe("runImageGen — API routing", () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
     const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://openrouter.ai/api/v1/chat/completions");
+    expect(url).toBe("https://openrouter.ai/api/v1/images");
     const body = JSON.parse(String(init.body));
     expect(body.model).toBe("google/gemini-3.1-flash-lite-image");
-    expect(body.modalities).toEqual(["image", "text"]);
+    expect(body.prompt).toBe("a red apple");
+    expect(body.output_format).toBe("png");
+  });
+
+  it("passes reference images via input_references", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{ b64_json: "abc123" }],
+        usage: { total_tokens: 10, cost: 0.001 },
+      }),
+    });
+
+    await runImageGen("edit this", "image-lite", {
+      referenceImageUrl: "https://cdn.example.com/ref.png",
+    });
+
+    const body = JSON.parse(String((mockFetch.mock.calls[0] as [string, RequestInit])[1].body));
+    expect(body.input_references).toEqual([
+      { type: "image_url", image_url: { url: "https://cdn.example.com/ref.png" } },
+    ]);
   });
 
   it("routes GPT Image models to dedicated images API", async () => {

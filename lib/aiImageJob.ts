@@ -1,8 +1,9 @@
 import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { runImageGen } from "@/lib/aiEngine";
+import { runImageGen, type ImageGenResult } from "@/lib/aiEngine";
 import { persistImageGen } from "@/lib/aiPersist";
 import { MAX_BATTLE_COST_USD } from "@/lib/aiCredits";
+import { imageModelFallbackChain } from "@/lib/aiModels";
 
 export type ImageJobRow = {
   id: string;
@@ -41,6 +42,33 @@ export async function refundImageJobCredits(
     reason: "image_refund",
     note: `Refund for failed image job ${jobId}`,
   });
+}
+
+async function runImageGenWithFallback(
+  prompt: string,
+  primaryModel: string,
+  opts: { referenceImageUrl?: string }
+): Promise<{ gen: ImageGenResult; modelId: string }> {
+  const models = imageModelFallbackChain(primaryModel);
+  let lastError: Error = new Error("no_image");
+
+  for (const modelId of models) {
+    try {
+      const gen = await runImageGen(prompt, modelId, opts);
+      if (gen.imageUrl || gen.imageBase64) {
+        if (modelId !== primaryModel) {
+          console.warn(`[aiImageJob] fallback ${primaryModel} → ${modelId} succeeded`);
+        }
+        return { gen, modelId };
+      }
+      lastError = new Error("no_image");
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error("generation_failed");
+      console.warn(`[aiImageJob] model ${modelId} failed:`, lastError.message);
+    }
+  }
+
+  throw lastError;
 }
 
 /** Claim a pending job and run generation (idempotent — only one worker wins). */
@@ -85,7 +113,7 @@ export async function claimAndProcessImageJob(
   const job = claimed as ImageJobRow;
   try {
     const prompt = job.prompt || "";
-    const gen = await runImageGen(prompt, job.model_id, {
+    const { gen, modelId: usedModelId } = await runImageGenWithFallback(prompt, job.model_id, {
       referenceImageUrl: job.reference_url || undefined,
     });
 
@@ -113,7 +141,7 @@ export async function claimAndProcessImageJob(
     const persist = await persistImageGen({
       userId,
       prompt,
-      modelId: job.model_id,
+      modelId: usedModelId,
       imageUrl: displayUrl,
       mime,
       caption: responseText,
