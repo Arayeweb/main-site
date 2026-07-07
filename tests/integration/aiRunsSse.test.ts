@@ -397,6 +397,51 @@ describe("integration — /api/ai/runs SSE contract", () => {
   });
 
   // -------------------------------------------------------------------------
+  // E2. plan source-of-truth (DB vs cookie)
+  // -------------------------------------------------------------------------
+  describe("E2. plan source-of-truth", () => {
+    it("allows compare when DB plan is upgraded even if cookie plan is stale", async () => {
+      db.tables.ai_users.find((u) => u.id === USER_A)!.plan = "business";
+
+      const res = await postRun(
+        {
+          mode: "compare",
+          prompt: "stale cookie compare",
+          modelA: "cmp-deepseek-v4",
+          modelB: "cmp-grok-4",
+        },
+        USER_A,
+        "free"
+      );
+
+      expect(res.status).toBe(200);
+      const events = await readSseEvents(res);
+      expect(events.some((e) => e.type === "run_done")).toBe(true);
+      expect(events.some((e) => e.type === "run_error")).toBe(false);
+    });
+
+    it("blocks compare when cookie plan is higher but DB plan is free", async () => {
+      db.tables.ai_users.find((u) => u.id === USER_A)!.plan = "free";
+
+      const res = await postRun(
+        {
+          mode: "compare",
+          prompt: "db free must block",
+          modelA: "cmp-deepseek-v4",
+          modelB: "cmp-grok-4",
+        },
+        USER_A,
+        "business"
+      );
+
+      expect(res.status).toBe(200);
+      const events = await readSseEvents(res);
+      expect(events.find((e) => e.type === "run_error")?.errorCode).toBe("plan_upgrade_required");
+      expect(mockStreamChat).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // F. Stop endpoint
   // -------------------------------------------------------------------------
   describe("F. stop endpoint", () => {

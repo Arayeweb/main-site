@@ -6,6 +6,7 @@
 
 import { NextRequest } from "next/server";
 import { getAISession } from "@/lib/aiAuth";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { getPersona } from "@/lib/aiPersonas";
 import { hasVision } from "@/lib/aiModels";
 import { prepareRun, type RunRequest } from "@/lib/ai/orchestrator";
@@ -82,6 +83,16 @@ export async function POST(req: NextRequest) {
   perf.mark("auth_done");
   if (!session) return sseError("unauthorized", 401);
 
+  // Plan must come from DB (source of truth), not cookie payload.
+  // Cookie plan can be stale right after successful checkout callbacks.
+  const supabase = getSupabaseAdmin();
+  const { data: user, error: userErr } = await supabase
+    .from("ai_users")
+    .select("plan")
+    .eq("id", session.userId)
+    .maybeSingle();
+  if (userErr || !user) return sseError("unauthorized", 401);
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -118,7 +129,7 @@ export async function POST(req: NextRequest) {
 
   perf.mark("validate_done");
 
-  const plan = session.plan || "free";
+  const plan = (user.plan as string) || "free";
 
   const encoder = new TextEncoder();
   const abort = new AbortController();

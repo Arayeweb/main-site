@@ -110,6 +110,7 @@ export function seedTelegramUser(
     created_at?: string;
   }
 ) {
+  type TelegramChatTurn = { role: "user" | "assistant"; content: string };
   const row = {
     id: opts.id || `tg-${opts.telegram_id}`,
     telegram_id: opts.telegram_id,
@@ -127,7 +128,7 @@ export function seedTelegramUser(
     total_payments: 0,
     state: opts.state || "idle",
     state_data: {},
-    chat_context: [],
+    chat_context: [] as TelegramChatTurn[],
     is_chat_running: false,
     created_at: opts.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString(),
