@@ -430,6 +430,37 @@ create index if not exists ai_battles_share_slug_idx on public.ai_battles (share
 create index if not exists ai_battles_guest_token_idx on public.ai_battles (guest_token) where guest_token is not null;
 alter table public.ai_battles enable row level security;
 
+-- استودیو تصویر/ویدیو: jobهای async OpenRouter
+create table if not exists public.ai_media_jobs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.ai_users(id) on delete cascade,
+  kind text not null check (kind in ('video', 'audio', 'transcribe', 'image')),
+  model_id text not null,
+  prompt text,
+  duration_sec int,
+  status text not null default 'pending'
+    check (status in ('pending', 'processing', 'completed', 'failed')),
+  openrouter_job_id text,
+  polling_url text,
+  credit_cost int not null default 0,
+  cost_usd numeric,
+  output_url text,
+  error text,
+  battle_id uuid references public.ai_battles(id) on delete set null,
+  thread_id uuid,
+  reference_url text,
+  dismissed_at timestamptz,
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+create index if not exists ai_media_jobs_user_id_idx on public.ai_media_jobs(user_id);
+create index if not exists ai_media_jobs_status_idx on public.ai_media_jobs(status);
+create index if not exists ai_media_jobs_dismissed_at_idx
+  on public.ai_media_jobs(user_id, dismissed_at)
+  where dismissed_at is null;
+alter table public.ai_media_jobs add column if not exists reference_url text;
+alter table public.ai_media_jobs add column if not exists dismissed_at timestamptz;
+
 create table if not exists public.ai_promo_codes (
   id           uuid primary key default gen_random_uuid(),
   created_at   timestamptz not null default now(),

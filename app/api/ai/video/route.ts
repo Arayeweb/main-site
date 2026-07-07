@@ -12,6 +12,7 @@ import {
 import { videoFallbackModelsForPlan } from "@/lib/aiMediaCredits";
 import { hasVideoGen } from "@/lib/aiModels";
 import { videoSubmitOptsFromJob } from "@/lib/aiVideoJob";
+import { insertMediaJob } from "@/lib/aiMediaJobInsert";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,23 +106,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "ai_error" }, { status: 502 });
   }
 
-  const { data: job, error: jobErr } = await supabase
-    .from("ai_media_jobs")
-    .insert({
-      user_id: session.userId,
-      kind: "video",
-      model_id: usedModelId,
-      prompt,
-      duration_sec: duration,
-      status: "processing",
-      openrouter_job_id: jobSubmit.jobId,
-      polling_url: jobSubmit.pollingUrl,
-      credit_cost: cost,
-      thread_id: threadId,
-      reference_url: referenceImageUrl,
-    })
-    .select("id")
-    .single();
+  const { data: job, error: jobErr } = await insertMediaJob(supabase, {
+    user_id: session.userId,
+    kind: "video",
+    model_id: usedModelId,
+    prompt,
+    duration_sec: duration,
+    status: "processing",
+    openrouter_job_id: jobSubmit.jobId,
+    polling_url: jobSubmit.pollingUrl,
+    credit_cost: cost,
+    thread_id: threadId,
+    reference_url: referenceImageUrl,
+  });
 
   if (jobErr || !job) {
     console.error("[api/ai/video] job insert:", jobErr);

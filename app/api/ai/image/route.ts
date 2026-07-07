@@ -7,6 +7,7 @@ import {
   resolveImageModel,
 } from "@/lib/aiCredits";
 import { hasImageGen } from "@/lib/aiModels";
+import { insertMediaJob } from "@/lib/aiMediaJobInsert";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,20 +68,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { data: job, error: jobErr } = await supabase
-    .from("ai_media_jobs")
-    .insert({
-      user_id: session.userId,
-      kind: "image",
-      model_id: m.id,
-      prompt,
-      status: "pending",
-      credit_cost: cost,
-      thread_id: threadId,
-      reference_url: referenceImageUrl,
-    })
-    .select("id")
-    .single();
+  const { data: job, error: jobErr } = await insertMediaJob(supabase, {
+    user_id: session.userId,
+    kind: "image",
+    model_id: m.id,
+    prompt,
+    status: "pending",
+    credit_cost: cost,
+    thread_id: threadId,
+    reference_url: referenceImageUrl,
+  });
 
   if (jobErr || !job) {
     console.error("[api/ai/image] job insert:", jobErr);
