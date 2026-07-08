@@ -31,6 +31,33 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
+const whatYouGet = [
+  {
+    title: "۳ مشکل اصلی سایت",
+    description: "مهم‌ترین ایرادهایی که باعث کاهش تماس، نوبت یا لید می‌شوند مشخص می‌کنیم.",
+  },
+  {
+    title: "بررسی سئو و دیده‌شدن در گوگل",
+    description:
+      "صفحات مهم، عنوان‌ها، ساختار محتوا، ایندکس شدن و شانس دیده‌شدن در سرچ بررسی می‌شود.",
+  },
+  {
+    title: "بررسی تجربه موبایل و سرعت",
+    description:
+      "چک می‌کنیم سایت روی موبایل سریع، واضح و قابل استفاده هست یا کاربر را از دست می‌دهد.",
+  },
+  {
+    title: "بررسی مسیر تماس، رزرو یا فرم لید",
+    description:
+      "مشخص می‌کنیم کاربر بعد از ورود به سایت چقدر راحت می‌تواند تماس بگیرد، فرم پر کند یا نوبت بگیرد.",
+  },
+  {
+    title: "پیشنهادهای فوری برای جذب لید بیشتر",
+    description:
+      "در پایان چند اقدام ساده و قابل اجرا پیشنهاد می‌شود که بیشترین اثر را روی جذب مشتری دارد.",
+  },
+] as const;
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -153,8 +180,50 @@ export default function FreeSeoAuditPage() {
           </div>
         </section>
 
+        <section className="border-y border-navy-100 bg-navy-50/40 py-12 sm:py-14" aria-labelledby="what-you-get-heading">
+          <div className="container-mx container-px">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 id="what-you-get-heading" className="text-balance text-xl font-extrabold text-navy-900 sm:text-2xl">
+                بعد از ثبت درخواست، چه چیزی دریافت می‌کنید؟
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-navy-500 sm:text-base">
+                هدف این بررسی این است که خیلی سریع بفهمید سایت شما کجا مشتری از دست می‌دهد و اولویت اصلاحات چیست.
+              </p>
+            </div>
+
+            <ol className="mx-auto mt-8 grid max-w-5xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {whatYouGet.map((item, index) => (
+                <li
+                  key={item.title}
+                  className="rounded-2xl border border-navy-100 bg-white p-5 text-right shadow-soft"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-50 text-sm font-extrabold text-teal-700">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-extrabold text-navy-900 sm:text-[15px]">{item.title}</h3>
+                      <p className="mt-1.5 text-[13px] leading-relaxed text-navy-500">{item.description}</p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-8 flex flex-col items-center gap-3">
+              <a href="#lead-form" className="btn-primary inline-flex items-center px-6 py-3">
+                درخواست تحلیل رایگان
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section className="section-py pt-10">
           <div className="container-mx container-px">
+            <p className="mx-auto mb-5 max-w-2xl text-center text-[13px] leading-relaxed text-navy-500">
+              این بررسی برای شروع همکاری اجباری نیست؛ اگر بعد از تحلیل، اصلاحات برای شما منطقی بود، می‌توانیم درباره
+              اجرای آن صحبت کنیم.
+            </p>
             <FreeSeoAuditForm />
           </div>
         </section>
