@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
 import { getUtmParams } from "@/lib/utm";
@@ -20,11 +21,11 @@ const trustPills = [
 ];
 
 export default function DoctorsHero() {
+  const router = useRouter();
   const [phone, setPhone] = useState("");
   const [consent, setConsent] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,8 +69,7 @@ export default function DoctorsHero() {
         return;
       }
       pushGtmEvent("generate_lead", { source: "doctors_hero", goal: "doctor_site", page: "doctors" });
-      setSuccess(true);
-      setPhone("");
+      router.push("/tashkor?from=doctors_hero");
     } catch {
       setError("خطا در ارتباط. اتصال اینترنت را بررسی کنید.");
     } finally {
@@ -133,73 +133,60 @@ export default function DoctorsHero() {
 
         {/* Lead capture — primary conversion */}
         <div className="mx-auto mt-8 w-full max-w-lg">
-          {success ? (
-            <div
-              className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-soft"
-              role="status"
-              aria-live="polite"
-            >
-              <p className="text-sm font-bold text-sky-700">درخواست شما ثبت شد ✓</p>
-              <p className="mt-1 text-sm text-navy-500">
-                کارشناس آرایه در کمتر از ۲ ساعت کاری برای پیشنهاد اختصاصی مطب‌تان تماس می‌گیرد.
-              </p>
-            </div>
-          ) : (
-            <>
-              <p className="mb-2.5 text-sm font-medium text-navy-600">
-                شماره‌ات را بگذار؛ پیشنهاد قیمت اختصاصی مطب‌ات را در کمتر از ۲ ساعت کاری می‌فرستیم.
-              </p>
-              <form
-                onSubmit={handleSubmit}
-                className="rounded-2xl border border-sky-100 bg-white p-3 shadow-card"
-                noValidate
+          <p className="mb-2.5 text-sm font-medium text-navy-600">
+            شماره‌ات را بگذار؛ پیشنهاد قیمت اختصاصی مطب‌ات را در کمتر از ۲ ساعت کاری می‌فرستیم.
+          </p>
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-2xl border border-sky-100 bg-white p-3 shadow-card"
+            noValidate
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <label htmlFor="doctors-hero-phone" className="sr-only">
+                شماره موبایل
+              </label>
+              <input
+                id="doctors-hero-phone"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                dir="ltr"
+                placeholder="09xxxxxxxxx"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (error) setError(null);
+                }}
+                disabled={loading}
+                className="w-full flex-1 rounded-xl border border-navy-100 bg-navy-50/50 px-4 py-3 text-center text-sm text-navy-900 outline-none transition focus:border-sky-400 focus:bg-white disabled:opacity-60 sm:text-right"
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-sky-700 active:scale-[0.98] disabled:opacity-60"
               >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <label htmlFor="doctors-hero-phone" className="sr-only">
-                    شماره موبایل
-                  </label>
-                  <input
-                    id="doctors-hero-phone"
-                    type="tel"
-                    inputMode="numeric"
-                    autoComplete="tel"
-                    dir="ltr"
-                    placeholder="09xxxxxxxxx"
-                    value={phone}
-                    onChange={(e) => {
-                      setPhone(e.target.value);
-                      if (error) setError(null);
-                    }}
-                    className="w-full flex-1 rounded-xl border border-navy-100 bg-navy-50/50 px-4 py-3 text-center text-sm text-navy-900 outline-none transition focus:border-sky-400 focus:bg-white sm:text-right"
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-sky-700 active:scale-[0.98] disabled:opacity-60"
-                  >
-                    {loading ? "در حال ثبت..." : "قیمت مطب من را بگیر"}
-                  </button>
-                </div>
-                <label className="mt-3 flex cursor-pointer items-start gap-2 text-right text-[11px] leading-relaxed text-navy-500">
-                  <input
-                    type="checkbox"
-                    checked={consent}
-                    onChange={(e) => {
-                      setConsent(e.target.checked);
-                      if (error) setError(null);
-                    }}
-                    className="mt-0.5 shrink-0 rounded border-navy-200"
-                  />
-                  <span>مایلم آرایه برای ارسال پیشنهاد قیمت با من تماس بگیرد.</span>
-                </label>
-              </form>
-              {error ? (
-                <p className="mt-2 text-xs font-medium text-red-600" role="alert">
-                  {error}
-                </p>
-              ) : null}
-            </>
-          )}
+                {loading ? "در حال ثبت..." : "قیمت مطب من را بگیر"}
+              </button>
+            </div>
+            <label className="mt-3 flex cursor-pointer items-start gap-2 text-right text-[11px] leading-relaxed text-navy-500">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => {
+                  setConsent(e.target.checked);
+                  if (error) setError(null);
+                }}
+                disabled={loading}
+                className="mt-0.5 shrink-0 rounded border-navy-200"
+              />
+              <span>مایلم آرایه برای ارسال پیشنهاد قیمت با من تماس بگیرد.</span>
+            </label>
+          </form>
+          {error ? (
+            <p className="mt-2 text-xs font-medium text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
 
           <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <a
