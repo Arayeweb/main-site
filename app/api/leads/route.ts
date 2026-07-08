@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { normalizeContact } from "@/lib/validateContact";
+import { pageFromPath } from "@/lib/pageFromPath";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,14 +24,6 @@ function clientIp(req: NextRequest): string {
   const xff = req.headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0].trim();
   return req.headers.get("x-real-ip") || "unknown";
-}
-
-function pageFromPath(p: unknown): string | null {
-  const s = String(p || "");
-  const m = s.match(/(index|clinic|doctors|restaurant|googlesabt|seo)/);
-  if (m) return m[1];
-  if (s === "/" || s === "") return "index";
-  return null;
 }
 
 function str(v: unknown): string | null {
