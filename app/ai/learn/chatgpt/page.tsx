@@ -37,7 +37,7 @@ export default function ChatGptLearnPage() {
       <ul className="ar-learn-list">
         <li>۵ پیام چت رایگان برای مهمان — بدون ثبت‌نام</li>
         <li>نبرد دو مدل + لیدربورد — مزیتی که ChatGPT ندارد</li>
-        <li>گفتگو با شخصیت‌های مشهور — Character.ai فارسی</li>
+        <li>گفتگو با شخصیت‌های هوشمند — شبیه‌سازی AI به فارسی</li>
         <li>استودیو عکس، ویدیو، صوت و موزیک در یک حساب</li>
       </ul>
     </FeatureLearnLayout>

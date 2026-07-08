@@ -18,6 +18,7 @@ import ModelSelect from "./ModelSelect";
 import { getModel } from "@/lib/aiModels";
 import type { AiPersona } from "@/lib/aiPersonas";
 import { PERSONA_DISCLAIMER_FA } from "@/lib/aiPersonas";
+import PersonaImage from "./PersonaImage";
 import MarkdownMessage from "./MarkdownMessage";
 import type { ChatTurn } from "./DirectChatView";
 
@@ -27,14 +28,11 @@ const GREETING_ID = "persona-greeting";
 
 function PersonaAvatar({ persona, size = 34 }: { persona: AiPersona; size?: number }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={persona.avatar}
-      alt=""
-      width={size}
-      height={size}
+    <PersonaImage
+      persona={persona}
+      variant="thumb"
       className="ar-persona-avatar"
-      loading="lazy"
+      style={{ width: size, height: size }}
     />
   );
 }

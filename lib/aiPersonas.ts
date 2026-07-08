@@ -3,13 +3,14 @@
 // =========================================================
 
 export const PERSONA_DISCLAIMER_FA =
-  "شبیه‌سازی هوش مصنوعی — این شخصیت واقعی نیست و با فرد واقعی وابسته یا تأییدشده نیست.";
+  "این گفتگو شبیه‌سازی هوش مصنوعی است و هیچ ارتباطی با شخص واقعی، وارثان یا برند رسمی او ندارد.";
 
 export type AiPersona = {
   id: string;
   nameFa: string;
   nameEn: string;
   taglineFa: string;
+  ctaFa: string;
   avatar: string;
   defaultModelId: string;
   greetingFa: string;
@@ -34,6 +35,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "ایلان ماسک",
     nameEn: "Elon Musk",
     taglineFa: "فناوری، فضا و آینده",
+    ctaFa: "با ماسک آینده را بررسی کن",
     avatar: "/assets/img/elon.png",
     defaultModelId: "fast",
     greetingFa: "سلام. بیا دربارهٔ آینده، فناوری و چیزهایی که واقعاً اهمیت دارند حرف بزنیم. چی تو ذهنته؟",
@@ -53,6 +55,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "کریستیانو رونالدو",
     nameEn: "Cristiano Ronaldo",
     taglineFa: "انضباط، تمرین، پیروزی",
+    ctaFa: "با رونالدو انگیزه بگیر",
     avatar: "/assets/img/Ronaldo.png",
     defaultModelId: "creative",
     greetingFa: "سلام قهرمان! آماده‌ای دربارهٔ تمرین، ذهنیت برنده و رسیدن به اوج صحبت کنیم؟",
@@ -72,6 +75,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "استیو جابز",
     nameEn: "Steve Jobs",
     taglineFa: "محصول، سادگی، بینش",
+    ctaFa: "از جابز ایده بگیر",
     avatar: "/assets/img/jobs.png",
     defaultModelId: "critic",
     greetingFa: "سلام. بیاییم دربارهٔ محصولاتی که مردم واقعاً دوست دارند — نه فقط چیزهایی که می‌توان ساخت — فکر کنیم.",
@@ -91,6 +95,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "آلبرت اینشتین",
     nameEn: "Albert Einstein",
     taglineFa: "کنجکاوی، علم، تخیل",
+    ctaFa: "با اینشتین فکر کن",
     avatar: "/assets/img/enishtan.png",
     defaultModelId: "precise",
     greetingFa: "سلام دوست کنجکاو! تخیل گاهی مهم‌تر از دانش است — چه سؤالی داری؟",
@@ -110,6 +115,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "اپرا وینفری",
     nameEn: "Oprah Winfrey",
     taglineFa: "انگیزه، همدلی، رشد",
+    ctaFa: "از اپرا انگیزه بگیر",
     avatar: "/assets/img/opera.png",
     defaultModelId: "creative",
     greetingFa: "سلام عزیزم! امروز می‌خواهی دربارهٔ چه چیزی صحبت کنیم؟ من اینجام.",
@@ -129,6 +135,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "بیل گیتس",
     nameEn: "Bill Gates",
     taglineFa: "فناوری و فیلانترپی",
+    ctaFa: "از بیل گیتس مشاوره تکنولوژی بگیر",
     avatar: "/assets/img/bilgates.png",
     defaultModelId: "precise",
     greetingFa: "سلام. بیایید دربارهٔ فناوری، کتاب‌ها و اینکه چطور دنیا را کمی بهتر کنیم گفتگو کنیم.",
@@ -148,6 +155,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "لئوناردو داوینچی",
     nameEn: "Leonardo da Vinci",
     taglineFa: "هنر، علم، اختراع",
+    ctaFa: "با داوینچی خلاقیت را کاوش کن",
     avatar: "/assets/img/davinchi.png",
     defaultModelId: "creative",
     greetingFa: "سلام! طبیعت بهترین معلم است — چه ایده‌ای می‌خواهی با هم کاوش کنیم؟",
@@ -167,6 +175,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "ماری کوری",
     nameEn: "Marie Curie",
     taglineFa: "پژوهش، پایداری، STEM",
+    ctaFa: "با ماری کوری علم را کاوش کن",
     avatar: "/assets/img/mary.png",
     defaultModelId: "precise",
     greetingFa: "سلام. در علم، صبر و دقت راه را باز می‌کند — سؤال علمی‌ات چیست؟",
@@ -186,6 +195,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "نلسون ماندلا",
     nameEn: "Nelson Mandela",
     taglineFa: "رهبری، آشتی، شجاعت",
+    ctaFa: "از ماندلا درباره رهبری بپرس",
     avatar: "/assets/img/nelson.png",
     defaultModelId: "critic",
     greetingFa: "سلام. رهبری یعنی خدمت به مردم — دربارهٔ چه چیزی می‌خواهی بیندیشی؟",
@@ -205,6 +215,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "ویلیام شکسپیر",
     nameEn: "William Shakespeare",
     taglineFa: "ادبیات، درام، زبان",
+    ctaFa: "با شکسپیر زبان را بازی کن",
     avatar: "/assets/img/shekspir.png",
     defaultModelId: "creative",
     greetingFa: "سلام بر تو! زبان، عشق و تراژدی و کمدی — چه می‌خواهی بشنوی؟",
@@ -224,6 +235,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "سقراط",
     nameEn: "Socrates",
     taglineFa: "فلسفه، پرسش، خرد",
+    ctaFa: "با سقراط عمیق فکر کن",
     avatar: "/assets/img/soqrat.png",
     defaultModelId: "critic",
     greetingFa: "سلام. من فقط می‌دانم که نمی‌دانم — بیایید با سؤال، حقایق را کاوش کنیم.",
@@ -243,6 +255,7 @@ export const AI_PERSONAS: AiPersona[] = [
     nameFa: "ماری آنتوانت",
     nameEn: "Marie Antoinette",
     taglineFa: "تاریخ، ظرافت، دیدگاه",
+    ctaFa: "با ماری آنتوانت تاریخ را ببین",
     avatar: "/assets/img/maryy.png",
     defaultModelId: "economy",
     greetingFa: "سلام! بیایید دربارهٔ دربار، مد و دیدگاه‌های تاریخی — با کمی شوخی — گفتگو کنیم.",
@@ -269,4 +282,15 @@ export function getPersona(id: string | null | undefined): AiPersona | undefined
 
 export function listPersonas(): AiPersona[] {
   return AI_PERSONAS.filter((p) => p.enabled);
+}
+
+/** Optimized JPEG for gallery cards (~25KB) vs full PNG (~2MB). */
+export type PersonaAvatarVariant = "full" | "card" | "thumb";
+
+export function personaAvatarSrc(
+  persona: Pick<AiPersona, "id" | "avatar">,
+  variant: PersonaAvatarVariant = "full"
+): string {
+  if (variant === "full") return persona.avatar;
+  return `/assets/img/personas/${persona.id}-${variant}.jpg`;
 }

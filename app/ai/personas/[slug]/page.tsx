@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    keywords: [`چت با ${persona.nameFa}`, "شخصیت AI", "Character.ai فارسی", persona.nameFa],
+    keywords: [`چت با ${persona.nameFa}`, "شخصیت AI", "شخصیت‌های هوشمند فارسی", persona.nameFa],
     alternates: { canonical: `/ai/personas/${persona.id}` },
     openGraph: {
       title,

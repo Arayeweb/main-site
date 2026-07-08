@@ -872,6 +872,11 @@
   margin: 0;
 }
 
+.ar-personas-lede {
+  max-width: 520px;
+  margin-inline: auto;
+}
+
 .ar-persona-disclaimer {
   font-size: 12px;
   color: var(--ar-text3);
@@ -921,11 +926,14 @@
   text-decoration: none;
   color: inherit;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 }
 
 .ar-persona-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--ar-shadow-soft, 0 8px 24px rgba(0, 0, 0, 0.08));
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.14),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
 }
 
 .ar-persona-card:focus-visible {
@@ -934,19 +942,34 @@
 }
 
 .ar-persona-card-img {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--ar-card);
-  padding: 12px;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1c1c24 0%, #0d0d12 100%);
+  padding: 0;
+}
+
+.ar-persona-card-img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 35%, rgba(0, 0, 0, 0.62) 100%);
+  pointer-events: none;
 }
 
 .ar-persona-card-img img {
   width: 100%;
-  height: auto;
-  max-width: 140px;
-  object-fit: contain;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center 18%;
+  filter: saturate(0.82) contrast(1.06) brightness(0.94);
+  transition: transform 0.3s ease, filter 0.3s ease, opacity 0.25s ease;
+}
+
+.ar-persona-card:hover .ar-persona-card-img img {
+  transform: scale(1.04);
+  filter: saturate(0.88) contrast(1.08) brightness(0.98);
 }
 
 .ar-persona-card-body {
@@ -973,10 +996,18 @@
 }
 
 .ar-persona-card-cta {
-  margin-top: 8px;
-  font-size: 12px;
+  margin-top: 10px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ar-accent-ink);
+  line-height: 1.45;
+}
+
+.ar-persona-card-legal {
+  margin-top: 6px;
+  font-size: 10px;
+  line-height: 1.55;
+  color: var(--ar-text3);
 }
 
 .ar-persona-chat {

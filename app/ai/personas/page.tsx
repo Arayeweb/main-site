@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import PersonasGalleryPage from "./PersonasGalleryPage";
 
 export const metadata: Metadata = {
-  title: "شخصیت‌های مشهور | آرایه AI",
+  title: "شخصیت‌های هوشمند | آرایه AI",
   description:
-    "با ایلان ماسک، رونالدو، اینشتین و ۹ شخصیت دیگر گفتگو کن — شبیه‌سازی AI به فارسی، بدون VPN.",
+    "با ذهن شبیه‌سازی‌شده چهره‌های بزرگ گفتگو کن — برای یادگیری، ایده‌گیری و تصمیم‌سازی به فارسی، بدون VPN.",
 };
 
 export default function PersonasPage() {

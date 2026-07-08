@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { listPersonas } from "@/lib/aiPersonas";
+import PersonaImage from "./PersonaImage";
 
 /** ردیف avatar شخصیت‌ها روی home — discovery سریع */
 export default function PersonaHomeRow({ className = "" }: { className?: string }) {
@@ -13,8 +14,7 @@ export default function PersonaHomeRow({ className = "" }: { className?: string 
       <div className="ar-persona-home-track">
         {featured.map((p) => (
           <Link key={p.id} href={`/ai/personas/${p.id}`} className="ar-persona-home-chip">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.avatar} alt="" width={40} height={40} loading="lazy" />
+            <PersonaImage persona={p} variant="thumb" className="ar-persona-home-chip-img" />
             <span>{p.nameFa}</span>
           </Link>
         ))}

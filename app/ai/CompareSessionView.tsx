@@ -122,7 +122,7 @@ export default function CompareSessionView({
   const [copiedShare, setCopiedShare] = useState(false);
 
   const canFollowUp =
-    !!conversationId && !!modelAId && !!modelBId && !bootstrapPrompt && !streaming && !loading;
+    !!conversationId && !!modelAId && !!modelBId && !streaming && !loading;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });

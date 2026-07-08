@@ -198,12 +198,6 @@ export default function ArenaShell({
   const isChatActive =
     (isAiHomePath(pathname) && (!homeMode || homeMode === "direct")) ||
     activeRunItem?.tier === "direct";
-  const isCompareActive =
-    (isAiHomePath(pathname) && homeMode === "side_by_side") ||
-    activeRunItem?.tier === "side_by_side";
-  const isCouncilActive =
-    (isAiHomePath(pathname) && homeMode === "battle") ||
-    activeRunItem?.tier === "council";
   const isPricingActive = pathname.startsWith("/ai/pricing");
   const isSettingsActive =
     settingsOpen ||
@@ -256,22 +250,6 @@ export default function ArenaShell({
             >
               <IconChat size={14} />
               <span className="ar-side-nav-item-text">چت AI</span>
-            </Link>
-            <Link
-              href="/ai?mode=side_by_side"
-              className={`ar-side-nav-item${isCompareActive ? " active" : ""}`}
-              onClick={closeDrawer}
-            >
-              <IconColumns size={14} />
-              <span className="ar-side-nav-item-text">مقایسه مدل‌ها</span>
-            </Link>
-            <Link
-              href="/ai?mode=battle"
-              className={`ar-side-nav-item${isCouncilActive ? " active" : ""}`}
-              onClick={closeDrawer}
-            >
-              <IconSpark size={14} />
-              <span className="ar-side-nav-item-text">همفکری AIها</span>
             </Link>
           </nav>
 

@@ -1146,9 +1146,12 @@ a.ar-composer-tool-btn {
   font-size: 12px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.ar-persona-home-chip img {
+.ar-persona-home-chip img,
+.ar-persona-home-chip-img {
   border-radius: 50%;
   object-fit: cover;
+  width: 40px;
+  height: 40px;
 }
 .ar-persona-home-chip:hover {
   border-color: var(--ar-border2);

@@ -40,7 +40,7 @@ export const AI_PUBLIC_ROUTES: AiRouteCase[] = [
   { path: "/ai", expect: /یک سؤال/, kind: "heading" },
   { path: "/ai/pricing", expect: /Starter|استارتر/ },
   { path: "/ai/features", expect: /چند مدل AI/, kind: "heading" },
-  { path: "/ai/personas", expect: /شخصیت‌های مشهور/, kind: "heading" },
+  { path: "/ai/personas", expect: /چهره‌های بزرگ/, kind: "heading" },
   { path: "/ai/personas/elon-musk", expect: /ایلان ماسک/, kind: "heading" },
   { path: "/ai/image", expect: "استودیو تصویر", kind: "heading" },
   { path: "/ai/video", expect: "استودیو ویدیو", kind: "heading" },
