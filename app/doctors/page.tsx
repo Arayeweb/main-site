@@ -15,7 +15,7 @@ import DoctorsChatWidget from "@/components/doctors/DoctorsChatWidget";
 import { doctorFaq, doctorPackages } from "@/lib/doctorsData";
 
 export const metadata: Metadata = {
-  title: "طراحی سایت و نوبت‌دهی آنلاین برای پزشکان | از ۱۴/۹ میلیون تومان — آرایه",
+  title: "طراحی سایت و نوبت‌دهی آنلاین برای پزشکان | از ۳۰ میلیون تومان — آرایه",
   description:
     "سایت بیمارآور برای مطب و کلینیک: نوبت‌دهی آنلاین، چت‌بات پاسخگوی بیماران، دامنه، سرور و درگاه پرداخت — کلید تحویل. قیمت شفاف، پرداخت آنلاین امن و تحویل نسخه اول در ۲ روز.",
   alternates: {

@@ -13,7 +13,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 // پکیج‌های پزشکان — مبلغ پرداخت آنلاین، پیش‌پرداخت رزرو است (تومان)
 // باید با doctorPackages در lib/doctorsData.ts هماهنگ بماند.
 const DOCTOR_PACKAGES: Record<string, { name: string; deposit: number; price: number }> = {
-  matab: { name: "مطب", deposit: 2_900_000, price: 14_900_000 },
+  matab: { name: "مطب", deposit: 2_900_000, price: 30_000_000 },
   clinic: { name: "کلینیک", deposit: 4_900_000, price: 29_900_000 },
   center: { name: "مرکز درمانی", deposit: 9_900_000, price: 59_000_000 },
 };

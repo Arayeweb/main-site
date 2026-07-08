@@ -210,9 +210,11 @@ export default function DoctorsPackagesForm() {
                 <p className="mt-1.5 text-[13px] leading-relaxed text-navy-500">{p.description}</p>
 
                 <div className="mt-4">
-                  <span className="block text-xs text-navy-300 line-through">
-                    {formatToman(p.oldPrice)} تومان
-                  </span>
+                  {p.oldPrice > p.price ? (
+                    <span className="block text-xs text-navy-300 line-through">
+                      {formatToman(p.oldPrice)} تومان
+                    </span>
+                  ) : null}
                   <span className="text-2xl font-extrabold text-sky-600">
                     {formatToman(p.price)}
                     <small className="mr-1 text-xs font-medium text-navy-400">تومان</small>

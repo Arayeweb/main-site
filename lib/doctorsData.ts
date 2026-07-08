@@ -21,8 +21,8 @@ export const doctorPackages: DoctorPackage[] = [
     key: "matab",
     name: "مطب",
     tagline: "برای پزشک انفرادی",
-    price: 14_900_000,
-    oldPrice: 18_900_000,
+    price: 30_000_000,
+    oldPrice: 30_000_000,
     deposit: 2_900_000,
     description: "حضور آنلاین حرفه‌ای برای مطب تک‌پزشک؛ سایت تخصصی + نوبت‌دهی آنلاین، کلید تحویل.",
     features: [
