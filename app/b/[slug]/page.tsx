@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BizcardChatWidget from "@/components/bizcard/BizcardChatWidget";
 import { fetchActiveBizcardBySlug, type BizcardRow } from "@/lib/bizcardDb";
@@ -5,6 +6,8 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { normalizeReactStyle } from "@/lib/style";
 
 export const dynamic = "force-dynamic";
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com").replace(/\/$/, "");
 
 type Bizcard = BizcardRow;
 
@@ -19,19 +22,44 @@ const THEMES: Record<string, { brand: string; deep: string }> = {
   slate:  { brand: "#475569", deep: "#334155" },
 };
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const slug = (params.slug || "").toLowerCase().trim();
   const supabase = getSupabaseAdmin();
   const { data } = await supabase
     .from("bizcards")
-    .select("business_name, category")
-    .eq("slug", params.slug)
+    .select("business_name, category, logo_url")
+    .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
   if (!data) return { title: "کارت ویزیت" };
+
+  const title = `${data.business_name} — کارت ویزیت آنلاین`;
+  const description = data.category ?? `کارت ویزیت دیجیتال ${data.business_name}`;
+  const pageUrl = `${SITE_URL}/b/${slug}`;
+  const ogImage = data.logo_url
+    ? { url: data.logo_url, alt: data.business_name }
+    : { url: `/b/${slug}/opengraph-image`, width: 1200, height: 630, alt: data.business_name };
+
   return {
-    title: `${data.business_name} — کارت ویزیت آنلاین`,
-    description: data.category ?? undefined,
+    title,
+    description,
     robots: { index: false },
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      title: data.business_name,
+      description,
+      url: pageUrl,
+      type: "website",
+      locale: "fa_IR",
+      siteName: data.business_name,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: data.business_name,
+      description,
+      images: [ogImage.url],
+    },
   };
 }
 
