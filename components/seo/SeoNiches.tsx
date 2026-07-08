@@ -17,6 +17,27 @@ export default function SeoNiches() {
             </article>
           ))}
         </div>
+
+        <div className="mt-8 rounded-2xl border border-navy-100 bg-navy-50/40 p-5">
+          <h3 className="text-sm font-bold text-navy-900">لندینگ‌های تخصصی برای پزشکان و کلینیک‌ها</h3>
+          <p className="mt-1 text-sm text-navy-600">
+            اگر می‌خواهید مسیر جذب مراجعه‌کننده برای این دو گروه دقیق‌تر باشد، این صفحات را ببینید.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a
+              href="/seo/doctor"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-navy-200 bg-white px-4 py-2 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
+            >
+              سئو سایت پزشکان
+            </a>
+            <a
+              href="/seo/clinic"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-navy-200 bg-white px-4 py-2 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
+            >
+              سئو کلینیک
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   );

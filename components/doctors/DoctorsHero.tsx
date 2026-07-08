@@ -111,6 +111,26 @@ export default function DoctorsHero() {
           ))}
         </div>
 
+        <div className="mt-6 text-center">
+          <p className="text-sm font-medium text-navy-600">
+            اگر دنبال مسیر تخصصی سئو یا طراحی سایت برای پزشکان هستید:
+          </p>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="/seo/doctor"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-navy-200 bg-white px-4 py-2 text-sm font-bold text-navy-700 transition-colors hover:border-sky-300 hover:bg-white hover:text-sky-700"
+            >
+              سئو سایت پزشکان
+            </a>
+            <a
+              href="/website/doctor"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-navy-200 bg-white px-4 py-2 text-sm font-bold text-navy-700 transition-colors hover:border-sky-300 hover:bg-white hover:text-sky-700"
+            >
+              طراحی سایت پزشک
+            </a>
+          </div>
+        </div>
+
         {/* Lead capture — primary conversion */}
         <div className="mx-auto mt-8 w-full max-w-lg">
           {success ? (

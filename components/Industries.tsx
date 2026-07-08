@@ -59,6 +59,35 @@ export default function Industries() {
                 نمونه مرتبط: {current.relatedProject}
               </p>
             ) : null}
+
+            {current.title === "پزشکان و کلینیک‌ها" ? (
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a
+                  href="/seo/doctor"
+                  className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-4 py-2 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
+                >
+                  سئو سایت پزشکان
+                </a>
+                <a
+                  href="/website/doctor"
+                  className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-4 py-2 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
+                >
+                  طراحی سایت پزشک
+                </a>
+                <a
+                  href="/seo/clinic"
+                  className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-4 py-2 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
+                >
+                  سئو کلینیک
+                </a>
+                <a
+                  href="/website/clinic"
+                  className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-4 py-2 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
+                >
+                  طراحی سایت کلینیک
+                </a>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

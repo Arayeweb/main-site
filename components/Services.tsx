@@ -15,6 +15,22 @@ export default function Services() {
           subtitle="از طراحی محصول تا توسعه فنی، اجرا و پشتیبانی — همه در یک تیم."
         />
 
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[13px] text-navy-600">
+          <span className="font-bold text-navy-900">مسیر آماده برای:</span>
+          <a href="/seo/doctor" className="hover:text-teal-700">
+            سئو سایت پزشکان
+          </a>
+          <a href="/website/doctor" className="hover:text-teal-700">
+            طراحی سایت پزشک
+          </a>
+          <a href="/seo/clinic" className="hover:text-teal-700">
+            سئو کلینیک
+          </a>
+          <a href="/website/clinic" className="hover:text-teal-700">
+            طراحی سایت کلینیک
+          </a>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-3">
           <div className="card group relative overflow-hidden border-brand-500/30 bg-gradient-to-br from-white to-brand-50/40 ring-1 ring-brand-200 lg:col-span-2 lg:row-span-2">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-brand-200 bg-brand-50 text-brand-600">
