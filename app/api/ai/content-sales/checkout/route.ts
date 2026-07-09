@@ -6,12 +6,11 @@ import { generateAccessToken } from "@/lib/contentSalesAccess";
 import { findActiveContentSalesOrder, maskPhone } from "@/lib/contentSalesOrder";
 import { getAISession } from "@/lib/aiAuth";
 import { normalizeContact } from "@/lib/validateContact";
+import { getPaymentCallbackUrl } from "@/lib/paymentCallback";
 import { zibalRequest } from "@/lib/zibal";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
 function str(v: unknown, max = 200): string | null {
   if (v === undefined || v === null) return null;
@@ -88,7 +87,7 @@ export async function POST(req: NextRequest) {
 
   const zibal = await zibalRequest({
     amountToman: CONTENT_SALES_LAUNCH_PRICE_TOMAN,
-    callbackUrl: `${SITE_URL}/api/ai/content-sales/verify`,
+    callbackUrl: getPaymentCallbackUrl("content-sales", "/api/ai/content-sales/verify"),
     description: "Araaye AI Content & Sales Bundle",
     orderId,
     mobile: phone,

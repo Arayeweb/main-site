@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { GOOGLESABT_PACKAGES, type GooglesabtPackageKey } from "@/lib/googlesabtData";
+import { getPaymentCallbackUrl } from "@/lib/paymentCallback";
+import { zibalRequest } from "@/lib/zibal";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const ZIBAL_MERCHANT = process.env.ZIBAL_MERCHANT || "zibal";
-const ZIBAL_API = "https://api.zibal.ir/v1";
-const ZIBAL_GATEWAY = "https://gateway.zibal.ir/start";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
 function str(v: unknown, max = 500): string | null {
   if (v === undefined || v === null) return null;
@@ -39,37 +36,26 @@ export async function POST(req: NextRequest) {
   const businessName = str(body.businessName, 200) || str(body.name, 200) || "";
   const contact = str(body.contact, 200) || "";
 
-  const callbackUrl = `${SITE_URL}/api/googlesabt/verify`;
+  const callbackUrl = getPaymentCallbackUrl("googlesabt", "/api/googlesabt/verify");
 
   try {
-    const res = await fetch(`${ZIBAL_API}/request`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        merchant: ZIBAL_MERCHANT,
-        amount,
-        callbackUrl,
-        description: `آرایه ثبت گوگل - پیش‌پرداخت پکیج ${pkg.name} - ${businessName}`,
-        mobile: contact,
-        orderId: `googlesabt-${pkgKey}-${Date.now()}`,
-      }),
+    const zibal = await zibalRequest({
+      amountToman: amount,
+      callbackUrl,
+      description: `آرایه ثبت گوگل - پیش‌پرداخت پکیج ${pkg.name} - ${businessName}`,
+      mobile: contact,
+      orderId: `googlesabt-${pkgKey}-${Date.now()}`,
     });
 
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data) {
-      console.error("[googlesabt/checkout] zibal request error:", res.status, data);
-      return NextResponse.json({ ok: false, error: "gateway_error" }, { status: 502 });
-    }
-
-    if (data.result !== 100 || !data.trackId) {
-      console.error("[googlesabt/checkout] zibal rejected:", data);
+    if (!zibal.ok || !zibal.trackId || !zibal.redirectUrl) {
+      console.error("[googlesabt/checkout] zibal rejected:", zibal.error);
       return NextResponse.json(
-        { ok: false, error: "gateway_rejected", detail: data.message || data.result },
+        { ok: false, error: "gateway_rejected", detail: zibal.error },
         { status: 400 }
       );
     }
 
-    const trackId = String(data.trackId);
+    const trackId = zibal.trackId;
 
     try {
       const supabase = getSupabaseAdmin();
@@ -100,8 +86,7 @@ export async function POST(req: NextRequest) {
       console.error("[googlesabt/checkout] failed to save lead:", e);
     }
 
-    const redirectUrl = `${ZIBAL_GATEWAY}/${trackId}`;
-    return NextResponse.json({ ok: true, redirectUrl, trackId });
+    return NextResponse.json({ ok: true, redirectUrl: zibal.redirectUrl, trackId });
   } catch (e) {
     console.error("[googlesabt/checkout] error:", e);
     return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });

@@ -424,6 +424,7 @@ export const footerColumns: FooterColumn[] = [
       { label: "کسب‌وکارها", url: "/#solutions" },
       { label: "Araaye SEO", url: "/seo" },
       { label: "Araaye AI", url: "/ai" },
+      { label: "پرامپت‌های آماده هوش مصنوعی", url: "/prompts" },
       { label: "سئو سایت پزشکان", url: "/seo/doctor" },
       { label: "سئو کلینیک", url: "/seo/clinic" },
       { label: "طراحی سایت پزشک", url: "/website/doctor" },

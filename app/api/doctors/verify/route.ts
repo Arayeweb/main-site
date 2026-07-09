@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { paymentSiteUrl } from "@/lib/paymentCallback";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { resolveZibalVerify } from "@/lib/zibal";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ZIBAL_MERCHANT = process.env.ZIBAL_MERCHANT || "zibal";
-const ZIBAL_API = "https://api.zibal.ir/v1";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
+const SITE_URL = paymentSiteUrl;
 
 function str(v: unknown, max = 500): string | null {
   if (v === undefined || v === null) return null;
@@ -14,12 +14,11 @@ function str(v: unknown, max = 500): string | null {
   return s ? s.slice(0, max) : null;
 }
 
-// GET — بازگشت کاربر از درگاه زیبال
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const trackId = sp.get("trackId");
-  const status = sp.get("status"); // "OK" or "NOK"
-  const success = sp.get("success"); // "true" or "false"
+  const status = sp.get("status");
+  const success = sp.get("success");
 
   if (!trackId) {
     return NextResponse.redirect(`${SITE_URL}/doctors?payment=error`);
@@ -30,47 +29,35 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${ZIBAL_API}/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ merchant: ZIBAL_MERCHANT, trackId }),
-    });
-
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data) {
-      console.error("[doctors/verify] zibal verify error:", res.status, data);
-      return NextResponse.redirect(`${SITE_URL}/doctors?payment=error&trackId=${trackId}`);
-    }
-
-    // result 100 = verified, 201 = already verified
-    if (data.result === 100 || data.result === 201) {
-      try {
-        const supabase = getSupabaseAdmin();
-        await supabase.from("leads").insert({
-          source: "doctors_payment_confirmed",
-          page: "doctors",
-          goal: "doctor_site",
-          plan: str(data.orderId, 60),
-          budget: String(data.amount || 0),
-          detail: `zibal_trackId: ${trackId} | status: paid | amount: ${data.amount}`,
-          raw: {
-            trackId,
-            status: "paid",
-            amount: data.amount,
-            orderId: data.orderId,
-            verifiedAt: new Date().toISOString(),
-          },
-          consent: true,
-        });
-      } catch (e) {
-        console.error("[doctors/verify] failed to save confirmation lead:", e);
-      }
-
-      return NextResponse.redirect(`${SITE_URL}/doctors?payment=success&trackId=${trackId}`);
-    } else {
-      console.error("[doctors/verify] zibal verify failed:", data);
+    const verify = await resolveZibalVerify(trackId, sp);
+    if (!verify.ok || !verify.paid) {
+      console.error("[doctors/verify] zibal verify failed:", verify);
       return NextResponse.redirect(`${SITE_URL}/doctors?payment=failed&trackId=${trackId}`);
     }
+
+    try {
+      const supabase = getSupabaseAdmin();
+      await supabase.from("leads").insert({
+        source: "doctors_payment_confirmed",
+        page: "doctors",
+        goal: "doctor_site",
+        plan: str(verify.orderId, 60),
+        budget: String(verify.amount || 0),
+        detail: `zibal_trackId: ${trackId} | status: paid | amount: ${verify.amount}`,
+        raw: {
+          trackId,
+          status: "paid",
+          amount: verify.amount,
+          orderId: verify.orderId,
+          verifiedAt: new Date().toISOString(),
+        },
+        consent: true,
+      });
+    } catch (e) {
+      console.error("[doctors/verify] failed to save confirmation lead:", e);
+    }
+
+    return NextResponse.redirect(`${SITE_URL}/doctors?payment=success&trackId=${trackId}`);
   } catch (e) {
     console.error("[doctors/verify] error:", e);
     return NextResponse.redirect(`${SITE_URL}/doctors?payment=error&trackId=${trackId}`);

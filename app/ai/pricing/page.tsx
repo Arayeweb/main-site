@@ -236,6 +236,9 @@ export default function PricingPage() {
             آرایه <span>AI</span>
           </Link>
           <div className="ar-nav-links">
+            <Link href="/prompts" className="ar-btn ar-btn-ghost ar-btn-sm">
+              پرامپت‌های آماده
+            </Link>
             <Link href="/ai" className="ar-btn ar-btn-primary ar-btn-sm">
               شروع گفتگو
             </Link>

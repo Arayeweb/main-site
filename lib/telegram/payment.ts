@@ -3,8 +3,9 @@
 // =========================================================
 
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { zibalRequest, zibalVerify } from "@/lib/zibal";
-import { getTelegramConfig, SITE_URL } from "./config";
+import { getPaymentCallbackUrl } from "@/lib/paymentCallback";
+import { resolveZibalVerify, zibalRequest } from "@/lib/zibal";
+import { getTelegramConfig } from "./config";
 import { getTelegramPackage } from "./packages";
 import { ensureAraayeUser, linkAraayeUser } from "./accounts";
 import { trackEvent } from "./events";
@@ -48,7 +49,10 @@ export async function activatePaymentOrder(opts: {
       .eq("id", order.id);
   }
 
-  const callbackUrl = `${SITE_URL}/api/telegram/payment/zibal/callback`;
+  const callbackUrl = getPaymentCallbackUrl(
+    "telegram",
+    "/api/telegram/payment/zibal/callback"
+  );
   const zibal = await zibalRequest({
     amountToman: order.amount_toman as number,
     callbackUrl,
@@ -111,7 +115,10 @@ export async function createPaymentOrder(opts: {
     return { ok: false, error: "db_error" };
   }
 
-  const callbackUrl = `${SITE_URL}/api/telegram/payment/zibal/callback`;
+  const callbackUrl = getPaymentCallbackUrl(
+    "telegram",
+    "/api/telegram/payment/zibal/callback"
+  );
   const zibal = await zibalRequest({
     amountToman: pkg.priceToman,
     callbackUrl,
@@ -145,7 +152,8 @@ export async function createPaymentOrder(opts: {
 export async function settlePaymentByTrackId(
   trackId: string,
   status?: string | null,
-  success?: string | null
+  success?: string | null,
+  searchParams?: URLSearchParams
 ): Promise<{
   ok: boolean;
   telegramId?: number;
@@ -192,7 +200,9 @@ export async function settlePaymentByTrackId(
     return { ok: false, error: "payment_cancelled", telegramId };
   }
 
-  const verify = await zibalVerify(trackId);
+  const verify = searchParams
+    ? await resolveZibalVerify(trackId, searchParams)
+    : await resolveZibalVerify(trackId, new URLSearchParams());
   if (!verify.ok || !verify.paid) {
     await supabase
       .from("telegram_payment_orders")

@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const result = await settlePaymentByTrackId(trackId, status, success);
+  const result = await settlePaymentByTrackId(trackId, status, success, sp);
 
   const title = result.ok ? "پرداخت موفق" : "پرداخت ناموفق";
   const body = result.ok

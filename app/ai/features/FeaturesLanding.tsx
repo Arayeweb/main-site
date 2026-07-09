@@ -77,6 +77,7 @@ export default function FeaturesLanding() {
         <div className="feat-footer-links">
           <Link href="/ai">شروع چت</Link>
           <Link href="/ai/pricing">قیمت‌ها</Link>
+          <Link href="/prompts">پرامپت‌های آماده</Link>
           <Link href="/ai/support">پشتیبانی</Link>
           <Link href="/">درباره آرایه</Link>
         </div>

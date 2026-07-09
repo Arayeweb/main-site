@@ -425,6 +425,18 @@ export default function ArenaShell({
                   <span className="ar-side-nav-item-text">امکانات</span>
                 </Link>
                 <Link
+                  href="/prompts"
+                  className="ar-side-nav-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    closeDrawer();
+                  }}
+                >
+                  <IconGlobe size={14} />
+                  <span className="ar-side-nav-item-text">پرامپت‌های آماده</span>
+                </Link>
+                <Link
                   href="/"
                   className="ar-side-nav-item"
                   role="menuitem"

@@ -39,7 +39,10 @@ const CompareSessionView = dynamic(() => import("./CompareSessionView"), {
 const CouncilSessionView = dynamic(() => import("./CouncilSessionView"), {
   loading: () => <ArenaChatSkeleton />,
 });
-import { consumeContentSalesBootstrapPrompt } from "@/lib/contentSalesOpenInAi";
+import {
+  CS_BOOTSTRAP_PROMPT_KEY,
+  consumeContentSalesBootstrapPrompt,
+} from "@/lib/contentSalesOpenInAi";
 import {
   AI_NEW_CHAT_EVENT,
   AI_ANALYZE_TEXT_EVENT,
@@ -221,7 +224,18 @@ export default function ArenaHomePage({
       setShowSheet(true);
       setTimeout(() => phoneRef.current?.focus(), 150);
     }
-    if (p || params.get("login")) window.history.replaceState({}, "", "/ai");
+
+    // Prefill from /prompts "Run in Araaye AI" links (?prompt=...)
+    const urlPrompt = params.get("prompt");
+    if (urlPrompt) {
+      try {
+        sessionStorage.setItem(CS_BOOTSTRAP_PROMPT_KEY, urlPrompt);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (p || params.get("login") || urlPrompt) window.history.replaceState({}, "", "/ai");
 
     const urlMode = params.get("mode");
     const urlModeValid =

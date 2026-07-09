@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { paymentSiteUrl } from "@/lib/paymentCallback";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { resolveZibalVerify, zibalVerify } from "@/lib/zibal";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ZIBAL_MERCHANT = process.env.ZIBAL_MERCHANT || "zibal";
-const ZIBAL_API = "https://api.zibal.ir/v1";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
+const SITE_URL = paymentSiteUrl;
 
 function str(v: unknown, max = 500): string | null {
   if (v === undefined || v === null) return null;
@@ -30,47 +30,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${SITE_URL}/seo?payment=failed&trackId=${trackId}`);
   }
 
-  // Verify the transaction with Zibal
   try {
-    const res = await fetch(`${ZIBAL_API}/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        merchant: ZIBAL_MERCHANT,
-        trackId,
-      }),
-    });
-
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data) {
-      console.error("[seo/verify] zibal verify error:", res.status, data);
-      return NextResponse.redirect(`${SITE_URL}/seo?payment=error&trackId=${trackId}`);
-    }
-
-    // result 100 = verified, 201 = already verified, 102 = not found
-    if (data.result === 100 || data.result === 201) {
-      // Payment confirmed — update lead record
-      try {
-        const supabase = getSupabaseAdmin();
-        await supabase.from("leads").insert({
-          source: "seo_payment_confirmed",
-          page: "seo",
-          goal: "seo_service",
-          plan: str(data.orderId, 30),
-          budget: String(data.amount || 0),
-          detail: `zibal_trackId: ${trackId} | status: paid | amount: ${data.amount}`,
-          raw: { trackId, status: "paid", amount: data.amount, orderId: data.orderId, verifiedAt: new Date().toISOString() },
-          consent: true,
-        });
-      } catch (e) {
-        console.error("[seo/verify] failed to save confirmation lead:", e);
-      }
-
-      return NextResponse.redirect(`${SITE_URL}/seo?payment=success&trackId=${trackId}`);
-    } else {
-      console.error("[seo/verify] zibal verify failed:", data);
+    const verify = await resolveZibalVerify(trackId, sp);
+    if (!verify.ok || !verify.paid) {
+      console.error("[seo/verify] zibal verify failed:", verify);
       return NextResponse.redirect(`${SITE_URL}/seo?payment=failed&trackId=${trackId}`);
     }
+
+    const data = { amount: verify.amount, orderId: verify.orderId };
+    try {
+      const supabase = getSupabaseAdmin();
+      await supabase.from("leads").insert({
+        source: "seo_payment_confirmed",
+        page: "seo",
+        goal: "seo_service",
+        plan: str(data.orderId, 30),
+        budget: String(data.amount || 0),
+        detail: `zibal_trackId: ${trackId} | status: paid | amount: ${data.amount}`,
+        raw: { trackId, status: "paid", amount: data.amount, orderId: data.orderId, verifiedAt: new Date().toISOString() },
+        consent: true,
+      });
+    } catch (e) {
+      console.error("[seo/verify] failed to save confirmation lead:", e);
+    }
+
+    return NextResponse.redirect(`${SITE_URL}/seo?payment=success&trackId=${trackId}`);
   } catch (e) {
     console.error("[seo/verify] error:", e);
     return NextResponse.redirect(`${SITE_URL}/seo?payment=error&trackId=${trackId}`);
@@ -92,22 +76,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${ZIBAL_API}/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ merchant: ZIBAL_MERCHANT, trackId }),
-    });
-
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data) {
+    const verify = await zibalVerify(trackId);
+    if (!verify.ok) {
       return NextResponse.json({ ok: false, error: "gateway_error" }, { status: 502 });
     }
 
-    if (data.result === 100 || data.result === 201) {
-      return NextResponse.json({ ok: true, status: "paid", amount: data.amount, trackId });
-    } else {
-      return NextResponse.json({ ok: false, status: "not_paid", result: data.result });
+    if (verify.paid) {
+      return NextResponse.json({ ok: true, status: "paid", amount: verify.amount, trackId });
     }
+    return NextResponse.json({ ok: false, status: "not_paid", result: verify.result });
   } catch (e) {
     console.error("[seo/verify] POST error:", e);
     return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });

@@ -42,6 +42,16 @@ export function getUtmParams(): Record<string, string> {
     fromUrl.utm_source = src;
   }
 
+  // /prompts → /ai?source=prompts&promptSlug=resume
+  const source = params.get("source")?.trim();
+  if (source && !fromUrl.utm_source) {
+    fromUrl.utm_source = source;
+  }
+  const promptSlug = params.get("promptSlug")?.trim();
+  if (promptSlug && !fromUrl.utm_content) {
+    fromUrl.utm_content = `prompt:${promptSlug}`;
+  }
+
   // ?code=PAGEA20 → ذخیره برای pricing/checkout
   const promoCode = params.get("code")?.trim();
   if (promoCode) {

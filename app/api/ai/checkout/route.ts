@@ -4,12 +4,11 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 import { AI_PACKAGES } from "@/lib/aiPackages";
 import { resolveCode } from "@/lib/aiPromo";
+import { getPaymentCallbackUrl } from "@/lib/paymentCallback";
 import { zibalRequest } from "@/lib/zibal";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
 export async function POST(req: NextRequest) {
   const session = getAISession(req);
@@ -58,7 +57,7 @@ export async function POST(req: NextRequest) {
 
   const zibal = await zibalRequest({
     amountToman: finalAmount,
-    callbackUrl: `${SITE_URL}/api/ai/verify`,
+    callbackUrl: getPaymentCallbackUrl("ai", "/api/ai/verify"),
     description: `آرایه Arena — پکیج ${pkg.name} (${pkg.credits} کردیت)`,
     orderId,
     mobile: (user.phone as string) || undefined,

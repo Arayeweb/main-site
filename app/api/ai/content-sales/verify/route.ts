@@ -3,13 +3,14 @@ import { noStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { attachContentSalesCookie } from "@/lib/contentSalesAccess";
 import { provisionContentSalesAI } from "@/lib/contentSalesProvision";
+import { paymentSiteUrl } from "@/lib/paymentCallback";
 import { signAIToken, AI_COOKIE } from "@/lib/aiAuth";
-import { zibalVerify } from "@/lib/zibal";
+import { resolveZibalVerify } from "@/lib/zibal";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
+const SITE_URL = paymentSiteUrl;
 const AMOUNT_TOLERANCE = 10;
 
 function redirectNoStore(url: string) {
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
     return redirectNoStore(`${SITE_URL}/ai/content-sales?payment=failed`);
   }
 
-  const verify = await zibalVerify(trackId);
+  const verify = await resolveZibalVerify(trackId, sp);
   if (!verify.ok || !verify.paid) {
     await supabase.from("content_sales_orders").update({ status: "failed" }).eq("id", order.id);
     return redirectNoStore(`${SITE_URL}/ai/content-sales?payment=failed`);

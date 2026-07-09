@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { getPaymentCallbackUrl } from "@/lib/paymentCallback";
 import { getSeoCheckoutPackages } from "@/lib/seoData";
+import { zibalRequest } from "@/lib/zibal";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// Zibal merchant config — via env vars
-const ZIBAL_MERCHANT = process.env.ZIBAL_MERCHANT || "zibal";
-const ZIBAL_API = "https://api.zibal.ir/v1";
-const ZIBAL_GATEWAY = "https://gateway.zibal.ir/start";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
 // Valid SEO packages with their prices (toman) — synced from lib/seoData.ts
 const SEO_PACKAGES = getSeoCheckoutPackages();
@@ -45,36 +41,26 @@ export async function POST(req: NextRequest) {
   const contact = str(body.contact, 200) || "";
   const website = str(body.website, 500) || "";
 
-  const callbackUrl = `${SITE_URL}/api/seo/verify`;
+  const callbackUrl = getPaymentCallbackUrl("seo", "/api/seo/verify");
 
-  // Create transaction in Zibal
   try {
-    const res = await fetch(`${ZIBAL_API}/request`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        merchant: ZIBAL_MERCHANT,
-        amount,
-        callbackUrl,
-        description: `سئو آرایه - پکیج ${pkg.name} - ${name}`,
-        mobile: contact, // optional — Zibal can auto-fill
-        orderId: `seo-${pkgKey}-${Date.now()}`,
-      }),
+    const zibal = await zibalRequest({
+      amountToman: amount,
+      callbackUrl,
+      description: `سئو آرایه - پکیج ${pkg.name} - ${name}`,
+      mobile: contact,
+      orderId: `seo-${pkgKey}-${Date.now()}`,
     });
 
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data) {
-      console.error("[seo/checkout] zibal request error:", res.status, data);
-      return NextResponse.json({ ok: false, error: "gateway_error" }, { status: 502 });
+    if (!zibal.ok || !zibal.trackId || !zibal.redirectUrl) {
+      console.error("[seo/checkout] zibal rejected:", zibal.error);
+      return NextResponse.json(
+        { ok: false, error: "gateway_rejected", detail: zibal.error },
+        { status: 400 }
+      );
     }
 
-    // Zibal returns { result: 100, trackId: 12345, ... }
-    if (data.result !== 100 || !data.trackId) {
-      console.error("[seo/checkout] zibal rejected:", data);
-      return NextResponse.json({ ok: false, error: "gateway_rejected", detail: data.message || data.result }, { status: 400 });
-    }
-
-    const trackId = String(data.trackId);
+    const trackId = zibal.trackId;
 
     // Save transaction record to Supabase for reconciliation
     try {
@@ -96,8 +82,7 @@ export async function POST(req: NextRequest) {
       // Don't fail the checkout if lead save fails — payment is the priority
     }
 
-    const redirectUrl = `${ZIBAL_GATEWAY}/${trackId}`;
-    return NextResponse.json({ ok: true, redirectUrl, trackId });
+    return NextResponse.json({ ok: true, redirectUrl: zibal.redirectUrl, trackId });
   } catch (e) {
     console.error("[seo/checkout] error:", e);
     return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });

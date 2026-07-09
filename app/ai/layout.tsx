@@ -9,6 +9,14 @@ export const metadata: Metadata = {
   title: "آرایه AI | یک اکانت برای چند AI — فارسی و بدون VPN",
   description:
     "ChatGPT، Claude، Gemini و DeepSeek در یک حساب — بدون VPN و کارت خارجی. چت، مقایسه مدل‌ها و تولید محتوا.",
+  alternates: { canonical: "/ai" },
+  openGraph: {
+    title: "آرایه AI | یک اکانت برای چند AI — فارسی و بدون VPN",
+    description:
+      "ChatGPT، Claude، Gemini و DeepSeek در یک حساب — بدون VPN و کارت خارجی.",
+    url: "/ai",
+    locale: "fa_IR",
+  },
   manifest: "/ai.webmanifest",
   appleWebApp: {
     capable: true,

@@ -18,6 +18,27 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "arayeweb.com" }],
+        destination: "https://araaye.com/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.araaye.com" }],
+        destination: "https://araaye.com/:path*",
+        permanent: true,
+      },
+      { source: "/index.html", destination: "/", permanent: true },
+      { source: "/seo.html", destination: "/seo", permanent: true },
+      { source: "/doctors.html", destination: "/doctors", permanent: true },
+      { source: "/bizcard.html", destination: "/bizcard", permanent: true },
+      { source: "/googlesabt.html", destination: "/googlesabt", permanent: true },
+    ];
+  },
   async rewrites() {
     // صفحات استاتیک از public/ سرو می‌شوند؛ این rewriteها مسیرهای تمیز می‌سازند.
     return [

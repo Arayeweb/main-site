@@ -3,11 +3,12 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import PublicOnlyChrome from "@/components/PublicOnlyChrome";
 import SitePageviewTracker from "@/components/analytics/SitePageviewTracker";
+import { SITE_URL, canonicalUrl } from "@/lib/siteUrl";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://arayeweb.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "آرایه | توسعه نرم‌افزار اختصاصی، وب‌اپلیکیشن و هوش مصنوعی",
     template: "%s | آرایه",
@@ -26,14 +27,14 @@ export const metadata: Metadata = {
     "آرایه",
   ],
   alternates: {
-    canonical: "https://arayeweb.com",
+    canonical: canonicalUrl("/"),
   },
   openGraph: {
     title: "آرایه | توسعه نرم‌افزار اختصاصی، وب‌اپلیکیشن و هوش مصنوعی",
     description:
       "آرایه به شرکت‌ها کمک می‌کند سایت، وب‌اپلیکیشن، پنل مدیریتی، CRM، چت‌بات هوشمند و ابزارهای اختصاصی بسازند.",
     type: "website",
-    url: "https://arayeweb.com",
+    url: canonicalUrl("/"),
     locale: "fa_IR",
     siteName: "آرایه",
     images: [
