@@ -2,22 +2,16 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SeoHero from "@/components/seo/SeoHero";
-import SeoConnectionBridge from "@/components/seo/SeoConnectionBridge";
-import SeoProblem from "@/components/seo/SeoProblem";
-import SeoFlow from "@/components/seo/SeoFlow";
-import SeoCompareTable from "@/components/seo/SeoCompareTable";
-import SeoSystem from "@/components/seo/SeoSystem";
-import SeoFeatures from "@/components/seo/SeoFeatures";
-import SeoNiches from "@/components/seo/SeoNiches";
-import SeoProof from "@/components/seo/SeoProof";
-import SeoProcess from "@/components/seo/SeoProcess";
+import SeoCustomerQuotes from "@/components/seo/SeoCustomerQuotes";
+import SeoInitialAudit from "@/components/seo/SeoInitialAudit";
+import SeoCollaboration from "@/components/seo/SeoCollaboration";
 import SeoPackagesForm from "@/components/seo/SeoPackagesForm";
 import SeoFaq from "@/components/seo/SeoFaq";
 import SeoFinalCta from "@/components/seo/SeoFinalCta";
 import SeoExitIntent from "@/components/seo/SeoExitIntent";
 import SeoStickyCta from "@/components/seo/SeoStickyCta";
 import SeoChatWidget from "@/components/seo/SeoChatWidget";
-import { seoFaq } from "@/lib/seoData";
+import { seoFaq, seoFooterColumns } from "@/lib/seoData";
 
 export const metadata: Metadata = {
   title: "سئو برای لید و مشتری | سیستم سرچ تا لید — آرایه",
@@ -73,23 +67,17 @@ export default function SeoPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar tone="dark-hero" ctaHref="#lead-form" ctaLabel="مشاوره رایگان" />
+      <Navbar ctaHref="/free-seo-audit" ctaLabel="بررسی وضعیت در گوگل" />
       <main className="pb-20 sm:pb-0">
         <SeoHero />
-        <SeoConnectionBridge />
-        <SeoProblem />
-        <SeoFlow />
-        <SeoCompareTable />
-        <SeoSystem />
-        <SeoFeatures />
-        <SeoNiches />
-        <SeoProof />
-        <SeoProcess />
+        <SeoCustomerQuotes />
+        <SeoInitialAudit />
+        <SeoCollaboration />
         <SeoPackagesForm />
         <SeoFaq />
         <SeoFinalCta />
       </main>
-      <Footer />
+      <Footer columns={seoFooterColumns} />
       <SeoChatWidget />
       <SeoExitIntent />
       <SeoStickyCta />

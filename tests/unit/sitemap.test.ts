@@ -12,6 +12,7 @@ describe("sitemapRoutes", () => {
     expect(SITEMAP_PATHS).toContain("/seo");
     expect(SITEMAP_PATHS).toContain("/doctors");
     expect(SITEMAP_PATHS).toContain("/bizcard");
+    expect(SITEMAP_PATHS).toContain("/adready");
     expect(SITEMAP_PATHS).toContain("/googlesabt");
     expect(SITEMAP_PATHS).toContain("/seo/doctor");
     expect(SITEMAP_PATHS).toContain("/free-seo-audit");
@@ -50,6 +51,7 @@ describe("sitemapRoutes", () => {
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/seo`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/doctors`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/bizcard`);
+    expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/adready`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/googlesabt`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts/resume`);

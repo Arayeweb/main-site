@@ -189,6 +189,7 @@ export default function ArenaHomePage({
   const [password, setPassword] = useState("");
   const [authErr, setAuthErr] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [authRedirect, setAuthRedirect] = useState<string | null>(null);
   const [composerFlash, setComposerFlash] = useState(false);
   const [codeMode, setCodeMode] = useState(false);
   const [webMode, setWebMode] = useState(false);
@@ -224,6 +225,10 @@ export default function ArenaHomePage({
       setShowSheet(true);
       setTimeout(() => phoneRef.current?.focus(), 150);
     }
+    const next = params.get("next");
+    if (next?.startsWith("/") && !next.startsWith("//")) {
+      setAuthRedirect(next);
+    }
 
     // Prefill from /prompts "Run in Araaye AI" links (?prompt=...)
     const urlPrompt = params.get("prompt");
@@ -235,7 +240,9 @@ export default function ArenaHomePage({
       }
     }
 
-    if (p || params.get("login") || urlPrompt) window.history.replaceState({}, "", "/ai");
+    if (p || params.get("login") || urlPrompt || next) {
+      window.history.replaceState({}, "", "/ai");
+    }
 
     const urlMode = params.get("mode");
     const urlModeValid =
@@ -511,6 +518,11 @@ export default function ArenaHomePage({
       setShowSheet(false);
       setAuthBusy(false);
       window.dispatchEvent(new Event("ai:refresh"));
+
+      if (authRedirect) {
+        window.location.assign(authRedirect);
+        return;
+      }
 
       const q = pendingPrompt || prompt.trim();
       setPendingPrompt("");

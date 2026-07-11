@@ -1,4 +1,4 @@
-import { footerColumns } from "@/lib/homeData";
+import { footerColumns, type FooterColumn } from "@/lib/homeData";
 import { IconPhone, IconMail, IconInstagram, IconLinkedin } from "./icons";
 import Logo from "./Logo";
 
@@ -9,12 +9,22 @@ const socialIcons: Record<string, React.FC<{ size?: number; className?: string }
   "لینکدین": IconLinkedin,
 };
 
-export default function Footer() {
+type FooterProps = {
+  columns?: FooterColumn[];
+};
+
+export default function Footer({ columns = footerColumns }: FooterProps) {
+  const columnCount = columns.length;
+  const gridClass =
+    columnCount > 4
+      ? "grid gap-10 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4"
+      : "grid gap-10 sm:grid-cols-2 lg:grid-cols-4";
+
   return (
     <footer id="contact" className="border-t border-navy-100 bg-white">
       <div className="container-mx container-px py-16">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {footerColumns.map((col) => (
+        <div className={gridClass}>
+          {columns.map((col) => (
             <div key={col.title}>
               <h4 className="mb-4 text-sm font-bold text-navy-900">{col.title}</h4>
               <ul className="space-y-2.5">

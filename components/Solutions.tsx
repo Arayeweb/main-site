@@ -8,7 +8,7 @@ const solutionAccent = "from-navy-800 via-brand-700 to-brand-500";
 
 export default function Solutions() {
   return (
-    <section id="solutions" className="section-py bg-navy-50/40">
+    <section id="products" className="section-py bg-navy-50/40">
       <div className="container-mx container-px">
         <SectionHeader
           badge="راهکارها"

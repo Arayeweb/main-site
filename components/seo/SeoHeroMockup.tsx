@@ -1,56 +1,64 @@
+const REPORT_ROWS = [
+  { label: "نمایش در نقشه", status: "مناسب", tone: "ok" },
+  { label: "ساعات کاری", status: "نیاز به تکمیل", tone: "partial" },
+  { label: "صفحه خدمات", status: "وجود ندارد", tone: "missing" },
+  { label: "دکمه تماس", status: "مناسب", tone: "ok" },
+] as const;
+
+function StatusBadge({ tone, status }: { tone: "ok" | "partial" | "missing"; status: string }) {
+  return <span className={`seo-audit-badge seo-audit-badge--${tone}`}>{status}</span>;
+}
+
 export default function SeoHeroMockup() {
   return (
-    <div className="seo-mockup" aria-hidden>
-      <div className="seo-mockup-inner">
-        <div className="seo-mockup-header">
-          <span>مسیر واقعی مشتری</span>
-          <span className="seo-mockup-live">زنده</span>
-        </div>
-
-        <div className="seo-mockup-flow">
-          <div className="seo-mockup-card seo-mockup-card--search">
-            <div className="seo-mockup-label seo-mockup-label--teal">۱ — جستجو</div>
-            <div className="seo-mockup-search-bar">
-              <span>دکتر پوست در سعادت‌آباد</span>
-            </div>
-            <div className="seo-mockup-result">
-              <div className="seo-mockup-result-title">کلینیک پوست — نوبت آنلاین</div>
-              <div className="seo-mockup-result-url">clinic-example.ir/dermatology/saadat</div>
-            </div>
+    <div className="seo-hero-mockup" aria-label="نمونه گزارش بررسی حضور در گوگل">
+      <div className="seo-serp-shell">
+        <div className="seo-serp-main">
+          <div className="seo-serp-searchbar">
+            <span className="seo-serp-logo" aria-hidden="true">
+              G
+            </span>
+            <span className="seo-serp-query">کلینیک پوست در سعادت‌آباد</span>
+            <span className="seo-serp-search-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+            </span>
           </div>
 
-          <div className="seo-mockup-connector" />
-
-          <div className="seo-mockup-card">
-            <div className="seo-mockup-label">۲ — لندینگ‌پیج</div>
-            <div className="seo-mockup-lp-preview">
-              <div className="seo-mockup-lp-block seo-mockup-lp-block--wide" />
-              <div className="seo-mockup-lp-block" />
-              <div className="seo-mockup-lp-block seo-mockup-lp-block--cta" />
+          <div className="seo-serp-map-pack">
+            <div className="seo-serp-map-layout">
+              <div className="seo-serp-map-tiles" aria-hidden="true">
+                <span />
+                <span />
+                <span className="seo-serp-map-pin" />
+              </div>
+              <div className="seo-serp-map-listing">
+                <p className="seo-serp-listing-name">کلینیک پوست آبتین</p>
+                <p className="seo-serp-listing-meta">سعادت‌آباد، تهران · تماس · مسیر</p>
+                <p className="seo-serp-listing-hours">شنبه تا پنجشنبه · ۱۰:۰۰ تا ۲۰:۰۰</p>
+              </div>
             </div>
-            <div className="seo-mockup-form">
-              <input type="text" readOnly value="شماره تماس" tabIndex={-1} />
-              <button type="button" tabIndex={-1}>
-                درخواست نوبت
-              </button>
-            </div>
-          </div>
-
-          <div className="seo-mockup-connector" />
-
-          <div className="seo-mockup-row">
-            <div className="seo-mockup-card seo-mockup-card--lead">
-              <div className="seo-mockup-label seo-mockup-label--blue">۳ — لید</div>
-              <div className="seo-mockup-crm-name">سارا — درخواست مشاوره</div>
-              <div className="seo-mockup-crm-meta">منبع: گوگل</div>
-            </div>
-            <div className="seo-mockup-card seo-mockup-card--crm">
-              <div className="seo-mockup-label seo-mockup-label--teal">۴ — CRM</div>
-              <div className="seo-mockup-crm-name">پیگیری — فردا ۱۰:۰۰</div>
-              <div className="seo-mockup-crm-meta">وضعیت: در انتظار تماس</div>
+            <div className="seo-serp-result">
+              <p className="seo-serp-result-url">clinic-abtin.ir</p>
+              <p className="seo-serp-result-title">کلینیک پوست آبتین — نوبت آنلاین</p>
             </div>
           </div>
         </div>
+
+        <aside className="seo-audit-panel">
+          <span className="seo-audit-panel-badge">نمونه گزارش</span>
+          <p className="seo-audit-panel-sub">نمونه‌ای از مواردی که بررسی می‌کنیم</p>
+          <ul className="seo-audit-list">
+            {REPORT_ROWS.map((row) => (
+              <li key={row.label}>
+                <span className="seo-audit-label">{row.label}</span>
+                <StatusBadge tone={row.tone} status={row.status} />
+              </li>
+            ))}
+          </ul>
+        </aside>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { IconCheck } from "@/components/icons";
@@ -224,7 +225,9 @@ export default function FreeSeoAuditPage() {
               این بررسی برای شروع همکاری اجباری نیست؛ اگر بعد از تحلیل، اصلاحات برای شما منطقی بود، می‌توانیم درباره
               اجرای آن صحبت کنیم.
             </p>
-            <FreeSeoAuditForm />
+            <Suspense fallback={null}>
+              <FreeSeoAuditForm />
+            </Suspense>
           </div>
         </section>
       </main>

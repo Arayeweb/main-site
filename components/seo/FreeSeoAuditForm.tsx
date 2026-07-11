@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { pushGtmEvent } from "@/lib/gtm";
 import { getUtmParams } from "@/lib/utm";
 import { IconCheck, IconPhone } from "@/components/icons";
@@ -46,9 +47,13 @@ function normalizeWebsiteUrl(raw: string): string | null {
 }
 
 export default function FreeSeoAuditForm() {
-  const [name, setName] = useState("");
+  const searchParams = useSearchParams();
+  const prefilledName = searchParams.get("name")?.trim() ?? "";
+  const prefilledWebsite = searchParams.get("website")?.trim() ?? "";
+
+  const [name, setName] = useState(prefilledName);
   const [phone, setPhone] = useState("");
-  const [website, setWebsite] = useState("");
+  const [website, setWebsite] = useState(prefilledWebsite);
   const [businessType, setBusinessType] = useState<BusinessType>("doctor");
   const [message, setMessage] = useState("");
 

@@ -399,32 +399,25 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "آرایه",
     links: [
-      { label: "درباره ما", url: "/#about" },
+      { label: "درباره ما", url: "/#faq" },
       { label: "نمونه‌کارها", url: "/#real-portfolio" },
-      { label: "خدمات", url: "/#services" },
+      { label: "راهکارها", url: "/#solutions" },
       { label: "تماس با ما", url: "#contact" },
-    ],
-  },
-  {
-    title: "خدمات",
-    links: [
-      { label: "طراحی نرم‌افزار اختصاصی", url: "/#services" },
-      { label: "طراحی سایت", url: "/#services" },
-      { label: "سئوی محلی", url: "/seo" },
-      { label: "چت‌بات AI", url: "/#services" },
-      { label: "CRM و داشبورد", url: "/#services" },
-      { label: "MVP", url: "/#services" },
     ],
   },
   {
     title: "راهکارها",
     links: [
-      { label: "پزشکان", url: "/#industries" },
-      { label: "کلینیک‌ها", url: "/#industries" },
-      { label: "کسب‌وکارها", url: "/#solutions" },
-      { label: "Araaye SEO", url: "/seo" },
-      { label: "Araaye AI", url: "/ai" },
-      { label: "پرامپت‌های آماده هوش مصنوعی", url: "/prompts" },
+      { label: "طراحی سایت", url: "/#cta" },
+      { label: "آرایه SEO", url: "/seo" },
+      { label: "AdReady", url: "/adready" },
+      { label: "پزشکان و کلینیک‌ها", url: "/doctors" },
+      { label: "هوش مصنوعی آرایه", url: "/ai" },
+    ],
+  },
+  {
+    title: "مسیرهای تخصصی",
+    links: [
       { label: "سئو سایت پزشکان", url: "/seo/doctor" },
       { label: "سئو کلینیک", url: "/seo/clinic" },
       { label: "طراحی سایت پزشک", url: "/website/doctor" },

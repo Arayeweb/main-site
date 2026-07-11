@@ -6,11 +6,12 @@ import { getUtmParams } from "@/lib/utm";
 import {
   seoPackages,
   formatPackagePrice,
+  formatSeoPlanPrice,
   getSeoPackage,
+  type SeoPackage,
   type SeoPackageKey,
 } from "@/lib/seoData";
 import { IconCheck, IconPhone } from "@/components/icons";
-import SectionHeader from "@/components/home/SectionHeader";
 import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL } from "@/lib/siteContact";
 
 const toLatinDigits = (s: string) =>
@@ -31,14 +32,10 @@ function normalizeContact(raw: string): { kind: "phone" | "telegram" | "invalid"
   return { kind: "invalid", value: v };
 }
 
-interface PkgInfo {
-  name: string;
-  price: number;
-}
-
-const allPackages: Record<SeoPackageKey, PkgInfo> = Object.fromEntries(
-  seoPackages.map((p) => [p.key, { name: p.name, price: p.price }]),
-) as Record<SeoPackageKey, PkgInfo>;
+const gmapPackage = getSeoPackage("gmap");
+const monthlyPackages = seoPackages.filter(
+  (p) => p.pricePeriod === "month" && p.key !== "custom"
+) as SeoPackage[];
 
 type PaymentState = "success" | "failed" | "error" | null;
 
@@ -54,7 +51,6 @@ export default function SeoPackagesForm() {
   const [payment, setPayment] = useState<PaymentState>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // نتیجه بازگشت از درگاه زیبال (?payment=success|failed|error)
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get("payment");
     if (p === "success" || p === "failed" || p === "error") {
@@ -66,8 +62,8 @@ export default function SeoPackagesForm() {
     }
   }, []);
 
-  const pkg = allPackages[selected];
-  const pkgMeta = getSeoPackage(selected);
+  const pkg = getSeoPackage(selected);
+  const pkgMeta = pkg;
 
   const choosePackage = (key: SeoPackageKey) => {
     setSelected(key);
@@ -163,21 +159,17 @@ export default function SeoPackagesForm() {
   };
 
   return (
-    <section id="packages" className="section-py bg-gradient-to-b from-white to-teal-50/40">
+    <section id="packages" className="seo-pricing section-py scroll-mt-24">
       <div className="container-mx container-px">
-        <SectionHeader
-          badge="شروع همکاری"
-          badgeClassName="bg-teal-50 text-teal-700"
-          title="پکیج‌های سئوی محلی آرایه"
-          subtitle="از ثبت نقشه گوگل تا سیستم کامل سرچ تا لید — قیمت شفاف و نهایی."
-        />
+        <div className="seo-pricing-header">
+          <span className="seo-section-tag">راهکارها و قیمت‌ها</span>
+          <h2>متناسب با وضعیت فعلی‌تان شروع کنید</h2>
+        </div>
 
         {payment ? (
           <div
-            className={`mx-auto mb-8 max-w-2xl rounded-2xl border p-5 text-center text-sm font-bold ${
-              payment === "success"
-                ? "border-teal-200 bg-teal-50 text-teal-700"
-                : "border-red-200 bg-red-50 text-red-600"
+            className={`seo-pricing-alert ${
+              payment === "success" ? "seo-pricing-alert--ok" : "seo-pricing-alert--err"
             }`}
             role="status"
           >
@@ -187,122 +179,116 @@ export default function SeoPackagesForm() {
           </div>
         ) : null}
 
-        {/* Packages grid */}
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {seoPackages.map((p) => {
-            const isSelected = selected === p.key;
-            const isGmap = p.key === "gmap";
+        <p className="seo-pricing-group-label">مسیر یک‌باره</p>
+        <article
+          className={`seo-pricing-once ${selected === "gmap" ? "is-selected" : ""}`}
+        >
+          <div className="seo-pricing-once-main">
+            <div className="seo-pricing-once-copy">
+              <h3>
+                {gmapPackage.name}
+                <span className="seo-pricing-once-price">
+                  {" "}
+                  — {formatSeoPlanPrice(gmapPackage)}
+                </span>
+              </h3>
+              <p>{gmapPackage.description}</p>
+            </div>
+            <ul className="seo-pricing-once-features">
+              {gmapPackage.features.map((feature) => (
+                <li key={feature}>{feature}</li>
+              ))}
+            </ul>
+          </div>
+          <button
+            type="button"
+            onClick={() => choosePackage("gmap")}
+            className="seo-btn-primary seo-pricing-once-btn"
+          >
+            {selected === "gmap" ? "انتخاب شد ✓" : "درخواست ثبت در گوگل"}
+          </button>
+        </article>
+
+        <p className="seo-pricing-group-label">همکاری ماهانه</p>
+        <div className="seo-pricing-monthly">
+          {monthlyPackages.map((plan) => {
+            const isSelected = selected === plan.key;
+            const isGrowth = plan.key === "growth";
             return (
-              <div
-                key={p.key}
-                className={`relative flex flex-col rounded-3xl border-2 bg-white p-6 transition-all duration-300 ${
-                  isGmap ? "md:col-span-2 xl:col-span-3" : ""
-                } ${
-                  isSelected
-                    ? "border-teal-500 shadow-card -translate-y-1"
-                    : "border-navy-100 shadow-soft hover:-translate-y-1 hover:border-teal-200"
+              <article
+                key={plan.key}
+                className={`seo-pricing-card ${isGrowth ? "seo-pricing-card--growth" : ""} ${
+                  isSelected ? "is-selected" : ""
                 }`}
               >
-                {p.badge ? (
-                  <span className="absolute -top-3 right-6 rounded-full bg-teal-600 px-3.5 py-1 text-[11px] font-bold text-white shadow-soft">
-                    {p.badge}
-                  </span>
-                ) : null}
-
-                <h3 className="text-base font-extrabold text-navy-900">{p.name}</h3>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-navy-500">{p.description}</p>
-
-                <div className="mt-4">
-                  <span className="text-2xl font-extrabold text-teal-600">
-                    {formatPackagePrice(p)}
-                  </span>
+                <div className="seo-pricing-card-head">
+                  <h3>{plan.name}</h3>
+                  <p className="seo-pricing-card-price">{formatSeoPlanPrice(plan)}</p>
                 </div>
-
-                <ul className={`mt-4 flex flex-1 flex-col gap-2 ${isGmap ? "md:grid md:grid-cols-2 md:gap-x-6" : ""}`}>
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-[13px] leading-relaxed text-navy-600">
-                      <IconCheck size={14} className="mt-1 shrink-0 text-teal-500" />
-                      {f}
+                <p className="seo-pricing-card-desc">{plan.description}</p>
+                <ul className="seo-pricing-card-features">
+                  {plan.features.map((feature) => (
+                    <li key={feature}>
+                      <IconCheck size={14} className="seo-pricing-check" aria-hidden />
+                      {feature}
                     </li>
                   ))}
                 </ul>
-
                 <button
                   type="button"
-                  onClick={() => choosePackage(p.key)}
-                  className={`mt-5 w-full rounded-xl px-5 py-3 text-sm font-bold transition-all active:scale-[0.98] ${
-                    isSelected
-                      ? "bg-teal-600 text-white hover:bg-teal-700"
-                      : "border border-navy-200 bg-white text-navy-700 hover:border-teal-300 hover:text-teal-700"
-                  }`}
+                  onClick={() => choosePackage(plan.key)}
+                  className={`seo-pricing-card-btn ${isSelected ? "is-active" : ""}`}
                 >
-                  {isSelected ? "انتخاب شد ✓" : p.checkoutEnabled ? "انتخاب پکیج" : "درخواست مشاوره"}
+                  {isSelected ? "انتخاب شد ✓" : "گفت‌وگو درباره این پلن"}
                 </button>
-              </div>
+              </article>
             );
           })}
         </div>
 
-        {/* Multistep form */}
-        <div
-          ref={formRef}
-          id="lead-form"
-          className="mx-auto mt-12 max-w-xl scroll-mt-24 rounded-3xl border border-navy-100 bg-white p-6 shadow-card sm:p-8"
-        >
-          {/* Progress */}
-          <div className="mb-6 flex items-center gap-3">
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-navy-50">
-              <div
-                className="h-full rounded-full bg-gradient-to-l from-teal-500 to-cyan-400 transition-all duration-300"
-                style={{ width: `${(step / 3) * 100}%` }}
-              />
+        <p className="seo-pricing-custom-note">
+          برای پروژه‌های گسترده‌تر، برنامه اختصاصی از ماهانه ۲۹.۹ میلیون تومان تنظیم
+          می‌شود.
+        </p>
+
+        <div ref={formRef} id="lead-form" className="seo-pricing-form-wrap">
+          <div className="seo-pricing-form">
+            <div className="seo-pricing-form-progress">
+              <div className="seo-pricing-form-bar">
+                <div style={{ width: `${(step / 3) * 100}%` }} />
+              </div>
+              <span>
+                {step === 3 ? "تکمیل شد ✓" : `مرحله ${step === 1 ? "۱" : "۲"} از ۳`}
+              </span>
             </div>
-            <span className="rounded-full bg-navy-50 px-3 py-1 text-[11px] font-bold text-navy-500">
-              {step === 3 ? "تکمیل شد ✓" : `مرحله ${step === 1 ? "۱" : "۲"} از ۳`}
-            </span>
-          </div>
 
-          {step === 1 ? (
-            <div className="text-center">
-              <h3 className="text-base font-extrabold text-navy-900">
-                پکیج انتخابی: <span className="text-teal-600">{pkg.name}</span>
-              </h3>
-              <p className="mt-2 text-[13px] text-navy-500">
-                از بالا پکیج را انتخاب کن یا با همین انتخاب ادامه بده.
-              </p>
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="mt-5 w-full rounded-xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-teal-700 active:scale-[0.98]"
-              >
-                ادامه با پکیج {pkg.name}
-              </button>
-            </div>
-          ) : null}
+            {step === 1 ? (
+              <div className="seo-pricing-form-step">
+                <h3>
+                  پلن انتخابی: <span>{pkg.name}</span>
+                </h3>
+                <p>برای ادامه، مشخصات کسب‌وکار را وارد کنید.</p>
+                <button type="button" onClick={() => setStep(2)} className="seo-btn-primary">
+                  ادامه با {pkg.name}
+                </button>
+              </div>
+            ) : null}
 
-          {step === 2 ? (
-            <form onSubmit={handleSubmit} noValidate>
-              <h3 className="mb-5 text-base font-extrabold text-navy-900">
-                مشخصات کسب‌وکارت را بگو
-              </h3>
+            {step === 2 ? (
+              <form onSubmit={handleSubmit} noValidate className="seo-pricing-form-step">
+                <h3>مشخصات کسب‌وکار</h3>
 
-              <div className="mb-4">
-                <label htmlFor="seo-biz-name" className="mb-1.5 block text-[13px] font-bold text-navy-700">
-                  نام کسب‌وکار *
-                </label>
+                <label htmlFor="seo-biz-name">نام کسب‌وکار *</label>
                 <input
                   id="seo-biz-name"
                   type="text"
                   value={bizName}
                   onChange={(e) => setBizName(e.target.value)}
                   placeholder="مثلاً کلینیک دندانپزشکی مهر"
-                  className="w-full rounded-xl border border-navy-100 bg-navy-50/50 px-4 py-3 text-sm text-navy-900 outline-none transition focus:border-teal-400 focus:bg-white"
                 />
-              </div>
 
-              <div className="mb-4">
-                <label htmlFor="seo-website" className="mb-1.5 block text-[13px] font-bold text-navy-700">
-                  آدرس سایت <span className="font-normal text-navy-400">(اختیاری)</span>
+                <label htmlFor="seo-website">
+                  آدرس سایت <span className="seo-pricing-optional">(اختیاری)</span>
                 </label>
                 <input
                   id="seo-website"
@@ -311,14 +297,9 @@ export default function SeoPackagesForm() {
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="example.com"
-                  className="w-full rounded-xl border border-navy-100 bg-navy-50/50 px-4 py-3 text-left text-sm text-navy-900 outline-none transition focus:border-teal-400 focus:bg-white"
                 />
-              </div>
 
-              <div className="mb-4">
-                <label htmlFor="seo-contact" className="mb-1.5 block text-[13px] font-bold text-navy-700">
-                  موبایل یا آیدی تلگرام *
-                </label>
+                <label htmlFor="seo-contact">موبایل یا آیدی تلگرام *</label>
                 <input
                   id="seo-contact"
                   type="text"
@@ -330,88 +311,81 @@ export default function SeoPackagesForm() {
                     if (error) setError(null);
                   }}
                   placeholder="09xxxxxxxxx یا @username"
-                  className="w-full rounded-xl border border-navy-100 bg-navy-50/50 px-4 py-3 text-left text-sm text-navy-900 outline-none transition focus:border-teal-400 focus:bg-white"
                 />
-              </div>
 
-              {error ? (
-                <p className="mb-3 text-xs font-bold text-red-600" role="alert">
-                  {error}
-                </p>
-              ) : null}
+                {error ? (
+                  <p className="seo-pricing-form-error" role="alert">
+                    {error}
+                  </p>
+                ) : null}
 
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="rounded-xl border border-navy-200 px-5 py-3 text-sm font-bold text-navy-600 transition-colors hover:bg-navy-50"
-                >
-                  بازگشت
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 rounded-xl bg-teal-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-teal-700 active:scale-[0.98] disabled:opacity-60"
-                >
-                  {submitting ? "در حال ثبت..." : "ثبت درخواست"}
-                </button>
-              </div>
-            </form>
-          ) : null}
-
-          {step === 3 ? (
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-teal-100 to-cyan-100 text-teal-600">
-                <IconCheck size={30} />
-              </div>
-              <h3 className="text-lg font-extrabold text-teal-700">درخواستت ثبت شد</h3>
-              <p className="mt-2 text-[13px] leading-relaxed text-navy-500">
-                پکیج <b className="text-navy-800">{pkg.name}</b> را انتخاب کردی.
-                {pkgMeta.checkoutEnabled
-                  ? " برای شروع همان روز، پرداخت آنلاین را انجام بده یا منتظر تماس تیم ما باش (کمتر از ۲ ساعت کاری)."
-                  : " کارشناس ما در کمتر از ۲ ساعت کاری برای مشاوره و پیشنهاد اختصاصی تماس می‌گیرد."}
-              </p>
-
-              <div className="mt-5 rounded-2xl border border-navy-100 bg-navy-50/50 p-4 text-right">
-                <div className="flex justify-between text-[13px] text-navy-600">
-                  <span>پکیج</span>
-                  <b>{pkg.name}</b>
+                <div className="seo-pricing-form-actions">
+                  <button type="button" onClick={() => setStep(1)} className="seo-btn-secondary">
+                    بازگشت
+                  </button>
+                  <button type="submit" disabled={submitting} className="seo-btn-primary">
+                    {submitting ? "در حال ثبت..." : "ثبت درخواست"}
+                  </button>
                 </div>
-                <div className="mt-2 flex justify-between border-t border-navy-100 pt-2 text-sm font-extrabold text-teal-700">
-                  <span>{pkgMeta.checkoutEnabled ? "مبلغ قابل پرداخت" : "قیمت"}</span>
-                  <span>{formatPackagePrice(pkgMeta)}</span>
+              </form>
+            ) : null}
+
+            {step === 3 ? (
+              <div className="seo-pricing-form-step seo-pricing-form-step--success">
+                <div className="seo-pricing-success-icon">
+                  <IconCheck size={30} />
                 </div>
-              </div>
-
-              {error ? (
-                <p className="mt-3 text-xs font-bold text-red-600" role="alert">
-                  {error}
+                <h3>درخواستت ثبت شد</h3>
+                <p>
+                  پلن <b>{pkg.name}</b> را انتخاب کردی.
+                  {pkgMeta.checkoutEnabled
+                    ? " برای شروع، پرداخت آنلاین را انجام بده یا منتظر تماس تیم ما باش."
+                    : " کارشناس ما در کمتر از ۲ ساعت کاری تماس می‌گیرد."}
                 </p>
-              ) : null}
 
-              {pkgMeta.checkoutEnabled ? (
-                <button
-                  type="button"
-                  onClick={startCheckout}
-                  disabled={paying}
-                  className="mt-5 w-full rounded-xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-teal-700 active:scale-[0.98] disabled:opacity-60"
+                <div className="seo-pricing-summary">
+                  <div>
+                    <span>پلن</span>
+                    <b>{pkg.name}</b>
+                  </div>
+                  <div>
+                    <span>{pkgMeta.checkoutEnabled ? "مبلغ قابل پرداخت" : "قیمت"}</span>
+                    <b>{formatPackagePrice(pkgMeta)}</b>
+                  </div>
+                </div>
+
+                {error ? (
+                  <p className="seo-pricing-form-error" role="alert">
+                    {error}
+                  </p>
+                ) : null}
+
+                {pkgMeta.checkoutEnabled ? (
+                  <button
+                    type="button"
+                    onClick={startCheckout}
+                    disabled={paying}
+                    className="seo-btn-primary"
+                  >
+                    {paying
+                      ? "در حال انتقال به درگاه پرداخت..."
+                      : `پرداخت آنلاین ${formatPackagePrice(pkgMeta)}`}
+                  </button>
+                ) : null}
+
+                <a
+                  href={SITE_PHONE_TEL}
+                  onClick={() =>
+                    pushGtmEvent("phone_click", { location: "seo_form_success", page: "seo" })
+                  }
+                  className="seo-pricing-phone-link"
                 >
-                  {paying
-                    ? "در حال انتقال به درگاه پرداخت..."
-                    : `پرداخت آنلاین امن ${formatPackagePrice(pkgMeta)}`}
-                </button>
-              ) : null}
-
-              <a
-                href={SITE_PHONE_TEL}
-                onClick={() => pushGtmEvent("phone_click", { location: "seo_form_success", page: "seo" })}
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 px-6 py-3 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
-              >
-                <IconPhone size={16} />
-                ترجیح می‌دهم اول صحبت کنم — {SITE_PHONE_DISPLAY}
-              </a>
-            </div>
-          ) : null}
+                  <IconPhone size={16} />
+                  تماس — {SITE_PHONE_DISPLAY}
+                </a>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </section>

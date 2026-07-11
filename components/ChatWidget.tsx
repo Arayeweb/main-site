@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { pushGtmEvent } from "@/lib/gtm";
+import { type SiteChatSource } from "@/lib/openSiteChat";
+import { siteWhatsAppUrl } from "@/lib/siteContact";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -9,20 +12,22 @@ interface QuickReply {
   t: string;
   go?: string;
   set?: Partial<LeadState>;
+  action?: "whatsapp";
 }
 
 interface ScriptNode {
-  msgs: string[] | ((s: LeadState) => string[]);
+  msgs: string[];
   quick?: QuickReply[];
-  expects?: "contact";
+  expects?: "business" | "contact_form";
 }
 
 interface LeadState {
+  clickSource: string;
   intent: string;
-  detail: string;
-  budget: string;
-  plan: string;
+  business: string;
+  name: string;
   contact: string;
+  channel: string;
 }
 
 interface ChatMessage {
@@ -33,133 +38,100 @@ interface ChatMessage {
 /* ------------------------------------------------------------------ */
 /*  Conversation script                                                 */
 /* ------------------------------------------------------------------ */
-const PLAN: Record<string, string> = {
-  bronze: "برنزی",
-  silver: "نقره‌ای",
-  gold: "طلایی",
+const INTENT_LABELS: Record<string, string> = {
+  google: "در گوگل دیده شوم",
+  website: "سایت یا صفحه فروش",
+  doctors: "راهکار پزشکان و کلینیک‌ها",
+  unsure: "هنوز مطمئن نیستم",
 };
-
-function recommendPlan(s: LeadState): { plan: string; why: string } {
-  const b = s.budget;
-  const wantsAI = /chatbot|support|چت‌بات/.test(s.intent + s.detail);
-  if (b === "lt15") return { plan: "bronze", why: "با این بودجه یک لندینگ‌پیج سریع و سئوشده بهترین نقطه شروع است؛ کم‌هزینه و بعداً قابل ارتقا." };
-  if (b === "gt100") return { plan: "gold", why: "برای این بودجه، راهکار سازمانی «طلایی» با هوش مصنوعی و زیرساخت اختصاصی بیشترین بازده را می‌دهد." };
-  if (b === "40-100") return wantsAI
-    ? { plan: "gold", why: "چون هوش مصنوعی اولویت شماست، پکیج «طلایی» با اتوماسیون AI این بودجه را کامل بهره‌وری می‌کند." }
-    : { plan: "silver", why: "وب‌سایت کامل + چت‌بات در این بازه تعادل عالی هزینه و نتیجه است." };
-  return { plan: "silver", why: "پکیج «نقره‌ای» محبوب‌ترین انتخاب در این بودجه است؛ سایت کامل + چت‌بات هوشمند برای رشد واقعی." };
-}
 
 const SCRIPT: Record<string, ScriptNode> = {
   start: {
-    msgs: ["سلام 👋 من دستیار آرایه‌ام.", "می‌تونم کمک کنم بهترین مسیر رو برای پروژه‌تون پیدا کنیم. از کجا شروع کنیم؟"],
+    msgs: ["سلام. برای چه کاری به آرایه سر زده‌اید؟"],
     quick: [
-      { t: "وب‌سایت می‌خوام", go: "website", set: { intent: "website" } },
-      { t: "چت‌بات هوشمند", go: "chatbot", set: { intent: "chatbot" } },
-      { t: "نرم‌افزار / سیستم اختصاصی", go: "budget", set: { intent: "custom", detail: "نرم‌افزار اختصاصی" } },
-      { t: "مطمئن نیستم، مشاوره می‌خوام", go: "advise", set: { intent: "advise" } },
+      { t: "در گوگل دیده شوم", go: "business", set: { intent: "google" } },
+      { t: "سایت یا صفحه فروش می‌خواهم", go: "business", set: { intent: "website" } },
+      { t: "راهکار پزشکان و کلینیک‌ها", go: "business", set: { intent: "doctors" } },
+      { t: "هنوز مطمئن نیستم", go: "business", set: { intent: "unsure" } },
     ],
   },
-  website: {
-    msgs: ["عالیه! بیشتر دنبال چه نوع سایتی هستید؟"],
+  business: {
+    msgs: ["نام یا نوع کسب‌وکارتان چیست؟"],
+    expects: "business",
+  },
+  channel: {
+    msgs: ["ترجیح می‌دهید چطور ادامه دهیم؟"],
     quick: [
-      { t: "سایت شرکتی / معرفی", go: "budget", set: { detail: "سایت شرکتی" } },
-      { t: "فروشگاه آنلاین", go: "budget", set: { detail: "فروشگاه آنلاین" } },
-      { t: "لندینگ‌پیج کمپین", go: "budget", set: { detail: "لندینگ کمپین" } },
+      { t: "پیام در واتساپ", go: "whatsapp", action: "whatsapp" },
+      { t: "درخواست تماس", go: "contact" },
     ],
   },
-  chatbot: {
-    msgs: ["چت‌بات‌های آرایه روی دانش خودِ کسب‌وکار شما آموزش می‌بینند و به پیام‌رسان‌ها وصل می‌شن.", "کدام کانال برایتان مهم‌تر است؟"],
-    quick: [
-      { t: "روی وب‌سایت", go: "budget", set: { detail: "چت‌بات سایت" } },
-      { t: "اینستاگرام", go: "budget", set: { detail: "چت‌بات اینستاگرام" } },
-      { t: "تلگرام / بله", go: "budget", set: { detail: "چت‌بات تلگرام/بله" } },
-    ],
-  },
-  advise: {
-    msgs: ["مشکلی نیست! هدف اصلی‌تان از سرمایه‌گذاری روی نرم‌افزار چیه؟"],
-    quick: [
-      { t: "فروش بیشتر", go: "budget", set: { detail: "هدف: فروش" } },
-      { t: "پشتیبانی خودکار مشتری", go: "budget", set: { detail: "هدف: پشتیبانی", intent: "chatbot" } },
-      { t: "برندسازی و معرفی", go: "budget", set: { detail: "هدف: برندسازی" } },
-    ],
-  },
-  budget: {
-    msgs: ["یک سوال کوتاه تا دقیق‌ترین پیشنهاد رو بدم: بودجه تقریبی شما در چه بازه‌ای است؟"],
-    quick: [
-      { t: "کمتر از ۱۵ م.ت", go: "recommend", set: { budget: "lt15" } },
-      { t: "۱۵ تا ۴۰ م.ت", go: "recommend", set: { budget: "15-40" } },
-      { t: "۴۰ تا ۱۰۰ م.ت", go: "recommend", set: { budget: "40-100" } },
-      { t: "بیش از ۱۰۰ م.ت", go: "recommend", set: { budget: "gt100" } },
-    ],
-  },
-  recommend: {
-    msgs: (s) => {
-      const r = recommendPlan(s);
-      s.plan = r.plan;
-      return [
-        `بر اساس نیاز شما، پیشنهادم پکیج «${PLAN[r.plan]}» است 👇`,
-        r.why,
-        "می‌خواهید نمونه‌کار مرتبط و برآورد قیمت را برایتان بفرستم؟",
-      ];
-    },
-    quick: [
-      { t: "بله، ارسال کن", go: "qualify" },
-      { t: "می‌خوام با کارشناس حرف بزنم", go: "human" },
-    ],
-  },
-  qualify: {
-    msgs: ["عالی! یک ایمیل یا شماره موبایل بدید تا نمونه‌کار و پیشنهاد قیمت همین حالا برایتان بفرستم 🎁"],
-    expects: "contact",
-  },
-  thanks: {
-    msgs: [
-      "ممنون! 🙌 اطلاعات شما ثبت شد.",
-      "یکی از مشاوران آرایه خیلی زود با شما تماس می‌گیرد.",
-    ],
-    quick: [
-      { t: "ادامه در واتساپ", go: "whatsapp" },
-      { t: "مشاهده خدمات", go: "end" },
-    ],
-  },
-  human: {
-    msgs: ["حتماً! شماره یا ایمیل‌تان را بگذارید تا کارشناس ما با شما تماس بگیرد."],
-    expects: "contact",
+  contact: {
+    msgs: ["نام و شماره موبایل‌تان را بگذارید تا با شما تماس بگیریم."],
+    expects: "contact_form",
   },
   whatsapp: {
-    msgs: ["می‌توانید از طریق واتساپ یا تماس مستقیم با ما در ارتباط باشید 📱"],
-    quick: [{ t: "تماس با آرایه", go: "end" }],
+    msgs: ["پیام شما در واتساپ آماده است. همان‌جا ادامه دهید."],
+    quick: [],
   },
-  end: {
-    msgs: ["ممنون که با آرایه در ارتباط بودید. موفق باشید! 🙏"],
+  thanks: {
+    msgs: ["ممنون. به‌زودی با شما تماس می‌گیریم."],
     quick: [],
   },
 };
 
 /* ------------------------------------------------------------------ */
-/*  Lead submission                                                     */
+/*  Tracking & lead submission                                          */
 /* ------------------------------------------------------------------ */
-function submitLead(lead: LeadState) {
+function collectUtms(): Record<string, string> {
   const params = new URLSearchParams(window.location.search);
   const utms: Record<string, string> = {};
   ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach((k) => {
     const v = params.get(k);
     if (v) utms[k] = v;
   });
+  return utms;
+}
 
+function trackGuide(
+  event: string,
+  lead: LeadState,
+  extra: Record<string, string | undefined> = {}
+) {
+  const utms = collectUtms();
+  pushGtmEvent(event, {
+    click_source: lead.clickSource,
+    intent: lead.intent || undefined,
+    business: lead.business || undefined,
+    channel: lead.channel || undefined,
+    page: window.location.pathname,
+    ...utms,
+    ...extra,
+  });
+}
+
+function submitLead(lead: LeadState) {
+  const utms = collectUtms();
   fetch("/api/leads", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      source: "homepage_chatbot",
+      source: "site_guide",
       page: window.location.pathname,
       referrer: document.referrer || undefined,
+      name: lead.name || undefined,
       contact: lead.contact,
       intent: lead.intent || undefined,
-      detail: lead.detail || undefined,
-      budget: lead.budget || undefined,
-      plan: lead.plan || undefined,
+      detail: lead.business || undefined,
+      channel: lead.channel || undefined,
+      goal: lead.clickSource || undefined,
       ...utms,
+      raw: {
+        click_source: lead.clickSource,
+        intent: lead.intent,
+        business: lead.business,
+        channel: lead.channel,
+      },
     }),
     keepalive: true,
   }).catch(() => {});
@@ -173,8 +145,14 @@ function toLatin(s: string) {
     .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
     .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660));
 }
-function isEmail(v: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-function isPhone(v: string) { return /^(\+98|0098|0)?9\d{9}$/.test(toLatin(v).replace(/[\s\-()+]/g, "")); }
+function isPhone(v: string) {
+  return /^(\+98|0098|0)?9\d{9}$/.test(toLatin(v).replace(/[\s\-()+]/g, ""));
+}
+
+function whatsAppMessage(lead: LeadState) {
+  const intent = INTENT_LABELS[lead.intent] || lead.intent;
+  return `سلام، از سایت آرایه پیام می‌دهم.\nنیاز من: ${intent}\nکسب‌وکار: ${lead.business}`;
+}
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                           */
@@ -184,29 +162,31 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [quickReplies, setQuickReplies] = useState<QuickReply[]>([]);
   const [inputVal, setInputVal] = useState("");
-  const [expecting, setExpecting] = useState<"contact" | null>(null);
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [expecting, setExpecting] = useState<"business" | "contact_form" | null>(null);
   const [typing, setTyping] = useState(false);
-  const [nudge, setNudge] = useState(false);
   const [started, setStarted] = useState(false);
   const [badgeVisible, setBadgeVisible] = useState(true);
-  const lead = useRef<LeadState>({ intent: "", detail: "", budget: "", plan: "", contact: "" });
+  const lead = useRef<LeadState>({
+    clickSource: "launcher",
+    intent: "",
+    business: "",
+    name: "",
+    contact: "",
+    channel: "",
+  });
   const threadRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
 
-  /* nudge after 25s */
-  useEffect(() => {
-    const t = setTimeout(() => { if (!started) setNudge(true); }, 25000);
-    return () => clearTimeout(t);
-  }, [started]);
-
-  /* scroll to bottom */
   useEffect(() => {
     if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
-  }, [messages, typing, quickReplies]);
+  }, [messages, typing, quickReplies, expecting]);
 
-  /* focus input when expecting contact */
   useEffect(() => {
-    if (expecting === "contact" && inputRef.current) inputRef.current.focus();
+    if (expecting === "business" && inputRef.current) inputRef.current.focus();
+    if (expecting === "contact_form" && nameRef.current) nameRef.current.focus();
   }, [expecting]);
 
   function addBotMsgs(msgs: string[], node: ScriptNode) {
@@ -216,17 +196,17 @@ export default function ChatWidget() {
     }
     const [first, ...rest] = msgs;
     setTyping(true);
-    const delay = Math.min(1200, 500 + first.length * 15);
+    const delay = Math.min(900, 350 + first.length * 12);
     setTimeout(() => {
       setTyping(false);
       setMessages((prev) => [...prev, { who: "bot", text: first }]);
-      setTimeout(() => addBotMsgs(rest, node), 200);
+      setTimeout(() => addBotMsgs(rest, node), 180);
     }, delay);
   }
 
   function afterMsgs(node: ScriptNode) {
-    if (node.expects === "contact") {
-      setExpecting("contact");
+    if (node.expects) {
+      setExpecting(node.expects);
       setQuickReplies([]);
       return;
     }
@@ -239,115 +219,177 @@ export default function ChatWidget() {
     if (!node) return;
     setQuickReplies([]);
     setExpecting(null);
-    const raw = typeof node.msgs === "function" ? node.msgs(lead.current) : node.msgs;
-    addBotMsgs([...raw], node);
+    addBotMsgs([...node.msgs], node);
   }
 
-  function openChat() {
+  const openChat = useCallback((source: SiteChatSource = "launcher") => {
+    lead.current.clickSource = source;
     setOpen(true);
-    setNudge(false);
     setBadgeVisible(false);
+    trackGuide("guide_open", lead.current);
     if (!started) {
       setStarted(true);
-      setTimeout(() => renderNode("start"), 400);
+      setTimeout(() => renderNode("start"), 300);
     }
-  }
+  }, [started]);
+
+  const openChatRef = useRef(openChat);
+  openChatRef.current = openChat;
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const source =
+        (event as CustomEvent<{ source?: SiteChatSource }>).detail?.source || "launcher";
+      openChatRef.current(source);
+    };
+    window.addEventListener("araaye:open-chat", handler);
+    return () => window.removeEventListener("araaye:open-chat", handler);
+  }, []);
 
   function handleQuick(q: QuickReply) {
     setMessages((prev) => [...prev, { who: "user", text: q.t }]);
     setQuickReplies([]);
     if (q.set) Object.assign(lead.current, q.set);
-    if (q.go) setTimeout(() => renderNode(q.go!), 300);
+
+    if (q.set?.intent) {
+      trackGuide("guide_intent", lead.current, { selection: q.t });
+    }
+
+    if (q.action === "whatsapp") {
+      lead.current.channel = "whatsapp";
+      trackGuide("guide_channel", lead.current, { selection: q.t });
+      trackGuide("guide_whatsapp", lead.current);
+      window.open(siteWhatsAppUrl(whatsAppMessage(lead.current)), "_blank", "noopener,noreferrer");
+      setTimeout(() => renderNode("whatsapp"), 280);
+      return;
+    }
+
+    if (q.go === "contact") {
+      lead.current.channel = "phone_call";
+      trackGuide("guide_channel", lead.current, { selection: q.t });
+    }
+
+    if (q.go) {
+      const next = q.go;
+      setTimeout(() => renderNode(next), 280);
+    }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleBusinessSubmit(e: React.FormEvent) {
     e.preventDefault();
     const val = inputVal.trim();
     if (!val) return;
+    lead.current.business = val;
     setMessages((prev) => [...prev, { who: "user", text: val }]);
     setInputVal("");
+    setExpecting(null);
+    trackGuide("guide_business", lead.current);
+    setTimeout(() => renderNode("channel"), 280);
+  }
 
-    if (expecting === "contact") {
-      if (isEmail(val) || isPhone(val)) {
-        lead.current.contact = val;
-        setExpecting(null);
-        submitLead(lead.current);
-        setTimeout(() => renderNode("thanks"), 350);
-      } else {
-        setTyping(true);
-        setTimeout(() => {
-          setTyping(false);
-          setMessages((prev) => [
-            ...prev,
-            { who: "bot", text: "به نظر می‌رسد ایمیل یا شماره کامل نیست 🤔 لطفاً دوباره امتحان کنید." },
-          ]);
-        }, 700);
-      }
-    }
+  function handleContactSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const name = contactName.trim();
+    const phone = contactPhone.trim();
+    if (!name || !isPhone(phone)) return;
+
+    lead.current.name = name;
+    const digits = toLatin(phone).replace(/[\s\-()+]/g, "");
+    const local = digits.replace(/^(\+98|0098|0)/, "");
+    lead.current.contact = local.length === 10 ? `0${local}` : digits;
+
+    setMessages((prev) => [
+      ...prev,
+      { who: "user", text: `${name} — ${phone}` },
+    ]);
+    setContactName("");
+    setContactPhone("");
+    setExpecting(null);
+    trackGuide("guide_contact_submit", lead.current);
+    submitLead(lead.current);
+    setTimeout(() => renderNode("thanks"), 280);
   }
 
   return (
     <>
-      {/* Launcher */}
-      <div className="fixed bottom-5 left-5 z-50 flex flex-col items-end gap-2">
-        {/* Nudge bubble */}
-        {nudge && !open && (
+      {/* Launcher — hidden while panel is open (header has close) */}
+      {!open && (
+        <div className="fixed bottom-5 left-5 z-50">
           <button
-            onClick={openChat}
-            className="animate-fade-up rounded-2xl bg-white border border-navy-100 shadow-lg px-4 py-3 text-sm font-medium text-navy-700 max-w-[220px] text-right leading-relaxed hover:shadow-xl transition-shadow"
+            type="button"
+            onClick={() => openChat("launcher")}
+            aria-label="راهنمای آرایه"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-navy-900 text-white shadow-lg transition-all duration-200 hover:bg-navy-800 hover:shadow-xl active:scale-[0.96]"
           >
-            سوالی دارید؟ می‌تونم کمک کنم 👋
-          </button>
-        )}
-
-        <button
-          onClick={() => (open ? setOpen(false) : openChat())}
-          aria-label="چت با دستیار آرایه"
-          className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 text-white shadow-lg transition-all duration-200 hover:bg-navy-800 hover:shadow-xl active:scale-[0.96]"
-        >
-          {open ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-          )}
-          {badgeVisible && !open && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-500 text-[9px] font-bold text-white ring-2 ring-white">
-              1
-            </span>
-          )}
-        </button>
-      </div>
+            {badgeVisible && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-500 text-[9px] font-bold text-white ring-2 ring-white">
+                1
+              </span>
+            )}
+          </button>
+        </div>
+      )}
 
-      {/* Chat panel */}
+      {/* Guide panel */}
       {open && (
         <div
           dir="rtl"
-          className="fixed bottom-24 left-5 z-50 w-[calc(100vw-40px)] max-w-sm flex flex-col rounded-2xl border border-navy-100 bg-white shadow-2xl overflow-hidden animate-fade-up"
-          style={{ maxHeight: "min(520px, calc(100dvh - 110px))" }}
+          className="fixed bottom-5 left-5 z-50 flex w-[calc(100vw-40px)] max-w-[420px] flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl animate-fade-up"
+          style={{ height: "min(550px, calc(100dvh - 40px))" }}
         >
           {/* Header */}
           <div className="flex items-center justify-between gap-3 border-b border-navy-100 bg-navy-900 px-4 py-3">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500/20 text-brand-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-bold text-white leading-none">دستیار آرایه</p>
-                <p className="text-[11px] text-navy-300 mt-0.5">مشاور پروژه شما</p>
+                <p className="text-sm font-bold leading-none text-white">راهنمای آرایه</p>
+                <p className="mt-0.5 text-[11px] text-navy-300">برای انتخاب مسیر مناسب</p>
               </div>
             </div>
             <button
+              type="button"
               onClick={() => setOpen(false)}
               aria-label="بستن"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-navy-300 hover:bg-white/10 hover:text-white transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-navy-300 transition-colors hover:bg-white/10 hover:text-white"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M18 6 6 18M6 6l12 12" />
               </svg>
             </button>
@@ -356,16 +398,16 @@ export default function ChatWidget() {
           {/* Messages */}
           <div
             ref={threadRef}
-            className="flex-1 overflow-y-auto px-4 py-3 space-y-2 text-sm"
+            className="flex-1 space-y-2 overflow-y-auto px-4 py-3 text-sm"
             style={{ scrollbarWidth: "thin" }}
           >
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.who === "user" ? "justify-start" : "justify-end"}`}>
                 <div
-                  className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 leading-relaxed ${
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 leading-relaxed ${
                     m.who === "user"
-                      ? "bg-navy-900 text-white rounded-tl-sm"
-                      : "bg-navy-50 text-navy-800 rounded-tr-sm"
+                      ? "rounded-tl-sm bg-navy-900 text-white"
+                      : "rounded-tr-sm bg-navy-50 text-navy-800"
                   }`}
                 >
                   {m.text}
@@ -375,11 +417,11 @@ export default function ChatWidget() {
 
             {typing && (
               <div className="flex justify-end">
-                <div className="flex items-center gap-1 rounded-2xl rounded-tr-sm bg-navy-50 px-4 py-3">
+                <div className="flex items-center gap-1 rounded-2xl rounded-tr-sm bg-navy-50 px-3.5 py-2.5">
                   {[0, 150, 300].map((d) => (
                     <span
                       key={d}
-                      className="h-1.5 w-1.5 rounded-full bg-navy-400 animate-bounce"
+                      className="h-1.5 w-1.5 animate-bounce rounded-full bg-navy-400"
                       style={{ animationDelay: `${d}ms` }}
                     />
                   ))}
@@ -390,12 +432,13 @@ export default function ChatWidget() {
 
           {/* Quick replies */}
           {quickReplies.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 px-4 pb-2 pt-1 border-t border-navy-50">
+            <div className="flex flex-wrap gap-1.5 border-t border-navy-50 px-3 py-2">
               {quickReplies.map((q) => (
                 <button
                   key={q.t}
+                  type="button"
                   onClick={() => handleQuick(q)}
-                  className="rounded-xl border border-navy-200 bg-white px-3 py-1.5 text-xs font-medium text-navy-700 transition-colors hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700"
+                  className="rounded-lg border border-navy-200 bg-white px-2.5 py-1 text-[11px] font-medium text-navy-700 transition-colors hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700"
                 >
                   {q.t}
                 </button>
@@ -403,31 +446,77 @@ export default function ChatWidget() {
             </div>
           )}
 
-          {/* Input */}
-          {(expecting === "contact" || messages.length > 0) && (
+          {/* Business name input */}
+          {expecting === "business" && (
             <form
-              onSubmit={handleSubmit}
+              onSubmit={handleBusinessSubmit}
               className="flex items-center gap-2 border-t border-navy-100 px-3 py-2.5"
             >
               <input
                 ref={inputRef}
-                type={expecting === "contact" ? "text" : "text"}
+                type="text"
                 dir="rtl"
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
-                placeholder={expecting === "contact" ? "ایمیل یا شماره موبایل…" : "پیام بنویسید…"}
-                className="flex-1 rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 placeholder:text-navy-400 outline-none focus:bg-white focus:ring-2 focus:ring-navy-200 transition-colors"
+                placeholder="مثلاً کلینیک دندانپزشکی"
+                className="flex-1 rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
               />
               <button
                 type="submit"
                 disabled={!inputVal.trim()}
-                aria-label="ارسال"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-white transition-all hover:bg-navy-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="ادامه"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-white transition-all hover:bg-navy-800 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rotate-180">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="rotate-180"
+                >
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </button>
+            </form>
+          )}
+
+          {/* Contact form */}
+          {expecting === "contact_form" && (
+            <form
+              onSubmit={handleContactSubmit}
+              className="space-y-2 border-t border-navy-100 px-3 py-2.5"
+            >
+              <input
+                ref={nameRef}
+                type="text"
+                dir="rtl"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="نام"
+                className="w-full rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
+              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="tel"
+                  dir="ltr"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                  className="flex-1 rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
+                />
+                <button
+                  type="submit"
+                  disabled={!contactName.trim() || !isPhone(contactPhone)}
+                  className="shrink-0 rounded-xl bg-navy-900 px-3 py-2 text-xs font-bold text-white transition-all hover:bg-navy-800 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  ارسال
+                </button>
+              </div>
             </form>
           )}
         </div>

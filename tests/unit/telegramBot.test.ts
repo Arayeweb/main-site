@@ -381,10 +381,11 @@ describe("telegram acquisition — unit", () => {
     const user = tgDb.db.tables.telegram_users[0] as never;
     await handleCallback(100, 34, user, "model_fast", "cb-2", 77);
     const updated = tgDb.db.tables.telegram_users[0];
-    expect(updated.state_data.selectedModelId).toBe("fast");
-    expect(updated.state_data.mode).toBe("quick_chat");
-    expect(updated.state_data.selectedModel).toBe("fast");
-    expect(updated.state_data.selectedAt).toBeTruthy();
+    const stateData = updated.state_data as Record<string, unknown>;
+    expect(stateData.selectedModelId).toBe("fast");
+    expect(stateData.mode).toBe("quick_chat");
+    expect(stateData.selectedModel).toBe("fast");
+    expect(stateData.selectedAt).toBeTruthy();
     expect(editMessageText).toHaveBeenCalledWith(
       100,
       77,

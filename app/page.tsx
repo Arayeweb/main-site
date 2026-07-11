@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import ClientLogos from "@/components/ClientLogos";
-import Services from "@/components/Services";
-import Industries from "@/components/Industries";
-import Solutions from "@/components/Solutions";
-import Process from "@/components/Process";
-import WhyAraaye from "@/components/WhyAraaye";
-import RealPortfolio from "@/components/RealPortfolio";
+import CustomerPath from "@/components/home/CustomerPath";
+import OutputSamples from "@/components/home/OutputSamples";
+import CollaborationProcess from "@/components/home/CollaborationProcess";
+import DoctorsSpecialtySection from "@/components/home/DoctorsSpecialtySection";
+import AraayeAiTeaser from "@/components/home/AraayeAiTeaser";
+import HomeFaq from "@/components/home/HomeFaq";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import { SITE_URL, canonicalUrl } from "@/lib/siteUrl";
@@ -51,13 +50,12 @@ export default function HomePage() {
       <Navbar />
       <main className="pb-20 sm:pb-0">
         <Hero />
-        <ClientLogos />
-        <Services />
-        <Industries />
-        <Solutions />
-        <Process />
-        <WhyAraaye />
-        <RealPortfolio />
+        <CustomerPath />
+        <OutputSamples />
+        <CollaborationProcess />
+        <DoctorsSpecialtySection />
+        <AraayeAiTeaser />
+        <HomeFaq />
         <CTA />
       </main>
       <Footer />

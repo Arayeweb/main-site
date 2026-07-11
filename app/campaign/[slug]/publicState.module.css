@@ -1,0 +1,113 @@
+.state,
+.loading {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1rem;
+  color: #172019;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(177, 224, 75, 0.17), transparent 25rem),
+    #f5f7f2;
+}
+
+.state > div {
+  display: grid;
+  max-width: 520px;
+  justify-items: center;
+  border: 1px solid #dfe5dd;
+  border-radius: 24px;
+  padding: 2.4rem 1.2rem;
+  background: #fff;
+  box-shadow: 0 20px 70px rgba(30, 43, 33, 0.08);
+  text-align: center;
+}
+
+.state div > span {
+  display: grid;
+  width: 66px;
+  height: 66px;
+  place-items: center;
+  border-radius: 21px;
+  color: #5e7f32;
+  background: #edf6dc;
+}
+
+.state h1 {
+  margin: 1rem 0 0;
+  font-size: clamp(1.25rem, 5vw, 1.8rem);
+  line-height: 1.6;
+}
+
+.state p {
+  margin: 0.55rem 0 1.15rem;
+  color: #68716a;
+  font-size: 0.75rem;
+  line-height: 1.9;
+}
+
+.state a {
+  border-radius: 11px;
+  padding: 0.7rem 0.95rem;
+  color: #fff;
+  background: #26391d;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.loading {
+  align-content: start;
+}
+
+.loadingBar {
+  width: min(100%, 1160px);
+  height: 64px;
+  border-radius: 0 0 18px 18px;
+  background: #fff;
+}
+
+.loadingHero {
+  display: grid;
+  width: min(100%, 1160px);
+  min-height: 520px;
+  align-content: center;
+  gap: 0.75rem;
+}
+
+.loadingHero > * {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e9ece8 25%, #f7f8f6 50%, #e9ece8 75%);
+  background-size: 200% 100%;
+  animation: state-shimmer 1.3s infinite;
+}
+
+.loadingHero span {
+  width: 120px;
+  height: 24px;
+}
+
+.loadingHero strong {
+  width: min(90%, 650px);
+  height: 46px;
+}
+
+.loadingHero strong:nth-of-type(2) {
+  width: min(70%, 510px);
+}
+
+.loadingHero p {
+  width: min(80%, 580px);
+  height: 15px;
+  margin: 0;
+}
+
+.loadingHero i {
+  width: 150px;
+  height: 48px;
+  margin-top: 0.5rem;
+}
+
+@keyframes state-shimmer {
+  to { background-position: -200% 0; }
+}

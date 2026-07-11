@@ -1,43 +1,35 @@
-import CtaLink from "./home/CtaLink";
-import { SITE_PHONE_TEL } from "@/lib/siteContact";
+import ChatOpenButton from "./home/ChatOpenButton";
 
 export default function CTA() {
   return (
-    <section id="cta" className="section-py bg-navy-50/40">
-      <div className="container-mx container-px">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy-900 via-navy-800 to-brand-900 px-6 py-16 text-center sm:px-12 sm:py-20">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-20 right-1/4 h-60 w-60 rounded-full bg-brand-500/20 blur-3xl" />
-            <div className="absolute -bottom-20 left-1/4 h-60 w-60 rounded-full bg-brand-400/15 blur-3xl" />
-          </div>
+    <section
+      id="cta"
+      className="relative flex min-h-[350px] items-center overflow-hidden bg-navy-900"
+    >
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <img
+          src="/assets/logo-icon.svg"
+          alt=""
+          width={320}
+          height={320}
+          className="absolute left-1/2 top-1/2 h-[min(55vw,320px)] w-[min(55vw,320px)] -translate-x-1/2 -translate-y-1/2 opacity-[0.05]"
+        />
+      </div>
 
-          <div className="relative z-10 mx-auto max-w-2xl">
-            <h2 className="text-2xl font-extrabold text-white sm:text-3xl lg:text-4xl text-balance leading-tight">
-              مشاوره رایگان ۳۰ دقیقه‌ای برای پروژه شما
-            </h2>
-            <p className="mt-5 text-base text-navy-200 sm:text-lg leading-relaxed">
-              نیاز شما را بررسی می‌کنیم و مسیر مناسب برای طراحی، توسعه یا اتوماسیون را پیشنهاد
-              می‌دهیم.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <CtaLink
-                href={SITE_PHONE_TEL}
-                location="cta_primary"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-navy-900 transition-all duration-200 hover:bg-navy-50 hover:shadow-glow active:scale-[0.98]"
-              >
-                تماس برای مشاوره رایگان
-              </CtaLink>
-              <CtaLink
-                href="#services"
-                location="cta_secondary"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 px-7 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:bg-white/10 active:scale-[0.98]"
-              >
-                مشاهده خدمات
-              </CtaLink>
-            </div>
-          </div>
-        </div>
+      <div className="relative z-10 mx-auto w-full max-w-[900px] px-5 py-14 text-center sm:px-6">
+        <h2 className="text-2xl font-extrabold leading-snug tracking-tight text-white sm:text-3xl lg:text-4xl">
+          نقطه شروع مناسب برای کسب‌وکار شما کجاست؟
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-white/70 sm:text-base">
+          کسب‌وکارتان را کوتاه معرفی کنید تا بر اساس هدف و شرایط فعلی، مسیر مناسب را مشخص
+          کنیم.
+        </p>
+        <ChatOpenButton
+          location="home_final_cta"
+          className="mt-8 inline-flex items-center justify-center rounded-xl bg-brand-400 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-300 active:scale-[0.98]"
+        >
+          شروع گفت‌وگو با آرایه
+        </ChatOpenButton>
       </div>
     </section>
   );

@@ -12,6 +12,7 @@ export const SITEMAP_PATHS = [
   "/free-seo-audit",
   "/doctors",
   "/bizcard",
+  "/adready",
   "/googlesabt",
   "/ai",
   "/ai/pricing",
@@ -31,6 +32,7 @@ export const SITEMAP_PATHS = [
 export const SITEMAP_EXCLUDED_PATTERNS = [
   /^\/admin(?:\/|$)/,
   /^\/demo(?:\/|$)/,
+  /^\/showcase(?:\/|$)/,
   /^\/ai\/runs(?:\/|$)/,
   /^\/ai\/battle(?:\/|$)/,
   /^\/ai\/share(?:\/|$)/,

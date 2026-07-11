@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
 import { getUtmParams } from "@/lib/utm";
 import { seoPackages, formatPackagePrice, getSeoPackage } from "@/lib/seoData";
+import { formatBusinessLabel, parseBusinessInput } from "@/lib/seoBusinessInput";
 
 /* ------------------------------------------------------------------ */
 /*  چت‌بات سئو — پورت منطق rule-based از public/assets/js/seo.js        */
@@ -61,6 +62,11 @@ const FAQ: Record<FaqKey, string> = {
     "عالی! شماره‌ت ثبت شد ✓\nکارشناس سئوی ما در کمتر از ۲ ساعت کاری باهات تماس می‌گیره. 🌟",
 };
 
+function businessAuditReply(business: string): string {
+  const label = formatBusinessLabel(business);
+  return `${label}\n\nبرای بررسی وضعیت حضور شما در گوگل، شماره تماس‌تون رو بفرستید تا کارشناس ما گزارش اولیه رو آماده کنه.\n\nمی‌تونید درباره پکیج‌ها و قیمت‌ها هم بپرسید.`;
+}
+
 const QUICK_KEYS: { key: FaqKey; label: string }[] = [
   { key: "price", label: "قیمت پکیج‌ها؟" },
   { key: "trial", label: "بررسی رایگان چیه؟" },
@@ -101,20 +107,12 @@ export default function SeoChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputVal, setInputVal] = useState("");
   const [typing, setTyping] = useState(false);
-  const [nudge, setNudge] = useState(false);
   const [started, setStarted] = useState(false);
-  const [badgeVisible, setBadgeVisible] = useState(true);
   const [leadSaved, setLeadSaved] = useState(false);
   const lastTopic = useRef<string>("");
+  const businessRef = useRef<string>("");
   const threadRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (!started) setNudge(true);
-    }, 20000);
-    return () => clearTimeout(t);
-  }, [started]);
 
   useEffect(() => {
     if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
@@ -131,8 +129,6 @@ export default function SeoChatWidget() {
 
   function openChat() {
     setOpen(true);
-    setNudge(false);
-    setBadgeVisible(false);
     if (!started) {
       setStarted(true);
       setTimeout(() => addBotMsg(FAQ.hello), 350);
@@ -140,10 +136,41 @@ export default function SeoChatWidget() {
     setTimeout(() => inputRef.current?.focus(), 500);
   }
 
+  const openChatWithBusiness = useCallback((business: string) => {
+    const trimmed = business.trim();
+    if (!trimmed) {
+      openChat();
+      return;
+    }
+
+    businessRef.current = trimmed;
+    setOpen(true);
+    setStarted(true);
+    setMessages([{ who: "user", text: trimmed }]);
+    setTimeout(() => addBotMsg(businessAuditReply(trimmed)), 350);
+    setTimeout(() => inputRef.current?.focus(), 500);
+  }, []);
+
+  const openChatWithBusinessRef = useRef(openChatWithBusiness);
+  openChatWithBusinessRef.current = openChatWithBusiness;
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ business?: string }>).detail;
+      if (detail?.business) {
+        openChatWithBusinessRef.current(detail.business);
+      }
+    };
+    window.addEventListener("araaye:open-seo-chat", handler);
+    return () => window.removeEventListener("araaye:open-seo-chat", handler);
+  }, []);
+
   function submitChatLead(phone: string) {
     const topic = lastTopic.current;
     const plan =
       topic === "starter" || topic === "growth" || topic === "pro" ? topic : undefined;
+    const business = businessRef.current;
+    const parsed = parseBusinessInput(business);
     fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -154,9 +181,9 @@ export default function SeoChatWidget() {
         goal: "seo_service",
         plan,
         channel: "seo_landing",
-        detail: `chatbot conversation | topic: ${topic || "-"}`,
+        detail: `chatbot conversation | topic: ${topic || "-"}${business ? ` | business: ${business}` : ""}`,
         referrer: document.referrer || undefined,
-        company: "",
+        company: parsed.name || parsed.website || "",
         ...getUtmParams(),
       }),
       keepalive: true,
@@ -204,16 +231,7 @@ export default function SeoChatWidget() {
   return (
     <>
       {/* Launcher — بالای sticky bar موبایل تا با CTA پایین تداخل نداشته باشد */}
-      <div className="fixed bottom-20 left-4 z-50 flex flex-col items-end gap-2 sm:bottom-5 sm:left-5">
-        {nudge && !open && (
-          <button
-            onClick={openChat}
-            className="animate-fade-up rounded-2xl bg-white border border-teal-100 shadow-lg px-4 py-3 text-sm font-medium text-navy-700 max-w-[230px] text-right leading-relaxed hover:shadow-xl transition-shadow"
-          >
-            سؤالی درباره سئو داری؟ بپرس 👋
-          </button>
-        )}
-
+      <div className="fixed bottom-20 left-4 z-50 sm:bottom-5 sm:left-5">
         <button
           onClick={() => (open ? setOpen(false) : openChat())}
           aria-label="چت با دستیار سئوی آرایه"
@@ -227,11 +245,6 @@ export default function SeoChatWidget() {
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-          )}
-          {badgeVisible && !open && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white ring-2 ring-white">
-              1
-            </span>
           )}
         </button>
       </div>

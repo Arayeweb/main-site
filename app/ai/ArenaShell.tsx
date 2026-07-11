@@ -452,6 +452,10 @@ export default function ArenaShell({
             )}
           </div>
         </nav>
+        <button type="button" className="ar-side-newchat" onClick={startNewChat}>
+          <IconNewChat size={14} />
+          گفتگوی جدید
+        </button>
         {authed ? (
           <button type="button" className="ar-side-auth" onClick={handleLogout}>
             <IconLogout size={14} />
