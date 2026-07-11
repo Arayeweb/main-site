@@ -47,7 +47,7 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
       />
-      <Navbar />
+      <Navbar ctaLabel="درخواست مشاوره" />
       <main className="pb-20 sm:pb-0">
         <Hero />
         <CustomerPath />

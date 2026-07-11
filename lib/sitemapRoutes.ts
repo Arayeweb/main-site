@@ -13,6 +13,7 @@ export const SITEMAP_PATHS = [
   "/doctors",
   "/bizcard",
   "/adready",
+  "/website-design",
   "/googlesabt",
   "/ai",
   "/ai/pricing",

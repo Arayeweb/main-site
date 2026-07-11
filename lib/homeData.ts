@@ -139,11 +139,11 @@ export const solutions: SolutionItem[] = [
   {
     title: "Araaye Web",
     key: "web",
-    url: "#cta",
+    url: "/website-design",
     description:
       "طراحی سایت و وب‌اپلیکیشن حرفه‌ای برای جذب مشتری، فروش و رشد کسب‌وکار.",
     icon: "layers",
-    cta: "مشاوره رایگان",
+    cta: "ثبت درخواست",
     accent: "from-brand-500 to-brand-700",
   },
   {
@@ -408,7 +408,7 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "راهکارها",
     links: [
-      { label: "طراحی سایت", url: "/#cta" },
+      { label: "طراحی سایت", url: "/website-design" },
       { label: "آرایه SEO", url: "/seo" },
       { label: "AdReady", url: "/adready" },
       { label: "پزشکان و کلینیک‌ها", url: "/doctors" },

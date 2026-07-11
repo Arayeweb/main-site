@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { pushGtmEvent } from "@/lib/gtm";
 import { type SiteChatSource } from "@/lib/openSiteChat";
 import { siteWhatsAppUrl } from "@/lib/siteContact";
@@ -41,6 +42,7 @@ interface ChatMessage {
 const INTENT_LABELS: Record<string, string> = {
   google: "در گوگل دیده شوم",
   website: "سایت یا صفحه فروش",
+  map: "در نقشه ثبت شم",
   doctors: "راهکار پزشکان و کلینیک‌ها",
   unsure: "هنوز مطمئن نیستم",
 };
@@ -51,12 +53,13 @@ const SCRIPT: Record<string, ScriptNode> = {
     quick: [
       { t: "در گوگل دیده شوم", go: "business", set: { intent: "google" } },
       { t: "سایت یا صفحه فروش می‌خواهم", go: "business", set: { intent: "website" } },
+      { t: "در نقشه ثبت شم", go: "business", set: { intent: "map" } },
       { t: "راهکار پزشکان و کلینیک‌ها", go: "business", set: { intent: "doctors" } },
       { t: "هنوز مطمئن نیستم", go: "business", set: { intent: "unsure" } },
     ],
   },
   business: {
-    msgs: ["نام یا نوع کسب‌وکارتان چیست؟"],
+    msgs: ["نوع کسب‌وکار و شماره تماس‌تان را بگذارید."],
     expects: "business",
   },
   channel: {
@@ -67,7 +70,7 @@ const SCRIPT: Record<string, ScriptNode> = {
     ],
   },
   contact: {
-    msgs: ["نام و شماره موبایل‌تان را بگذارید تا با شما تماس بگیریم."],
+    msgs: ["نام‌تان را بگذارید تا با شما تماس بگیریم."],
     expects: "contact_form",
   },
   whatsapp: {
@@ -151,19 +154,34 @@ function isPhone(v: string) {
 
 function whatsAppMessage(lead: LeadState) {
   const intent = INTENT_LABELS[lead.intent] || lead.intent;
-  return `سلام، از سایت آرایه پیام می‌دهم.\nنیاز من: ${intent}\nکسب‌وکار: ${lead.business}`;
+  const lines = [
+    "سلام، از سایت آرایه پیام می‌دهم.",
+    `نیاز من: ${intent}`,
+    `کسب‌وکار: ${lead.business}`,
+  ];
+  if (lead.contact) lines.push(`تماس: ${lead.contact}`);
+  return lines.join("\n");
 }
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                           */
 /* ------------------------------------------------------------------ */
 export default function ChatWidget() {
+  const pathname = usePathname();
+  const mobileStickyBar = pathname === "/";
+  const launcherPosition = mobileStickyBar
+    ? "fixed bottom-20 left-4 z-50 sm:bottom-5 sm:left-5"
+    : "fixed bottom-5 left-5 z-50";
+  const panelPosition = mobileStickyBar
+    ? "fixed bottom-[5.75rem] left-4 z-50 flex w-[calc(100vw-32px)] max-w-[420px] flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl animate-fade-up sm:bottom-5 sm:left-5 sm:w-[calc(100vw-40px)]"
+    : "fixed bottom-5 left-5 z-50 flex w-[calc(100vw-40px)] max-w-[420px] flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl animate-fade-up";
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [quickReplies, setQuickReplies] = useState<QuickReply[]>([]);
-  const [inputVal, setInputVal] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
   const [contactName, setContactName] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
   const [expecting, setExpecting] = useState<"business" | "contact_form" | null>(null);
   const [typing, setTyping] = useState(false);
   const [started, setStarted] = useState(false);
@@ -177,7 +195,7 @@ export default function ChatWidget() {
     channel: "",
   });
   const threadRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const businessTypeRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -185,7 +203,7 @@ export default function ChatWidget() {
   }, [messages, typing, quickReplies, expecting]);
 
   useEffect(() => {
-    if (expecting === "business" && inputRef.current) inputRef.current.focus();
+    if (expecting === "business" && businessTypeRef.current) businessTypeRef.current.focus();
     if (expecting === "contact_form" && nameRef.current) nameRef.current.focus();
   }, [expecting]);
 
@@ -275,13 +293,23 @@ export default function ChatWidget() {
     }
   }
 
+  function normalizePhone(phone: string) {
+    const digits = toLatin(phone).replace(/[\s\-()+]/g, "");
+    const local = digits.replace(/^(\+98|0098|0)/, "");
+    return local.length === 10 ? `0${local}` : digits;
+  }
+
   function handleBusinessSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const val = inputVal.trim();
-    if (!val) return;
-    lead.current.business = val;
-    setMessages((prev) => [...prev, { who: "user", text: val }]);
-    setInputVal("");
+    const type = businessType.trim();
+    const phone = businessPhone.trim();
+    if (!type || !isPhone(phone)) return;
+
+    lead.current.business = type;
+    lead.current.contact = normalizePhone(phone);
+    setMessages((prev) => [...prev, { who: "user", text: `${type} — ${phone}` }]);
+    setBusinessType("");
+    setBusinessPhone("");
     setExpecting(null);
     trackGuide("guide_business", lead.current);
     setTimeout(() => renderNode("channel"), 280);
@@ -290,20 +318,11 @@ export default function ChatWidget() {
   function handleContactSubmit(e: React.FormEvent) {
     e.preventDefault();
     const name = contactName.trim();
-    const phone = contactPhone.trim();
-    if (!name || !isPhone(phone)) return;
+    if (!name || !lead.current.contact) return;
 
     lead.current.name = name;
-    const digits = toLatin(phone).replace(/[\s\-()+]/g, "");
-    const local = digits.replace(/^(\+98|0098|0)/, "");
-    lead.current.contact = local.length === 10 ? `0${local}` : digits;
-
-    setMessages((prev) => [
-      ...prev,
-      { who: "user", text: `${name} — ${phone}` },
-    ]);
+    setMessages((prev) => [...prev, { who: "user", text: name }]);
     setContactName("");
-    setContactPhone("");
     setExpecting(null);
     trackGuide("guide_contact_submit", lead.current);
     submitLead(lead.current);
@@ -314,7 +333,7 @@ export default function ChatWidget() {
     <>
       {/* Launcher — hidden while panel is open (header has close) */}
       {!open && (
-        <div className="fixed bottom-5 left-5 z-50">
+        <div className={launcherPosition}>
           <button
             type="button"
             onClick={() => openChat("launcher")}
@@ -347,7 +366,7 @@ export default function ChatWidget() {
       {open && (
         <div
           dir="rtl"
-          className="fixed bottom-5 left-5 z-50 flex w-[calc(100vw-40px)] max-w-[420px] flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl animate-fade-up"
+          className={panelPosition}
           style={{ height: "min(550px, calc(100dvh - 40px))" }}
         >
           {/* Header */}
@@ -446,50 +465,47 @@ export default function ChatWidget() {
             </div>
           )}
 
-          {/* Business name input */}
+          {/* Business type + phone */}
           {expecting === "business" && (
             <form
               onSubmit={handleBusinessSubmit}
-              className="flex items-center gap-2 border-t border-navy-100 px-3 py-2.5"
+              className="space-y-2 border-t border-navy-100 px-3 py-2.5"
             >
               <input
-                ref={inputRef}
+                ref={businessTypeRef}
                 type="text"
                 dir="rtl"
-                value={inputVal}
-                onChange={(e) => setInputVal(e.target.value)}
-                placeholder="مثلاً کلینیک دندانپزشکی"
-                className="flex-1 rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value)}
+                placeholder="نوع کسب‌وکار، مثلاً کلینیک دندانپزشکی"
+                className="w-full rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
               />
-              <button
-                type="submit"
-                disabled={!inputVal.trim()}
-                aria-label="ادامه"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-white transition-all hover:bg-navy-800 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="rotate-180"
+              <div className="flex items-center gap-2">
+                <input
+                  type="tel"
+                  dir="ltr"
+                  value={businessPhone}
+                  onChange={(e) => setBusinessPhone(e.target.value)}
+                  placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                  className="flex-1 rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
+                />
+                <button
+                  type="submit"
+                  disabled={!businessType.trim() || !isPhone(businessPhone)}
+                  aria-label="ادامه"
+                  className="shrink-0 rounded-xl bg-navy-900 px-3 py-2 text-xs font-bold text-white transition-all hover:bg-navy-800 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
+                  ادامه
+                </button>
+              </div>
             </form>
           )}
 
-          {/* Contact form */}
+          {/* Contact form — name only; phone collected in business step */}
           {expecting === "contact_form" && (
             <form
               onSubmit={handleContactSubmit}
-              className="space-y-2 border-t border-navy-100 px-3 py-2.5"
+              className="flex items-center gap-2 border-t border-navy-100 px-3 py-2.5"
             >
               <input
                 ref={nameRef}
@@ -498,25 +514,15 @@ export default function ChatWidget() {
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder="نام"
-                className="w-full rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
+                className="flex-1 rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
               />
-              <div className="flex items-center gap-2">
-                <input
-                  type="tel"
-                  dir="ltr"
-                  value={contactPhone}
-                  onChange={(e) => setContactPhone(e.target.value)}
-                  placeholder="۰۹۱۲۳۴۵۶۷۸۹"
-                  className="flex-1 rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
-                />
-                <button
-                  type="submit"
-                  disabled={!contactName.trim() || !isPhone(contactPhone)}
-                  className="shrink-0 rounded-xl bg-navy-900 px-3 py-2 text-xs font-bold text-white transition-all hover:bg-navy-800 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  ارسال
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={!contactName.trim()}
+                className="shrink-0 rounded-xl bg-navy-900 px-3 py-2 text-xs font-bold text-white transition-all hover:bg-navy-800 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ارسال
+              </button>
             </form>
           )}
         </div>

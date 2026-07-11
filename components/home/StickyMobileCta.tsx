@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
-import { openSiteChat } from "@/lib/openSiteChat";
+import { siteWhatsAppUrl } from "@/lib/siteContact";
+
+const WHATSAPP_MESSAGE = "سلام، از سایت آرایه پیام می‌دهم.";
 
 export default function StickyMobileCta() {
   const [visible, setVisible] = useState(false);
@@ -17,17 +19,17 @@ export default function StickyMobileCta() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-100 bg-white/95 p-3 backdrop-blur-md sm:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-100 bg-white/95 p-3 pl-20 backdrop-blur-md sm:hidden">
       <a
-        href="#chat"
-        onClick={(event) => {
-          event.preventDefault();
-          pushGtmEvent("cta_click", { location: "sticky_mobile" });
-          openSiteChat("sticky_mobile_cta");
-        }}
+        href={siteWhatsAppUrl(WHATSAPP_MESSAGE)}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() =>
+          pushGtmEvent("cta_click", { location: "sticky_mobile", channel: "whatsapp" })
+        }
         className="btn-primary w-full text-center"
       >
-        شروع گفت‌وگو
+        پیام در واتساپ
       </a>
     </div>
   );

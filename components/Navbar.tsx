@@ -8,7 +8,7 @@ const solutionLinks = [
   {
     label: "طراحی سایت",
     description: "سایت واضح با مسیر تماس، رزرو یا ثبت درخواست",
-    href: "/#cta",
+    href: "/website-design",
   },
   {
     label: "آرایه SEO",

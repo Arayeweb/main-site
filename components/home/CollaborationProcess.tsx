@@ -54,7 +54,7 @@ export default function CollaborationProcess() {
             onClick={() => openSiteChat("collaboration_process")}
             className="inline-flex items-center justify-center rounded-xl bg-navy-900 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-navy-800 active:scale-[0.98]"
           >
-            شروع گفت‌وگو
+            درخواست مشاوره
           </button>
         </div>
       </div>

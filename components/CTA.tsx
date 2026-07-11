@@ -28,7 +28,7 @@ export default function CTA() {
           location="home_final_cta"
           className="mt-8 inline-flex items-center justify-center rounded-xl bg-brand-400 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-300 active:scale-[0.98]"
         >
-          شروع گفت‌وگو با آرایه
+          درخواست مشاوره رایگان
         </ChatOpenButton>
       </div>
     </section>

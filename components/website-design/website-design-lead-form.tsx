@@ -1,0 +1,369 @@
+"use client";
+
+import { useRef, useState } from "react";
+import SectionHeader from "@/components/home/SectionHeader";
+import { IconCheck, IconPhone } from "@/components/icons";
+import { pushGtmEvent } from "@/lib/gtm";
+import { getUtmParams } from "@/lib/utm";
+import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL } from "@/lib/siteContact";
+import {
+  LEAD_FORM_ID,
+  mainGoalOptions,
+  projectTypeOptions,
+  WEBSITE_DESIGN_PAGE,
+} from "@/data/website-design";
+
+const VISITOR_KEY = "ary_wd_vid";
+const SUBMIT_COOLDOWN_MS = 30_000;
+
+const inputClassName =
+  "w-full rounded-xl border border-navy-100 bg-navy-50/50 px-4 py-3 text-sm text-navy-900 outline-none transition focus:border-teal-400 focus:bg-white disabled:opacity-60";
+
+function toLatinDigits(value: string) {
+  return value
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660));
+}
+
+function isValidIranianMobile(value: string): boolean {
+  const digits = toLatinDigits(value).replace(/\D/g, "");
+  return /^09\d{9}$/.test(digits);
+}
+
+function normalizeIranPhone(value: string): string | null {
+  if (!isValidIranianMobile(value)) return null;
+  return toLatinDigits(value).replace(/\D/g, "");
+}
+
+function getVisitorId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const existing = localStorage.getItem(VISITOR_KEY);
+    if (existing) return existing;
+    const id =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `wd-${Date.now()}`;
+    localStorage.setItem(VISITOR_KEY, id);
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+function analyticsPayload(extra: Record<string, string | number | boolean | undefined> = {}) {
+  return {
+    page: WEBSITE_DESIGN_PAGE,
+    visitorId: getVisitorId() ?? undefined,
+    timestamp: Date.now(),
+    ...getUtmParams(),
+    ...extra,
+  };
+}
+
+export default function WebsiteDesignLeadForm() {
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [currentWebsite, setCurrentWebsite] = useState("");
+  const [projectType, setProjectType] = useState("");
+  const [mainGoal, setMainGoal] = useState("");
+  const [budget, setBudget] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const formStartedRef = useRef(false);
+  const lastSubmitRef = useRef(0);
+
+  const trackFormStart = () => {
+    if (formStartedRef.current) return;
+    formStartedRef.current = true;
+    pushGtmEvent("website_design_form_start", analyticsPayload());
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    const now = Date.now();
+    if (now - lastSubmitRef.current < SUBMIT_COOLDOWN_MS) {
+      setError("لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.");
+      return;
+    }
+
+    if (!fullName.trim()) {
+      setError("لطفاً نام کامل را وارد کنید.");
+      return;
+    }
+
+    const normalizedPhone = normalizeIranPhone(phone);
+    if (!normalizedPhone) {
+      setError("شماره موبایل را درست وارد کنید.");
+      return;
+    }
+
+    if (!businessName.trim()) {
+      setError("لطفاً نام کسب‌وکار را وارد کنید.");
+      return;
+    }
+
+    if (!projectType) {
+      setError("لطفاً نوع پروژه را انتخاب کنید.");
+      return;
+    }
+
+    if (!mainGoal) {
+      setError("لطفاً هدف اصلی پروژه را انتخاب کنید.");
+      return;
+    }
+
+    setLoading(true);
+    lastSubmitRef.current = now;
+
+    const detailParts = [
+      `business=${businessName.trim()}`,
+      currentWebsite.trim() ? `website=${currentWebsite.trim()}` : null,
+      message.trim() ? `message=${message.trim()}` : null,
+    ].filter(Boolean);
+
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "website-design",
+          page: WEBSITE_DESIGN_PAGE,
+          name: fullName.trim(),
+          contact: normalizedPhone,
+          goal: mainGoal,
+          sitetype: projectType,
+          budget: budget.trim() || null,
+          channel: "website_design_landing",
+          detail: detailParts.join(" | "),
+          referrer: typeof document !== "undefined" ? document.referrer || null : null,
+          company: "",
+          ...getUtmParams(),
+        }),
+      });
+
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+
+      if (!res.ok || !data.ok) {
+        if (data.error === "rate_limited") {
+          setError("درخواست‌های زیاد. چند دقیقه بعد دوباره تلاش کنید.");
+        } else if (data.error === "invalid_contact") {
+          setError("شماره موبایل را درست وارد کنید.");
+        } else {
+          setError("ثبت درخواست ناموفق بود. دوباره تلاش کنید.");
+        }
+        return;
+      }
+
+      pushGtmEvent("website_design_lead_submit", analyticsPayload({ projectType, mainGoal }));
+      setSuccess(true);
+    } catch {
+      setError("خطا در ارتباط. اتصال اینترنت را بررسی کنید.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <section id={LEAD_FORM_ID} className="section-py scroll-mt-24 bg-white">
+        <div className="container-mx container-px">
+          <div
+            className="mx-auto max-w-xl rounded-3xl border border-navy-100 bg-white p-8 text-center shadow-card"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-teal-50 text-teal-700">
+              <IconCheck size={30} />
+            </div>
+            <p className="mt-2 text-sm leading-relaxed text-navy-500">
+              درخواست شما ثبت شد. تیم آرایه برای بررسی پروژه با شما تماس می‌گیرد.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section id={LEAD_FORM_ID} className="section-py scroll-mt-24 bg-white">
+      <div className="container-mx container-px">
+        <SectionHeader
+          badge="شروع پروژه"
+          title="درخواست طراحی سایت"
+          subtitle="اطلاعات اولیه را ثبت کنید تا نیاز پروژه بررسی و برای ادامه مسیر با شما تماس گرفته شود."
+        />
+
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto max-w-2xl rounded-3xl border border-navy-100 bg-white p-6 shadow-card sm:p-8"
+          noValidate
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="wd-full-name" className="mb-1.5 block text-[13px] font-bold text-navy-700">
+                نام کامل *
+              </label>
+              <input
+                id="wd-full-name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                onFocus={trackFormStart}
+                autoComplete="name"
+                disabled={loading}
+                className={inputClassName}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="wd-phone" className="mb-1.5 block text-[13px] font-bold text-navy-700">
+                شماره موبایل *
+              </label>
+              <input
+                id="wd-phone"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                dir="ltr"
+                placeholder="09xxxxxxxxx"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onFocus={trackFormStart}
+                disabled={loading}
+                className={`${inputClassName} text-start`}
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="wd-business" className="mb-1.5 block text-[13px] font-bold text-navy-700">
+                نام کسب‌وکار *
+              </label>
+              <input
+                id="wd-business"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                onFocus={trackFormStart}
+                disabled={loading}
+                className={inputClassName}
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="wd-website" className="mb-1.5 block text-[13px] font-bold text-navy-700">
+                وب‌سایت فعلی
+              </label>
+              <input
+                id="wd-website"
+                value={currentWebsite}
+                onChange={(e) => setCurrentWebsite(e.target.value)}
+                onFocus={trackFormStart}
+                placeholder="example.com"
+                inputMode="url"
+                dir="ltr"
+                disabled={loading}
+                className={`${inputClassName} text-start`}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="wd-project-type" className="mb-1.5 block text-[13px] font-bold text-navy-700">
+                نوع پروژه *
+              </label>
+              <select
+                id="wd-project-type"
+                value={projectType}
+                onChange={(e) => setProjectType(e.target.value)}
+                onFocus={trackFormStart}
+                disabled={loading}
+                className={inputClassName}
+              >
+                <option value="">انتخاب کنید</option>
+                {projectTypeOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="wd-main-goal" className="mb-1.5 block text-[13px] font-bold text-navy-700">
+                هدف اصلی *
+              </label>
+              <select
+                id="wd-main-goal"
+                value={mainGoal}
+                onChange={(e) => setMainGoal(e.target.value)}
+                onFocus={trackFormStart}
+                disabled={loading}
+                className={inputClassName}
+              >
+                <option value="">انتخاب کنید</option>
+                {mainGoalOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="wd-budget" className="mb-1.5 block text-[13px] font-bold text-navy-700">
+                بودجه تقریبی
+              </label>
+              <input
+                id="wd-budget"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                onFocus={trackFormStart}
+                disabled={loading}
+                className={inputClassName}
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="wd-message" className="mb-1.5 block text-[13px] font-bold text-navy-700">
+                توضیحات
+              </label>
+              <textarea
+                id="wd-message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onFocus={trackFormStart}
+                rows={4}
+                disabled={loading}
+                className={`${inputClassName} resize-y`}
+              />
+            </div>
+          </div>
+
+          <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
+
+          {error ? (
+            <p className="mt-4 text-sm font-bold text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <button type="submit" disabled={loading} className="btn-primary mt-6 w-full">
+            {loading ? "در حال ارسال..." : "ثبت درخواست طراحی سایت"}
+          </button>
+
+          <a
+            href={SITE_PHONE_TEL}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 px-6 py-3 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
+            onClick={() => pushGtmEvent("website_design_phone_click", analyticsPayload())}
+          >
+            <IconPhone size={16} aria-hidden="true" />
+            {SITE_PHONE_DISPLAY}
+          </a>
+        </form>
+      </div>
+    </section>
+  );
+}
