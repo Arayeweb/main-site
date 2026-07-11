@@ -8,9 +8,20 @@ export type SiteChatSource =
   | "sticky_mobile_cta"
   | string;
 
-export function openSiteChat(source: SiteChatSource = "launcher") {
+export type WebsiteDesignProjectType = "new" | "redesign";
+
+export interface SiteChatPrefill {
+  flow: "website_design_hero";
+  projectType: WebsiteDesignProjectType;
+  contact: string;
+}
+
+export function openSiteChat(
+  source: SiteChatSource = "launcher",
+  prefill?: SiteChatPrefill
+) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(
-    new CustomEvent("araaye:open-chat", { detail: { source } })
+    new CustomEvent("araaye:open-chat", { detail: { source, prefill } })
   );
 }

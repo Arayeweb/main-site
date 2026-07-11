@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { pushGtmEvent } from "@/lib/gtm";
-import { type SiteChatSource } from "@/lib/openSiteChat";
+import { type SiteChatSource, type SiteChatPrefill } from "@/lib/openSiteChat";
 import { siteWhatsAppUrl } from "@/lib/siteContact";
 
 /* ------------------------------------------------------------------ */
@@ -19,7 +19,7 @@ interface QuickReply {
 interface ScriptNode {
   msgs: string[];
   quick?: QuickReply[];
-  expects?: "business" | "contact_form";
+  expects?: "business" | "contact_form" | "business_name_only";
 }
 
 interface LeadState {
@@ -45,7 +45,11 @@ const INTENT_LABELS: Record<string, string> = {
   map: "در نقشه ثبت شم",
   doctors: "راهکار پزشکان و کلینیک‌ها",
   unsure: "هنوز مطمئن نیستم",
+  new: "سایت جدید می‌خواهم",
+  redesign: "سایت فعلی نیاز به بازطراحی دارد",
 };
+
+const WD_HERO_SOURCE = "Hero طراحی سایت";
 
 const SCRIPT: Record<string, ScriptNode> = {
   start: {
@@ -61,6 +65,10 @@ const SCRIPT: Record<string, ScriptNode> = {
   business: {
     msgs: ["نوع کسب‌وکار و شماره تماس‌تان را بگذارید."],
     expects: "business",
+  },
+  wd_business: {
+    msgs: ["نام یا حوزه کسب‌وکارتان چیست؟"],
+    expects: "business_name_only",
   },
   channel: {
     msgs: ["ترجیح می‌دهید چطور ادامه دهیم؟"],
@@ -119,15 +127,18 @@ function submitLead(lead: LeadState) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      source: "site_guide",
+      source: lead.clickSource === "website_design_hero" ? "website-design-hero" : "site_guide",
       page: window.location.pathname,
       referrer: document.referrer || undefined,
-      name: lead.name || undefined,
+      name: lead.name || lead.business || undefined,
       contact: lead.contact,
       intent: lead.intent || undefined,
       detail: lead.business || undefined,
       channel: lead.channel || undefined,
-      goal: lead.clickSource || undefined,
+      goal:
+        lead.clickSource === "website_design_hero"
+          ? WD_HERO_SOURCE
+          : lead.clickSource || undefined,
       ...utms,
       raw: {
         click_source: lead.clickSource,
@@ -154,11 +165,14 @@ function isPhone(v: string) {
 
 function whatsAppMessage(lead: LeadState) {
   const intent = INTENT_LABELS[lead.intent] || lead.intent;
-  const lines = [
-    "سلام، از سایت آرایه پیام می‌دهم.",
-    `نیاز من: ${intent}`,
-    `کسب‌وکار: ${lead.business}`,
-  ];
+  const lines = ["سلام، از سایت آرایه پیام می‌دهم."];
+  if (lead.intent === "new" || lead.intent === "redesign") {
+    lines.push(`منبع: ${WD_HERO_SOURCE}`);
+    lines.push(`نیاز: ${intent}`);
+  } else {
+    lines.push(`نیاز من: ${intent}`);
+  }
+  if (lead.business) lines.push(`کسب‌وکار: ${lead.business}`);
   if (lead.contact) lines.push(`تماس: ${lead.contact}`);
   return lines.join("\n");
 }
@@ -182,7 +196,7 @@ export default function ChatWidget() {
   const [businessType, setBusinessType] = useState("");
   const [businessPhone, setBusinessPhone] = useState("");
   const [contactName, setContactName] = useState("");
-  const [expecting, setExpecting] = useState<"business" | "contact_form" | null>(null);
+  const [expecting, setExpecting] = useState<"business" | "contact_form" | "business_name_only" | null>(null);
   const [typing, setTyping] = useState(false);
   const [started, setStarted] = useState(false);
   const [badgeVisible, setBadgeVisible] = useState(true);
@@ -204,6 +218,7 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (expecting === "business" && businessTypeRef.current) businessTypeRef.current.focus();
+    if (expecting === "business_name_only" && businessTypeRef.current) businessTypeRef.current.focus();
     if (expecting === "contact_form" && nameRef.current) nameRef.current.focus();
   }, [expecting]);
 
@@ -240,25 +255,47 @@ export default function ChatWidget() {
     addBotMsgs([...node.msgs], node);
   }
 
-  const openChat = useCallback((source: SiteChatSource = "launcher") => {
-    lead.current.clickSource = source;
-    setOpen(true);
-    setBadgeVisible(false);
-    trackGuide("guide_open", lead.current);
-    if (!started) {
-      setStarted(true);
-      setTimeout(() => renderNode("start"), 300);
-    }
-  }, [started]);
+  const openChat = useCallback(
+    (source: SiteChatSource = "launcher", prefill?: SiteChatPrefill) => {
+      lead.current.clickSource = source;
+      setOpen(true);
+      setBadgeVisible(false);
+      trackGuide("guide_open", lead.current);
+
+      if (prefill?.flow === "website_design_hero") {
+        lead.current.clickSource = "website_design_hero";
+        lead.current.intent = prefill.projectType;
+        lead.current.contact = prefill.contact;
+
+        const projectLabel = INTENT_LABELS[prefill.projectType] || prefill.projectType;
+        setStarted(true);
+        setMessages([
+          { who: "user", text: projectLabel },
+          { who: "user", text: prefill.contact },
+        ]);
+        setQuickReplies([]);
+        setExpecting(null);
+        trackGuide("guide_intent", lead.current, { selection: projectLabel });
+        setTimeout(() => renderNode("wd_business"), 300);
+        return;
+      }
+
+      if (!started) {
+        setStarted(true);
+        setTimeout(() => renderNode("start"), 300);
+      }
+    },
+    [started]
+  );
 
   const openChatRef = useRef(openChat);
   openChatRef.current = openChat;
 
   useEffect(() => {
     const handler = (event: Event) => {
-      const source =
-        (event as CustomEvent<{ source?: SiteChatSource }>).detail?.source || "launcher";
-      openChatRef.current(source);
+      const detail = (event as CustomEvent<{ source?: SiteChatSource; prefill?: SiteChatPrefill }>)
+        .detail;
+      openChatRef.current(detail?.source || "launcher", detail?.prefill);
     };
     window.addEventListener("araaye:open-chat", handler);
     return () => window.removeEventListener("araaye:open-chat", handler);
@@ -277,6 +314,9 @@ export default function ChatWidget() {
       lead.current.channel = "whatsapp";
       trackGuide("guide_channel", lead.current, { selection: q.t });
       trackGuide("guide_whatsapp", lead.current);
+      if (lead.current.intent === "new" || lead.current.intent === "redesign") {
+        submitLead(lead.current);
+      }
       window.open(siteWhatsAppUrl(whatsAppMessage(lead.current)), "_blank", "noopener,noreferrer");
       setTimeout(() => renderNode("whatsapp"), 280);
       return;
@@ -285,6 +325,11 @@ export default function ChatWidget() {
     if (q.go === "contact") {
       lead.current.channel = "phone_call";
       trackGuide("guide_channel", lead.current, { selection: q.t });
+      if (lead.current.intent === "new" || lead.current.intent === "redesign") {
+        submitLead(lead.current);
+        setTimeout(() => renderNode("thanks"), 280);
+        return;
+      }
     }
 
     if (q.go) {
@@ -297,6 +342,19 @@ export default function ChatWidget() {
     const digits = toLatin(phone).replace(/[\s\-()+]/g, "");
     const local = digits.replace(/^(\+98|0098|0)/, "");
     return local.length === 10 ? `0${local}` : digits;
+  }
+
+  function handleBusinessNameOnlySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const type = businessType.trim();
+    if (!type || !lead.current.contact) return;
+
+    lead.current.business = type;
+    setMessages((prev) => [...prev, { who: "user", text: type }]);
+    setBusinessType("");
+    setExpecting(null);
+    trackGuide("guide_business", lead.current);
+    setTimeout(() => renderNode("channel"), 280);
   }
 
   function handleBusinessSubmit(e: React.FormEvent) {
@@ -463,6 +521,32 @@ export default function ChatWidget() {
                 </button>
               ))}
             </div>
+          )}
+
+          {/* Business name only — website design hero flow */}
+          {expecting === "business_name_only" && (
+            <form
+              onSubmit={handleBusinessNameOnlySubmit}
+              className="flex items-center gap-2 border-t border-navy-100 px-3 py-2.5"
+            >
+              <input
+                ref={businessTypeRef}
+                type="text"
+                dir="rtl"
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value)}
+                placeholder="نام یا حوزه کسب‌وکار"
+                className="flex-1 rounded-xl bg-navy-50 px-3 py-2 text-sm text-navy-900 outline-none transition-colors placeholder:text-navy-400 focus:bg-white focus:ring-2 focus:ring-navy-200"
+              />
+              <button
+                type="submit"
+                disabled={!businessType.trim()}
+                aria-label="ادامه"
+                className="shrink-0 rounded-xl bg-navy-900 px-3 py-2 text-xs font-bold text-white transition-all hover:bg-navy-800 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ادامه
+              </button>
+            </form>
           )}
 
           {/* Business type + phone */}

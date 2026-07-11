@@ -135,28 +135,52 @@ export const websiteTypes = [
 
 export const processSteps = [
   {
-    title: "جلسه شناخت",
-    description: "هدف، مخاطب، خدمات، رقبا و محدودیت‌های پروژه مشخص می‌شوند.",
+    id: "discovery",
+    shortLabel: "شناخت",
+    title: "شناخت کسب‌وکار",
+    description:
+      "درباره خدمات، مشتریان، هدف سایت و نمونه‌های موردعلاقه شما صحبت می‌کنیم.",
+    deliverable: "شرح پروژه، فهرست نیازها و محدوده همکاری",
   },
   {
-    title: "استراتژی و ساختار",
-    description: "ساختار صفحات، پیام‌ها، CTAها و مسیر تبدیل کاربر طراحی می‌شوند.",
+    id: "structure",
+    shortLabel: "ساختار",
+    title: "محتوا و ساختار سایت",
+    description:
+      "صفحه‌های لازم، ترتیب اطلاعات، متن‌ها، تصاویر و مسیر حرکت مشتری مشخص می‌شوند.",
+    deliverable: "نقشه سایت، فهرست صفحات و موارد موردنیاز از شما",
   },
   {
-    title: "طراحی رابط کاربری",
-    description: "صفحات اصلی با هویت بصری مناسب کسب‌وکار طراحی می‌شوند.",
+    id: "design",
+    shortLabel: "طراحی",
+    title: "طراحی ظاهر سایت",
+    description:
+      "صفحه اصلی و صفحات مهم طراحی می‌شوند و قبل از ساخت، برای تأیید نمایش داده می‌شوند.",
+    deliverable: "طرح تأییدشده دسکتاپ و موبایل",
   },
   {
-    title: "توسعه",
-    description: "طرح‌ها به سایت سریع، واکنش‌گرا و قابل‌استفاده تبدیل می‌شوند.",
+    id: "build",
+    shortLabel: "ساخت",
+    title: "ساخت و اتصال امکانات",
+    description:
+      "طرح به سایت واقعی تبدیل می‌شود؛ فرم‌ها، راه‌های تماس، نوبت‌دهی و ابزارهای لازم متصل می‌شوند.",
+    deliverable: "نسخه آزمایشی قابل بررسی",
   },
   {
-    title: "تست و بازبینی",
-    description: "نمایش موبایل، فرم‌ها، لینک‌ها، سرعت و عملکرد صفحات بررسی می‌شوند.",
+    id: "launch",
+    shortLabel: "انتشار",
+    title: "آزمایش و انتشار",
+    description:
+      "نمایش موبایل، سرعت، فرم‌ها، لینک‌ها و تنظیمات پایه گوگل بررسی می‌شوند؛ سپس سایت روی دامنه اصلی منتشر می‌شود.",
+    deliverable: "سایت منتشرشده، دسترسی‌ها و فایل‌های تحویل",
   },
   {
-    title: "انتشار و اندازه‌گیری",
-    description: "سایت روی دامنه منتشر و ابزارهای تحلیل و پیگیری لید فعال می‌شوند.",
+    id: "support",
+    shortLabel: "پشتیبانی",
+    title: "پشتیبانی پس از تحویل",
+    description:
+      "ایرادهای مربوط به اجرای پروژه در مدت مشخص‌شده قرارداد برطرف می‌شوند. تغییرات و توسعه‌های جدید جداگانه بررسی می‌شوند.",
+    deliverable: "تحویل نهایی و مسیر پشتیبانی مشخص",
   },
 ] as const;
 
@@ -220,13 +244,93 @@ export const portfolioItems: PortfolioItem[] = [
   },
 ];
 
-export const pricingFactors = [
-  "تعداد و نوع صفحات",
-  "سطح طراحی اختصاصی",
-  "امکانات و فرم‌ها",
-  "مدیریت محتوا",
-  "اتصال به ابزارهای دیگر",
+export interface WebsiteDesignPricingPlan {
+  id: string;
+  title: string;
+  audience: string;
+  features: readonly string[];
+  priceFrom: number;
+  timeline: string;
+  revisions: string;
+  support: string;
+}
+
+export const websiteDesignPricingPlans: WebsiteDesignPricingPlan[] = [
+  {
+    id: "business",
+    title: "سایت معرفی کسب‌وکار",
+    audience: "مناسب پزشکان، کلینیک‌ها، شرکت‌ها و کسب‌وکارهای خدماتی.",
+    features: [
+      "صفحه اصلی",
+      "معرفی خدمات",
+      "درباره ما",
+      "تماس و فرم درخواست",
+      "نمایش درست در موبایل",
+      "تنظیمات پایه گوگل",
+    ],
+    priceFrom: 25_000_000,
+    timeline: "۳ تا ۵ هفته",
+    revisions: "۲ دور اصلاح",
+    support: "۱ ماه پشتیبانی فنی",
+  },
+  {
+    id: "professional",
+    title: "سایت حرفه‌ای و محتوایی",
+    audience: "مناسب کسب‌وکارهایی با چند خدمت، مقاله و مسیرهای تماس متفاوت.",
+    features: [
+      "صفحات خدمات اختصاصی",
+      "وبلاگ یا مقالات",
+      "فرم‌های پیشرفته‌تر",
+      "اتصال ابزارهای آمار",
+      "ساختار آماده توسعه و SEO",
+      "مدیریت محتوا در صورت نیاز",
+    ],
+    priceFrom: 45_000_000,
+    timeline: "۵ تا ۸ هفته",
+    revisions: "۳ دور اصلاح",
+    support: "۲ ماه پشتیبانی فنی",
+  },
+  {
+    id: "shop",
+    title: "فروشگاه آنلاین",
+    audience: "مناسب فروش محصول و دریافت سفارش اینترنتی.",
+    features: [
+      "محصولات و دسته‌بندی‌ها",
+      "جست‌وجو و فیلتر",
+      "سبد خرید",
+      "درگاه پرداخت",
+      "مدیریت سفارش",
+      "پنل مدیریت محصول",
+    ],
+    priceFrom: 80_000_000,
+    timeline: "۸ تا ۱۲ هفته",
+    revisions: "۳ دور اصلاح",
+    support: "۲ ماه پشتیبانی فنی",
+  },
 ] as const;
+
+export const websiteDesignPricingExtras = {
+  domainHosting:
+    "دامنه و هاست سالانه جداگانه محاسبه می‌شود؛ در صورت نیاز، انتخاب و راه‌اندازی اولیه در محدوده پروژه قرار می‌گیرد.",
+  contentProduction:
+    "تولید متن، عکاسی، ویدیو و ورود محصول به‌صورت جداگانه برآورد می‌شود؛ در صورت آماده‌بودن محتوا از سمت شما، هزینه کاهش می‌یابد.",
+  separateFeatures: [
+    "اتصال به CRM یا نرم‌افزارهای اختصاصی",
+    "چندزبانه‌سازی",
+    "پنل مدیریت پیشرفته",
+    "سئو و تولید محتوای مستمر",
+    "نگهداری و توسعه پس از پشتیبانی اولیه",
+  ],
+} as const;
+
+export function formatWebsiteDesignPrice(n: number): string {
+  if (n >= 1_000_000) {
+    const millions = n / 1_000_000;
+    const fa = millions.toLocaleString("en-US").replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
+    return `${fa} میلیون`;
+  }
+  return n.toLocaleString("en-US").replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
+}
 
 export const technologies = [
   "Static HTML/CSS/JavaScript",

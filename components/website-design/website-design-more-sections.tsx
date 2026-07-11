@@ -3,7 +3,7 @@
 import Link from "next/link";
 import SectionHeader from "@/components/home/SectionHeader";
 import { pushGtmEvent } from "@/lib/gtm";
-import { LEAD_FORM_ID, pricingFactors, technologies } from "@/data/website-design";
+import { technologies } from "@/data/website-design";
 
 function trackSeoClick() {
   pushGtmEvent("website_design_seo_click", {
@@ -63,39 +63,6 @@ export function WebsiteDesignTechnology() {
           </ul>
           <p className="mt-6 text-center text-sm leading-relaxed text-navy-500">
             انتخاب فناوری پس از بررسی نیاز واقعی پروژه انجام می‌شود، نه صرفاً بر اساس ترند بازار.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function WebsiteDesignPricing() {
-  return (
-    <section className="section-py bg-white">
-      <div className="container-mx container-px">
-        <SectionHeader
-          badge="هزینه پروژه"
-          title="قیمت طراحی سایت بر چه اساسی مشخص می‌شود؟"
-        />
-
-        <ul className="mx-auto grid max-w-3xl gap-3 sm:grid-cols-2">
-          {pricingFactors.map((factor) => (
-            <li
-              key={factor}
-              className="rounded-xl border border-navy-100 bg-navy-50/30 px-4 py-3.5 text-sm font-bold text-navy-800"
-            >
-              {factor}
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-8 text-center">
-          <a href={`#${LEAD_FORM_ID}`} className="btn-primary">
-            دریافت پیشنهاد قیمت
-          </a>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-navy-500">
-            پس از بررسی نیاز پروژه، محدوده کار، زمان اجرا و هزینه به‌صورت شفاف اعلام می‌شود.
           </p>
         </div>
       </div>

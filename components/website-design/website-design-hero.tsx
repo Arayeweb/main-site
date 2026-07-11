@@ -1,115 +1,209 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
-import { LEAD_FORM_ID, PORTFOLIO_SECTION_ID, trustItems } from "@/data/website-design";
+import { PORTFOLIO_SECTION_ID } from "@/data/website-design";
+import MedisaHomePreview from "@/components/home/previews/MedisaHomePreview";
+import ShivaClinicHomePreview from "@/components/home/previews/ShivaClinicHomePreview";
+import DeepinHomePreview from "@/components/home/previews/DeepinHomePreview";
+import WebsiteDesignHeroLeadBar, {
+  HERO_LEAD_BAR_ID,
+  HERO_LEAD_BAR_OPEN_EVENT,
+} from "@/components/website-design/website-design-hero-lead-bar";
 
-function HeroMockup() {
+const ACCENT = "#3157F6";
+const HERO_BG = "#F4F6FF";
+
+const FEATURED_PROJECTS = [
+  {
+    id: "medisa",
+    name: "استودیو معماری مدیسا",
+    description: "سایت معرفی پروژه‌ها و دریافت درخواست همکاری",
+    href: "/showcase/medisa-studio",
+    Preview: MedisaHomePreview,
+    thumbLabel: "استودیو معماری مدیسا",
+  },
+  {
+    id: "shiva",
+    name: "کلینیک شنوایی شیوا",
+    description: "سایت معرفی خدمات شنوایی و دریافت درخواست مشاوره",
+    href: "/showcase/shiva-hearing",
+    Preview: ShivaClinicHomePreview,
+    thumbLabel: "کلینیک شنوایی شیوا",
+  },
+  {
+    id: "deepinhq",
+    name: "DeepinHQ",
+    description: "سایت محصول SaaS برای معرفی پلتفرم، قابلیت‌ها و ثبت‌نام کاربران",
+    href: "https://deepinhq.com",
+    Preview: DeepinHomePreview,
+    thumbLabel: "DeepinHQ",
+  },
+] as const;
+
+type ProjectId = (typeof FEATURED_PROJECTS)[number]["id"];
+
+function track(event: string, extra: Record<string, string | number | undefined> = {}) {
+  pushGtmEvent(event, {
+    page: "/website-design",
+    timestamp: Date.now(),
+    ...extra,
+  });
+}
+
+const ctaBase =
+  "inline-flex h-14 items-center justify-center rounded-xl px-6 text-sm font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3157F6] focus-visible:ring-offset-2 active:scale-[0.98] sm:px-7";
+
+function FeaturedPreview() {
+  const [activeId, setActiveId] = useState<ProjectId>("medisa");
+  const activeIndex = FEATURED_PROJECTS.findIndex((p) => p.id === activeId);
+  const active = FEATURED_PROJECTS[activeIndex] ?? FEATURED_PROJECTS[0];
+  const ActivePreview = active.Preview;
+  const others = FEATURED_PROJECTS.filter((p) => p.id !== activeId);
+
   return (
-    <div className="relative mx-auto w-full max-w-lg lg:max-w-none" aria-hidden="true">
-      <div className="relative rounded-2xl border border-navy-100 bg-white p-3 shadow-card sm:p-4">
-        <div className="flex items-center gap-1.5 border-b border-navy-50 pb-2.5">
-          <span className="h-2 w-2 rounded-full bg-red-300" />
-          <span className="h-2 w-2 rounded-full bg-amber-300" />
-          <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span className="ms-auto truncate text-[10px] text-navy-400">business-site.ir</span>
+    <div className="w-full">
+      <div className="relative mx-auto w-full max-w-[1200px] pb-6 md:pb-20">
+        <div className="overflow-hidden rounded-[12px] border border-navy-100/90 bg-white shadow-soft">
+          <div className="pointer-events-none max-h-[650px] select-none overflow-hidden [&>div]:!rounded-none [&>div]:!border-0 [&>div]:!shadow-none">
+            {active.id === "medisa" ? <MedisaHomePreview decorative /> : <ActivePreview />}
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-navy-100 px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-5 sm:py-4">
+            <div className="text-right">
+              <p className="text-sm font-extrabold text-navy-900 sm:text-[15px]">{active.name}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-navy-500">{active.description}</p>
+              {active.href.startsWith("http") ? (
+                <a
+                  href={active.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() =>
+                    track("website_design_portfolio_click", {
+                      location: "hero_featured_link",
+                      project: active.id,
+                    })
+                  }
+                  className="mt-2 inline-flex items-center text-[13px] font-bold transition-colors hover:opacity-80"
+                  style={{ color: ACCENT }}
+                >
+                  مشاهده پروژه
+                  <span aria-hidden="true" className="ms-1">
+                    ↗
+                  </span>
+                </a>
+              ) : (
+                <Link
+                  href={active.href}
+                  onClick={() =>
+                    track("website_design_portfolio_click", {
+                      location: "hero_featured_link",
+                      project: active.id,
+                    })
+                  }
+                  className="mt-2 inline-flex items-center text-[13px] font-bold transition-colors hover:opacity-80"
+                  style={{ color: ACCENT }}
+                >
+                  مشاهده پروژه
+                  <span aria-hidden="true" className="ms-1">
+                    ↗
+                  </span>
+                </Link>
+              )}
+            </div>
+            <p className="shrink-0 text-[12px] font-bold tabular-nums text-navy-400 sm:text-[13px]">
+              {String(activeIndex + 1).padStart(2, "0")} / {String(FEATURED_PROJECTS.length).padStart(2, "0")}
+            </p>
+          </div>
         </div>
-        <div className="mt-3 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="h-2.5 w-24 rounded bg-navy-900" />
-            <div className="rounded-lg bg-brand-600 px-3 py-1 text-[9px] font-bold text-white">
-              درخواست مشاوره
-            </div>
-          </div>
-          <div className="rounded-xl bg-navy-50 p-4">
-            <div className="mx-auto max-w-[85%] space-y-2 text-center">
-              <div className="mx-auto h-2 w-3/4 rounded bg-navy-200" />
-              <div className="mx-auto h-2 w-1/2 rounded bg-navy-100" />
-              <div className="mx-auto mt-3 h-7 w-28 rounded-lg bg-navy-900" />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {["خدمات", "درباره", "تماس"].map((label) => (
-              <div
-                key={label}
-                className="rounded-lg border border-navy-50 bg-navy-50/60 px-2 py-3 text-center text-[9px] font-medium text-navy-500"
-              >
-                {label}
-              </div>
-            ))}
-          </div>
+
+        <div className="relative z-10 mx-auto hidden w-[calc(100%-2rem)] max-w-[900px] md:absolute md:bottom-0 md:left-1/2 md:block md:-translate-x-1/2 md:translate-y-1/2">
+          <WebsiteDesignHeroLeadBar />
         </div>
       </div>
 
-      <div className="absolute -bottom-4 -start-3 w-[38%] max-w-[140px] rounded-2xl border border-navy-100 bg-white p-2 shadow-lg sm:-bottom-6 sm:-start-5 sm:max-w-[155px] sm:p-2.5">
-        <div className="mb-2 flex items-center justify-center">
-          <div className="h-1 w-8 rounded-full bg-navy-100" />
+      {others.length > 0 ? (
+        <div className="mx-auto mt-4 flex max-w-[1200px] flex-wrap items-stretch justify-center gap-3 sm:gap-4">
+          {others.map((project) => (
+            <button
+              key={project.id}
+              type="button"
+              onClick={() => {
+                setActiveId(project.id);
+                track("website_design_portfolio_click", {
+                  location: "hero_thumbnail",
+                  project: project.id,
+                });
+              }}
+              className="min-w-[140px] flex-1 rounded-[12px] border border-navy-100 bg-white px-4 py-3 text-center text-[13px] font-bold text-navy-700 transition-colors hover:border-[#C5D0FF] hover:text-[#3157F6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3157F6] focus-visible:ring-offset-2 sm:max-w-[280px] sm:flex-none"
+            >
+              {project.thumbLabel}
+            </button>
+          ))}
         </div>
-        <div className="space-y-1.5">
-          <div className="h-8 rounded-lg bg-brand-50" />
-          <div className="h-2 w-3/4 rounded bg-navy-100" />
-          <div className="h-2 w-1/2 rounded bg-navy-50" />
-          <div className="mt-2 h-6 rounded-md bg-navy-900" />
-        </div>
-      </div>
+      ) : null}
+
+      <p className="mt-4 text-center text-[12px] font-medium leading-relaxed text-navy-400 sm:text-[13px]">
+        طراحی اختصاصی · نمایش درست در موبایل · آماده برای گوگل · اتصال فرم و تماس
+      </p>
     </div>
   );
 }
 
-function trackCta(event: string, location: string) {
-  pushGtmEvent(event, {
-    page: "/website-design",
-    location,
-    timestamp: Date.now(),
-  });
-}
-
 export default function WebsiteDesignHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white to-navy-50/40 pb-12 pt-12 sm:pb-16 sm:pt-16">
+    <section
+      className="relative overflow-hidden pb-36 md:pb-16"
+      style={{ backgroundColor: HERO_BG, paddingTop: "calc(3.5rem + 80px)" }}
+    >
       <div className="container-mx container-px">
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-          <div className="text-center lg:text-start">
-            <span className="badge mb-4 bg-brand-50 text-brand-600">طراحی سایت آرایه</span>
-            <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-navy-900 sm:text-4xl lg:text-[2.65rem]">
-              سایتی که فقط زیبا نیست؛ برای جذب مشتری ساخته شده است
-            </h1>
-            <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-navy-500 sm:text-base lg:mx-0">
-              طراحی و توسعه سایت‌های حرفه‌ای، سریع و قابل‌اندازه‌گیری برای کسب‌وکارهایی که
-              می‌خواهند از وب‌سایت خود مشتری، اعتبار و رشد واقعی بگیرند.
-            </p>
+        <div className="mx-auto flex max-w-[950px] flex-col items-center text-center">
+          <span
+            className="inline-flex items-center rounded-full px-4 py-1.5 text-xs font-bold"
+            style={{ backgroundColor: "#E8EDFF", color: ACCENT }}
+          >
+            طراحی سایت آرایه
+          </span>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-              <a
-                href={`#${LEAD_FORM_ID}`}
-                onClick={() => trackCta("cta_click", "hero_primary")}
-                className="btn-primary"
-              >
-                ثبت درخواست طراحی سایت
-              </a>
-              <a
-                href={`#${PORTFOLIO_SECTION_ID}`}
-                onClick={() => {
-                  trackCta("website_design_portfolio_click", "hero_secondary");
-                }}
-                className="btn-secondary"
-              >
-                مشاهده نمونه‌کارها
-              </a>
-            </div>
+          <h1 className="mt-[28px] max-w-[950px] text-balance text-[clamp(2rem,4.2vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-navy-900">
+            <span className="block">سایتی که مشتری سریع بفهمد</span>
+            <span className="block">چه می‌کنید و چطور با شما تماس بگیرد</span>
+          </h1>
 
-            <ul className="mt-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
-              {trustItems.map((item) => (
-                <li
-                  key={item}
-                  className="inline-flex items-center rounded-full border border-navy-100 bg-white px-3 py-1 text-[11px] font-bold text-navy-600"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
+          <p className="mt-8 max-w-[780px] text-[15px] leading-[1.9] text-navy-500 sm:text-base">
+            خدمات، نمونه‌کارها و اطلاعات مهم کسب‌وکار‌تان را واضح می‌چینیم و مسیر تماس،
+            رزرو یا سفارش را ساده می‌کنیم.
+          </p>
+
+          <div className="mt-10 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:w-auto sm:flex-row sm:justify-center">
+            <a
+              href={`#${PORTFOLIO_SECTION_ID}`}
+              onClick={() => track("website_design_portfolio_click", { location: "hero_primary" })}
+              className={`${ctaBase} text-white hover:opacity-95`}
+              style={{ backgroundColor: ACCENT }}
+            >
+              مشاهده نمونه سایت‌ها
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                track("cta_click", { location: "website_design_hero_chat" });
+                window.dispatchEvent(new CustomEvent(HERO_LEAD_BAR_OPEN_EVENT));
+                const target = document.getElementById(HERO_LEAD_BAR_ID);
+                if (target) {
+                  target.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }}
+              className={`${ctaBase} border border-navy-200 bg-white text-navy-700 hover:border-[#C5D0FF] hover:bg-white hover:text-navy-900`}
+            >
+              گفت‌وگو درباره سایت
+            </button>
           </div>
+        </div>
 
-          <HeroMockup />
+        <div className="mx-auto mt-16 w-full max-w-[1200px]">
+          <FeaturedPreview />
         </div>
       </div>
     </section>

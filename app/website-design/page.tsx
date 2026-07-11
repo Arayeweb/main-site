@@ -2,20 +2,21 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WebsiteDesignHero from "@/components/website-design/website-design-hero";
+import WebsiteDesignLogic from "@/components/website-design/website-design-logic";
 import WebsiteDesignProblems from "@/components/website-design/website-design-problems";
 import WebsiteDesignDeliverables from "@/components/website-design/website-design-deliverables";
 import {
   WebsiteDesignAudiences,
   WebsiteDesignOutputs,
 } from "@/components/website-design/website-design-sections";
-import { WebsiteDesignTypes } from "@/components/website-design/website-type-comparison";
+import WebsiteDesignTestimonials from "@/components/website-design/website-design-testimonials";
 import WebsiteDesignProcess from "@/components/website-design/website-design-process";
 import WebsiteDesignPortfolio from "@/components/website-design/website-design-portfolio";
 import WebsiteTypeComparison from "@/components/website-design/website-type-comparison";
+import WebsiteDesignPricing from "@/components/website-design/website-design-pricing";
 import {
   WebsiteDesignSeoBlock,
   WebsiteDesignTechnology,
-  WebsiteDesignPricing,
 } from "@/components/website-design/website-design-more-sections";
 import WebsiteDesignFaq from "@/components/website-design/website-design-faq";
 import WebsiteDesignLeadForm from "@/components/website-design/website-design-lead-form";
@@ -77,21 +78,22 @@ export default function WebsiteDesignPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar ctaHref="#website-design-lead-form" ctaLabel="ثبت درخواست طراحی سایت" />
+      <Navbar ctaHref="#chat" ctaLabel="گفت‌وگو درباره سایت" />
       <main>
         <WebsiteDesignHero />
+        <WebsiteDesignLogic />
+        <WebsiteDesignTestimonials />
+        <WebsiteDesignPortfolio />
         <WebsiteDesignProblems />
         <WebsiteDesignDeliverables />
         <WebsiteDesignAudiences />
         <WebsiteDesignOutputs />
-        <WebsiteDesignTypes />
         <WebsiteDesignProcess />
-        <WebsiteDesignPortfolio />
+        <WebsiteDesignPricing />
+        <WebsiteDesignFaq />
         <WebsiteTypeComparison />
         <WebsiteDesignSeoBlock />
         <WebsiteDesignTechnology />
-        <WebsiteDesignPricing />
-        <WebsiteDesignFaq />
         <WebsiteDesignLeadForm />
         <WebsiteDesignFinalCta />
       </main>
