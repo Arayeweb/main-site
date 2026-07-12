@@ -147,6 +147,49 @@ export function fetchSalesStats() {
   return adminFetch<SalesStats>('/api/sales/stats', undefined, 'H1');
 }
 
+// ── Website project briefs ─────────────────────────────────
+
+export type ApiWebsiteBrief = Record<string, unknown>;
+
+export function fetchWebsiteBriefs(params?: {
+  q?: string;
+  status?: string;
+  recommended_service?: string;
+  recommendation_interest?: string;
+  page_num?: number;
+}) {
+  const sp = new URLSearchParams();
+  if (params?.q) sp.set('q', params.q);
+  if (params?.status) sp.set('status', params.status);
+  if (params?.recommended_service) sp.set('recommended_service', params.recommended_service);
+  if (params?.recommendation_interest) sp.set('recommendation_interest', params.recommendation_interest);
+  if (params?.page_num != null) sp.set('page_num', String(params.page_num));
+  const qs = sp.toString();
+  return adminFetch<{
+    briefs: ApiWebsiteBrief[];
+    page_num: number;
+    page_size: number;
+    total: number;
+    has_more: boolean;
+    migration_required?: boolean;
+  }>(`/api/admin/website-project-briefs${qs ? `?${qs}` : ''}`, undefined, 'H1');
+}
+
+export function fetchWebsiteBrief(id: string) {
+  return adminFetch<{ brief: ApiWebsiteBrief }>(
+    `/api/admin/website-project-briefs/${encodeURIComponent(id)}`,
+    undefined,
+    'H1'
+  );
+}
+
+export function patchWebsiteBrief(body: { id: string; status?: string; internal_notes?: string }) {
+  return adminFetch<Record<string, never>>('/api/admin/website-project-briefs', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  }, 'H2');
+}
+
 // ── Projects ─────────────────────────────────────────────
 
 export interface ApiProject {

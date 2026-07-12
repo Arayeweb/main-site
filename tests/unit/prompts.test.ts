@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ALL_PROMPTS, getAllPromptSlugs, getPromptBySlug } from "@/lib/prompts/promptData";
 import { getIndexablePromptPaths, isPromptComplete, isPromptIndexable } from "@/lib/prompts/indexable";
-import { buildAraayePromptUrl } from "@/lib/prompts/buildAraayeUrl";
+import { buildAraayeComparePromptUrl, buildAraayePromptUrl } from "@/lib/prompts/buildAraayeUrl";
 import { PROMPT_CATEGORIES } from "@/lib/prompts/promptTypes";
 
 const EXPECTED_SLUGS = [
@@ -24,6 +24,7 @@ const EXPECTED_SLUGS = [
   "business-plan",
   "customer-message",
   "sales-follow-up",
+  "google-review-reply",
   "proposal",
   "email",
   "translation",
@@ -38,18 +39,18 @@ const EXPECTED_SLUGS = [
 ] as const;
 
 describe("prompt catalog", () => {
-  it("has exactly 30 unique prompts", () => {
-    expect(ALL_PROMPTS).toHaveLength(30);
+  it("has exactly 31 unique prompts", () => {
+    expect(ALL_PROMPTS).toHaveLength(31);
     const slugs = getAllPromptSlugs();
-    expect(new Set(slugs).size).toBe(30);
+    expect(new Set(slugs).size).toBe(31);
     expect(slugs.sort()).toEqual([...EXPECTED_SLUGS].sort());
   });
 
   it("has unique meta titles and descriptions", () => {
     const titles = ALL_PROMPTS.map((p) => p.metaTitle);
     const descriptions = ALL_PROMPTS.map((p) => p.metaDescription);
-    expect(new Set(titles).size).toBe(30);
-    expect(new Set(descriptions).size).toBe(30);
+    expect(new Set(titles).size).toBe(31);
+    expect(new Set(descriptions).size).toBe(31);
   });
 
   it("marks all MVP prompts complete and indexable", () => {
@@ -61,7 +62,14 @@ describe("prompt catalog", () => {
       expect(prompt.relatedPrompts.every((slug) => Boolean(getPromptBySlug(slug)))).toBe(true);
     }
     expect(getIndexablePromptPaths()).toContain("/prompts");
-    expect(getIndexablePromptPaths()).toHaveLength(31);
+    expect(getIndexablePromptPaths()).toHaveLength(32);
+  });
+
+  it("builds compare URLs with side_by_side mode", () => {
+    const url = buildAraayeComparePromptUrl("test prompt", "google-review-reply");
+    const params = new URLSearchParams(url.slice(4));
+    expect(params.get("mode")).toBe("side_by_side");
+    expect(params.get("promptSlug")).toBe("google-review-reply");
   });
 
   it("covers all six categories", () => {

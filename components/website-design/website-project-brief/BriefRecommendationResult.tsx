@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   MapPin,
   TrendingUp,
@@ -43,12 +43,14 @@ type Props = {
   onDecline: () => void;
 };
 
-const stagger = {
+const easePremium = [0.22, 1, 0.36, 1] as const;
+
+const stagger: Variants = {
   hidden: { opacity: 0, y: 16 },
   show: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: 0.12 + i * 0.1, duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: 0.12 + i * 0.1, duration: 0.45, ease: easePremium },
   }),
 };
 
@@ -79,7 +81,7 @@ export default function BriefRecommendationResult({
       <motion.div
         initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.4, ease: easePremium }}
         className="relative overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-lg shadow-navy-900/5"
       >
         <div className={`pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b ${glow}`} />

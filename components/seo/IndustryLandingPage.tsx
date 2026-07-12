@@ -84,7 +84,7 @@ export default function IndustryLandingPage({ page }: { page: IndustryLandingPag
               <div className="text-right">
                 <span className="badge mb-4 bg-brand-50 text-brand-700">
                   <DynamicIcon name="searchCheck" size={13} className="text-brand-500" />
-                  {page.serviceType === "seo" ? "سئو و لید" : "طراحی سایت و لید"}
+                  {page.serviceType === "seo" ? "سیستم سرچ تا لید" : "سیستم جذب مشتری"}
                 </span>
 
                 <h1 className="text-3xl font-extrabold leading-[1.3] tracking-tight text-white sm:text-4xl lg:text-[2.55rem]">

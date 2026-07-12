@@ -56,5 +56,6 @@ describe("sitemapRoutes", () => {
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts/resume`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts/python-debug`);
+    expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts/google-review-reply`);
   });
 });

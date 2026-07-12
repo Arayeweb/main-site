@@ -11,6 +11,8 @@ export type AraayePrompt = {
   title: string;
   category: PromptCategoryId;
   shortDescription: string;
+  /** ۲–۳ پاراگراف برای بخش «این پرامپت چه کاری انجام می‌دهد؟» */
+  whatItDoes?: string[];
   searchIntent: string;
   targetUser: string;
   basePrompt: string;

@@ -21,13 +21,13 @@ export const industries: IndustryBase[] = [
     slug: "doctor",
     persianName: "پزشکان",
     englishName: "doctor",
-    audienceHint: "مطب/پزشک با تقاضای محلی برای نوبت",
+    audienceHint: "سیستم سرچ تا نوبت برای مطب و پزشک",
   },
   {
     slug: "clinic",
     persianName: "کلینیک‌ها",
     englishName: "clinic",
-    audienceHint: "مرکز چندخدمتی با نیاز به مسیر رزرو و انتخاب بخش",
+    audienceHint: "لندینگ هر بخش + CRM + رزرو",
   },
   {
     slug: "beauty-clinic",

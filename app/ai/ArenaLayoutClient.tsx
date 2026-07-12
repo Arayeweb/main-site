@@ -20,7 +20,11 @@ export default function ArenaLayoutClient({
   initialPlan: string;
 }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/ai/content-sales") || pathname.startsWith("/ai/features")) {
+  if (
+    pathname.startsWith("/ai/content-sales") ||
+    pathname.startsWith("/ai/features") ||
+    pathname.startsWith("/ai/better-than-one-ai")
+  ) {
     return <>{children}</>;
   }
   return (

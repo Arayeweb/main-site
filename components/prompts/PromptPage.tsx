@@ -82,12 +82,12 @@ export default function PromptPage({ prompt }: Props) {
             {prompt.shortDescription}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <CopyPromptButton text={prompt.basePrompt} slug={prompt.slug} />
             <RunInAraayeButton
               prompt={prompt.basePrompt}
               slug={prompt.slug}
-              label="اجرا در Araaye AI"
+              label="همین پرامپت را در Araaye AI اجرا کن"
             />
+            <CopyPromptButton text={prompt.basePrompt} slug={prompt.slug} />
           </div>
           <p className="mt-4 text-sm text-navy-400">
             مناسب برای: {prompt.targetUser}
@@ -96,10 +96,23 @@ export default function PromptPage({ prompt }: Props) {
       </section>
 
       <div className="container-mx container-px mt-10 space-y-12">
+        {prompt.whatItDoes && prompt.whatItDoes.length > 0 ? (
+          <section>
+            <h2 className="text-xl font-extrabold text-navy-900">
+              این پرامپت چه کاری انجام می‌دهد؟
+            </h2>
+            <div className="mt-4 max-w-3xl space-y-4 text-base leading-8 text-navy-600">
+              {prompt.whatItDoes.map((paragraph) => (
+                <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         {/* Main prompt */}
         <section>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-extrabold text-navy-900">پرامپت آماده</h2>
+            <h2 className="text-xl font-extrabold text-navy-900">خود پرامپت</h2>
             <CopyPromptButton
               text={activeText}
               slug={prompt.slug}
@@ -246,26 +259,28 @@ export default function PromptPage({ prompt }: Props) {
 
         {/* CTA */}
         <section className="rounded-3xl bg-navy-900 px-6 py-10 text-center text-white sm:px-10">
-          <h2 className="text-2xl font-extrabold">همین پرامپت را با چند مدل تست کن</h2>
+          <h2 className="text-2xl font-extrabold">
+            این پرامپت را با GPT، Claude و Gemini هم‌زمان اجرا کن و بهترین پاسخ را انتخاب کن
+          </h2>
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-navy-200 sm:text-base">
-            اگر می‌خواهی همین پرامپت را با چند مدل هوش مصنوعی تست کنی، آن را داخل Araaye AI اجرا
-            کن.
+            در حالت Compare Mode همان پرامپت را یک‌بار می‌فرستی و پاسخ سه مدل را کنار هم
+            می‌بینی — بدون کپی‌کردن مجدد یا جابه‌جایی بین تب‌ها.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <RunInAraayeButton
               prompt={prompt.basePrompt}
               slug={prompt.slug}
-              label="همین الان داخل Araaye AI اجرا کن"
+              label="اجرای هم‌زمان در Araaye AI"
+              compare
               className="!bg-white !text-navy-900 hover:!bg-navy-50"
             />
-            <Link
-              href="/ai/pricing"
-              className="btn-ghost !text-navy-200 hover:!bg-white/10 hover:!text-white"
-              data-event="prompt_signup_click"
-              data-prompt-slug={prompt.slug}
-            >
-              مشاهده قیمت‌ها
-            </Link>
+            <RunInAraayeButton
+              prompt={prompt.basePrompt}
+              slug={prompt.slug}
+              label="اجرای تک‌مدلی"
+              variant="secondary"
+              className="!border-white/20 !text-navy-100 hover:!bg-white/10"
+            />
           </div>
           <p className="mt-5 text-sm text-navy-300">
             یا به{" "}

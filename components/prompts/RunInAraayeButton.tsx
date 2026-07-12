@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { buildAraayePromptUrl } from "@/lib/prompts/buildAraayeUrl";
+import {
+  buildAraayeComparePromptUrl,
+  buildAraayePromptUrl,
+} from "@/lib/prompts/buildAraayeUrl";
 import { pushGtmEvent } from "@/lib/gtm";
 
 type Props = {
@@ -10,6 +13,7 @@ type Props = {
   label?: string;
   className?: string;
   variant?: "primary" | "secondary";
+  compare?: boolean;
 };
 
 export default function RunInAraayeButton({
@@ -18,8 +22,11 @@ export default function RunInAraayeButton({
   label = "اجرا در Araaye AI",
   className = "",
   variant = "primary",
+  compare = false,
 }: Props) {
-  const href = buildAraayePromptUrl(prompt, slug);
+  const href = compare
+    ? buildAraayeComparePromptUrl(prompt, slug)
+    : buildAraayePromptUrl(prompt, slug);
   const base = variant === "primary" ? "btn-primary" : "btn-secondary";
 
   return (
