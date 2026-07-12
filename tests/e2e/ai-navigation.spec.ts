@@ -11,9 +11,10 @@ test.describe("Araaye AI — shell navigation", () => {
     await expect(page).toHaveURL(/\/ai\/image/);
     await expect(page.getByRole("heading", { name: "استودیو تصویر" })).toBeVisible();
 
-    await page.goto("/ai");
-    await navTo(page, /ساخت ویدیو/);
-    await expect(page).toHaveURL(/\/ai\/video/);
+    await openSideNav(page);
+    const videoItem = page.locator(".ar-side-nav-item--disabled", { hasText: "ساخت ویدیو" });
+    await expect(videoItem).toBeVisible();
+    await expect(videoItem.locator(".ar-side-soon")).toHaveText("به‌زودی");
 
     await page.goto("/ai");
     await navTo(page, "موزیک");

@@ -10,16 +10,21 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { canUseModel, MODEL_MAX_TOKENS } from "@/lib/aiCredits";
 import {
   COMPARE_MODELS,
+  COUNCIL_MODEL_IDS,
   getModel,
-  hasVision,
   type AIModelInfo,
   type ModelTier,
 } from "@/lib/aiModels";
 import { planRank } from "@/lib/aiPackages";
 import { openRouterProvider } from "@/lib/ai/providers/openrouter";
 import type { RunMode, RunSSEEvent } from "@/lib/ai/streaming/sse";
-import { creditsForModel, estimateRunCredits } from "@/lib/ai/usage/estimate";
+import { estimateRunCredits } from "@/lib/ai/usage/estimate";
 import { settleRun, type CallSettlement } from "@/lib/ai/usage/settle";
+import {
+  buildPricingSnapshot,
+  creditsForProviderCost,
+  WEB_SEARCH_MIN_CREDITS,
+} from "@/lib/ai/pricing/costToCredits";
 import { prepareRunAndReserveCredits, refundCredits } from "@/lib/billing/credits";
 import { checkRateLimit, maxConcurrency } from "@/lib/redis/rate-limit";
 import { acquireRunSlot, releaseRunSlot, ThrottledStopChecker } from "@/lib/redis/locks";
@@ -34,18 +39,13 @@ import type { ChatMessage } from "@/lib/ai/providers/interface";
 /** حداقل پلن هر mode جدید */
 const RUN_MODE_MIN_PLAN: Record<RunMode, string> = {
   direct: "free",
-  compare: "starter",
+  compare: "free",
   council: "pro",
 };
 
 const MAX_COUNCIL_MODELS = 4;
-export const APPROVED_COUNCIL_MODEL_IDS = [
-  "cmp-deepseek-v4",
-  "cmp-grok-4",
-  "cmp-claude-haiku",
-  "cmp-gpt-55",
-] as const;
-const APPROVED_COUNCIL_MODELS = new Set<string>(APPROVED_COUNCIL_MODEL_IDS);
+export const APPROVED_COUNCIL_MODEL_IDS = COUNCIL_MODEL_IDS;
+const APPROVED_COUNCIL_MODELS = new Set<string>(COUNCIL_MODEL_IDS);
 
 export type RunRequest = {
   userId: string;
@@ -58,6 +58,7 @@ export type RunRequest = {
   history?: ChatMessage[];
   imageUrls?: string[];
   webSearch?: boolean;
+  computeSurchargeCredits?: number;
   personaSystem?: string;
 };
 
@@ -204,12 +205,13 @@ export async function prepareRun(
 
   const runId = randomUUID();
   const conversationId = req.conversationId ?? runId;
-  const hasVisionInput =
-    (req.imageUrls?.length ?? 0) > 0 && models.some((id) => hasVision(id));
+  const computeSurchargeCredits = req.computeSurchargeCredits ?? 0;
   const reservedCredits = estimateRunCredits(req.mode, models, {
-    hasVision: hasVisionInput,
     webSearch: req.webSearch === true,
+    answerSurchargeCredits: computeSurchargeCredits,
   });
+  const answerSurchargeCredits =
+    computeSurchargeCredits + (req.webSearch === true ? WEB_SEARCH_MIN_CREDITS : 0);
 
   perf?.mark("plan_loaded");
 
@@ -276,6 +278,7 @@ export async function prepareRun(
       prompt: req.prompt,
       imageUrls: req.imageUrls ?? [],
       webSearch: req.webSearch ?? false,
+      answerSurchargeCredits,
       personaSystem: req.personaSystem,
       maxTokens: maxTokensForRun(models),
       signal,
@@ -325,21 +328,40 @@ export async function prepareRun(
     const supabase = getSupabaseAdmin();
     try {
       if (callResults.length > 0) {
-        const callRows = callResults.map((r) => ({
-          run_id: runId,
-          provider: r.provider,
-          model: r.model,
-          role: r.role,
-          status: r.succeeded ? "completed" : "failed",
-          input_tokens: r.inputTokens,
-          output_tokens: r.outputTokens,
-          cached_tokens: r.cachedTokens,
-          cost_usd: r.costUsd,
-          credits_charged: r.succeeded ? creditsForCall(r) : 0,
-          ttft_ms: r.ttftMs,
-          latency_ms: r.latencyMs,
-          error_code: r.errorCode,
-        }));
+        const callRows = callResults.map((r) => {
+          const creditsCharged = r.succeeded ? creditsForCall(r) : 0;
+          const snapshot = buildPricingSnapshot({
+            modelId: r.model,
+            providerCostUsd: r.costUsd,
+            creditsCharged,
+          });
+          return {
+            run_id: runId,
+            provider: r.provider,
+            model: r.model,
+            displayed_model: snapshot.displayedModel,
+            actual_model: snapshot.actualModel,
+            role: r.role,
+            status: r.succeeded ? "completed" : "failed",
+            input_tokens: r.inputTokens,
+            output_tokens: r.outputTokens,
+            cached_tokens: r.cachedTokens,
+            reasoning_tokens: 0,
+            tool_cost_usd: snapshot.toolCostUsd,
+            cost_usd: r.costUsd,
+            exchange_rate_toman: snapshot.usdToToman,
+            pricing_multiplier: snapshot.multiplier,
+            credit_value_toman: snapshot.creditValueToman,
+            credits_charged: creditsCharged,
+            revenue_toman: snapshot.revenueToman,
+            gross_profit_toman: snapshot.grossProfitToman,
+            gross_margin_percent: snapshot.grossMarginPercent,
+            pricing_snapshot: snapshot,
+            ttft_ms: r.ttftMs,
+            latency_ms: r.latencyMs,
+            error_code: r.errorCode,
+          };
+        });
         const { data: inserted } = await supabase
           .from("model_calls")
           .insert(callRows)
@@ -405,9 +427,41 @@ export async function prepareRun(
       .from("ai_runs")
       .update({
         status,
-        charged_credits: chargedCredits,
-        refunded_credits: settlementFailed ? 0 : refundedCredits,
-        completed_at: new Date().toISOString(),
+      charged_credits: chargedCredits,
+      refunded_credits: settlementFailed ? 0 : refundedCredits,
+      total_provider_cost_usd: Number(
+        callResults
+          .filter((r) => r.succeeded)
+          .reduce((sum, r) => sum + (Number(r.costUsd) || 0), 0)
+          .toFixed(8)
+      ),
+      total_revenue_toman: chargedCredits * buildPricingSnapshot({
+        modelId: models[0] ?? "economy",
+        providerCostUsd: 0,
+        creditsCharged: 1,
+      }).creditValueToman,
+      total_gross_profit_toman:
+        chargedCredits * buildPricingSnapshot({
+          modelId: models[0] ?? "economy",
+          providerCostUsd: 0,
+          creditsCharged: 1,
+        }).creditValueToman -
+        Math.round(
+          callResults
+            .filter((r) => r.succeeded)
+            .reduce((sum, r) => sum + (Number(r.costUsd) || 0), 0) *
+            buildPricingSnapshot({
+              modelId: models[0] ?? "economy",
+              providerCostUsd: 0,
+              creditsCharged: 1,
+            }).usdToToman
+        ),
+      pricing_snapshot: buildPricingSnapshot({
+        modelId: models[0] ?? "economy",
+        providerCostUsd: 0,
+        creditsCharged: chargedCredits || 1,
+      }),
+      completed_at: new Date().toISOString(),
       })
       .eq("id", runId)
       .then(({ error }) => {
@@ -497,10 +551,13 @@ function maxTokensForRun(modelIds: string[]): number {
   return max;
 }
 
-/** اعتبار هر تماس — moderator شورا هزینه ثابت کوچک دارد */
+/** اعتبار هر تماس — هزینه واقعی provider + حداقل مصرف مدل + ابزارها */
 function creditsForCall(r: ModeCallResult): number {
-  if (r.role === "critique") return 3;
-  if (r.role === "synthesis") return 4;
-  const m = getModel(r.model);
-  return m ? creditsForModel(m) : 1;
+  const credits = creditsForProviderCost(
+    r.model,
+    r.costUsd,
+    r.inputTokens,
+    r.outputTokens
+  );
+  return credits + (r.extraCredits ?? 0);
 }

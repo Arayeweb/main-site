@@ -168,32 +168,33 @@ describe("streaming/multiplexer", () => {
 
 describe("usage/estimate", () => {
   it("maps models to per-model chat credits", () => {
-    expect(creditsForModel(getModel("economy")!)).toBe(1);
+    expect(creditsForModel(getModel("economy")!)).toBe(2);
     expect(creditsForModel(getModel("fast")!)).toBe(2);
-    expect(creditsForModel(getModel("precise")!)).toBe(15);
+    expect(creditsForModel(getModel("precise")!)).toBe(17);
   });
 
   it("direct run costs the single model price", () => {
-    expect(estimateRunCredits("direct", ["economy"])).toBe(1);
-    expect(estimateRunCredits("direct", ["precise"])).toBe(15);
+    expect(estimateRunCredits("direct", ["economy"])).toBe(2);
+    expect(estimateRunCredits("direct", ["precise"])).toBe(17);
   });
 
   it("compare run sums both models", () => {
-    expect(estimateRunCredits("compare", ["cmp-gpt-55", "cmp-claude-opus"])).toBe(30);
+    expect(estimateRunCredits("compare", ["cmp-gpt-55", "cmp-claude-opus"])).toBe(38);
   });
 
-  it("council adds moderator overhead", () => {
+  it("council reserves member costs plus critique and synthesis", () => {
     const base = estimateRunCredits("compare", ["cmp-deepseek-v4", "cmp-grok-4"]);
     const council = estimateRunCredits("council", ["cmp-deepseek-v4", "cmp-grok-4"]);
-    expect(council).toBe(base + 7);
+    expect(council).toBeGreaterThan(base);
+    expect(council).toBe(89);
   });
 
   it("adds vision surcharge", () => {
-    expect(estimateRunCredits("direct", ["precise"], { hasVision: true })).toBe(16);
+    expect(estimateRunCredits("direct", ["precise"], { hasVision: true })).toBe(18);
   });
 
   it("adds web search surcharge", () => {
-    expect(estimateRunCredits("direct", ["economy"], { webSearch: true })).toBe(4);
+    expect(estimateRunCredits("direct", ["economy"], { webSearch: true })).toBe(7);
   });
 });
 

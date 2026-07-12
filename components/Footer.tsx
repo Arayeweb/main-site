@@ -1,10 +1,10 @@
-import { footerColumns, type FooterColumn } from "@/lib/homeData";
-import { IconPhone, IconMail, IconInstagram, IconLinkedin } from "./icons";
+import { footerColumns, FOOTER_ADDRESS, FOOTER_MAPS_URL, type FooterColumn } from "@/lib/homeData";
+import { IconPhone, IconMail, IconInstagram, IconLinkedin, IconMapPin } from "./icons";
 import Logo from "./Logo";
 
 const socialIcons: Record<string, React.FC<{ size?: number; className?: string }>> = {
-  "شماره تماس: ۰۲۱۲۸۴۲۶۶۹۹": IconPhone,
-  "ایمیل: hello@araaye.com": IconMail,
+  "شماره تماس: ۰۹۹۹۱۳۰۰۷۸۸": IconPhone,
+  "ایمیل: support@araaye.com": IconMail,
   "اینستاگرام": IconInstagram,
   "لینکدین": IconLinkedin,
 };
@@ -47,12 +47,28 @@ export default function Footer({ columns = footerColumns }: FooterProps) {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-navy-50 pt-8 sm:flex-row">
+        <div className="mt-12 overflow-x-auto pb-8">
+          <a
+            href={FOOTER_MAPS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 whitespace-nowrap text-xs text-navy-400 transition-colors hover:text-navy-700"
+          >
+            <IconMapPin size={14} className="shrink-0 text-navy-400" />
+            {FOOTER_ADDRESS}
+          </a>
+        </div>
+
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-navy-50 pt-8 sm:flex-row">
           <Logo size="md" showTagline />
           <p className="text-xs text-navy-400">
-            © ۱۴۰۴ آرایه. توسعه نرم‌افزار اختصاصی، وب‌اپلیکیشن و هوش مصنوعی.
+            © ۱۴۰۵ آرایه. شرکت هوش آرایه پارس
           </p>
         </div>
+
+        <p className="mt-4 text-center text-xs text-navy-400">
+          همه حقوق برای شرکت هوش آرایه پارس محفوظ است.
+        </p>
       </div>
     </footer>
   );

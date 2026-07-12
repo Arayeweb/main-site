@@ -49,7 +49,7 @@ export async function* runCouncilMode(
       [
         model,
         ctx.provider.streamChat(
-          { model, messages: memberMessages, maxTokens: ctx.maxTokens },
+          { model, messages: memberMessages, maxTokens: ctx.maxTokens, webSearch: ctx.webSearch },
           ctx.signal
         ),
       ] as [string, AsyncIterable<ModelStreamEvent>]
@@ -71,6 +71,7 @@ export async function* runCouncilMode(
         outputTokens: event.outputTokens,
         cachedTokens: event.cachedTokens,
         costUsd: event.costUsd,
+        extraCredits: ctx.answerSurchargeCredits,
         ttftMs: event.ttftMs,
         latencyMs: event.latencyMs,
         errorCode: null,

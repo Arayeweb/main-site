@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import "./features.css";
-import "./cinema.css";
 
 export const metadata: Metadata = {
-  title: "آرایه AI | یک سؤال؛ چند AI؛ یک خروجی بهتر",
+  title: "امکانات آرایه AI | یک سؤال، چند نگاه",
   description:
-    "پنل هوش مصنوعی فارسی — پرسیدن، مقایسه چند مدل، تولید محتوا و کدنویسی. بدون VPN، پرداخت تومان.",
+    "از چند هوش مصنوعی بپرسید، پاسخ‌ها را کنار هم ببینید و به نتیجه بهتر برسید. فارسی، بدون VPN، پرداخت تومان.",
   alternates: { canonical: "/ai/features" },
   openGraph: {
-    title: "آرایه AI — یک سؤال؛ چند AI؛ یک خروجی بهتر",
-    description: "پنل فارسی برای مقایسه پاسخ چند مدل هوش مصنوعی و کار واقعی.",
+    title: "امکانات آرایه AI — یک سؤال، چند نگاه",
+    description:
+      "مقایسه پاسخ GPT، Claude و Gemini در یک پنل فارسی. برای تولید محتوا، کدنویسی و کار روزمره.",
     url: "/ai/features",
     locale: "fa_IR",
   },

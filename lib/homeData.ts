@@ -143,7 +143,7 @@ export const solutions: SolutionItem[] = [
     description:
       "طراحی سایت و وب‌اپلیکیشن حرفه‌ای برای جذب مشتری، فروش و رشد کسب‌وکار.",
     icon: "layers",
-    cta: "ثبت درخواست",
+    cta: "مشاهده خدمات وب‌سایت",
     accent: "from-brand-500 to-brand-700",
   },
   {
@@ -395,14 +395,20 @@ export interface FooterColumn {
   links: { label: string; url: string }[];
 }
 
+export const FOOTER_ADDRESS =
+  "تهران ، خیابان کارگر شمالی ، خیابان فرشی مقدم (۱۶) ، پارک علم و فناوری دانشگاه تهران";
+
+export const FOOTER_MAPS_URL =
+  "https://www.google.com/maps/search/?api=1&query=%D8%AA%D9%87%D8%B1%D8%A7%D9%86+%D8%AE%DB%8C%D8%A7%D8%A8%D8%A7%D9%86+%DA%A9%D8%A7%D8%B1%DA%AF%D8%B1+%D8%B4%D9%85%D8%A7%D9%84%DB%8C+%D9%BE%D8%A7%D8%B1%DA%A9+%D8%B9%D9%84%D9%85+%D9%88+%D9%81%D9%86%D8%A7%D9%88%D8%B1%DB%8C+%D8%AF%D8%A7%D9%86%D8%B4%DA%AF%D8%A7%D9%87+%D8%AA%D9%87%D8%B1%D8%A7%D9%86";
+
 export const footerColumns: FooterColumn[] = [
   {
     title: "آرایه",
     links: [
-      { label: "درباره ما", url: "/#faq" },
+      { label: "درباره ما", url: "/about" },
       { label: "نمونه‌کارها", url: "/#real-portfolio" },
       { label: "راهکارها", url: "/#solutions" },
-      { label: "تماس با ما", url: "#contact" },
+      { label: "تماس با ما", url: "/contact" },
     ],
   },
   {
@@ -428,9 +434,9 @@ export const footerColumns: FooterColumn[] = [
     title: "ارتباط",
     links: [
       { label: "شماره تماس: ۰۹۹۹۱۳۰۰۷۸۸", url: "tel:+98991300788" },
-      { label: "ایمیل: hello@araaye.com", url: "mailto:hello@araaye.com" },
-      { label: "اینستاگرام", url: "https://instagram.com/araaye" },
-      { label: "لینکدین", url: "https://linkedin.com/company/araaye" },
+      { label: "ایمیل: support@araaye.com", url: "mailto:support@araaye.com" },
+      { label: "اینستاگرام", url: "https://instagram.com/araayecom" },
+      { label: "لینکدین", url: "https://www.linkedin.com/company/araaye" },
     ],
   },
 ];

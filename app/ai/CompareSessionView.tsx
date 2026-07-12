@@ -438,39 +438,44 @@ export default function CompareSessionView({
             {turn.modelIds.map((id) => answerCard(id, turn, live))}
           </div>
         )}
-        {liveVotable && (
+        {(liveVotable || turnVotable) && (
           <div className="ar-vote-bar">
-            <span>کدام بهتر بود؟</span>
-            {turn.modelIds.map((id) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => voteForModel(id, turn.runId!)}
-                disabled={voting || !!turn.modelErrors[id]}
-              >
-                {modelMeta(id)?.name ?? modelName(id)}
-              </button>
-            ))}
-          </div>
-        )}
-        {turnVotable && (
-          <div className="ar-vote-bar">
-            <span>کدام بهتر بود؟</span>
-            {turn.modelIds.map((id) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => voteForModel(id, turn.runId!)}
-                disabled={voting || !!turn.modelErrors[id]}
-              >
-                {modelMeta(id)?.name ?? modelName(id)}
-              </button>
-            ))}
+            <p className="ar-vote-title">کدام بهتر بود؟</p>
+            <div
+              className={`ar-vote-btns${turn.modelIds.length === 2 ? " ar-vote-btns--pair" : ""}`}
+            >
+              {turn.modelIds.map((id) => {
+                const model = modelMeta(id);
+                const label = model?.name ?? modelName(id);
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    className="ar-vote-btn"
+                    onClick={() => voteForModel(id, turn.runId!)}
+                    disabled={voting || !!turn.modelErrors[id]}
+                  >
+                    <ModelAvatar modelId={id} size={26} />
+                    <span className="ar-vote-btn-label" lang="en" dir="ltr">
+                      {label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
         {turn.selectedVote && turn.runId && (
           <div className="ar-battle-result">
-            انتخاب شما: {modelMeta(turn.selectedVote)?.name ?? modelName(turn.selectedVote)}
+            <div className="ar-battle-result-main">
+              <ModelAvatar modelId={turn.selectedVote} size={24} />
+              <div className="ar-battle-result-copy">
+                <span className="ar-battle-result-label">انتخاب شما</span>
+                <span className="ar-battle-result-model" lang="en" dir="ltr">
+                  {modelMeta(turn.selectedVote)?.name ?? modelName(turn.selectedVote)}
+                </span>
+              </div>
+            </div>
             <button
               type="button"
               className="ar-share-btn"

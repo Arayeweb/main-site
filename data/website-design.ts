@@ -12,6 +12,7 @@ export interface PortfolioItem {
   image: string;
   href: string;
   external?: boolean;
+  imagePosition?: string;
 }
 
 export const WEBSITE_DESIGN_PAGE = "/website-design";
@@ -43,6 +44,11 @@ export const problems = [
   {
     title: "نبود داده و اندازه‌گیری",
     description: "کسب‌وکار نمی‌داند کاربران از کجا آمده‌اند و در کدام مرحله از سایت خارج می‌شوند.",
+  },
+  {
+    title: "دیده نشدن در گوگل",
+    description:
+      "بعضی سایت‌ها از نظر فنی برای گوگل آماده نیستند؛ ساختار صفحات، سرعت و پایه‌های لازم درست رعایت نشده. در نتیجه در جست‌وجو دیده نمی‌شوند و مشتری جدیدی وارد سایت نمی‌شود.",
   },
 ] as const;
 
@@ -234,11 +240,12 @@ export const portfolioItems: PortfolioItem[] = [
   },
   {
     slug: "pourdast",
-    name: "دکتر عالیه پوردست",
+    name: "سایت مطب عالیه پوردست",
     industry: "خدمات پزشکی",
     problem: "نیاز به معرفی حرفه‌ای پزشک و مسیر تماس برای بیمار.",
     outcome: "سایت پزشکی با ساختار اعتمادساز و اطلاعات خدمات.",
     image: "/showcase-assets/pourdast/portrait.webp",
+    imagePosition: "center 58%",
     href: "https://aliehpourdast.com",
     external: true,
   },

@@ -3,9 +3,12 @@
 
 export const AI_PLAN_LABELS: Record<string, string> = {
   free: "رایگان",
-  starter: "استارتر",
-  pro: "Pro",
-  business: "Business",
+  starter: "شروع",
+  plus: "پلاس",
+  pro: "حرفه‌ای",
+  max: "مکس",
+  team_mini: "تیم کوچک",
+  business: "سازمانی",
 };
 
 export const AI_USER_STATUS_LABELS: Record<string, string> = {

@@ -10,7 +10,7 @@ test.describe("Araaye AI — landing & panel", () => {
 
   test("guest sees free battle allowance message", async ({ page }) => {
     await page.goto("/ai");
-    await expect(page.getByText(/۵ پیام رایگان/)).toBeVisible();
+    await expect(page.getByText(/۱۰ پیام رایگان/)).toBeVisible();
   });
 
   test("pricing page loads package cards", async ({ page }) => {

@@ -56,12 +56,9 @@ test.describe("Araaye AI — studio composers", () => {
     await expect(page.getByRole("button", { name: "تولید تصویر" })).toBeEnabled();
   });
 
-  test("video studio disables generate until prompt", async ({ page }) => {
+  test("video studio shows coming soon", async ({ page }) => {
     await page.goto("/ai/video");
-    await expectStudioReady(page, {
-      title: "استودیو ویدیو",
-      generateLabel: "ساخت ویدیو",
-    });
+    await expect(page.getByRole("heading", { name: /استودیو ویدیو به‌زودی/ })).toBeVisible();
   });
 
   test("music studio disables generate until prompt", async ({ page }) => {

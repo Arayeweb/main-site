@@ -383,13 +383,13 @@ export const seoFooterColumns: SeoFooterColumn[] = [
   },
   {
     title: "درباره ما",
-    links: [{ label: "آشنایی با آرایه", url: "/#faq" }],
+    links: [{ label: "آشنایی با آرایه", url: "/about" }],
   },
   {
     title: "تماس و اطلاعات قانونی",
     links: [
-      { label: "تماس با ما", url: "#contact" },
-      { label: "ایمیل: hello@araaye.com", url: "mailto:hello@araaye.com" },
+      { label: "تماس با ما", url: "/contact" },
+      { label: "ایمیل: support@araaye.com", url: "mailto:support@araaye.com" },
     ],
   },
 ];

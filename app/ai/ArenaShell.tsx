@@ -26,11 +26,12 @@ import {
   IconSettings,
   IconTrophy,
   IconPen,
+  IconCode,
 } from "./icons";
 import PWAInstallBanner from "./PWAInstallBanner";
 import TelegramBanner from "./TelegramBanner";
 import { useArenaAuth } from "./ArenaAuthContext";
-import { writeHistoryCache } from "@/lib/aiHistoryCache";
+import { invalidateArenaAuthCache } from "./ArenaAuthContext";
 import { historyTierLabel, type HistoryItem } from "@/lib/aiHistory";
 import { requestAnalyzeText, requestNewChat } from "@/lib/aiNewChat";
 
@@ -40,6 +41,7 @@ function tierIcon(tier: string) {
   if (tier === "audio_gen" || tier === "transcribe") return IconMic;
   if (tier === "music_gen") return IconMusic;
   if (tier === "persona") return IconSpark;
+  if (tier === "code_studio") return IconCode;
   if (tier === "direct") return IconChat;
   if (tier === "side_by_side") return IconColumns;
   if (tier === "council" || tier === "battle") return IconSwords;
@@ -57,6 +59,7 @@ function historyHref(
   if (tier === "video_gen") return `/ai/video/${id}`;
   if (tier === "audio_gen" || tier === "transcribe") return `/ai/audio/${id}`;
   if (tier === "music_gen") return `/ai/music/${id}`;
+  if (tier === "code_studio") return `/ai/code/${id}`;
   if (tier === "persona" && personaKey) return `/ai/personas/${personaKey}?thread=${id}`;
   if (source === "run") return `/ai/runs/${latestRunId ?? id}`;
   return `/ai/battle/${id}`;
@@ -167,8 +170,8 @@ export default function ArenaShell({
 
   async function handleLogout() {
     closeDrawer();
-    await fetch("/api/ai/auth", { method: "DELETE" });
-    writeHistoryCache([]);
+    await fetch("/api/ai/auth", { method: "DELETE", credentials: "same-origin" });
+    invalidateArenaAuthCache();
     window.location.href = "/ai";
   }
 
@@ -281,15 +284,14 @@ export default function ArenaShell({
               <IconImage size={14} />
               <span className="ar-side-nav-item-text">ساخت عکس</span>
             </Link>
-            <Link
-              href="/ai/video"
-              className={`ar-side-nav-item${pathname.startsWith("/ai/video") ? " active" : ""}`}
-              onClick={closeDrawer}
+            <span
+              className="ar-side-nav-item ar-side-nav-item--disabled"
+              aria-disabled="true"
             >
               <IconVideo size={14} />
               <span className="ar-side-nav-item-text">ساخت ویدیو</span>
-              <span className="ar-side-beta">Beta</span>
-            </Link>
+              <span className="ar-side-soon">به‌زودی</span>
+            </span>
             <Link
               href="/ai/music"
               className={`ar-side-nav-item${pathname.startsWith("/ai/music") ? " active" : ""}`}
@@ -437,7 +439,7 @@ export default function ArenaShell({
                   <span className="ar-side-nav-item-text">پرامپت‌های آماده</span>
                 </Link>
                 <Link
-                  href="/"
+                  href="/about"
                   className="ar-side-nav-item"
                   role="menuitem"
                   onClick={() => {
@@ -461,10 +463,12 @@ export default function ArenaShell({
             <IconLogout size={14} />
             خروج از حساب
           </button>
-        ) : (
+        ) : authed === false ? (
           <button type="button" className="ar-side-auth primary" onClick={handleLogin}>
             ورود / ثبت‌نام
           </button>
+        ) : (
+          <span className="ar-side-auth" aria-hidden="true" />
         )}
       </div>
     </div>

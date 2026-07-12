@@ -24,7 +24,7 @@ export type RunStreamRequest = {
   conversationId?: string | null;
   threadId?: string | null;
   webSearch?: boolean;
-  attachments?: { url: string; mime: string }[];
+  attachments?: { url: string; mime: string; name?: string; size?: number; text?: string }[];
 };
 
 export type RunStreamTerminalStatus = "completed" | "cancelled" | "failed" | "aborted";

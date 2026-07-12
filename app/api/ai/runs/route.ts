@@ -35,6 +35,15 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const MAX_ATTACHMENTS = 2;
+const MAX_ATTACHMENT_TEXT_CHARS = 32_000;
+
+type ParsedAttachment = {
+  url: string;
+  mime: string;
+  name: string;
+  size: number;
+  text: string;
+};
 
 /** Last user message content when clients send OpenAI-style `messages` instead of `prompt`. */
 function extractPromptFromMessages(raw: unknown): string | undefined {
@@ -56,15 +65,43 @@ function sseError(code: string, status: number): Response {
   );
 }
 
-function parseAttachments(raw: unknown): { url: string; mime: string }[] {
+function parseAttachments(raw: unknown): ParsedAttachment[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .slice(0, MAX_ATTACHMENTS)
     .map((a) => ({
       url: String((a as { url?: unknown })?.url ?? "").trim(),
       mime: String((a as { mime?: unknown })?.mime ?? "").trim(),
+      name: String((a as { name?: unknown })?.name ?? "فایل").trim().slice(0, 160),
+      size: Number((a as { size?: unknown })?.size ?? 0) || 0,
+      text: String((a as { text?: unknown })?.text ?? "").trim().slice(0, MAX_ATTACHMENT_TEXT_CHARS),
     }))
-    .filter((a) => a.url && a.mime.startsWith("image/"));
+    .filter((a) => a.url && (a.mime.startsWith("image/") || !!a.text));
+}
+
+function attachmentTextBlock(attachments: ParsedAttachment[]): string {
+  const textFiles = attachments.filter((a) => !a.mime.startsWith("image/") && a.text);
+  if (textFiles.length === 0) return "";
+  return textFiles
+    .map((a, idx) => {
+      const label = a.name || `فایل ${idx + 1}`;
+      return `\n\n--- محتوای فایل ${idx + 1}: ${label} (${a.mime}) ---\n${a.text}\n--- پایان فایل ${idx + 1} ---`;
+    })
+    .join("");
+}
+
+function attachmentComputeSurcharge(attachments: ParsedAttachment[]): number {
+  let surcharge = 0;
+  for (const a of attachments) {
+    if (a.mime.startsWith("image/")) {
+      surcharge += 1;
+      continue;
+    }
+    const textUnits = Math.ceil(Math.max(a.text.length, 1) / 8_000);
+    const sizeUnits = Math.ceil(Math.max(a.size, 1) / (2 * 1024 * 1024));
+    surcharge += Math.min(6, Math.max(1, textUnits, sizeUnits));
+  }
+  return surcharge;
 }
 
 function sendEvent(send: (chunk: string) => void, ev: RunSSEEvent): void {
@@ -109,7 +146,15 @@ export async function POST(req: NextRequest) {
   if (!promptCheck.ok && attachments.length === 0) {
     return sseError("missing_prompt", 422);
   }
-  const prompt = promptCheck.ok ? promptCheck.prompt : "این تصویر را توضیح بده.";
+  const hasOnlyFiles = attachments.some((a) => !a.mime.startsWith("image/"));
+  const prompt = promptCheck.ok
+    ? promptCheck.prompt
+    : hasOnlyFiles
+      ? "این فایل را بررسی و خلاصه کن."
+      : "این تصویر را توضیح بده.";
+  const fileText = attachmentTextBlock(attachments);
+  const modelPrompt = fileText ? `${prompt}${fileText}` : prompt;
+  const computeSurchargeCredits = attachmentComputeSurcharge(attachments);
 
   const personaKey = parsed.personaKey;
   const persona = personaKey ? getPersona(personaKey) : undefined;
@@ -130,6 +175,9 @@ export async function POST(req: NextRequest) {
   perf.mark("validate_done");
 
   const plan = (user.plan as string) || "free";
+  if (plan === "free" && parsed.webSearch) {
+    return sseError("plan_upgrade_required", 403);
+  }
 
   const encoder = new TextEncoder();
   const abort = new AbortController();
@@ -183,11 +231,12 @@ export async function POST(req: NextRequest) {
           userId: session.userId,
           plan,
           mode,
-          prompt,
+          prompt: modelPrompt,
           models,
           conversationId,
           history,
-          imageUrls: attachments.map((a) => a.url),
+          imageUrls: attachments.filter((a) => a.mime.startsWith("image/")).map((a) => a.url),
+          computeSurchargeCredits,
           webSearch: parsed.webSearch,
           personaSystem: persona?.systemPrompt,
         };

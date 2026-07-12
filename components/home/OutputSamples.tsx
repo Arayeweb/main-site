@@ -114,7 +114,7 @@ export default function OutputSamples() {
                   <article key={sample.key} className="group">
                     <SamplePreviewLink sample={sample}>
                       <ShowcasePreview
-                        sampleKey={sample.key as "google-shoope" | "google-pourdast"}
+                        sampleKey={sample.key as "google-shoope" | "google-emdad-ahan"}
                       />
                     </SamplePreviewLink>
                     <SampleCaption sample={sample} />

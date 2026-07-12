@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { usePathname } from "next/navigation";
 import { pushGtmEvent } from "@/lib/gtm";
 import { type SiteChatSource, type SiteChatPrefill } from "@/lib/openSiteChat";
-import { siteWhatsAppUrl } from "@/lib/siteContact";
+import { SITE_PHONE_DISPLAY, siteWhatsAppUrl } from "@/lib/siteContact";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -82,7 +81,7 @@ const SCRIPT: Record<string, ScriptNode> = {
     expects: "contact_form",
   },
   whatsapp: {
-    msgs: ["پیام شما در واتساپ آماده است. همان‌جا ادامه دهید."],
+    msgs: [`پیام شما در واتساپ (${SITE_PHONE_DISPLAY}) آماده است. همان‌جا ادامه دهید.`],
     quick: [],
   },
   thanks: {
@@ -181,14 +180,9 @@ function whatsAppMessage(lead: LeadState) {
 /*  Component                                                           */
 /* ------------------------------------------------------------------ */
 export default function ChatWidget() {
-  const pathname = usePathname();
-  const mobileStickyBar = pathname === "/";
-  const launcherPosition = mobileStickyBar
-    ? "fixed bottom-20 left-4 z-50 sm:bottom-5 sm:left-5"
-    : "fixed bottom-5 left-5 z-50";
-  const panelPosition = mobileStickyBar
-    ? "fixed bottom-[5.75rem] left-4 z-50 flex w-[calc(100vw-32px)] max-w-[420px] flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl animate-fade-up sm:bottom-5 sm:left-5 sm:w-[calc(100vw-40px)]"
-    : "fixed bottom-5 left-5 z-50 flex w-[calc(100vw-40px)] max-w-[420px] flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl animate-fade-up";
+  const launcherPosition = "fixed bottom-4 left-4 z-50 sm:bottom-5 sm:left-5";
+  const panelPosition =
+    "fixed bottom-4 left-4 z-50 flex w-[calc(100vw-32px)] max-w-[420px] flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl animate-fade-up sm:bottom-5 sm:left-5 sm:w-[calc(100vw-40px)]";
 
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -370,6 +364,7 @@ export default function ChatWidget() {
     setBusinessPhone("");
     setExpecting(null);
     trackGuide("guide_business", lead.current);
+    submitLead(lead.current);
     setTimeout(() => renderNode("channel"), 280);
   }
 

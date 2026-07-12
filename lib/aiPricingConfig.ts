@@ -18,7 +18,7 @@ export const PLAN_IDS = {
 
 export type AIPlan = (typeof PLAN_IDS)[keyof typeof PLAN_IDS];
 
-export const FREE_SIGNUP_CREDITS = 20;
+export const FREE_SIGNUP_CREDITS = 10;
 
 /** تیم‌پلن self-serve هنوز پیاده‌سازی نشده */
 export const TEAM_PURCHASE_ENABLED = false;
@@ -46,31 +46,31 @@ export interface AIPackage {
 }
 
 const STARTER_FEATURES = [
-  "مدل‌های اقتصادی چت (۱–۲ کردیت)",
-  "استودیو تصویر سبک",
-  "ویدیو اقتصادی (۵ ثانیه)",
+  "دسترسی به همه مدل‌های چت",
+  "پرداخت فقط به‌اندازه مصرف واقعی",
   "گفتگو و مقایسه مدل‌ها",
+  "اعتبار ۱۲ ماهه",
 ];
 
 const PLUS_FEATURES = [
-  "همه امکانات Starter",
-  "مدل‌های میانی مثل Grok و GPT mini",
-  "ویدیو ۷۲۰p خوب",
+  "همه امکانات شروع",
+  "کردیت بیشتر برای مدل‌های قوی‌تر",
+  "مناسب چت، مقایسه و تصویر",
   "مصرف روزمره راحت‌تر",
 ];
 
 const PRO_FEATURES = [
-  "همه امکانات Plus",
-  "GPT-5.4، Claude Sonnet و Gemini Pro",
+  "همه امکانات پلاس",
+  "بهترین تعادل قیمت و کردیت",
   "اولویت در پاسخ‌دهی",
-  "بهترین تعادل قیمت و قدرت",
+  "مناسب مصرف حرفه‌ای",
 ];
 
 const MAX_FEATURES = [
-  "همه امکانات Pro",
-  "ویدیو Sora و ۱۰۸۰p",
+  "همه امکانات حرفه‌ای",
   "بیشترین کردیت به‌ازای تومان",
   "مناسب مصرف بالا",
+  "کنترل بهتر هزینه برای تیم کوچک",
 ];
 
 /** پلن‌های قابل خرید از درگاه */
@@ -91,8 +91,8 @@ export const AI_PACKAGES: Record<string, AIPackage> = {
     id: PLAN_IDS.PLUS,
     name: "Plus",
     nameFa: "پلاس",
-    priceToman: 249_000,
-    credits: 240,
+    priceToman: 299_000,
+    credits: 260,
     grantsPlan: PLAN_IDS.PLUS,
     desc: "مناسب استفاده روزمره",
     features: PLUS_FEATURES,
@@ -103,8 +103,8 @@ export const AI_PACKAGES: Record<string, AIPackage> = {
     id: PLAN_IDS.PRO,
     name: "Pro",
     nameFa: "حرفه‌ای",
-    priceToman: 499_000,
-    credits: 550,
+    priceToman: 649_000,
+    credits: 600,
     grantsPlan: PLAN_IDS.PRO,
     desc: "بهترین گزینه برای اکثر کاربران",
     features: PRO_FEATURES,
@@ -117,13 +117,13 @@ export const AI_PACKAGES: Record<string, AIPackage> = {
     id: PLAN_IDS.MAX,
     name: "Max",
     nameFa: "مکس",
-    priceToman: 990_000,
-    credits: 1200,
+    priceToman: 1_290_000,
+    credits: 1250,
     grantsPlan: PLAN_IDS.MAX,
     desc: "مناسب مصرف بالا و کاربران جدی",
     features: MAX_FEATURES,
     checkoutEnabled: true,
-    visibility: "public",
+    visibility: "hidden",
   },
   team_mini: {
     id: PLAN_IDS.TEAM_MINI,
@@ -154,11 +154,11 @@ export const FREE_PACKAGE: AIPackage = {
   priceToman: 0,
   credits: FREE_SIGNUP_CREDITS,
   grantsPlan: PLAN_IDS.STARTER,
-  desc: "۲۰ کردیت هدیه برای تست اولیه",
+  desc: "رایگان امتحان کنید — چند گفت‌وگوی اولیه برای آشنایی با آرایه AI",
   features: [
-    "۲۰ کردیت هدیه ثبت‌نام",
-    "مدل‌های اقتصادی",
-    "بدون VPN و کارت خارجی",
+    "رایگان امتحان کنید",
+    "چند گفت‌وگوی اولیه",
+    "فقط مدل‌های اقتصادی",
   ],
   checkoutEnabled: false,
   visibility: "public",
@@ -177,12 +177,12 @@ export const BUSINESS_PACKAGE: AIPackage = {
   features: [
     "۶۵۰۰+ کردیت ماهانه",
     "تیم و مدیریت مصرف",
-    "مدل‌های اختصاصی (GPT-5.5-pro)",
+    "مدل‌های اختصاصی در صورت اتصال واقعی provider",
     "پشتیبانی و اتصال اختصاصی",
   ],
   checkoutEnabled: false,
   contactOnly: true,
-  visibility: "public",
+  visibility: "hidden",
 };
 
 /** همه پلن‌های عمومی برای صفحه قیمت‌گذاری */
@@ -192,8 +192,6 @@ export const PUBLIC_PLAN_LIST: AIPackage[] = [
   AI_PACKAGES.plus,
   AI_PACKAGES.pro,
   AI_PACKAGES.max,
-  AI_PACKAGES.team_mini,
-  BUSINESS_PACKAGE,
 ];
 
 /** پلن‌های قابل checkout — سازگاری با importهای قدیمی */
@@ -237,7 +235,7 @@ export function formatPriceToman(amount: number, startingPrice?: boolean): strin
 }
 
 export const PRICING_EXPLANATION_FA =
-  "مصرف هر مدل بر اساس قدرت مدل، طول پاسخ، فایل، تصویر، ویدیو و ابزارهای فعال مثل سرچ محاسبه می‌شود. مدل‌های اقتصادی کردیت کمتری مصرف می‌کنند و مدل‌های پیشرفته مثل Claude Sonnet، GPT-5.5، Opus و تولید ویدیو کردیت بیشتری مصرف می‌کنند.";
+  "مصرف هر درخواست از هزینه واقعی API، نرخ دلار محاسباتی و حداقل مصرف مدل حساب می‌شود. مدل قوی‌تر فقط کردیت بیشتری مصرف می‌کند و همه کاربران پولی به مدل‌های چت دسترسی دارند. اعتبار خریداری‌شده ۱۲ ماه اعتبار دارد.";
 
 // ---------- هزینه چت بر اساس مدل ----------
 
@@ -271,25 +269,25 @@ export const MODEL_TIER_CHAT_CREDITS: Record<ModelTier, number> = {
 
 /** مدل‌های فقط Business / دستی */
 export const BUSINESS_ONLY_MODEL_IDS = new Set<string>([
-  // TODO: وقتی GPT-5.5-pro به رجیستری اضافه شد، id را اینجا ثبت کنید.
+  // TODO: وقتی مدل اختصاصی واقعی به provider وصل شد، id را اینجا ثبت کنید.
 ]);
 
 /** حداقل پلن برای tier چت */
 export const TIER_MIN_PLAN: Record<ModelTier, AIPlan> = {
   economy: PLAN_IDS.FREE,
   mid: PLAN_IDS.STARTER,
-  premium: PLAN_IDS.PRO,
+  premium: PLAN_IDS.STARTER,
 };
 
 // ---------- وب‌سرچ ----------
 
 export const WEB_SEARCH_CREDITS = {
-  simple: 3,
+  simple: 5,
   deep: { min: 8, max: 15 },
   multiStep: { min: 20, max: 50 },
 } as const;
 
-/** فعلاً همه جستجوهای وب = simple (+۳ کردیت) */
+/** فعلاً همه جستجوهای وب = simple (+۵ کردیت) */
 export function webSearchSurcharge(): number {
   return WEB_SEARCH_CREDITS.simple;
 }
@@ -297,9 +295,9 @@ export function webSearchSurcharge(): number {
 // ---------- تصویر ----------
 
 export const IMAGE_CREDIT_BY_MODEL: Record<string, number> = {
-  "image-lite": 10,
-  "image-nano": 22,
-  "image-gpt": 40,
+  "image-lite": 20,
+  "image-nano": 35,
+  "image-gpt": 60,
 };
 
 // ---------- ویدیو ----------

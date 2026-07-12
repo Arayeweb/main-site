@@ -4,6 +4,8 @@ import { getIndexablePromptPaths } from "@/lib/prompts/indexable";
 /** Paths included in /sitemap.xml — indexable marketing pages only. */
 export const SITEMAP_PATHS = [
   "/",
+  "/about",
+  "/contact",
   "/seo",
   "/seo/doctor",
   "/seo/clinic",

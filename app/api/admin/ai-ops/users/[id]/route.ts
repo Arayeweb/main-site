@@ -143,14 +143,25 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     if (typeof body.credit_delta === "number" && body.credit_delta !== 0) {
+      const creditDelta = Math.round(body.credit_delta);
       await supabase.from("ai_credit_ledger").insert({
         user_id: id,
-        delta: Math.round(body.credit_delta),
+        delta: creditDelta,
         balance_after: newBalance,
         reason: body.credit_delta > 0 ? "admin_grant" : "admin_revoke",
         note: body.credit_reason || null,
         admin_id: session.userId,
       });
+      if (creditDelta > 0) {
+        await supabase.from("ai_credit_lots").insert({
+          user_id: id,
+          source: "admin_grant",
+          amount: creditDelta,
+          remaining: creditDelta,
+          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          metadata: { admin_id: session.userId, reason: body.credit_reason || null },
+        });
+      }
     }
 
     await logAiAdminAction(supabase, {

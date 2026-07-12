@@ -28,7 +28,8 @@ export default function WebsiteDesignPortfolio() {
                     src={item.image}
                     alt={`نمای ${item.name}`}
                     fill
-                    className="object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]"
+                    className={`object-cover transition-transform duration-300 group-hover:scale-[1.02] ${item.imagePosition ? "" : "object-top"}`}
+                    style={item.imagePosition ? { objectPosition: item.imagePosition } : undefined}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>

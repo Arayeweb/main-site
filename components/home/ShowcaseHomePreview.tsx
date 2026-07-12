@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getShowcasePortfolioEntry } from "@/lib/showcaseSites/portfolio";
 import type { OutputSampleKey } from "@/lib/outputSamples";
+import PourdastClinicHomePreview from "./previews/PourdastClinicHomePreview";
 import DeepinHomePreview from "./previews/DeepinHomePreview";
 import EmrozHomePreview from "./previews/EmrozHomePreview";
 import KavehIronHomePreview from "./previews/KavehIronHomePreview";
@@ -21,6 +22,10 @@ export function ShowcaseHomePreview({ sampleKey }: { sampleKey: OutputSampleKey 
 
   if (sampleKey === "deepinhq") {
     return <DeepinHomePreview />;
+  }
+
+  if (sampleKey === "pourdast-clinic") {
+    return <PourdastClinicHomePreview />;
   }
 
   if (sampleKey !== "medisa-studio") {

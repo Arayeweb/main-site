@@ -225,7 +225,7 @@ export default function MusicStudioView({
         </div>
       ) : (
         <>
-          <div className="ar-chat-scroll ar-studio-scroll">
+          <div className="ar-chat-scroll">
             {turns.length === 0 && (
               <div className="ar-generator-empty">
                 <p>سبک و حس موزیک را توضیح بده — مثلاً «پاپ شاد فارسی با سنتور».</p>
@@ -270,35 +270,18 @@ export default function MusicStudioView({
             <div ref={endRef} />
           </div>
 
-          <div className="ar-studio-composer">
-            <label className="ar-music-instrumental">
-              <input
-                type="checkbox"
-                checked={instrumental}
-                onChange={(e) => setInstrumental(e.target.checked)}
-              />
-              فقط موسیقی (بدون آواز)
-            </label>
-            {err === "credits_out" && (
-              <div className="ar-composer-err">
-                کردیت کافی نیست — <Link href="/ai/pricing">خرید</Link>
-              </div>
-            )}
-            {err === "music_unavailable" && (
-              <div className="ar-composer-err">سرویس موزیک به‌زودی فعال می‌شود.</div>
-            )}
-            {err === "unauthorized" && (
-              <div className="ar-composer-err">
-                <Link href="/ai?login=1">ورود</Link> برای ساخت موزیک
-              </div>
-            )}
+          <div className="ar-chat-composer ar-image-composer ar-generator-composer ar-music-composer">
             <div className="ar-composer ar-composer--dock">
               <div className="ar-composer-box">
                 <textarea
                   ref={taRef}
                   rows={2}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 140)}px`;
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -307,23 +290,68 @@ export default function MusicStudioView({
                   }}
                   placeholder="سبک، احساس و سازها را توضیح بده…"
                   maxLength={2000}
+                  disabled={busy}
                 />
-                <div className="ar-composer-foot">
-                  <span className="ar-studio-cost-hint">{perCost.toLocaleString("fa-IR")} کردیت</span>
-                  <div className="ar-composer-actions">
-                    <button
-                      type="button"
-                      className="ar-send-btn ar-send-btn--dock"
-                      disabled={!input.trim() || busy}
-                      onClick={handleSubmit}
-                      aria-label="ساخت موزیک"
-                    >
-                      <IconSend size={16} />
-                    </button>
+                <div className="ar-composer-foot ar-generator-foot">
+                  <div className="ar-generator-toolbar-row">
+                    <div className="ar-composer-toolstrip ar-image-toolstrip ar-generator-controls ar-music-controls">
+                      <label className="ar-music-instrumental-pill">
+                        <input
+                          type="checkbox"
+                          checked={instrumental}
+                          onChange={(e) => setInstrumental(e.target.checked)}
+                          disabled={busy}
+                        />
+                        <span>فقط موسیقی (بدون آواز)</span>
+                      </label>
+                      <span className="ar-image-tool-meta ar-music-cost-meta">
+                        {perCost.toLocaleString("fa-IR")} کردیت
+                      </span>
+                    </div>
+                    <div className="ar-composer-actions">
+                      <button
+                        type="button"
+                        className="ar-send-btn ar-send-btn--dock ar-generate-btn"
+                        disabled={!input.trim() || busy}
+                        onClick={handleSubmit}
+                        aria-label="ساخت موزیک"
+                      >
+                        {busy ? (
+                          <span className="ar-spinner" style={{ borderTopColor: "#FCFBF7" }} />
+                        ) : (
+                          <>
+                            <IconSend size={16} />
+                            <span>تولید کن</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {err === "credits_out" && (
+              <div className="ar-composer-err ar-image-composer-err">
+                کردیت کافی نیست — <Link href="/ai/pricing">خرید کردیت</Link>
+              </div>
+            )}
+            {err === "music_unavailable" && (
+              <div className="ar-composer-err ar-image-composer-err">سرویس موزیک به‌زودی فعال می‌شود.</div>
+            )}
+            {err === "unauthorized" && (
+              <div className="ar-composer-err ar-image-composer-err">
+                <Link href="/ai?login=1">ورود</Link> برای ساخت موزیک
+              </div>
+            )}
+            {err === "ai_error" && (
+              <div className="ar-composer-err ar-image-composer-err">
+                ساخت موزیک ناموفق بود. دوباره تلاش کن.
+              </div>
+            )}
+            {err === "server_error" && (
+              <div className="ar-composer-err ar-image-composer-err">خطای اتصال. دوباره تلاش کن.</div>
+            )}
           </div>
         </>
       )}

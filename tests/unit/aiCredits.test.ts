@@ -22,10 +22,10 @@ describe("aiCredits — pricing & access", () => {
     expect(BATTLE_CREDIT_COST.premium).toBe(8);
   });
 
-  it("allows free users direct chat; side_by_side stays starter+", () => {
+  it("allows free users direct + compare; council stays available at mode gate", () => {
     expect(canUseMode("free", "battle")).toBe(true);
     expect(canUseMode("free", "direct")).toBe(true);
-    expect(canUseMode("free", "side_by_side")).toBe(false);
+    expect(canUseMode("free", "side_by_side")).toBe(true);
   });
 
   it("allows starter+ for direct mode", () => {
@@ -54,14 +54,15 @@ describe("aiCredits — pricing & access", () => {
   });
 
   it("computes image generation credit cost", () => {
-    expect(imageGenCost(getModel("image-lite")!)).toBe(10);
-    expect(imageGenCost(getModel("image-gpt")!)).toBe(40);
+    expect(imageGenCost(getModel("image-lite")!)).toBe(20);
+    expect(imageGenCost(getModel("image-nano")!)).toBe(35);
+    expect(imageGenCost(getModel("image-gpt")!)).toBe(60);
   });
 
-  it("enforces plan requirements for premium direct models", () => {
+  it("allows paid users to use premium direct models", () => {
     const precise = getModel("precise")!;
     expect(canUseModel("free", precise)).toBe(false);
-    expect(canUseModel("pro", precise)).toBe(true);
+    expect(canUseModel("starter", precise)).toBe(true);
   });
 
   it("resolveUserModel returns plan_upgrade_required for free on premium model", () => {
@@ -80,6 +81,12 @@ describe("aiCredits — pricing & access", () => {
 
   it("resolveImageModel rejects chat models", () => {
     expect(resolveImageModel("precise", "pro")).toEqual({ error: "invalid_model" });
+  });
+
+  it("blocks free users from image generation", () => {
+    expect(resolveImageModel("image-lite", "free")).toEqual({
+      error: "plan_upgrade_required",
+    });
   });
 
   it("pickBattleTier returns economy for free plan", () => {

@@ -55,9 +55,7 @@ describe("aiMediaCredits — video/audio/transcribe pricing", () => {
   });
 
   it("resolves audio and transcribe models", () => {
-    expect(resolveAudioModel("audio-pro", "starter")).toEqual({
-      error: "plan_upgrade_required",
-    });
+    expect(resolveAudioModel("audio-pro", "starter")).toEqual(getModel("audio-pro"));
     expect(resolveTranscribeModel("transcribe-4o", "starter")).toEqual(
       getModel("transcribe-4o")
     );

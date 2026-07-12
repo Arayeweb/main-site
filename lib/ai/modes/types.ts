@@ -16,6 +16,7 @@ export type ModeCallResult = {
   outputTokens: number;
   cachedTokens: number;
   costUsd: number;
+  extraCredits?: number;
   ttftMs: number | null;
   latencyMs: number;
   errorCode: string | null;
@@ -30,6 +31,7 @@ export type ModeContext = {
   prompt: string;
   imageUrls: string[];
   webSearch: boolean;
+  answerSurchargeCredits: number;
   personaSystem?: string;
   maxTokens: number;
   signal: AbortSignal;

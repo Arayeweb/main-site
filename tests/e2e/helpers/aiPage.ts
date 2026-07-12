@@ -43,7 +43,7 @@ export const AI_PUBLIC_ROUTES: AiRouteCase[] = [
   { path: "/ai/personas", expect: /چهره‌های بزرگ/, kind: "heading" },
   { path: "/ai/personas/elon-musk", expect: /ایلان ماسک/, kind: "heading" },
   { path: "/ai/image", expect: "استودیو تصویر", kind: "heading" },
-  { path: "/ai/video", expect: "استودیو ویدیو", kind: "heading" },
+  { path: "/ai/video", expect: /استودیو ویدیو به‌زودی/, kind: "heading" },
   { path: "/ai/music", expect: "استودیو موزیک", kind: "heading" },
   { path: "/ai/audio", expect: "استودیو صوت", kind: "heading" },
   { path: "/ai/code", expect: "استودیو کد", kind: "heading" },

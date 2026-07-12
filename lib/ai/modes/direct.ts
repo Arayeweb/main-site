@@ -65,6 +65,7 @@ export async function* runDirectMode(
         outputTokens: ev.outputTokens,
         cachedTokens: ev.cachedTokens,
         costUsd: ev.costUsd,
+        extraCredits: ctx.answerSurchargeCredits,
         ttftMs: ev.ttftMs,
         latencyMs: ev.latencyMs,
         errorCode: null,

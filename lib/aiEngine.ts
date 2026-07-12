@@ -5,6 +5,8 @@
 import { Agent } from "undici";
 import { getModel, modelRouteId } from "./aiModels";
 
+import { DIRECT_SYSTEM_PROMPT, WEB_SEARCH_SUFFIX } from "./ai/prompts/direct";
+
 export type ContentPart =
   | { type: "text"; text: string }
   | { type: "image_url"; image_url: { url: string } };
@@ -20,11 +22,9 @@ const OPENROUTER_VIDEOS_API = "https://openrouter.ai/api/v1/videos";
 const OPENROUTER_SPEECH_API = "https://openrouter.ai/api/v1/audio/speech";
 const OPENROUTER_TRANSCRIBE_API = "https://openrouter.ai/api/v1/audio/transcriptions";
 
-const BATTLE_SYSTEM =
-  "تو یک دستیار هوشمند فارسی‌زبان هستی. پاسخ را با مارک‌داون ساختارمند بده: پاراگراف‌های کوتاه، عنوان‌های ## برای بخش‌ها، جدول markdown برای مقایسه‌ها، و لیست bullet برای جمع‌بندی. اگر مطمئن نیستی صادقانه بگو.";
+const BATTLE_SYSTEM = DIRECT_SYSTEM_PROMPT;
 
-const WEB_SEARCH_SYSTEM =
-  "کاربر جستجوی وب را فعال کرده است. برای پاسخ، حتماً از ابزار جستجوی وب استفاده کن تا اطلاعات به‌روز بگیری و منابع را در پاسخ ذکر کن.";
+const WEB_SEARCH_SYSTEM = WEB_SEARCH_SUFFIX;
 
 type AICallOpts = {
   model: string;

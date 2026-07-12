@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -43,6 +44,14 @@ type AuthPayload = Record<string, unknown>;
 
 let authInFlight: Promise<AuthPayload | null> | null = null;
 let authCache: { data: AuthPayload; at: number } | null = null;
+let loadGeneration = 0;
+
+/** Drop stale auth/history responses (e.g. guest check finishing after login). */
+export function invalidateArenaAuthCache() {
+  authCache = null;
+  authInFlight = null;
+  loadGeneration += 1;
+}
 
 function fetchAuth(force: boolean): Promise<AuthPayload | null> {
   if (!force) {
@@ -53,7 +62,11 @@ function fetchAuth(force: boolean): Promise<AuthPayload | null> {
   }
 
   const signal = AbortSignal.timeout(isE2eModeClient() ? 1500 : 4000);
-  const p = fetch("/api/ai/auth", { credentials: "same-origin", signal })
+  const p = fetch("/api/ai/auth", {
+    credentials: "same-origin",
+    cache: "no-store",
+    signal,
+  })
     .then((r) => r.json() as Promise<AuthPayload>)
     .then((d) => {
       authCache = { data: d, at: Date.now() };
@@ -67,73 +80,102 @@ function fetchAuth(force: boolean): Promise<AuthPayload | null> {
   return p;
 }
 
-function fetchHistory(): Promise<AuthPayload | null> {
-  // Fired in parallel with auth — guests simply get a cheap 401.
-  return fetch("/api/ai/history", {
-    credentials: "same-origin",
-    signal: AbortSignal.timeout(isE2eModeClient() ? 1500 : 4000),
-  })
-    .then((r) => (r.ok ? (r.json() as Promise<AuthPayload>) : null))
-    .catch(() => null);
+async function fetchHistoryOnce(): Promise<AuthPayload | null> {
+  const signal = AbortSignal.timeout(isE2eModeClient() ? 1500 : 8000);
+  try {
+    const res = await fetch("/api/ai/history", {
+      credentials: "same-origin",
+      cache: "no-store",
+      signal,
+    });
+    return res.ok ? ((await res.json()) as AuthPayload) : null;
+  } catch {
+    return null;
+  }
 }
 
-export function ArenaAuthProvider({ children }: { children: ReactNode }) {
-  const [authed, setAuthed] = useState<boolean | null>(null);
+async function fetchHistoryWithRetry(): Promise<AuthPayload | null> {
+  const first = await fetchHistoryOnce();
+  if (first?.ok) return first;
+  return fetchHistoryOnce();
+}
+
+export function ArenaAuthProvider({
+  children,
+  initialAuthed,
+  initialUserId,
+  initialPlan,
+}: {
+  children: ReactNode;
+  initialAuthed: boolean;
+  initialUserId: string | null;
+  initialPlan: string;
+}) {
+  const [authed, setAuthed] = useState<boolean | null>(initialAuthed);
   const [credits, setCredits] = useState<number | null>(null);
-  const [plan, setPlan] = useState("free");
+  const [plan, setPlan] = useState(initialPlan);
   const [hasContentBundle, setHasContentBundle] = useState(false);
   const [guestBattlesRemaining, setGuestBattlesRemaining] = useState<number | null>(null);
   const [guestDirectRemaining, setGuestDirectRemaining] = useState<number | null>(null);
-  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>(() =>
+    readHistoryCache(initialAuthed ? initialUserId : null)
+  );
+  const userIdRef = useRef<string | null>(initialAuthed ? initialUserId : null);
 
   const loadHistory = useCallback((opts?: { force?: boolean }) => {
-    // Fire auth + history in parallel instead of a waterfall.
-    const authP = fetchAuth(Boolean(opts?.force));
-    const historyP = fetchHistory();
+    const gen = ++loadGeneration;
 
-    return authP.then(async (d) => {
-      if (!d) {
-        setAuthed(false);
-        setHistoryItems(readHistoryCache());
-        return;
-      }
+    return fetchAuth(Boolean(opts?.force)).then(async (d) => {
+      if (gen !== loadGeneration) return;
+
+      if (!d) return;
+
       setAuthed(!!d.authed);
       setHasContentBundle(!!d.hasContentSalesBundle);
+
       if (d.authed && d.user) {
-        const user = d.user as { credits: number; plan?: string };
-        setCredits(user.credits);
-        setPlan(user.plan || "free");
-        const h = await historyP;
+        const user = d.user as { id?: string; credits?: number; plan?: string };
+        const userId = user.id ?? null;
+        userIdRef.current = userId;
+        if (typeof user.credits === "number") setCredits(user.credits);
+        if (user.plan) setPlan(user.plan);
+
+        // Show this user's cached sidebar list immediately after re-login.
+        setHistoryItems(readHistoryCache(userId));
+
+        const h = await fetchHistoryWithRetry();
+        if (gen !== loadGeneration) return;
+
         if (h?.ok) {
           const serverItems = (h.items || []) as HistoryItem[];
           setHistoryItems((prev) => {
             const merged = mergeHistoryItems(serverItems, prev);
-            writeHistoryCache(merged);
+            writeHistoryCache(merged, userId);
             return merged;
           });
         }
-      } else {
-        setCredits(null);
-        setPlan("free");
-        setHasContentBundle(false);
-        setHistoryItems(readHistoryCache());
-        if (typeof d.guestBattlesRemaining === "number") {
-          setGuestBattlesRemaining(d.guestBattlesRemaining);
-        }
-        if (typeof d.guestDirectRemaining === "number") {
-          setGuestDirectRemaining(d.guestDirectRemaining);
-        }
+        return;
+      }
+
+      userIdRef.current = null;
+      setCredits(null);
+      setPlan("free");
+      setHasContentBundle(false);
+      setHistoryItems(readHistoryCache(null));
+      if (typeof d.guestBattlesRemaining === "number") {
+        setGuestBattlesRemaining(d.guestBattlesRemaining);
+      }
+      if (typeof d.guestDirectRemaining === "number") {
+        setGuestDirectRemaining(d.guestDirectRemaining);
       }
     });
   }, []);
 
   useEffect(() => {
-    setHistoryItems(readHistoryCache());
     loadHistory();
   }, [loadHistory]);
 
   useEffect(() => {
-    // refresh (ai:refresh) bypasses the module-level auth cache
     const onRefresh = () => loadHistory({ force: true });
     window.addEventListener("ai:refresh", onRefresh);
     return () => window.removeEventListener("ai:refresh", onRefresh);
@@ -157,7 +199,7 @@ export function ArenaAuthProvider({ children }: { children: ReactNode }) {
             : detail;
         const rest = idx >= 0 ? prev.filter((_, i) => i !== idx) : prev;
         const next = [merged, ...rest];
-        writeHistoryCache(next);
+        writeHistoryCache(next, userIdRef.current);
         return next;
       });
     };
@@ -171,11 +213,11 @@ export function ArenaAuthProvider({ children }: { children: ReactNode }) {
       if (idx >= 0) {
         const merged = { ...prev[idx], ...item, latestRunId: item.latestRunId ?? prev[idx].latestRunId };
         const next = [merged, ...prev.filter((_, i) => i !== idx)];
-        writeHistoryCache(next);
+        writeHistoryCache(next, userIdRef.current);
         return next;
       }
       const next = [item, ...prev];
-      prependHistoryCache(item);
+      prependHistoryCache(item, userIdRef.current);
       return next;
     });
   }, []);

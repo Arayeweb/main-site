@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { IconMenu, IconClose, IconArrowLeft } from "./icons";
 import Logo from "./Logo";
+import { openSiteChat } from "@/lib/openSiteChat";
 
 const solutionLinks = [
   {
@@ -23,9 +25,9 @@ const solutionLinks = [
 ] as const;
 
 const navLinks = [
-  { label: "نمونه خروجی‌ها", href: "/#real-portfolio" },
-  { label: "هوش مصنوعی آرایه", href: "/ai", external: true },
-  { label: "درباره آرایه", href: "/#faq" },
+  { label: "نمونه خروجی‌ها", shortLabel: "نمونه‌ها", href: "/#real-portfolio" },
+  { label: "هوش مصنوعی آرایه", shortLabel: "Araaye AI", href: "/ai", external: true },
+  { label: "درباره آرایه", href: "/about" },
 ] as const;
 
 const CHAT_CTA_HREF = "#chat";
@@ -34,23 +36,47 @@ type NavbarTone = "default" | "dark-hero";
 
 interface NavbarProps {
   tone?: NavbarTone;
+  solid?: boolean;
   ctaHref?: string;
   ctaLabel?: string;
 }
 
-function linkClass(onDarkHero: boolean) {
+function linkClass(onDarkHero: boolean, active = false) {
+  const activeClass = active
+    ? onDarkHero
+      ? "bg-white/15 text-white"
+      : "bg-brand-50 text-brand-700"
+    : "";
   return onDarkHero
-    ? "rounded-lg px-3 py-1.5 text-[13px] font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white"
-    : "rounded-lg px-3 py-1.5 text-[13px] font-medium text-navy-500 transition-colors hover:bg-navy-50 hover:text-navy-900";
+    ? `rounded-lg px-2.5 py-1.5 text-[13px] font-medium whitespace-nowrap text-white/75 transition-colors hover:bg-white/10 hover:text-white xl:px-3 ${activeClass}`
+    : `rounded-lg px-2.5 py-1.5 text-[13px] font-medium whitespace-nowrap text-navy-500 transition-colors hover:bg-navy-50 hover:text-navy-900 xl:px-3 ${activeClass}`;
 }
 
-import { openSiteChat } from "@/lib/openSiteChat";
+function isNavLinkActive(pathname: string, href: string) {
+  if (href === "/about") return pathname === "/about";
+  if (href === "/ai") return pathname.startsWith("/ai");
+  return false;
+}
+
+function NavLinkLabel({ link }: { link: (typeof navLinks)[number] }) {
+  if ("shortLabel" in link && link.shortLabel) {
+    return (
+      <>
+        <span className="xl:hidden">{link.shortLabel}</span>
+        <span className="hidden xl:inline">{link.label}</span>
+      </>
+    );
+  }
+  return <>{link.label}</>;
+}
 
 export default function Navbar({
   tone = "default",
+  solid = false,
   ctaHref = CHAT_CTA_HREF,
   ctaLabel = "شروع گفت‌وگو",
 }: NavbarProps) {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
@@ -102,23 +128,25 @@ export default function Navbar({
     ? "hidden sm:inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-[13px] font-bold text-navy-900 transition-all duration-200 hover:bg-teal-50 active:scale-[0.98]"
     : "hidden sm:inline-flex items-center justify-center gap-2 rounded-lg bg-navy-900 px-4 py-2 text-[13px] font-bold text-white transition-all duration-200 hover:bg-navy-800 active:scale-[0.98]";
 
+  const showBar = scrolled || solid;
+
   return (
     <>
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-          scrolled
+          showBar
             ? "glass border-b border-navy-100 shadow-soft"
             : onDarkHero
               ? "bg-transparent"
               : "bg-transparent"
         }`}
       >
-        <nav className="container-mx container-px flex h-14 items-center justify-between gap-4">
-          <a href="/" className="shrink-0">
-            <Logo size="sm" tone={onDarkHero ? "light" : "default"} />
+        <nav className="container-mx container-px flex h-14 items-center justify-between gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center lg:gap-2 xl:gap-4">
+          <a href="/" className="shrink-0 lg:justify-self-start">
+            <Logo size="sm" tone={onDarkHero && !showBar ? "light" : "default"} />
           </a>
 
-          <ul className="hidden items-center gap-0.5 lg:flex">
+          <ul className="hidden items-center gap-0.5 lg:flex lg:justify-self-center">
             <li ref={solutionsRef} className="relative">
               <button
                 type="button"
@@ -158,21 +186,28 @@ export default function Navbar({
               )}
             </li>
 
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a href={link.href} className={linkClass(onDarkHero)}>
-                  {link.label}
-                  {"external" in link && link.external ? (
-                    <span aria-hidden="true" className="ms-0.5 text-[11px] opacity-70">
-                      ↗
-                    </span>
-                  ) : null}
-                </a>
-              </li>
-            ))}
+            {navLinks.map((link) => {
+              const active = isNavLinkActive(pathname, link.href);
+              return (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className={linkClass(onDarkHero, active)}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <NavLinkLabel link={link} />
+                    {"external" in link && link.external ? (
+                      <span aria-hidden="true" className="ms-0.5 text-[11px] opacity-70">
+                        ↗
+                      </span>
+                    ) : null}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2 lg:justify-self-end">
             <a href={ctaHref} onClick={handleCtaClick} className={ctaClass}>
               {ctaLabel}
             </a>
@@ -251,25 +286,31 @@ export default function Navbar({
                 )}
               </li>
 
-              {navLinks.map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium text-navy-700 hover:bg-navy-50"
-                  >
-                    <span>
-                      {link.label}
-                      {"external" in link && link.external ? (
-                        <span aria-hidden="true" className="ms-1 text-sm text-navy-400">
-                          ↗
-                        </span>
-                      ) : null}
-                    </span>
-                    <IconArrowLeft size={16} className="text-navy-300" />
-                  </a>
-                </li>
-              ))}
+              {navLinks.map((link) => {
+                const active = isNavLinkActive(pathname, link.href);
+                return (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium hover:bg-navy-50 ${
+                        active ? "bg-brand-50 text-brand-700" : "text-navy-700"
+                      }`}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      <span>
+                        <NavLinkLabel link={link} />
+                        {"external" in link && link.external ? (
+                          <span aria-hidden="true" className="ms-1 text-sm text-navy-400">
+                            ↗
+                          </span>
+                        ) : null}
+                      </span>
+                      <IconArrowLeft size={16} className="text-navy-300" />
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
 
             <div className="border-t border-navy-100 p-4">

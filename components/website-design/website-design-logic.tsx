@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import MedisaHomePreview from "@/components/home/previews/MedisaHomePreview";
 
 const ACCENT = "#3157F6";
@@ -46,7 +46,16 @@ const ZONES: Record<
 };
 
 export default function WebsiteDesignLogic() {
-  const [activeZone, setActiveZone] = useState<ZoneId | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [selectedZone, setSelectedZone] = useState<ZoneId>("intro");
+  const [hoverZone, setHoverZone] = useState<ZoneId | null>(null);
+  const activeZone = hoverZone ?? selectedZone;
+
+  const selectZone = useCallback((id: ZoneId) => {
+    setSelectedZone(id);
+    setHoverZone(null);
+    previewRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, []);
 
   return (
     <section className="bg-white py-16 sm:py-20 lg:py-24">
@@ -76,11 +85,12 @@ export default function WebsiteDesignLogic() {
                     <button
                       type="button"
                       className="group flex w-full items-start gap-4 py-4 text-right transition-colors sm:py-5"
-                      onMouseEnter={() => setActiveZone(item.id)}
-                      onMouseLeave={() => setActiveZone(null)}
-                      onFocus={() => setActiveZone(item.id)}
-                      onBlur={() => setActiveZone(null)}
-                      aria-pressed={active}
+                      onClick={() => selectZone(item.id)}
+                      onMouseEnter={() => setHoverZone(item.id)}
+                      onMouseLeave={() => setHoverZone(null)}
+                      onFocus={() => setHoverZone(item.id)}
+                      onBlur={() => setHoverZone(null)}
+                      aria-pressed={selectedZone === item.id}
                     >
                       <span
                         className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-extrabold tabular-nums transition-colors"
@@ -114,7 +124,7 @@ export default function WebsiteDesignLogic() {
             </ol>
           </div>
 
-          <div>
+          <div ref={previewRef}>
             <div className="relative overflow-hidden rounded-[12px] border border-[#E8EDFF] bg-white shadow-soft">
               <div className="relative [&>div]:rounded-none [&>div]:border-0 [&>div]:shadow-none">
                 <MedisaHomePreview />

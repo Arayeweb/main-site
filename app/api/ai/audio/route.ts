@@ -9,6 +9,7 @@ import {
   audioSpeechCost,
   resolveAudioModel,
 } from "@/lib/aiCredits";
+import { creditsForProviderCost } from "@/lib/ai/pricing/costToCredits";
 import { hasAudioGen } from "@/lib/aiModels";
 
 export const runtime = "nodejs";
@@ -59,8 +60,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "not_audio_model" }, { status: 422 });
   }
 
-  const cost = audioSpeechCost(m, text.length);
-  if ((user.credits as number) < cost) {
+  const estimatedCost = audioSpeechCost(m, text.length);
+  if ((user.credits as number) < estimatedCost) {
     return NextResponse.json(
       { ok: false, error: "insufficient_credits", upgradeUrl: "/ai/pricing" },
       { status: 402 }
@@ -78,6 +79,10 @@ export async function POST(req: NextRequest) {
   if (gen.costUsd > MAX_BATTLE_COST_USD) {
     console.warn(`[api/ai/audio] cost alert: $${gen.costUsd.toFixed(4)}`);
   }
+  const cost = Math.max(
+    estimatedCost,
+    creditsForProviderCost(m.id, gen.costUsd, gen.tokensUsed ?? 0, 0)
+  );
 
   const ext = gen.mime.includes("wav") ? "wav" : "mp3";
   const path = `${session.userId}/${randomUUID()}.${ext}`;

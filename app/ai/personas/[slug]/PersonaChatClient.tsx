@@ -11,6 +11,8 @@ export default function PersonaChatClient({
   threadId,
   initialTurns,
   bootstrapPrompt = null,
+  plan: planProp = "free",
+  authed: serverAuthed = false,
 }: {
   persona: AiPersona;
   modelId: string;
@@ -20,7 +22,9 @@ export default function PersonaChatClient({
   plan?: string;
   authed?: boolean;
 }) {
-  const { authed, plan, setCredits } = useArenaAuth();
+  const { authed: ctxAuthed, plan: ctxPlan, setCredits } = useArenaAuth();
+  const authed = ctxAuthed ?? serverAuthed;
+  const plan = ctxPlan || planProp;
 
   return (
     <PersonaChatView
@@ -30,7 +34,7 @@ export default function PersonaChatClient({
       initialTurns={initialTurns}
       bootstrapPrompt={bootstrapPrompt}
       plan={plan}
-      guestMode={!authed}
+      guestMode={authed !== true}
       onCreditsChange={setCredits}
     />
   );

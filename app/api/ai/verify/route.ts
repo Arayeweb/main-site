@@ -73,13 +73,24 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (user && pkg) {
+    const creditsGranted = order.credits_granted as number;
     await supabase
       .from("ai_users")
       .update({
-        credits: ((user.credits as number) || 0) + (order.credits_granted as number),
+        credits: ((user.credits as number) || 0) + creditsGranted,
         plan: higherPlan((user.plan as string) || "free", pkg.grantsPlan as AIPlan),
       })
       .eq("id", user.id);
+
+    await supabase.from("ai_credit_lots").insert({
+      user_id: user.id,
+      source: "purchase",
+      amount: creditsGranted,
+      remaining: creditsGranted,
+      expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      related_order_id: order.id,
+      metadata: { package_id: order.package_id },
+    });
   }
 
   await supabase
@@ -138,6 +149,16 @@ export async function GET(req: NextRequest) {
               credits: ((referrer.credits as number) || 0) + REFERRAL_REFERRER_CREDITS,
             })
             .eq("id", referrer.id);
+
+          await supabase.from("ai_credit_lots").insert({
+            user_id: referrer.id,
+            source: "referral_bonus",
+            amount: REFERRAL_REFERRER_CREDITS,
+            remaining: REFERRAL_REFERRER_CREDITS,
+            expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+            related_order_id: order.id,
+            metadata: { buyer_user_id: order.user_id },
+          });
         }
 
         await supabase

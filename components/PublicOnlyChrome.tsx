@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import ChatWidget from "./ChatWidget";
-import StickyMobileCta from "./home/StickyMobileCta";
 
 // Renders public-site chrome (ChatWidget) only on non-admin routes.
 // /ai محصول مستقل است — ویجت چت سایت اصلی نباید روی آن بیاید.
@@ -30,10 +29,5 @@ export default function PublicOnlyChrome() {
     pathname.startsWith("/b/")
   )
     return null;
-  return (
-    <>
-      <ChatWidget />
-      {pathname === "/" ? <StickyMobileCta /> : null}
-    </>
-  );
+  return <ChatWidget />;
 }

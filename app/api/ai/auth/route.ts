@@ -7,6 +7,7 @@ import {
   hashPassword,
   signAIToken,
   verifyPassword,
+  type AISession,
 } from "@/lib/aiAuth";
 import { findActiveContentSalesOrder, maskPhone } from "@/lib/contentSalesOrder";
 import { isE2eMode } from "@/lib/e2eMode";
@@ -14,6 +15,7 @@ import { withPublicTimeout } from "@/lib/publicDataFetch";
 import { generateReferralCode } from "@/lib/aiPromo";
 import { normalizeContact } from "@/lib/validateContact";
 import { getGuestState, MAX_GUEST_BATTLES, MAX_GUEST_DIRECT } from "@/lib/aiGuest";
+import { FREE_SIGNUP_CREDITS } from "@/lib/aiPricingConfig";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +51,18 @@ function setAICookie(res: NextResponse, token: string) {
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 30 * 24 * 60 * 60, // ۳۰ روز
+  });
+}
+
+function sessionAuthFallback(session: AISession) {
+  return jsonNoStore({
+    ok: true,
+    authed: true,
+    user: {
+      id: session.userId,
+      plan: session.plan,
+    },
+    hasContentSalesBundle: false,
   });
 }
 
@@ -117,6 +131,17 @@ export async function POST(req: NextRequest) {
       console.error("[api/ai/auth POST]", error);
       return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
     }
+
+    await supabase.from("ai_credit_lots").insert({
+      user_id: user.id,
+      source: "signup_bonus",
+      amount: FREE_SIGNUP_CREDITS,
+      remaining: FREE_SIGNUP_CREDITS,
+      metadata: {
+        guest_token: getGuestState(req)?.token ?? null,
+        signup_bonus_granted: true,
+      },
+    });
 
     // ساخت کد معرفی AI-XXXXXX
     let referralCode: string | null = null;
@@ -222,27 +247,27 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
-    const userResult = await withPublicTimeout(
-      supabase
-        .from("ai_users")
-        .select("id, plan, credits, phone")
-        .eq("id", session.userId)
-        .maybeSingle(),
-      "auth/session-user"
-    );
+    const [userResult, bundleOrder] = await Promise.all([
+      withPublicTimeout(
+        supabase
+          .from("ai_users")
+          .select("id, plan, credits, phone")
+          .eq("id", session.userId)
+          .maybeSingle(),
+        "auth/session-user"
+      ),
+      isE2eMode()
+        ? Promise.resolve(null)
+        : withPublicTimeout(
+            findActiveContentSalesOrder(supabase, { aiUserId: session.userId }),
+            "auth/content-bundle"
+          ),
+    ]);
 
-    const data = userResult?.data;
+    if (userResult === null) return sessionAuthFallback(session);
+
+    const data = userResult.data;
     if (!data) return jsonNoStore({ ok: true, authed: false });
-
-    const bundleOrder = isE2eMode()
-      ? null
-      : await withPublicTimeout(
-          findActiveContentSalesOrder(supabase, {
-            aiUserId: data.id as string,
-            phone: data.phone as string,
-          }),
-          "auth/content-bundle"
-        );
 
     return jsonNoStore({
       ok: true,
@@ -257,7 +282,7 @@ export async function GET(req: NextRequest) {
       contentSalesAppUrl: bundleOrder ? "/ai/content-sales/app" : null,
     });
   } catch {
-    return jsonNoStore({ ok: true, authed: false });
+    return sessionAuthFallback(session);
   }
 }
 

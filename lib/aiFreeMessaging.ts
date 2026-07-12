@@ -14,7 +14,7 @@ export function formatFreeAllowanceGuest(battles: number, direct: number): strin
 }
 
 export function formatStarterCredits(credits: number): string {
-  return `≈ ${creditsToChatEstimate(credits)} پرسش سریع · ≈ ${Math.floor(credits / 10)} تصویر · ≈ ${Math.floor(credits / 60)} ویدیو کوتاه`;
+  return `≈ ${creditsToChatEstimate(credits)} پرسش سریع · ≈ ${Math.floor(credits / 20)} تصویر اقتصادی`;
 }
 
 export const FREE_PLAN_EQUIVALENTS = {

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconClose } from "@/components/icons";
+import { IconCheck, IconClose } from "@/components/icons";
 import { pushGtmEvent } from "@/lib/gtm";
-import { openSiteChat, type WebsiteDesignProjectType } from "@/lib/openSiteChat";
 import { siteWhatsAppUrl } from "@/lib/siteContact";
 import { getUtmParams } from "@/lib/utm";
 import { WEBSITE_DESIGN_PAGE } from "@/data/website-design";
+import type { WebsiteDesignProjectType } from "@/lib/openSiteChat";
 
 export const HERO_LEAD_BAR_ID = "website-design-hero-lead";
 export const HERO_LEAD_BAR_OPEN_EVENT = "website-design-hero-lead-open";
@@ -18,6 +18,11 @@ const PROJECT_OPTIONS: { id: WebsiteDesignProjectType; label: string }[] = [
   { id: "new", label: "سایت جدید می‌خواهم" },
   { id: "redesign", label: "سایت فعلی نیاز به بازطراحی دارد" },
 ];
+
+const PROJECT_LABELS: Record<WebsiteDesignProjectType, string> = {
+  new: "سایت جدید می‌خواهم",
+  redesign: "سایت فعلی نیاز به بازطراحی دارد",
+};
 
 function toLatinDigits(value: string) {
   return value
@@ -46,6 +51,7 @@ function LeadBarContent({
   phone,
   setPhone,
   error,
+  loading,
   onSubmit,
   layout,
 }: {
@@ -54,6 +60,7 @@ function LeadBarContent({
   phone: string;
   setPhone: (value: string) => void;
   error: string | null;
+  loading: boolean;
   onSubmit: (e: React.FormEvent) => void;
   layout: "desktop" | "mobile";
 }) {
@@ -107,12 +114,13 @@ function LeadBarContent({
         />
         <button
           type="submit"
-          className={`inline-flex shrink-0 items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3157F6] focus-visible:ring-offset-2 active:scale-[0.98] ${
+          disabled={loading}
+          className={`inline-flex shrink-0 items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3157F6] focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 ${
             layout === "mobile" ? "h-12 w-full" : "h-[46px]"
           }`}
           style={{ backgroundColor: ACCENT }}
         >
-          گفت‌وگو درباره سایت
+          {loading ? "در حال ثبت..." : "گفت‌وگو درباره سایت"}
         </button>
       </div>
 
@@ -137,10 +145,30 @@ function LeadBarContent({
   );
 }
 
+function LeadBarSuccess({ layout }: { layout: "desktop" | "mobile" }) {
+  return (
+    <div
+      className={`text-center ${layout === "mobile" ? "py-2" : "py-3"}`}
+      role="status"
+      aria-live="polite"
+    >
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[#EEF2FF] text-[#3157F6]">
+        <IconCheck size={22} />
+      </div>
+      <p className="text-base font-extrabold text-navy-900">درخواست شما ثبت شد</p>
+      <p className="mt-2 text-[13px] leading-relaxed text-navy-500">
+        به‌زودی برای بررسی پروژه با شما تماس می‌گیریم.
+      </p>
+    </div>
+  );
+}
+
 export default function WebsiteDesignHeroLeadBar() {
   const [projectType, setProjectType] = useState<WebsiteDesignProjectType | null>(null);
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(true);
 
@@ -154,7 +182,7 @@ export default function WebsiteDesignHeroLeadBar() {
     return () => window.removeEventListener(HERO_LEAD_BAR_OPEN_EVENT, openMobile);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -169,16 +197,54 @@ export default function WebsiteDesignHeroLeadBar() {
       return;
     }
 
-    track("website_design_hero_lead_submit", {
-      projectType,
-      contact: normalizedPhone,
-    });
+    setLoading(true);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "website-design-hero",
+          page: WEBSITE_DESIGN_PAGE,
+          contact: normalizedPhone,
+          intent: projectType,
+          sitetype: projectType,
+          goal: PROJECT_LABELS[projectType],
+          channel: "website_design_hero",
+          detail: `projectType=${PROJECT_LABELS[projectType]}`,
+          referrer: typeof document !== "undefined" ? document.referrer || null : null,
+          company: "",
+          ...getUtmParams(),
+        }),
+      });
 
-    openSiteChat("website_design_hero", {
-      flow: "website_design_hero",
-      projectType,
-      contact: normalizedPhone,
-    });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+
+      if (!res.ok || !data.ok) {
+        if (data.error === "rate_limited") {
+          setError("درخواست‌های زیاد. چند دقیقه بعد دوباره تلاش کنید.");
+        } else if (data.error === "invalid_contact") {
+          setError("شماره موبایل را درست وارد کنید.");
+        } else {
+          setError("ثبت درخواست ناموفق بود. دوباره تلاش کنید.");
+        }
+        return;
+      }
+
+      track("website_design_hero_lead_submit", {
+        projectType,
+        contact: normalizedPhone,
+      });
+      pushGtmEvent("generate_lead", {
+        source: "website_design_hero",
+        page: "website-design",
+        projectType,
+      });
+      setSuccess(true);
+    } catch {
+      setError("خطا در ارتباط. اتصال اینترنت را بررسی کنید.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sharedProps = {
@@ -187,6 +253,7 @@ export default function WebsiteDesignHeroLeadBar() {
     phone,
     setPhone,
     error,
+    loading,
     onSubmit: handleSubmit,
   };
 
@@ -194,7 +261,11 @@ export default function WebsiteDesignHeroLeadBar() {
     <>
       <div id={HERO_LEAD_BAR_ID} className="relative z-10 mx-auto w-full max-w-[900px]">
         <div className="rounded-2xl border border-navy-100 bg-white px-6 py-5 shadow-[0_16px_48px_rgba(49,87,246,0.12)]">
-          <LeadBarContent layout="desktop" {...sharedProps} />
+          {success ? (
+            <LeadBarSuccess layout="desktop" />
+          ) : (
+            <LeadBarContent layout="desktop" {...sharedProps} />
+          )}
         </div>
       </div>
 
@@ -220,7 +291,11 @@ export default function WebsiteDesignHeroLeadBar() {
                   <IconClose size={18} />
                 </button>
               </div>
-              <LeadBarContent layout="mobile" {...sharedProps} />
+              {success ? (
+                <LeadBarSuccess layout="mobile" />
+              ) : (
+                <LeadBarContent layout="mobile" {...sharedProps} />
+              )}
             </div>,
             document.body
           )

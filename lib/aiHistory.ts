@@ -68,6 +68,7 @@ export function historyTierLabel(tier: string, source?: "run" | "legacy"): strin
   if (tier === "direct") return "چت";
   if (tier === "side_by_side") return "مقایسه";
   if (tier === "battle" || tier === "council") return "همفکری";
+  if (tier === "code_studio") return "استودیو کد";
   return tier;
 }
 

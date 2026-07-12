@@ -167,13 +167,13 @@ export default function WebsiteDesignHero() {
           </span>
 
           <h1 className="mt-[28px] max-w-[950px] text-balance text-[clamp(2rem,4.2vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-navy-900">
-            <span className="block">سایتی که مشتری سریع بفهمد</span>
-            <span className="block">چه می‌کنید و چطور با شما تماس بگیرد</span>
+            <span className="block">سایتی که به مشتری نشان دهد</span>
+            <span className="block">چرا باید شما را انتخاب کند</span>
           </h1>
 
           <p className="mt-8 max-w-[780px] text-[15px] leading-[1.9] text-navy-500 sm:text-base">
-            خدمات، نمونه‌کارها و اطلاعات مهم کسب‌وکار‌تان را واضح می‌چینیم و مسیر تماس،
-            رزرو یا سفارش را ساده می‌کنیم.
+            خدمات، نمونه‌کارها و تفاوت کسب‌وکار شما را طوری کنار هم می‌چینیم که مشتری با
+            اطمینان تصمیم بگیرد؛ برای مشاوره، رزرو، سفارش یا شروع همکاری.
           </p>
 
           <div className="mt-10 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:w-auto sm:flex-row sm:justify-center">

@@ -51,7 +51,8 @@ export function canUseModel(plan: string, model: AIModelInfo): boolean {
 export const MODE_MIN_PLAN: Record<ArenaMode, AIPlan> = {
   battle: PLAN_IDS.FREE,
   direct: PLAN_IDS.FREE,
-  side_by_side: PLAN_IDS.STARTER,
+  // Compare is the core moat — free users must be able to try it before upgrade.
+  side_by_side: PLAN_IDS.FREE,
 };
 
 export function canUseMode(plan: string, mode: ArenaMode): boolean {
@@ -130,6 +131,9 @@ export function resolveImageModel(
 ): AIModelInfo | { error: "invalid_model" | "plan_upgrade_required" } {
   const m = id ? getModel(id) : undefined;
   if (!m || m.kind !== "image") return { error: "invalid_model" };
+  if (planRank(plan) <= planRank(PLAN_IDS.FREE)) {
+    return { error: "plan_upgrade_required" };
+  }
   if (!canUseModel(plan, m)) return { error: "plan_upgrade_required" };
   return m;
 }

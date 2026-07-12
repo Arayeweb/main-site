@@ -21,9 +21,12 @@ describe("aiPackages — subscription logic", () => {
 
   it("assigns new credit amounts per plan", () => {
     expect(AI_PACKAGES.starter.credits).toBe(80);
-    expect(AI_PACKAGES.plus.credits).toBe(240);
-    expect(AI_PACKAGES.pro.credits).toBe(550);
-    expect(AI_PACKAGES.max.credits).toBe(1200);
+    expect(AI_PACKAGES.plus.credits).toBe(260);
+    expect(AI_PACKAGES.pro.credits).toBe(600);
+    expect(AI_PACKAGES.max.credits).toBe(1250);
+    expect(AI_PACKAGES.plus.priceToman).toBe(299_000);
+    expect(AI_PACKAGES.pro.priceToman).toBe(649_000);
+    expect(AI_PACKAGES.max.priceToman).toBe(1_290_000);
   });
 
   it("ranks plans in ascending order", () => {
@@ -54,15 +57,16 @@ describe("aiPackages — subscription logic", () => {
     expect(PACKAGE_LIST.every((p) => p.checkoutEnabled)).toBe(true);
   });
 
-  it("PUBLIC_PLAN_LIST includes free and business display plans", () => {
+  it("PUBLIC_PLAN_LIST includes only public self-serve plans", () => {
     const ids = PUBLIC_PLAN_LIST.map((p) => p.id);
     expect(ids).toContain(PLAN_IDS.FREE);
-    expect(ids).toContain(PLAN_IDS.BUSINESS);
     expect(ids).toContain(PLAN_IDS.PRO);
+    expect(ids).not.toContain(PLAN_IDS.BUSINESS);
+    expect(ids).not.toContain(PLAN_IDS.TEAM_MINI);
   });
 
-  it("free signup credits default to 20", () => {
-    expect(FREE_SIGNUP_CREDITS).toBe(20);
+  it("free signup credits default to 10", () => {
+    expect(FREE_SIGNUP_CREDITS).toBe(10);
   });
 
   it("highlights pro as featured", () => {

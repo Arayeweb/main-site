@@ -30,7 +30,7 @@ export default function ShowcasePage({ params }: { params: { slug: string } }) {
     <main className="min-h-screen bg-[#faf8f5] px-5 py-10 sm:px-8 sm:py-14">
       <div className="mx-auto max-w-5xl">
         <div className="mt-8">
-          <ShowcaseFull sampleKey={sample.key as "google-shoope" | "google-pourdast"} />
+          <ShowcaseFull sampleKey={sample.key as "google-shoope" | "google-emdad-ahan"} />
         </div>
       </div>
     </main>

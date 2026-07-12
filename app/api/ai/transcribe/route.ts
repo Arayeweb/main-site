@@ -7,6 +7,7 @@ import {
   resolveTranscribeModel,
   transcribeCost,
 } from "@/lib/aiCredits";
+import { creditsForProviderCost } from "@/lib/ai/pricing/costToCredits";
 import { hasTranscribe } from "@/lib/aiModels";
 
 export const runtime = "nodejs";
@@ -90,9 +91,9 @@ export async function POST(req: NextRequest) {
 
   const durationSec =
     durationClient > 0 ? durationClient : estimateDurationSec(file.size, mime);
-  const cost = transcribeCost(m, durationSec);
+  const estimatedCost = transcribeCost(m, durationSec);
 
-  if ((user.credits as number) < cost) {
+  if ((user.credits as number) < estimatedCost) {
     return NextResponse.json(
       { ok: false, error: "insufficient_credits", upgradeUrl: "/ai/pricing" },
       { status: 402 }
@@ -113,6 +114,10 @@ export async function POST(req: NextRequest) {
   if (result.costUsd > MAX_BATTLE_COST_USD) {
     console.warn(`[api/ai/transcribe] cost alert: $${result.costUsd.toFixed(4)}`);
   }
+  const cost = Math.max(
+    estimatedCost,
+    creditsForProviderCost(m.id, result.costUsd, result.tokensUsed ?? 0, 0)
+  );
 
   const promptLabel = `رونویسی: ${file.name}`;
   const insertRow: Record<string, unknown> = {

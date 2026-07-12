@@ -52,6 +52,7 @@ export async function* runCompareMode(
         outputTokens: event.outputTokens,
         cachedTokens: event.cachedTokens,
         costUsd: event.costUsd,
+        extraCredits: ctx.answerSurchargeCredits,
         ttftMs: event.ttftMs,
         latencyMs: event.latencyMs,
         errorCode: null,

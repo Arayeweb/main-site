@@ -19,6 +19,31 @@ export default function AiOpsCostsPage() {
 
       {data && (
         <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p className="text-xs text-slate-500">درآمد کل AI</p>
+              <p className="text-lg font-bold dark:text-white">{formatToman(data.kpis.total_ai_revenue_toman)}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p className="text-xs text-slate-500">هزینه provider</p>
+              <p className="text-lg font-bold dark:text-white">{formatUsd(data.kpis.total_provider_cost_usd)}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p className="text-xs text-slate-500">هزینه تومان</p>
+              <p className="text-lg font-bold dark:text-white">{formatToman(data.kpis.total_provider_cost_toman)}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p className="text-xs text-slate-500">سود ناخالص</p>
+              <p className="text-lg font-bold dark:text-white">{formatToman(data.kpis.gross_profit_toman)}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p className="text-xs text-slate-500">مارجین ناخالص</p>
+              <p className={`text-lg font-bold ${data.kpis.gross_margin_percent >= 45 ? 'text-green-600' : 'text-red-600'}`}>
+                {data.kpis.gross_margin_percent}%
+              </p>
+            </div>
+          </div>
+
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">هزینه روزانه (۳۰ روز اخیر)</h3>
             <ResponsiveContainer width="100%" height={240}>
@@ -41,6 +66,7 @@ export default function AiOpsCostsPage() {
                     <th className="text-right py-2">مدل</th>
                     <th className="text-right py-2">درخواست</th>
                     <th className="text-right py-2">هزینه</th>
+                    <th className="text-right py-2">حاشیه</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
@@ -49,6 +75,7 @@ export default function AiOpsCostsPage() {
                       <td className="py-2 dark:text-slate-200">{m.model}</td>
                       <td className="py-2 dark:text-slate-200">{m.requests}</td>
                       <td className="py-2 dark:text-slate-200">{formatUsd(m.cost_usd)}</td>
+                      <td className={`py-2 font-semibold ${m.margin_percent >= 45 ? 'text-green-600' : 'text-red-600'}`}>{m.margin_percent}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -106,6 +133,58 @@ export default function AiOpsCostsPage() {
                 </tbody>
               </table>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">مارجین به تفکیک قابلیت</h3>
+              <table className="w-full text-sm" dir="rtl">
+                <thead>
+                  <tr className="text-xs text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                    <th className="text-right py-2">قابلیت</th>
+                    <th className="text-right py-2">Run</th>
+                    <th className="text-right py-2">درآمد</th>
+                    <th className="text-right py-2">حاشیه</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                  {data.by_feature.map((f) => (
+                    <tr key={f.feature}>
+                      <td className="py-2 dark:text-slate-200">{f.feature}</td>
+                      <td className="py-2 dark:text-slate-200">{f.runs}</td>
+                      <td className="py-2 dark:text-slate-200">{formatToman(f.revenue_toman)}</td>
+                      <td className={`py-2 font-semibold ${f.margin_percent >= 45 ? 'text-green-600' : 'text-red-600'}`}>{f.margin_percent}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">کاربران یا قابلیت‌های زیان‌ده</h3>
+              {data.loss_makers.length === 0 ? (
+                <p className="text-sm text-slate-400">موردی زیر حداقل مارجین تعریف‌شده دیده نشد.</p>
+              ) : (
+                <table className="w-full text-sm" dir="rtl">
+                  <thead>
+                    <tr className="text-xs text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                      <th className="text-right py-2">نوع</th>
+                      <th className="text-right py-2">کلید</th>
+                      <th className="text-right py-2">حاشیه</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                    {data.loss_makers.map((item) => (
+                      <tr key={`${item.kind}:${item.key}`}>
+                        <td className="py-2 dark:text-slate-200">{item.kind}</td>
+                        <td className="py-2 dark:text-slate-200">{item.key}</td>
+                        <td className="py-2 text-red-600 font-semibold">{item.margin_percent}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </div>
       )}

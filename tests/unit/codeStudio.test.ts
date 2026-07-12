@@ -7,7 +7,7 @@ import {
   type CodeFileMap,
 } from "@/lib/codeStudio";
 import { parseCodeEdits } from "@/lib/codeEdits";
-import { toSandpackFiles, pageSourceToAppJs } from "@/lib/codeSandpack";
+import { toSandpackFiles, pageSourceToAppJs, detectPreviewKind } from "@/lib/codeSandpack";
 
 describe("codeStudio — prompt and edit parsing", () => {
   it("builds a prompt with active file content and project file list", () => {
@@ -77,15 +77,34 @@ describe("codeStudio — prompt and edit parsing", () => {
 });
 
 describe("codeStudio — sandpack and snapshots", () => {
-  it("maps project files to sandpack App.js and styles", () => {
+  it("maps project files to sandpack App.tsx and styles", () => {
     const sp = toSandpackFiles({
       "src/app/page.tsx": 'export default function Home() { return <main>Hi</main>; }',
       "src/app/globals.css": ".page { color: red; }",
     });
 
-    expect(sp["/App.js"]).toContain("export default function Home");
-    expect(sp["/App.js"]).toContain('import "./styles.css"');
+    expect(sp["/App.tsx"]).toContain("export default function Home");
+    expect(sp["/App.tsx"]).toContain('import "./styles.css"');
     expect(sp["/styles.css"]).toContain("color: red");
+  });
+
+  it("strips next/* imports when converting page to sandpack app", () => {
+    const app = pageSourceToAppJs(
+      `'use client';\nimport Link from "next/link";\nexport default function Home() { return <main>Hi</main>; }`
+    );
+    expect(app).not.toContain("next/link");
+    expect(app).toContain("export default function Home");
+  });
+
+  it("detects preview kind from file extensions", () => {
+    expect(
+      detectPreviewKind({
+        "src/app/page.tsx": "x",
+        "src/app/globals.css": "",
+      })
+    ).toBe("react");
+    expect(detectPreviewKind({ "main.py": "print('hi')" })).toBe("python");
+    expect(detectPreviewKind({ "README.md": "# hi" })).toBe("none");
   });
 
   it("extracts code snapshot from attachments", () => {

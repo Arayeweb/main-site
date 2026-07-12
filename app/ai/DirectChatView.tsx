@@ -13,8 +13,8 @@ import {
   UserAvatar,
 } from "./icons";
 import ModelSelect from "./ModelSelect";
-import { getModel } from "@/lib/aiModels";
-import { wrapPromptWithModes } from "./composerHelpers";
+import { directModels, getModel } from "@/lib/aiModels";
+import { wrapPromptWithModes, type PendingAttachment } from "./composerHelpers";
 import MarkdownMessage from "./MarkdownMessage";
 import ArenaComposer from "./ArenaComposer";
 import { useArenaAuth } from "./ArenaAuthContext";
@@ -26,6 +26,7 @@ import {
 } from "@/lib/ai/client/runStream";
 import { buildRunMessages } from "@/lib/ai/client/buildMessages";
 import type { RunSSEEvent } from "@/lib/ai/streaming/sse";
+import { canUseModel } from "@/lib/aiCredits";
 
 export type ChatTurn = {
   id: string;
@@ -34,12 +35,11 @@ export type ChatTurn = {
   streaming?: boolean;
   imageUrl?: string;
   attachmentUrls?: string[];
+  attachments?: { url: string; mime: string; name?: string }[];
   isImageGen?: boolean;
 };
 
 type Vote = "up" | "down";
-
-type PendingAttachment = { url: string; mime: string; preview: string };
 
 export default function DirectChatView({
   modelId,
@@ -80,6 +80,7 @@ export default function DirectChatView({
   const [chatModel, setChatModel] = useState(modelId);
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [notice, setNotice] = useState("");
   const [codeMode, setCodeMode] = useState(initialCodeMode);
   const [webMode, setWebMode] = useState(initialWebMode);
   const [err, setErr] = useState<
@@ -117,6 +118,7 @@ export default function DirectChatView({
     if (attachments.length >= 2) return;
     setUploading(true);
     setErr("");
+    setNotice("");
     try {
       const fd = new FormData();
       fd.append("file", file);
@@ -129,12 +131,35 @@ export default function DirectChatView({
       }
       setAttachments((a) => [
         ...a,
-        { url: data.url, mime: data.mime, preview: data.url },
+        {
+          url: data.url,
+          mime: data.mime,
+          preview: data.mime?.startsWith("image/") ? data.url : "",
+          name: data.name,
+          size: data.size,
+          text: data.text,
+        },
       ]);
+      if (String(data.mime ?? "").startsWith("image/")) ensureVisionModel();
     } catch {
       setErr("server_error");
     }
     setUploading(false);
+  }
+
+  function ensureVisionModel(): string | null {
+    const current = getModel(chatModel);
+    if (current?.capabilities?.vision && canUseModel(effectivePlan, current)) {
+      return chatModel;
+    }
+
+    const next = directModels().find((m) => m.capabilities?.vision && canUseModel(effectivePlan, m));
+    if (!next) return null;
+
+    setChatModel(next.id);
+    onModelChange?.(next.id);
+    setNotice(`برای تحلیل تصویر، مدل به ${next.name} تغییر کرد.`);
+    return next.id;
   }
 
   async function streamMessage(
@@ -146,13 +171,15 @@ export default function DirectChatView({
       window.dispatchEvent(new Event("ai:open-login"));
       return;
     }
-    if (streaming) return;
+    if (streaming || uploading) return;
     const attach = opts?.attach || attachments;
     const useCode = opts?.code ?? codeMode;
     const useWeb = opts?.web ?? webMode;
     const apiPrompt = wrapPromptWithModes(q, { codeMode: useCode });
     if (!apiPrompt.trim() && attach.length === 0) return;
-    if (attach.length > 0 && !getModel(chatModel)?.capabilities?.vision) {
+    const hasImageAttachment = attach.some((a) => a.mime.startsWith("image/"));
+    const runModel = hasImageAttachment ? ensureVisionModel() : chatModel;
+    if (hasImageAttachment && !runModel) {
       setErr("no_vision");
       return;
     }
@@ -169,12 +196,13 @@ export default function DirectChatView({
 
     const tmpId = opts?.replaceTurnId || `tmp-${Date.now()}`;
     const attachUrls = attach.map((a) => a.url);
+    const turnAttachments = attach.map((a) => ({ url: a.url, mime: a.mime, name: a.name }));
 
     if (opts?.replaceTurnId) {
       setTurns((t) =>
         t.map((x) =>
           x.id === opts.replaceTurnId
-            ? { ...x, response: "", streaming: true, attachmentUrls: attachUrls }
+            ? { ...x, response: "", streaming: true, attachmentUrls: attachUrls, attachments: turnAttachments }
             : x
         )
       );
@@ -187,6 +215,7 @@ export default function DirectChatView({
           response: "",
           streaming: true,
           attachmentUrls: attachUrls.length ? attachUrls : undefined,
+          attachments: turnAttachments.length ? turnAttachments : undefined,
         },
       ]);
     }
@@ -252,6 +281,7 @@ export default function DirectChatView({
                 String(data.threadId),
                 String(data.responseA ?? full),
                 attachUrls,
+                turnAttachments,
                 !!data.isNewThread,
                 data.creditsRemaining
               );
@@ -273,12 +303,18 @@ export default function DirectChatView({
       const result = await startRunStream(
         {
           mode: "direct",
-          model: chatModel,
+          model: runModel ?? chatModel,
           ...(useServerHistory ? {} : { messages: buildRunMessages(priorTurns, q) }),
           prompt: apiPrompt,
           conversationId: activeThreadId,
           webSearch: useWeb,
-          attachments: attach.map((a) => ({ url: a.url, mime: a.mime })),
+          attachments: attach.map((a) => ({
+            url: a.url,
+            mime: a.mime,
+            name: a.name,
+            size: a.size,
+            text: a.text,
+          })),
         },
         {
           onRunId: (id) => {
@@ -360,6 +396,7 @@ export default function DirectChatView({
           conversationId,
           full,
           attachUrls,
+          turnAttachments,
           !activeThreadId,
           undefined
         );
@@ -403,6 +440,7 @@ export default function DirectChatView({
     tid: string,
     responseA: string,
     attachUrls: string[],
+    turnAttachments: { url: string; mime: string; name?: string }[],
     isNewThread: boolean,
     creditsRemaining: unknown
   ) {
@@ -415,6 +453,7 @@ export default function DirectChatView({
               response: responseA,
               streaming: false,
               attachmentUrls: attachUrls.length ? attachUrls : undefined,
+              attachments: turnAttachments.length ? turnAttachments : undefined,
             }
           : x
       )
@@ -459,7 +498,7 @@ export default function DirectChatView({
 
   function send() {
     const q = input.trim();
-    if ((!q && attachments.length === 0) || streaming) return;
+    if ((!q && attachments.length === 0) || streaming || uploading) return;
     setInput("");
     if (taRef.current) taRef.current.style.height = "auto";
     streamMessage(q, threadId);
@@ -510,12 +549,18 @@ export default function DirectChatView({
     if (!isLast || streaming || turn.streaming || turn.isImageGen) return;
     streamMessage(turn.prompt, threadId, {
       replaceTurnId: turn.id,
-      attach: turn.attachmentUrls?.map((url) => ({ url, mime: "image/jpeg", preview: url })),
+      attach: turn.attachments?.map((a) => ({
+        url: a.url,
+        mime: a.mime,
+        name: a.name,
+        preview: a.mime.startsWith("image/") ? a.url : "",
+      })) ?? turn.attachmentUrls?.map((url) => ({ url, mime: "image/jpeg", preview: url })),
     });
   }
 
   const lastTurnId = turns[turns.length - 1]?.id;
   const activeInfo = getModel(chatModel);
+  const hasImageAttachment = attachments.some((a) => a.mime.startsWith("image/"));
 
   return (
     <div className="ar-chat-wrap">
@@ -536,10 +581,16 @@ export default function DirectChatView({
               <div className="ar-msg-user-row">
                 <UserAvatar initial="ش" size={34} />
                 <div className="ar-msg-user-bubble">
-                  {t.attachmentUrls?.map((url) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={url} src={url} alt="" className="ar-msg-attach-thumb" />
-                  ))}
+                  {(t.attachments ?? t.attachmentUrls?.map((url) => ({ url, mime: "image/jpeg", name: undefined })) ?? []).map((a) =>
+                    a.mime.startsWith("image/") ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={a.url} src={a.url} alt="" className="ar-msg-attach-thumb" />
+                    ) : (
+                      <span key={a.url} className="ar-msg-file-chip">
+                        {a.name || "فایل پیوست"}
+                      </span>
+                    )
+                  )}
                   {t.prompt}
                 </div>
               </div>
@@ -636,7 +687,7 @@ export default function DirectChatView({
               plan={effectivePlan}
               picker="direct"
               variant="bar"
-              visionOnly={attachments.length > 0}
+              visionOnly={hasImageAttachment}
               sheetOnMobile
             />
           </div>
@@ -645,7 +696,7 @@ export default function DirectChatView({
         <input
           ref={fileRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/jpeg,image/png,image/webp,application/pdf,text/plain,text/markdown,text/csv,application/json,.docx"
           hidden
           onChange={(e) => {
             const f = e.target.files?.[0];
@@ -675,12 +726,15 @@ export default function DirectChatView({
         {activeInfo && (
           <div className="ar-chat-footnote">
             پاسخ با {activeInfo.name}
-            <span className="powered-by"> · {activeInfo.poweredBy}</span>
-            {attachments.length > 0 ? " (+۱ کردیت vision)" : ""} · ممکن است نادرست باشد
+            {activeInfo.poweredBy !== activeInfo.name && (
+              <span className="powered-by"> · {activeInfo.poweredBy}</span>
+            )}
+            {attachments.length > 0 ? " (هزینه فایل بر اساس حجم محاسبه می‌شود)" : ""} · ممکن است نادرست باشد
           </div>
         )}
+        {notice && <div className="ar-chat-note">{notice}</div>}
         {err === "no_vision" && (
-          <div className="ar-chat-err">این مدل از تصویر پشتیبانی نمی‌کند — مدل vision انتخاب کن.</div>
+          <div className="ar-chat-err">برای این پلن، مدل مناسبی برای تحلیل تصویر پیدا نشد.</div>
         )}
         {err === "credits_out" && (
           <div className="ar-chat-err">

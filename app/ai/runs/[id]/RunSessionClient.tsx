@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import DirectChatView from "../../DirectChatView";
 import CompareSessionView from "../../CompareSessionView";
 import CouncilSessionView from "../../CouncilSessionView";
@@ -54,9 +53,6 @@ export default function RunSessionClient({
           modelBId={latest.models[1]}
         />
       )}
-      <div className="ar-run-back-link">
-        <Link href="/ai">گفتگوی جدید</Link>
-      </div>
     </div>
   );
 }

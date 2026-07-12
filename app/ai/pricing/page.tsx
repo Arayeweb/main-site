@@ -406,32 +406,32 @@ export default function PricingPage() {
               <tr>
                 <td>چت</td>
                 <td>Gemini Pro</td>
-                <td>۵</td>
+                <td>حداقل ۶</td>
               </tr>
               <tr>
                 <td>چت</td>
-                <td>Claude Sonnet / GPT-5.4</td>
-                <td>۸</td>
+                <td>GPT-4o یا مدل هم‌قیمت</td>
+                <td>حداقل ۷</td>
               </tr>
               <tr>
                 <td>چت</td>
-                <td>Opus / GPT-5.5</td>
-                <td>۱۵</td>
+                <td>Claude Sonnet</td>
+                <td>حداقل ۱۰</td>
               </tr>
               <tr>
                 <td>وب‌سرچ</td>
                 <td>جستجوی ساده</td>
-                <td>+۳</td>
+                <td>+۵</td>
               </tr>
               <tr>
                 <td>تصویر</td>
                 <td>سبک / خلاق / دقیق</td>
-                <td>۱۰ – ۴۰</td>
+                <td>۲۰ / ۳۵ / ۶۰</td>
               </tr>
               <tr>
                 <td>ویدیو (۵ ثانیه)</td>
-                <td>اقتصادی / ۷۲۰p / Sora / ۱۰۸۰p</td>
-                <td>۵۰ – ۴۰۰</td>
+                <td>فعلاً خارج از فروش عمومی</td>
+                <td>غیرفعال</td>
               </tr>
               <tr>
                 <td>صدا (TTS)</td>

@@ -26,6 +26,14 @@ type Vote = "up" | "down";
 
 const GREETING_ID = "persona-greeting";
 
+function promptPersonaLogin() {
+  window.dispatchEvent(
+    new CustomEvent("ai:open-login", {
+      detail: { hint: "برای گفتگو با این شخصیت، با شماره موبایل وارد شو یا ثبت‌نام کن." },
+    })
+  );
+}
+
 function PersonaAvatar({ persona, size = 34 }: { persona: AiPersona; size?: number }) {
   return (
     <PersonaImage
@@ -95,7 +103,7 @@ export default function PersonaChatView({
     opts?: { replaceTurnId?: string }
   ) {
     if (guestMode) {
-      window.dispatchEvent(new Event("ai:open-login"));
+      promptPersonaLogin();
       return;
     }
     if (streaming) return;
@@ -145,7 +153,7 @@ export default function PersonaChatView({
       if (res.status === 401) {
         if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
         setErr(guestMode ? "guest_persona_limit" : "unauthorized");
-        if (guestMode) window.dispatchEvent(new Event("ai:open-login"));
+        if (guestMode) promptPersonaLogin();
         setStreaming(false);
         return;
       }
@@ -196,7 +204,7 @@ export default function PersonaChatView({
             if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
             if (data.error === "guest_persona_limit") {
               setErr("guest_persona_limit");
-              window.dispatchEvent(new Event("ai:open-login"));
+              promptPersonaLogin();
             } else {
               setErr(
                 data.error === "network_error"
@@ -353,6 +361,10 @@ export default function PersonaChatView({
 
   function useSample(text: string) {
     if (streaming) return;
+    if (guestMode) {
+      promptPersonaLogin();
+      return;
+    }
     setInput(text);
     taRef.current?.focus();
   }
@@ -516,7 +528,10 @@ export default function PersonaChatView({
           {activeInfo && (
             <div className="ar-chat-footnote">
               پاسخ با {activeInfo.name}
-              <span className="powered-by"> · {activeInfo.poweredBy}</span> · ممکن است نادرست باشد
+              {activeInfo.poweredBy !== activeInfo.name && (
+                <span className="powered-by"> · {activeInfo.poweredBy}</span>
+              )}{" "}
+              · ممکن است نادرست باشد
             </div>
           )}
           {err === "credits_out" && (
@@ -526,7 +541,20 @@ export default function PersonaChatView({
           )}
           {err === "unauthorized" && (
             <div className="ar-chat-err">
-              برای گفتگو <Link href="/ai">وارد حساب</Link> شو.
+              برای گفتگو{" "}
+              <button type="button" className="ar-link-btn" onClick={promptPersonaLogin}>
+                وارد حساب
+              </button>{" "}
+              شو.
+            </div>
+          )}
+          {err === "guest_persona_limit" && (
+            <div className="ar-chat-err">
+              برای ادامه گفتگو{" "}
+              <button type="button" className="ar-link-btn" onClick={promptPersonaLogin}>
+                وارد حساب
+              </button>{" "}
+              شو.
             </div>
           )}
           {err === "network_error" && (

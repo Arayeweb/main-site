@@ -200,7 +200,7 @@ describe("integration — /api/ai/runs SSE contract", () => {
       expect(run.status).toBe("completed");
       expect(runBillingInvariant(run)).toBe(true);
       expect(run.charged_credits).toBe(1);
-      expect(run.refunded_credits).toBe(0);
+      expect(run.refunded_credits).toBe(run.reserved_credits - run.charged_credits);
       expect(db.tables.ai_users.find((u) => u.id === USER_A)!.credits).toBe(creditsBefore - 1);
     });
   });
@@ -244,8 +244,8 @@ describe("integration — /api/ai/runs SSE contract", () => {
       const run = db.tables.ai_runs.find((r) => r.id === runId)!;
       expect(run.status).toBe("completed");
       expect(runBillingInvariant(run)).toBe(true);
-      expect(run.charged_credits).toBe(run.reserved_credits);
-      expect(run.refunded_credits).toBe(0);
+      expect(run.charged_credits).toBe(3);
+      expect(run.refunded_credits).toBe(run.reserved_credits - run.charged_credits);
     });
   });
 

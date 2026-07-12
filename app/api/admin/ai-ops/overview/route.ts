@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
       { data: paidOrders30 },
       { data: paidOrdersPrev30 },
       { data: costRows30 },
+      { data: runRows30 },
       { data: usageRows30 },
       { data: providers },
       { data: failedPayments },
@@ -45,7 +46,8 @@ export async function GET(req: NextRequest) {
         .eq("status", "paid")
         .gte("created_at", prev30Start)
         .lt("created_at", since30),
-      supabase.from("ai_battles").select("cost_usd, created_at, user_id").gte("created_at", since30).range(0, 9999),
+      supabase.from("model_calls").select("run_id, cost_usd, created_at, input_tokens, output_tokens").gte("created_at", since30).range(0, 9999),
+      supabase.from("ai_runs").select("id, user_id, total_revenue_toman").gte("created_at", since30).range(0, 9999),
       supabase.from("ai_usage").select("tokens_used, created_at").gte("created_at", since30).range(0, 9999),
       supabase.from("ai_providers").select("id, name, status, error_rate, enabled"),
       supabase
@@ -90,9 +92,14 @@ export async function GET(req: NextRequest) {
     const revenue30 = (paidOrders30 || []).reduce((s, o) => s + (Number(o.amount_toman) || 0), 0);
     const revenuePrev30 = (paidOrdersPrev30 || []).reduce((s, o) => s + (Number(o.amount_toman) || 0), 0);
     const cost30Usd = (costRows30 || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0);
-    const tokens30 = (usageRows30 || []).reduce((s, r) => s + (Number(r.tokens_used) || 0), 0);
+    const tokensFromCalls30 = (costRows30 || []).reduce(
+      (s, r) => s + (Number(r.input_tokens) || 0) + (Number(r.output_tokens) || 0),
+      0
+    );
+    const tokens30 =
+      tokensFromCalls30 || (usageRows30 || []).reduce((s, r) => s + (Number(r.tokens_used) || 0), 0);
 
-    const USD_TOMAN = Number(process.env.USD_TOMAN_RATE || "850000");
+    const USD_TOMAN = Number(process.env.AI_USD_TO_TOMAN || "220000");
     const cost30Toman = cost30Usd * USD_TOMAN;
     const grossMarginPercent = revenue30 > 0 ? ((revenue30 - cost30Toman) / revenue30) * 100 : 0;
 
@@ -136,9 +143,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Negative margin users (top spenders by cost vs revenue, last 30d)
+    const runMap = new Map((runRows30 || []).map((r) => [r.id as string, r]));
     const costByUser = new Map<string, number>();
     for (const r of costRows30 || []) {
-      const uid = r.user_id as string;
+      const uid = runMap.get(r.run_id as string)?.user_id as string;
       if (!uid) continue;
       costByUser.set(uid, (costByUser.get(uid) || 0) + Number(r.cost_usd || 0));
     }

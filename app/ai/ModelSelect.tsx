@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   compareModels,
+  councilModels,
   directModels,
   getModel,
   modelsWithImageGen,
@@ -61,7 +62,7 @@ export default function ModelSelect({
   videoGenOnly?: boolean;
   audioGenOnly?: boolean;
   transcribeOnly?: boolean;
-  picker?: "direct" | "compare" | "image" | "video" | "audio" | "transcribe";
+  picker?: "direct" | "compare" | "council" | "image" | "video" | "audio" | "transcribe";
   variant?: "chip" | "bar";
   sheetOnMobile?: boolean;
   /** Keep the desktop popover below the trigger (home compare bar). */
@@ -209,7 +210,9 @@ export default function ModelSelect({
             ? transcribeModels()
             : resolvedPicker === "compare"
               ? compareModels()
-              : directModels();
+              : resolvedPicker === "council"
+                ? councilModels()
+                : directModels();
 
   function rowTitle(m: AIModelInfo) {
     return resolvedPicker === "direct" ? (m.personaName ?? m.name) : m.name;

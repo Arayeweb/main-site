@@ -10,7 +10,7 @@ export default function ArenaRscChrome() {
       "@type": "Offer",
       price: "0",
       priceCurrency: "IRR",
-      description: "۵ پیام چت رایگان برای مهمان",
+      description: "۱۰ پیام چت رایگان برای مهمان",
     },
     inLanguage: "fa",
   };

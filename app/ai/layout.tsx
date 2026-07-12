@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import "./ai.css";
 import ArenaLayoutClient from "./ArenaLayoutClient";
 import ArenaRscChrome from "./ArenaRscChrome";
 import AiCampaignTracking from "@/components/ai/AiCampaignTracking";
 import AiPostHogProvider from "@/components/analytics/AiPostHogProvider";
+import { AI_COOKIE, verifyAIToken } from "@/lib/aiAuth";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "آرایه AI | یک اکانت برای چند AI — فارسی و بدون VPN",
@@ -40,12 +44,21 @@ export const viewport: Viewport = {
 };
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
+  const token = cookies().get(AI_COOKIE)?.value;
+  const session = verifyAIToken(token);
+
   return (
     <AiPostHogProvider>
       <div className="ar-root">
         <ArenaRscChrome />
         <AiCampaignTracking />
-        <ArenaLayoutClient>{children}</ArenaLayoutClient>
+        <ArenaLayoutClient
+          initialAuthed={!!session}
+          initialUserId={session?.userId ?? null}
+          initialPlan={session?.plan ?? "free"}
+        >
+          {children}
+        </ArenaLayoutClient>
       </div>
     </AiPostHogProvider>
   );

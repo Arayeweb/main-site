@@ -1,10 +1,10 @@
-import { GooglePourdastShowcase, GoogleShoopeShowcase } from "./GoogleShowcases";
+import { GoogleEmdadAhanShowcase, GoogleShoopeShowcase } from "./GoogleShowcases";
 
-type LegacyPreviewKey = "google-shoope" | "google-pourdast";
+type LegacyPreviewKey = "google-shoope" | "google-emdad-ahan";
 
 const LEGACY_PREVIEWS = {
   "google-shoope": GoogleShoopeShowcase,
-  "google-pourdast": GooglePourdastShowcase,
+  "google-emdad-ahan": GoogleEmdadAhanShowcase,
 } as const;
 
 export function ShowcasePreview({

@@ -302,10 +302,32 @@ export function fetchAiConversationDetail(id: string) {
 // ── Costs ────────────────────────────────────────────────
 
 export interface AiCostsReport {
-  by_model: { model: string; requests: number; cost_usd: number }[];
+  kpis: {
+    total_ai_revenue_toman: number;
+    total_provider_cost_usd: number;
+    total_provider_cost_toman: number;
+    gross_profit_toman: number;
+    gross_margin_percent: number;
+  };
+  by_model: {
+    model: string;
+    requests: number;
+    cost_usd: number;
+    revenue_toman: number;
+    gross_profit_toman: number;
+    margin_percent: number;
+  }[];
+  by_feature: {
+    feature: string;
+    runs: number;
+    revenue_toman: number;
+    cost_usd: number;
+    margin_percent: number;
+  }[];
   by_plan: { plan: string; revenue_toman: number; cost_usd: number; margin_percent: number }[];
   by_day: { date: string; cost_usd: number }[];
   anomalies: { user_id: string; phone: string; z_score: number; cost_usd_7d: number }[];
+  loss_makers: { kind: string; key: string; margin_percent: number }[];
 }
 
 export function fetchAiCosts() {

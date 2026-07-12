@@ -63,17 +63,19 @@ describe("integration — /api/ai/video", () => {
     vi.unstubAllGlobals();
   });
 
-  it("requires authentication", async () => {
+  it("keeps public video generation disabled", async () => {
     const res = await POST(
       makeRequest("/api/ai/video", {
         method: "POST",
         body: { prompt: "غروب", model: "video-seedance" },
       })
     );
-    expect(res.status).toBe(401);
+    const body = await jsonBody<{ error: string }>(res);
+    expect(res.status).toBe(503);
+    expect(body.error).toBe("feature_disabled");
   });
 
-  it("rejects empty prompt", async () => {
+  it("rejects empty prompt through disabled gate", async () => {
     const token = signAIToken("user-vid", "starter");
     const res = await POST(
       makeRequest("/api/ai/video", {
@@ -83,11 +85,11 @@ describe("integration — /api/ai/video", () => {
       })
     );
     const body = await jsonBody<{ error: string }>(res);
-    expect(res.status).toBe(422);
-    expect(body.error).toBe("missing_prompt");
+    expect(res.status).toBe(503);
+    expect(body.error).toBe("feature_disabled");
   });
 
-  it("blocks insufficient credits", async () => {
+  it("does not submit provider jobs while disabled", async () => {
     db.tables.ai_users[0].credits = 5;
     const token = signAIToken("user-vid", "starter");
     const res = await POST(
@@ -98,12 +100,12 @@ describe("integration — /api/ai/video", () => {
       })
     );
     const body = await jsonBody<{ error: string }>(res);
-    expect(res.status).toBe(402);
-    expect(body.error).toBe("insufficient_credits");
+    expect(res.status).toBe(503);
+    expect(body.error).toBe("feature_disabled");
     expect(mockSubmitVideoJobWithFallback).not.toHaveBeenCalled();
   });
 
-  it("blocks premium Sora on starter plan", async () => {
+  it("keeps premium Sora disabled publicly", async () => {
     const token = signAIToken("user-vid", "starter");
     const res = await POST(
       makeRequest("/api/ai/video", {
@@ -113,11 +115,11 @@ describe("integration — /api/ai/video", () => {
       })
     );
     const body = await jsonBody<{ error: string }>(res);
-    expect(res.status).toBe(403);
-    expect(body.error).toBe("plan_upgrade_required");
+    expect(res.status).toBe(503);
+    expect(body.error).toBe("feature_disabled");
   });
 
-  it("rejects invalid duration for model", async () => {
+  it("keeps invalid-duration requests behind disabled gate", async () => {
     const token = signAIToken("user-vid", "starter");
     const res = await POST(
       makeRequest("/api/ai/video", {
@@ -127,11 +129,11 @@ describe("integration — /api/ai/video", () => {
       })
     );
     const body = await jsonBody<{ error: string }>(res);
-    expect(res.status).toBe(403);
-    expect(body.error).toBe("plan_upgrade_required");
+    expect(res.status).toBe(503);
+    expect(body.error).toBe("feature_disabled");
   });
 
-  it("submits job, deducts credits, and stores ai_media_jobs row", async () => {
+  it("does not create new media jobs while disabled", async () => {
     const token = signAIToken("user-vid", "starter");
     const res = await POST(
       makeRequest("/api/ai/video", {
@@ -141,24 +143,14 @@ describe("integration — /api/ai/video", () => {
       })
     );
     const body = await jsonBody<{
-      ok: boolean;
-      jobId: string;
-      creditsRemaining: number;
-      creditCost: number;
+      error: string;
     }>(res);
 
-    expect(res.status).toBe(200);
-    expect(body.ok).toBe(true);
-    expect(body.creditCost).toBe(60);
-    expect(body.creditsRemaining).toBe(40);
-    expect(db.tables.ai_media_jobs).toHaveLength(1);
-    expect(db.tables.ai_media_jobs[0].status).toBe("processing");
-    expect(db.tables.ai_users[0].credits).toBe(40);
-    expect(mockSubmitVideoJobWithFallback).toHaveBeenCalledWith(
-      "غروب کویر",
-      ["video-seedance"],
-      expect.objectContaining({ duration: 5 })
-    );
+    expect(res.status).toBe(503);
+    expect(body.error).toBe("feature_disabled");
+    expect(db.tables.ai_media_jobs).toHaveLength(0);
+    expect(db.tables.ai_users[0].credits).toBe(100);
+    expect(mockSubmitVideoJobWithFallback).not.toHaveBeenCalled();
   });
 
   it("poll returns processing while job is in flight", async () => {

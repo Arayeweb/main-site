@@ -68,7 +68,9 @@ export function buildCodePrompt(
   files: CodeFileMap
 ): string {
   const content = files[activeFile] ?? "";
-  return `تو در استودیو کد آرایه AI هستی. کاربر روی فایل «${activeFile}» کار می‌کند.
+  return `تو در استودیو کد آرایه AI هستی. این استودیو فقط برای UI وب با React (پیش‌نمایش زنده Sandpack) است — نه اجرای پایتون/Node/بک‌اند.
+
+کاربر روی فایل «${activeFile}» کار می‌کند.
 
 محتوای فعلی فایل:
 \`\`\`
@@ -79,8 +81,10 @@ ${content}
 
 درخواست: ${userMessage}
 
-اگر UI می‌سازی، حتماً \`src/app/page.tsx\` و در صورت نیاز \`src/app/globals.css\` را به‌روز کن.
-از این قالب استفاده کن:
+قوانین:
+- اگر UI وب می‌سازی: \`src/app/page.tsx\` و در صورت نیاز \`src/app/globals.css\` را به‌روز کن. از importهای \`next/*\` پرهیز کن — فقط React خالص بنویس.
+- اگر کاربر پایتون، اسکریپت CLI، یا بک‌اند خواست: کد را در فایل مناسب (مثلاً \`main.py\`) بده، ولی صریح بگو پیش‌نمایش زنده ندارد و باید فایل را دانلود و محلی اجرا کند.
+- هر فایل را با fence جدا بفرست:
 \`\`\`tsx:src/app/page.tsx
 // کد کامل فایل
 \`\`\``;

@@ -1,4 +1,11 @@
-export type PendingAttachment = { url: string; mime: string; preview: string };
+export type PendingAttachment = {
+  url: string;
+  mime: string;
+  preview: string;
+  name?: string;
+  size?: number;
+  text?: string;
+};
 
 const CODE_HINT = "پاسخ را با کد و مثال فنی بده.";
 

@@ -12,8 +12,9 @@ export type OutputSampleKey =
   | "medisa-studio"
   | "emroz"
   | "deepinhq"
+  | "pourdast-clinic"
   | "google-shoope"
-  | "google-pourdast";
+  | "google-emdad-ahan";
 
 export const heroDesignSample: OutputSample = {
   key: "shiva-hearing",
@@ -60,6 +61,13 @@ export const internationalOutputSamples: OutputSample[] = [
     isDesignSample: false,
     showcasePath: "https://deepinhq.com",
   },
+  {
+    key: "pourdast-clinic",
+    name: "سایت مطب عالیه پوردست",
+    goal: "سایت مطب با معرفی تخصص، اعتمادسازی و مسیر تماس بیمار",
+    isDesignSample: false,
+    showcasePath: "https://aliehpourdast.com",
+  },
 ];
 
 export const portfolioOutputSamples: OutputSample[] = [
@@ -76,11 +84,11 @@ export const googleOutputSamples: OutputSample[] = [
     showcasePath: "/b/shoope_smoke_lab",
   },
   {
-    key: "google-pourdast",
-    name: "دکتر عالیه پوردست",
-    goal: "ثبت و بهینه‌سازی پروفایل گوگل",
+    key: "google-emdad-ahan",
+    name: "امداد آهن",
+    goal: "ثبت گوگل مپ، نمایه کسب‌وکار و کارت دیجیتال",
     isDesignSample: false,
-    showcasePath: "https://aliehpourdast.com",
+    showcasePath: "/b/emdadahan",
   },
 ];
 
@@ -94,7 +102,9 @@ export function resolveOutputSampleKey(key: string): OutputSampleKey | undefined
     shiva: "shiva-hearing",
     iron: "kaveh-iron",
     medisa: "medisa-studio",
-    "google-ashrafivand": "google-pourdast",
+    "google-ashrafivand": "google-emdad-ahan",
+    "google-pourdast": "google-emdad-ahan",
+    pourdast: "pourdast-clinic",
     "google-dental": "google-shoope",
   };
   const resolved = (aliases[key] ?? key) as OutputSampleKey;

@@ -31,7 +31,7 @@ export default function ArenaComposer({
   onStop?: () => void;
   streaming?: boolean;
   uploading?: boolean;
-  attachments?: { url: string; preview: string }[];
+  attachments?: { url: string; mime?: string; preview: string; name?: string }[];
   onRemoveAttachment?: (url: string) => void;
   onAttachClick?: () => void;
   codeMode?: boolean;
@@ -81,17 +81,27 @@ export default function ArenaComposer({
           placeholder={placeholder}
           maxLength={4000}
         />
-        {attachments.length > 0 && (
+        {(attachments.length > 0 || uploading) && (
           <div className="ar-attach-preview-row">
             {attachments.map((a) => (
               <div key={a.url} className="ar-attach-preview">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={a.preview} alt="" />
+                {a.mime?.startsWith("image/") ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={a.preview} alt="" />
+                ) : (
+                  <span className="ar-attach-file-label">{a.name?.split(".").pop()?.toUpperCase() || "FILE"}</span>
+                )}
                 <button type="button" aria-label="حذف" onClick={() => onRemoveAttachment?.(a.url)}>
                   <IconX size={12} />
                 </button>
               </div>
             ))}
+            {uploading && (
+              <div className="ar-attach-preview ar-attach-uploading" role="status" aria-live="polite">
+                <span className="ar-upload-spinner" aria-hidden="true" />
+                <span>در حال آپلود</span>
+              </div>
+            )}
           </div>
         )}
         <div className="ar-composer-foot">
@@ -99,12 +109,12 @@ export default function ArenaComposer({
             {showAttach && (
               <button
                 type="button"
-                className={`ar-composer-tool-btn${attachments.length > 0 ? " active" : ""}`}
+                className={`ar-composer-tool-btn${attachments.length > 0 || uploading ? " active" : ""}`}
                 aria-label="پیوست تصویر"
                 disabled={uploading || streaming || attachments.length >= 2}
                 onClick={onAttachClick}
               >
-                <IconPaperclip size={16} />
+                {uploading ? <span className="ar-upload-spinner" aria-hidden="true" /> : <IconPaperclip size={16} />}
               </button>
             )}
             {onToggleCode && (
@@ -147,7 +157,7 @@ export default function ArenaComposer({
               type="button"
               className={`ar-send-btn ar-send-btn--dock${streaming ? " ar-send-btn--stop" : ""}`}
               onClick={handleAction}
-              disabled={!streaming && !input.trim() && attachments.length === 0 && !uploading}
+              disabled={uploading || (!streaming && !input.trim() && attachments.length === 0)}
               aria-label={streaming ? "توقف" : "ارسال"}
             >
               {streaming ? <IconStop size={16} /> : <IconSend size={16} />}

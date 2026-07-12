@@ -1,7 +1,7 @@
 // =========================================================
 // رجیستری مدل‌های هوش مصنوعی — Araaye Arena
 // direct: ۵ شخصیت فارسی (هوش مصنوعی دقیق…)
-// compare/battle: ~۱۰ مدل با نام موتور (GPT-5.5…) — battle ناشناس تا رأی
+// compare/battle: ~۱۰ مدل با نام موتور واقعی provider — battle ناشناس تا رأی
 // image: SKU جدا
 // =========================================================
 
@@ -55,7 +55,7 @@ export interface AIModelInfo {
 }
 
 export const POWERED_BY_TAGLINE =
-  "Powered by GPT, Claude, Gemini, Grok, DeepSeek";
+  "Powered by GPT-4o, Claude Sonnet, Gemini, Grok, DeepSeek";
 
 export const IMAGE_POWERED_BY_TAGLINE =
   "Powered by Gemini 3.1 Image, GPT Image 2";
@@ -73,9 +73,9 @@ export const DIRECT_MODELS: AIModelInfo[] = [
   {
     id: "precise",
     routeId: "openai/gpt-4o",
-    name: "GPT-5.5",
+    name: "GPT-4o",
     personaName: "هوش مصنوعی دقیق",
-    poweredBy: "GPT-5.5",
+    poweredBy: "GPT-4o",
     brand: "openai",
     color: "#10A37F",
     tier: "premium",
@@ -87,9 +87,9 @@ export const DIRECT_MODELS: AIModelInfo[] = [
   {
     id: "critic",
     routeId: "anthropic/claude-sonnet-4",
-    name: "Claude Opus 4.8",
+    name: "Claude Sonnet 4",
     personaName: "هوش مصنوعی منتقد",
-    poweredBy: "Claude Opus 4.8",
+    poweredBy: "Claude Sonnet 4",
     brand: "claude",
     color: "#D97757",
     tier: "premium",
@@ -100,9 +100,9 @@ export const DIRECT_MODELS: AIModelInfo[] = [
   {
     id: "creative",
     routeId: "google/gemini-2.5-pro",
-    name: "Gemini 3.1 Pro",
+    name: "Gemini 2.5 Pro",
     personaName: "هوش مصنوعی خلاق",
-    poweredBy: "Gemini 3.1 Pro",
+    poweredBy: "Gemini 2.5 Pro",
     brand: "gemini",
     color: "#4285F4",
     tier: "mid",
@@ -122,14 +122,15 @@ export const DIRECT_MODELS: AIModelInfo[] = [
     tier: "mid",
     estCostPer1kTokens: 0.0006,
     blurb: "پاسخ فوری و روان",
+    capabilities: { vision: true },
     kind: "direct",
   },
   {
     id: "economy",
     routeId: "deepseek/deepseek-chat-v3.1",
-    name: "DeepSeek V4 Flash",
+    name: "DeepSeek Chat V3.1",
     personaName: "حالت بهینه",
-    poweredBy: "DeepSeek V4 Flash",
+    poweredBy: "DeepSeek Chat V3.1",
     brand: "deepseek",
     color: "#4D6BFE",
     tier: "economy",
@@ -144,7 +145,7 @@ export const COMPARE_MODELS: AIModelInfo[] = [
   {
     id: "cmp-gpt-55",
     routeId: "openai/gpt-4o",
-    name: "GPT-5.5",
+    name: "GPT-4o",
     poweredBy: "OpenAI",
     brand: "openai",
     color: "#10A37F",
@@ -157,7 +158,7 @@ export const COMPARE_MODELS: AIModelInfo[] = [
   {
     id: "cmp-claude-opus",
     routeId: "anthropic/claude-sonnet-4",
-    name: "Claude Opus 4.8",
+    name: "Claude Sonnet 4",
     poweredBy: "Anthropic",
     brand: "claude",
     color: "#D97757",
@@ -169,7 +170,7 @@ export const COMPARE_MODELS: AIModelInfo[] = [
   {
     id: "cmp-gemini-pro",
     routeId: "google/gemini-2.5-pro",
-    name: "Gemini 3.1 Pro",
+    name: "Gemini 2.5 Pro",
     poweredBy: "Google",
     brand: "gemini",
     color: "#4285F4",
@@ -194,7 +195,7 @@ export const COMPARE_MODELS: AIModelInfo[] = [
   {
     id: "cmp-deepseek-v4",
     routeId: "deepseek/deepseek-chat-v3.1",
-    name: "DeepSeek V4 Flash",
+    name: "DeepSeek Chat V3.1",
     poweredBy: "DeepSeek",
     brand: "deepseek",
     color: "#4D6BFE",
@@ -271,7 +272,7 @@ export const IMAGE_MODELS: AIModelInfo[] = [
   {
     id: "image-lite",
     routeId: "google/gemini-3.1-flash-lite-image",
-    name: "تصویر سبک",
+    name: "Gemini 3.1 Flash Lite Image",
     poweredBy: "Gemini 3.1 Flash Lite",
     brand: "gemini",
     color: "#4285F4",
@@ -286,7 +287,7 @@ export const IMAGE_MODELS: AIModelInfo[] = [
   {
     id: "image-nano",
     routeId: "google/gemini-3.1-flash-image",
-    name: "تصویر خلاق",
+    name: "Gemini 3.1 Flash Image",
     poweredBy: "Gemini 3.1 Flash Image",
     brand: "gemini",
     color: "#4285F4",
@@ -301,7 +302,7 @@ export const IMAGE_MODELS: AIModelInfo[] = [
   {
     id: "image-gpt",
     routeId: "openai/gpt-image-2",
-    name: "تصویر دقیق",
+    name: "GPT Image 2",
     poweredBy: "GPT Image 2",
     brand: "openai",
     color: "#10A37F",
@@ -548,6 +549,20 @@ export function directModels(): AIModelInfo[] {
 /** @deprecated */
 export function chatModels(): AIModelInfo[] {
   return DIRECT_MODELS;
+}
+
+/** Pool مجاز برای حالت همفکری (Council) — زیرمجموعهٔ compare */
+export const COUNCIL_MODEL_IDS = [
+  "cmp-deepseek-v4",
+  "cmp-grok-4",
+  "cmp-claude-haiku",
+  "cmp-gpt-55",
+] as const;
+
+const COUNCIL_MODEL_ID_SET = new Set<string>(COUNCIL_MODEL_IDS);
+
+export function councilModels(): AIModelInfo[] {
+  return COMPARE_MODELS.filter((m) => COUNCIL_MODEL_ID_SET.has(m.id));
 }
 
 export function compareModels(): AIModelInfo[] {
