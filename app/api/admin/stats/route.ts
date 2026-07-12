@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
     const [leadsRes, pvRes, leadsCount, pvCount] = await Promise.all([
       fetchAllRows("leads", "source, page, utm_source, utm_medium, utm_campaign, created_at", supabase),
-      fetchAllRows("page_views", "page, utm_source, utm_medium, utm_campaign, created_at", supabase),
+      fetchAllRows("page_views", "page, utm_source, utm_medium, utm_campaign, visitor_id, created_at", supabase),
       countExact("leads", supabase),
       countExact("page_views", supabase),
     ]);
@@ -61,6 +61,12 @@ export async function GET(req: NextRequest) {
       (v) => now - new Date(v.created_at as string).getTime() < weekMs
     ).length;
 
+    const uniqueVisitors = new Set(
+      views
+        .map((v) => v.visitor_id as string | null)
+        .filter((id): id is string => !!id)
+    ).size;
+
     // آمار ۷ روز اخیر — لیدها و بازدیدها
     const last7: { date: string; leads: number; views: number }[] = [];
     for (let i = 6; i >= 0; i--) {
@@ -82,12 +88,13 @@ export async function GET(req: NextRequest) {
       ok: true,
       total_leads: leadsCount ?? leads.length,
       total_views: pvCount ?? views.length,
+      unique_visitors: uniqueVisitors,
       this_week: thisWeek,
       this_month: thisMonth,
       views_this_week: viewsThisWeek,
       by_source: groupCount(leads, "source"),
-      by_utm_source: groupCount(views, "utm_source"),
-      by_utm_campaign: groupCount(views, "utm_campaign"),
+      by_utm_source: groupCount(views, "utm_source", "(مستقیم/organic)"),
+      by_utm_campaign: groupCount(views, "utm_campaign", "(بدون کمپین)"),
       by_page: groupCount(views, "page"),
       last_7_days: last7,
     });

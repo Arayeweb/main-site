@@ -17,6 +17,9 @@ import {
 import { toLatin } from "@/lib/validateContact";
 import CampaignLeadForm from "./CampaignLeadForm";
 import { useCampaignTracking } from "./CampaignPageTracker";
+import CampaignHeroVariants from "./CampaignHeroVariants";
+import CampaignObjectionsSection from "./CampaignObjectionsSection";
+import CampaignTrustBar from "./CampaignTrustBar";
 import styles from "./campaignPage.module.css";
 
 type ContactInfo = {
@@ -69,21 +72,27 @@ export default function CampaignPageView({
   content,
   businessName,
   campaignGoal,
+  city,
+  priceRange,
   templateKey,
   themeKey,
   contacts,
   publicSlug,
   campaignPageId,
+  isPreview = false,
   showAdCopyAngles = false,
 }: {
   content: CampaignPresentationContent;
   businessName?: string | null;
   campaignGoal?: string | null;
+  city?: string | null;
+  priceRange?: string | null;
   templateKey?: string | null;
   themeKey?: string | null;
   contacts: ContactInfo;
   publicSlug?: string;
   campaignPageId?: string;
+  isPreview?: boolean;
   showAdCopyAngles?: boolean;
 }) {
   const tracking = useCampaignTracking();
@@ -99,6 +108,11 @@ export default function CampaignPageView({
       className={`${styles.campaign} ${TEMPLATE_CLASS[template]} ${THEME_CLASS[theme]}`}
       dir="rtl"
     >
+      {isPreview && (
+        <div className={styles.previewWatermark} role="status">
+          پیش‌نمایش رایگان — برای انتشار عمومی یکی از پلن‌ها را انتخاب کنید
+        </div>
+      )}
       <header className={styles.brandBar}>
         <a href="#top" className={styles.publicBrand}>
           <span><Sparkles size={15} /></span>
@@ -137,21 +151,20 @@ export default function CampaignPageView({
             )}
           </div>
         </div>
-        <div className={styles.heroArtifact} aria-hidden="true">
-          <div className={styles.artifactTop}>
-            <span />
-            <span />
-            <span />
-          </div>
-          <div className={styles.artifactBody}>
-            <i />
-            <strong>{businessName || "پیشنهاد شما"}</strong>
-            <span />
-            <span />
-            <button type="button">{content.ctaText}</button>
-          </div>
-        </div>
+        <CampaignHeroVariants
+          template={template}
+          businessName={businessName}
+          ctaText={content.ctaText}
+          city={city}
+          priceRange={priceRange}
+          benefits={content.benefits}
+        />
       </section>
+
+      <CampaignTrustBar
+        city={city}
+        hasDirectContact={Boolean(call || whatsapp || telegram)}
+      />
 
       {content.problemBullets.length > 0 && (
         <section className={`${styles.section} ${styles.problemSection}`}>
@@ -216,6 +229,8 @@ export default function CampaignPageView({
           )}
         </section>
       )}
+
+      <CampaignObjectionsSection objections={content.objections} />
 
       <section className={`${styles.section} ${styles.conversionSection}`}>
         <div className={styles.conversionCopy}>
@@ -329,7 +344,7 @@ export default function CampaignPageView({
 
       <footer className={styles.campaignFooter}>
         <strong>{businessName || "صفحه کمپین"}</strong>
-        <span>ساخته‌شده با کمپین‌ساز آرایه</span>
+        <span>{isPreview ? "پیش‌نمایش کمپین‌ساز آرایه" : "ساخته‌شده با کمپین‌ساز آرایه"}</span>
       </footer>
 
       <div className={styles.mobileSticky}>

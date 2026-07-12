@@ -6,6 +6,7 @@ import {
   MousePointerClick,
   Store,
 } from "lucide-react";
+import Link from "next/link";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
 import AdReadyCta from "./AdReadyCta";
@@ -70,34 +71,35 @@ const plans = [
     cta: "پیش‌نمایش رایگان بساز",
   },
   {
-    key: "publish",
-    name: "انتشار",
-    price: "۳۹۰ هزار تومان",
-    note: "پرداخت یک‌باره — بدون اشتراک",
-    featured: true,
-    badge: "برای شروع",
+    key: "monthly",
+    name: "انتشار یک‌ماهه",
+    price: "۱.۵ میلیون تومان",
+    note: "۳۰ روز انتشار — بدون تمدید خودکار",
     features: [
-      "انتشار ۱ صفحه فعال",
+      "انتشار ۱ صفحه برای ۳۰ روز",
       "فرم دریافت درخواست",
       "دکمه تماس، واتساپ و تلگرام",
       "ثبت درخواست‌ها در پنل",
       "لینک اختصاصی روی araaye.com",
     ],
-    cta: "پیش‌نمایش رایگان بساز",
+    cta: "ساخت و انتشار صفحه",
   },
   {
-    key: "done",
-    name: "اجرا توسط آرایه",
-    price: "۶.۹ میلیون تومان",
-    note: "شامل طراحی، متن و انتشار",
+    key: "lifetime",
+    name: "انتشار مادام‌العمر",
+    oldPrice: "۶.۲ میلیون",
+    price: "۳.۱ میلیون تومان",
+    note: "یک‌بار پرداخت — بدون تاریخ انقضا",
+    featured: true,
+    badge: "۵۰٪ تخفیف",
     features: [
-      "تیم آرایه صفحه را کامل می‌سازد",
-      "بهبود متن و ساختار صفحه",
-      "تنظیم فرم و دکمه‌های تماس",
-      "انتشار و تحویل لینک آماده",
-      "مناسب کسانی که نمی‌خواهند خودشان درگیر شوند",
+      "انتشار دائمی ۱ صفحه",
+      "فرم دریافت درخواست",
+      "دکمه تماس، واتساپ و تلگرام",
+      "ثبت درخواست‌ها در پنل",
+      "لینک اختصاصی روی araaye.com",
     ],
-    cta: "درخواست اجرا",
+    cta: "ساخت صفحه با تخفیف",
   },
 ];
 
@@ -108,24 +110,19 @@ export const adReadyFaq = [
       "نه. AdReady برای ساخت صفحه آماده تبلیغ است، نه سایت کامل.",
   },
   {
-    question: "پرداخت یک‌باره است یا اشتراک؟",
+    question: "پرداخت پلن ماهانه خودکار تمدید می‌شود؟",
     answer:
-      "پرداخت یک‌باره است. اشتراک ماهانه نداریم. پیش‌نمایش رایگان است و فقط برای انتشار صفحه پرداخت می‌کنی.",
+      "نه. تمدید خودکار نداریم. پلن یک‌ماهه را یک‌بار می‌خری و برای ۳۰ روز فعال می‌شود؛ پلن مادام‌العمر تاریخ انقضا ندارد.",
   },
   {
     question: "بعد از پرداخت، صفحه چقدر فعال می‌ماند؟",
     answer:
-      "صفحه تا پایان دوره انتخابی فعال می‌ماند. برای تمدید، همان پلن انتشار را دوباره می‌خری — صفحه حذف نمی‌شود مگر خودت آن را غیرفعال کنی.",
+      "پلن یک‌ماهه ۳۰ روز فعال است و با خرید دوباره تمدید می‌شود. پلن مادام‌العمر بدون تاریخ انقضا فعال می‌ماند.",
   },
   {
     question: "دامنه اختصاصی در کدام پلن است؟",
     answer:
       "در نسخه لانچ، صفحه روی لینک araaye.com منتشر می‌شود. اتصال دامنه اختصاصی در پلن‌های بعدی اضافه می‌شود.",
-  },
-  {
-    question: "هزینه اجرا توسط آرایه شامل انتشار هم می‌شود؟",
-    answer:
-      "بله. تیم آرایه طراحی، متن، تنظیم فرم و انتشار کامل صفحه را انجام می‌دهد و لینک آماده تحویل می‌گیرد.",
   },
   {
     question: "آیا باید طراحی بلد باشم؟",
@@ -294,7 +291,7 @@ export default function AdReadyLanding() {
             <SectionIntro
               eyebrow="قیمت"
               title="اول پیش‌نمایش را ببین، بعد برای انتشار پرداخت کن"
-              text="پرداخت یک‌باره است — اشتراک ماهانه نداریم."
+              text="پلن یک‌ماهه بدون تمدید خودکار یا انتشار مادام‌العمر را انتخاب کن."
             />
             <div className="adready-plan-grid">
               {plans.map((plan) => (
@@ -305,6 +302,7 @@ export default function AdReadyLanding() {
                   {plan.badge ? <div className="adready-plan-badge">{plan.badge}</div> : null}
                   <div className="adready-plan-name">{plan.name}</div>
                   <div className="adready-plan-price">
+                    {"oldPrice" in plan && plan.oldPrice ? <del>{plan.oldPrice}</del> : null}
                     <strong>{plan.price}</strong>
                   </div>
                   {plan.note ? <p className="adready-plan-note">{plan.note}</p> : null}
@@ -327,6 +325,41 @@ export default function AdReadyLanding() {
                   />
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="adready-faq" style={{ paddingBottom: 0 }}>
+          <div className="adready-container" style={{ paddingBottom: "2rem" }}>
+            <div
+              style={{
+                borderRadius: "1rem",
+                border: "1px solid #e2e8f0",
+                background: "#f8fafc",
+                padding: "1.25rem 1.5rem",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "0.75rem 1.5rem",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <p style={{ margin: 0, fontSize: "0.9rem", color: "#334155", maxWidth: "36rem" }}>
+                سایت رسمی و دائمی می‌خواهید، نه صفحه موقت کمپین؟{" "}
+                <strong>سایت فوری آرایه</strong> برای معرفی کسب‌وکار با تحویل تا ۲۴
+                ساعت کاری طراحی شده است.
+              </p>
+              <Link
+                href="/fastweb"
+                style={{
+                  fontSize: "0.875rem",
+                  fontWeight: 700,
+                  color: "#0F4C5C",
+                  textDecoration: "underline",
+                }}
+              >
+                مشاهده سایت فوری
+              </Link>
             </div>
           </div>
         </section>

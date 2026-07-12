@@ -65,7 +65,44 @@ export const CRM_SOURCE_LABELS: Record<string, string> = {
   doctors_multistep: 'پزشکان — فرم پکیج',
   doctors_exit_intent: 'پزشکان — exit intent',
   doctors_scroll_intent: 'پزشکان — اسکرول موبایل',
+  doctors_checkout: 'پزشکان — شروع پرداخت',
+  doctors_payment_confirmed: 'پزشکان — پرداخت تأییدشده',
+  googlesabt_multistep: 'گوگل‌ثبت — فرم پکیج',
+  googlesabt_checkout: 'گوگل‌ثبت — شروع پرداخت',
+  googlesabt_payment_confirmed: 'گوگل‌ثبت — پرداخت تأییدشده',
+  'website-design': 'طراحی سایت',
+  'website-design-hero': 'طراحی سایت — هیرو',
+  'website-design-estimate': 'طراحی سایت — تخمین قیمت',
+  website_design_hero: 'طراحی سایت — هیرو',
+  website_design_landing: 'طراحی سایت — لندینگ',
+  contact_page: 'صفحه تماس',
+  demo_tool: 'ابزار دمو',
+  demo_exit_intent: 'دمو — exit intent',
+  'free-seo-audit': 'بررسی رایگان سئو',
+  fastweb_site_form: 'سایت فوری — فرم تماس',
+  content_sales_paid: 'فروش محتوا — پرداخت موفق',
+  content_sales_provision_failed: 'فروش محتوا — خطای راه‌اندازی',
+  csv_import: 'ورود از فایل',
+  unknown: 'نامشخص',
+  bizcard: 'کارت ویزیت',
+  purchase: 'خرید',
+  'showcase-kaveh-iron': 'شوکیس — کاوه آهن',
+  'showcase-shiva-hearing': 'شوکیس — شیوا شنوایی',
+  'showcase-medisa-studio': 'شوکیس — مدیسا استودیو',
 };
+
+/** برچسب فارسی منبع لید — شامل الگوهای پویا مثل industry_audit_* و showcase-* */
+export function resolveSourceLabel(source: string): string {
+  if (!source) return '—';
+  if (CRM_SOURCE_LABELS[source]) return CRM_SOURCE_LABELS[source];
+  if (source.startsWith('industry_audit_')) {
+    return `ممیزی صنعت — ${source.replace('industry_audit_', '')}`;
+  }
+  if (source.startsWith('showcase-')) {
+    return `شوکیس — ${source.replace('showcase-', '').replace(/-/g, ' ')}`;
+  }
+  return source;
+}
 
 export const CRM_GOAL_LABELS: Record<string, string> = {
   seo_service: 'خدمات سئو',
@@ -179,16 +216,26 @@ export function mapLeadRow(lead: ApiLead) {
     phone: lead.contact,
     business: lead.company ?? '—',
     source: lead.source,
-    sourceLabel: CRM_SOURCE_LABELS[lead.source] ?? lead.source,
+    sourceLabel: resolveSourceLabel(lead.source),
+    page: lead.page ?? '—',
+    channel: lead.channel ?? '—',
+    intent: lead.intent ?? '—',
+    detail: lead.detail ?? '—',
+    sitetype: lead.sitetype ?? '—',
     need: lead.goal ? (CRM_GOAL_LABELS[lead.goal] ?? lead.goal) : '—',
     plan: lead.plan ? (CRM_PLAN_LABELS[lead.plan] ?? lead.plan) : '—',
     status: lead.crm_status ?? 'new',
     lastContact: formatFaDate(lead.crm_updated_at ?? lead.created_at),
+    createdAt: formatFaDateTime(lead.created_at),
     nextFollowUp: formatFaDate(lead.next_followup_at),
     nextFollowUpRaw: lead.next_followup_at,
     assignedTo: lead.owner_id ? 'اختصاص‌یافته' : '—',
     budget: lead.budget ?? '—',
     note: lead.crm_note,
+    utmSource: lead.utm_source ?? '—',
+    utmMedium: lead.utm_medium ?? '—',
+    utmCampaign: lead.utm_campaign ?? '—',
+    referrer: lead.referrer ?? '—',
   };
 }
 
@@ -268,6 +315,8 @@ export function mapContractRow(c: import('@/lib/adminApi').ApiContract) {
     paymentTerms: c.payment_terms ?? '',
     supportTerms: c.support_terms,
     projectId: c.project_id,
+    proformaId: c.proforma_id ?? null,
+    leadId: c.lead_id ?? null,
     notes: c.notes,
   };
 }
@@ -382,7 +431,7 @@ export function buildRecentActivities(
         title: 'لید جدید',
         description: `${l.name ?? 'بدون نام'} — ${l.goal ?? l.source}`,
         time: formatFaDateTime(l.created_at),
-        user: CRM_SOURCE_LABELS[l.source] ?? 'سیستم',
+        user: resolveSourceLabel(l.source),
       },
     });
   }
@@ -452,6 +501,8 @@ export function mapProposalFromInvoice(inv: ApiInvoice) {
     id: inv.id,
     number: inv.invoice_number,
     client: inv.customer_name,
+    clientId: inv.client_id ?? null,
+    leadId: inv.lead_id ?? null,
     service: inv.items?.map((i) => i.title).join('، ') || inv.note || '—',
     amount: inv.grand_total ?? 0,
     status: inv.status,

@@ -3,5 +3,5 @@
 import { CampaignsListPage } from '@/components/admin/pages/CampaignsListPage';
 
 export default function SalesCampaignsPage() {
-  return <CampaignsListPage panelLabel="فروش" />;
+  return <CampaignsListPage panelLabel="فروش" detailBasePath="/admin/sales/campaigns" />;
 }

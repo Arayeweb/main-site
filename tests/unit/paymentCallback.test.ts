@@ -32,6 +32,9 @@ describe("getPaymentCallbackUrl", () => {
     expect(getPaymentCallbackUrl("seo", "/api/seo/verify")).toBe(
       "https://payment.araaye.com/callback/seo"
     );
+    expect(getPaymentCallbackUrl("adready", "/api/adready/verify")).toBe(
+      "https://payment.araaye.com/callback/adready"
+    );
   });
 
   it("ignores payment URL when callbacks flag is off (phase 1)", () => {

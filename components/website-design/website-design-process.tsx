@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
-import { openSiteChat } from "@/lib/openSiteChat";
+import { openWebsiteDesignLead } from "@/components/website-design/website-design-hero-lead-bar";
 import { processSteps } from "@/data/website-design";
 
 const ACCENT = "#3157F6";
@@ -126,7 +126,7 @@ export default function WebsiteDesignProcess() {
                   location: "website_design_process",
                   page: "/website-design",
                 });
-                openSiteChat("website_design_process");
+                openWebsiteDesignLead("website_design_process");
               }}
               className="inline-flex h-14 items-center justify-center rounded-xl px-7 text-sm font-bold text-white transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3157F6] focus-visible:ring-offset-2"
               style={{ backgroundColor: ACCENT }}

@@ -12,7 +12,19 @@ export default function SitePageviewTracker() {
   useEffect(() => {
     if (
       pathname.startsWith("/admin") ||
-      pathname.startsWith("/ai")
+      pathname.startsWith("/ai") ||
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/campaign/") ||
+      pathname.startsWith("/adready") ||
+      pathname.startsWith("/fastweb") ||
+      pathname.startsWith("/s/") ||
+      pathname.startsWith("/b/") ||
+      pathname.startsWith("/seo") ||
+      pathname.startsWith("/website") ||
+      pathname.startsWith("/doctors") ||
+      pathname.startsWith("/demo") ||
+      pathname.startsWith("/showcase") ||
+      pathname.startsWith("/free-seo-audit")
     ) {
       return;
     }

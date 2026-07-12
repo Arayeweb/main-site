@@ -45,6 +45,16 @@ export async function POST(req: NextRequest) {
   // هر بازدید ثبت می‌شود؛ utm_source اختیاری است (برای بازدیدهای بدون کمپین null می‌ماند)
   const utmSource = str(body.utm_source, 200);
 
+  // visitor_id باید UUID معتبر باشد
+  const rawVisitorId = str(body.visitor_id, 36);
+  const visitorId =
+    rawVisitorId &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      rawVisitorId
+    )
+      ? rawVisitorId
+      : null;
+
   const row = {
     page: str(body.page, 200),
     utm_source: utmSource,
@@ -54,13 +64,19 @@ export async function POST(req: NextRequest) {
     utm_term: str(body.utm_term, 200),
     referrer: str(body.referrer, 500),
     user_agent: req.headers.get("user-agent")?.slice(0, 500) || null,
+    visitor_id: visitorId,
   };
 
   try {
     const supabase = getSupabaseAdmin();
-    await supabase.from("page_views").insert(row);
+    const { error } = await supabase.from("page_views").insert(row);
+    if (error) {
+      console.error("[api/pageview] db error:", error.message);
+      return NextResponse.json({ ok: false }, { status: 500 });
+    }
   } catch (e) {
     console.error("[api/pageview] error:", e);
+    return NextResponse.json({ ok: false }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

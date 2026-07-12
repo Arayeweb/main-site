@@ -94,7 +94,7 @@ export interface ApiLead {
   id: string;
   created_at: string;
   source: string;
-  page?: string;
+  page?: string | null;
   name: string | null;
   contact: string;
   company?: string | null;
@@ -107,6 +107,18 @@ export interface ApiLead {
   crm_note?: string | null;
   crm_updated_at?: string | null;
   channel?: string | null;
+  sitetype?: string | null;
+  intent?: string | null;
+  detail?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_content?: string | null;
+  utm_term?: string | null;
+  referrer?: string | null;
+  raw?: Record<string, unknown> | null;
+  user_agent?: string | null;
+  consent?: boolean;
 }
 
 export function fetchSalesLeads(params?: {
@@ -114,18 +126,143 @@ export function fetchSalesLeads(params?: {
   q?: string;
   followup?: string;
   page_num?: number;
+  page_size?: number;
 }) {
   const sp = new URLSearchParams();
   if (params?.status) sp.set('status', params.status);
   if (params?.q) sp.set('q', params.q);
   if (params?.followup) sp.set('followup', params.followup);
   if (params?.page_num != null) sp.set('page_num', String(params.page_num));
+  if (params?.page_size != null) sp.set('page_size', String(params.page_size));
   const qs = sp.toString();
   return adminFetch<{ leads: ApiLead[]; has_more: boolean }>(
     `/api/sales/leads${qs ? `?${qs}` : ''}`,
     undefined,
     'H1'
   );
+}
+
+export function fetchSalesLeadById(id: string) {
+  return adminFetch<{ lead: ApiLead }>(`/api/sales/leads/${id}`, undefined, 'H1');
+}
+
+export interface ApiLeadActivity {
+  id: string;
+  created_at: string;
+  kind: string;
+  body: string;
+  author_name: string | null;
+}
+
+export function fetchLeadActivities(leadId: string) {
+  return adminFetch<{ activities: ApiLeadActivity[] }>(
+    `/api/sales/activities?lead_id=${encodeURIComponent(leadId)}`,
+    undefined,
+    'H1'
+  );
+}
+
+export function postLeadActivity(leadId: string, body: string, kind = 'note') {
+  return adminFetch<{ activity: ApiLeadActivity }>('/api/sales/activities', {
+    method: 'POST',
+    body: JSON.stringify({ lead_id: leadId, body, kind }),
+  }, 'H2');
+}
+
+export interface ApiBizcardLead {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  slug: string | null;
+  business_name: string | null;
+  phone: string | null;
+  category: string | null;
+  city: string | null;
+  has_site: boolean | null;
+  site_url: string | null;
+  has_googlemap: boolean | null;
+  wants_google: boolean | null;
+  wants_review: boolean | null;
+  requested_service: string | null;
+  lead_score: number | null;
+  sales_status: string;
+  last_followup_at: string | null;
+}
+
+export function fetchBizcardLeads(params?: { status?: string; q?: string; hot?: boolean; page_num?: number }) {
+  const sp = new URLSearchParams();
+  if (params?.status) sp.set('status', params.status);
+  if (params?.q) sp.set('q', params.q);
+  if (params?.hot) sp.set('hot', '1');
+  if (params?.page_num != null) sp.set('page_num', String(params.page_num));
+  const qs = sp.toString();
+  return adminFetch<{ leads: ApiBizcardLead[]; has_more: boolean }>(
+    `/api/admin/bizcard-leads${qs ? `?${qs}` : ''}`,
+    undefined,
+    'H1'
+  );
+}
+
+export function patchBizcardLead(id: string, body: { sales_status?: string; mark_followup?: boolean }) {
+  return adminFetch<{ ok: boolean }>('/api/admin/bizcard-leads', {
+    method: 'PATCH',
+    body: JSON.stringify({ id, ...body }),
+  }, 'H2');
+}
+
+export interface ApiContentSalesOrder {
+  id: string;
+  created_at: string;
+  buyer_name: string;
+  buyer_phone: string;
+  buyer_email: string | null;
+  amount_toman: number;
+  status: string;
+  paid_at: string | null;
+  ai_user_id: string | null;
+  zibal_track_id: string | null;
+}
+
+export function fetchContentSalesOrders(params?: { q?: string; status?: string; page_num?: number }) {
+  const sp = new URLSearchParams();
+  if (params?.q) sp.set('q', params.q);
+  if (params?.status) sp.set('status', params.status);
+  if (params?.page_num != null) sp.set('page_num', String(params.page_num));
+  const qs = sp.toString();
+  return adminFetch<{ orders: ApiContentSalesOrder[]; has_more: boolean; migration_required?: boolean }>(
+    `/api/admin/content-sales-orders${qs ? `?${qs}` : ''}`,
+    undefined,
+    'H1'
+  );
+}
+
+export interface ApiFreelanceProject {
+  id: string;
+  created_at: string;
+  scanned_at: string;
+  source: string;
+  title: string;
+  url: string;
+  budget: string | null;
+  description: string | null;
+  status: string;
+  applied_at: string | null;
+  result_note: string | null;
+}
+
+export function fetchFreelanceProjects() {
+  return adminFetch<{ projects: ApiFreelanceProject[] }>('/api/admin/freelance', undefined, 'H1');
+}
+
+export function scanFreelanceProjects() {
+  return adminFetch<{ scanned: number; new: number }>('/api/admin/freelance', { method: 'POST' }, 'H2');
+}
+
+export function patchFreelanceProject(id: string, body: { status?: string; result_note?: string }) {
+  return adminFetch<{ ok: boolean }>('/api/admin/freelance', {
+    method: 'PATCH',
+    body: JSON.stringify({ id, ...body }),
+  }, 'H2');
 }
 
 export interface SalesStats {
@@ -190,6 +327,54 @@ export function patchWebsiteBrief(body: { id: string; status?: string; internal_
   }, 'H2');
 }
 
+// ── FastWeb orders ─────────────────────────────────────────
+
+export type ApiFastWebOrder = Record<string, unknown>;
+
+export function fetchFastWebOrders(params?: {
+  q?: string;
+  fulfillment?: string;
+  payment?: string;
+  page_num?: number;
+}) {
+  const sp = new URLSearchParams();
+  if (params?.q) sp.set('q', params.q);
+  if (params?.fulfillment) sp.set('fulfillment', params.fulfillment);
+  if (params?.payment) sp.set('payment', params.payment);
+  else sp.set('payment', 'paid');
+  if (params?.page_num != null) sp.set('page_num', String(params.page_num));
+  const qs = sp.toString();
+  return adminFetch<{
+    orders: ApiFastWebOrder[];
+    page_num: number;
+    page_size: number;
+    total: number;
+    has_more: boolean;
+    migration_required?: boolean;
+  }>(`/api/admin/fastweb${qs ? `?${qs}` : ''}`, undefined, 'H1');
+}
+
+export function fetchFastWebOrder(id: string) {
+  return adminFetch<{ order: ApiFastWebOrder }>(
+    `/api/admin/fastweb/${encodeURIComponent(id)}`,
+    undefined,
+    'H1'
+  );
+}
+
+export function patchFastWebOrder(body: {
+  id: string;
+  fulfillmentStatus?: string;
+  adminNotes?: string;
+  slug?: string;
+  publishedContent?: unknown;
+}) {
+  return adminFetch<{ order: ApiFastWebOrder }>('/api/admin/fastweb', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
 // ── Projects ─────────────────────────────────────────────
 
 export interface ApiProject {
@@ -234,12 +419,53 @@ export interface ApiTicket {
   message: string | null;
 }
 
-export function fetchTickets(status?: string) {
-  const qs = status ? `?status=${encodeURIComponent(status)}` : '';
-  return adminFetch<{ tickets: ApiTicket[] }>(`/api/admin/tickets${qs}`, undefined, 'H1');
+export function fetchTickets(params?: { status?: string; customer_name?: string; customer_contact?: string }) {
+  const sp = new URLSearchParams();
+  if (params?.status) sp.set('status', params.status);
+  if (params?.customer_name) sp.set('customer_name', params.customer_name);
+  if (params?.customer_contact) sp.set('customer_contact', params.customer_contact);
+  const qs = sp.toString();
+  return adminFetch<{ tickets: ApiTicket[] }>(`/api/admin/tickets${qs ? `?${qs}` : ''}`, undefined, 'H1');
+}
+
+export function fetchTicketById(id: string) {
+  return adminFetch<{ ticket: ApiTicket }>(
+    `/api/admin/tickets?id=${encodeURIComponent(id)}`,
+    undefined,
+    'H1'
+  );
+}
+
+export function updateTicket(id: string, body: { status?: string; priority?: string }) {
+  return adminFetch<{ ticket: ApiTicket }>('/api/admin/tickets', {
+    method: 'PATCH',
+    body: JSON.stringify({ id, ...body }),
+  }, 'H2');
+}
+
+export function createTicket(body: {
+  subject: string;
+  message?: string;
+  customer_name?: string;
+  customer_contact?: string;
+  priority?: string;
+  category?: string;
+}) {
+  return adminFetch<{ ticket: ApiTicket }>('/api/admin/tickets', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }, 'H2');
 }
 
 // ── Invoices ─────────────────────────────────────────────
+
+export interface ApiInvoiceItem {
+  title: string;
+  qty: number;
+  unit_price: number;
+  discount?: number;
+  tax?: number;
+}
 
 export interface ApiInvoice {
   id: string;
@@ -250,34 +476,47 @@ export interface ApiInvoice {
   due_date: string | null;
   customer_name: string;
   customer_contact: string | null;
+  customer_address?: string | null;
+  lead_id?: string | null;
+  client_id?: string | null;
+  project_id?: string | null;
+  subtotal?: number;
+  discount_total?: number;
+  tax_total?: number;
   grand_total: number;
   currency: string;
   created_at: string;
   paid_at: string | null;
   note: string | null;
-  items?: { title: string }[];
+  terms?: string | null;
+  items?: ApiInvoiceItem[];
 }
 
-export function fetchInvoices(params?: { kind?: string; status?: string }) {
+export function fetchInvoices(params?: { kind?: string; status?: string; customer_name?: string; client_id?: string; lead_id?: string; page?: number }) {
   const sp = new URLSearchParams();
   if (params?.kind) sp.set('kind', params.kind);
   if (params?.status) sp.set('status', params.status);
+  if (params?.customer_name) sp.set('customer_name', params.customer_name);
+  if (params?.client_id) sp.set('client_id', params.client_id);
+  if (params?.lead_id) sp.set('lead_id', params.lead_id);
+  if (params?.page !== undefined) sp.set('page', String(params.page));
   const qs = sp.toString();
-  return adminFetch<{ invoices: ApiInvoice[] }>(
+  return adminFetch<{ invoices: ApiInvoice[]; page?: number }>(
     `/api/admin/invoices${qs ? `?${qs}` : ''}`,
     undefined,
     'H1'
   );
 }
 
-export function fetchInvoiceSummary() {
+export function fetchInvoiceSummary(kind = 'invoice') {
   return adminFetch<{
     summary: {
       paid: Record<string, number>;
       outstanding: Record<string, number>;
+      paidThisMonth?: Record<string, number>;
       counts: Record<string, number>;
     };
-  }>('/api/admin/invoices?summary=1', undefined, 'H1');
+  }>(`/api/admin/invoices?summary=1&kind=${encodeURIComponent(kind)}`, undefined, 'H1');
 }
 
 // ── Users ────────────────────────────────────────────────
@@ -306,6 +545,7 @@ export interface AdminStatsGroup {
 export interface AdminStats {
   total_leads: number;
   total_views: number;
+  unique_visitors: number;
   this_week: number;
   this_month: number;
   views_this_week: number;
@@ -359,6 +599,22 @@ export interface ApiAdCampaign {
 
 export function fetchAds() {
   return adminFetch<{ ads: ApiAdCampaign[] }>('/api/admin/ads', undefined, 'H1');
+}
+
+export function createAd(body: {
+  date: string;
+  platform: string;
+  campaign_name?: string;
+  spend?: number;
+  impressions?: number;
+  clicks?: number;
+  leads?: number;
+  note?: string;
+}) {
+  return adminFetch<{ ad: ApiAdCampaign }>('/api/admin/ads', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }, 'H2');
 }
 
 export function fetchProjectById(id: string) {
@@ -467,13 +723,16 @@ export interface ApiContract {
   payment_terms: string | null;
   support_terms: string | null;
   project_id: string | null;
+  proforma_id?: string | null;
+  lead_id?: string | null;
   notes: string | null;
 }
 
-export function fetchContracts(params?: { client_id?: string; project_id?: string }) {
+export function fetchContracts(params?: { client_id?: string; project_id?: string; proforma_id?: string }) {
   const sp = new URLSearchParams();
   if (params?.client_id) sp.set('client_id', params.client_id);
   if (params?.project_id) sp.set('project_id', params.project_id);
+  if (params?.proforma_id) sp.set('proforma_id', params.proforma_id);
   const qs = sp.toString();
   return adminFetch<{ contracts: ApiContract[] }>(
     `/api/admin/contracts${qs ? `?${qs}` : ''}`,
@@ -528,6 +787,13 @@ export function fetchChangeRequestById(id: string) {
     undefined,
     'H1'
   );
+}
+
+export function updateChangeRequest(id: string, body: Record<string, unknown>) {
+  return adminFetch<{ change_request: ApiChangeRequest }>('/api/admin/change-requests', {
+    method: 'PATCH',
+    body: JSON.stringify({ id, ...body }),
+  }, 'H2');
 }
 
 // ── Maintenance ──────────────────────────────────────────
@@ -646,11 +912,32 @@ export function createContract(body: Record<string, unknown>) {
   }, 'H3');
 }
 
+export function updateContract(id: string, body: Record<string, unknown>) {
+  return adminFetch<{ contract: ApiContract }>('/api/admin/contracts', {
+    method: 'PATCH',
+    body: JSON.stringify({ id, ...body }),
+  }, 'H3');
+}
+
 export function createInvoice(body: Record<string, unknown>) {
   return adminFetch<{ invoice: ApiInvoice }>('/api/admin/invoices', {
     method: 'POST',
     body: JSON.stringify(body),
   }, 'H3');
+}
+
+export function updateInvoice(id: string, body: Record<string, unknown>) {
+  return adminFetch<{ invoice: ApiInvoice }>('/api/admin/invoices', {
+    method: 'PATCH',
+    body: JSON.stringify({ id, ...body }),
+  }, 'H3');
+}
+
+export function updateProject(id: string, body: Record<string, unknown>) {
+  return adminFetch<{ project: { id: string; project_code: string } }>('/api/admin/projects', {
+    method: 'PATCH',
+    body: JSON.stringify({ id, ...body }),
+  }, 'H2');
 }
 
 export function createAdminUser(body: {

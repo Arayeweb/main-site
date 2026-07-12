@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { LEAD_SOURCE_KEY_LABELS } from '@/lib/adminTypes';
+import { resolveSourceLabel } from '@/lib/adminMappers';
 import { dbError, requireSession, unauthorized } from '@/lib/adminRouteHelpers';
 
 export const runtime = 'nodejs';
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     const sources = Array.from(map.values())
       .map((s) => ({
         ...s,
-        label: LEAD_SOURCE_KEY_LABELS[s.source] ?? s.source,
+        label: resolveSourceLabel(s.source),
         conversionRate: s.leads > 0 ? Math.round((s.sales / s.leads) * 100) : 0,
       }))
       .sort((a, b) => b.revenue - a.revenue);

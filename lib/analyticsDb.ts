@@ -23,12 +23,21 @@ export async function fetchAllRows(
   return { data: all, error: null };
 }
 
-export function groupCount(items: Record<string, unknown>[], key: string): { key: string; count: number }[] {
+/**
+ * گروه‌بندی و شمارش ردیف‌ها بر اساس یک فیلد.
+ * اگر organicLabel بدهی، ردیف‌های بدون مقدار (organic/direct) هم با آن برچسب شمرده می‌شوند.
+ */
+export function groupCount(
+  items: Record<string, unknown>[],
+  key: string,
+  organicLabel?: string
+): { key: string; count: number }[] {
   const map = new Map<string, number>();
   for (const item of items) {
     const v = (item[key] as string) || "";
-    if (!v) continue;
-    map.set(v, (map.get(v) || 0) + 1);
+    const bucket = v || (organicLabel ?? "");
+    if (!bucket) continue;
+    map.set(bucket, (map.get(bucket) || 0) + 1);
   }
   return Array.from(map.entries())
     .map(([k, count]) => ({ key: k, count }))

@@ -115,6 +115,9 @@ function page(overrides: Record<string, unknown> = {}) {
     generated_content: {},
     custom_content: {},
     seo_visibility: false,
+    payment_status: "unpaid",
+    active_package: null,
+    paid_at: null,
     published_at: null,
     expires_at: null,
     created_at: now,
@@ -234,9 +237,15 @@ describe("integration — AdReady backend", () => {
     expect(db.tables.campaign_pages[0].title).toBe("مالک دیگر");
   });
 
-  it("updates an owned draft and records its first publication time", async () => {
+  it("publishes an owned page only with a paid active entitlement", async () => {
     db.reset({
-      campaign_pages: [page()],
+      campaign_pages: [
+        page({
+          payment_status: "paid",
+          active_package: "lifetime",
+          paid_at: "2026-07-09T12:00:00.000Z",
+        }),
+      ],
       campaign_leads: [],
       campaign_events: [],
     });
@@ -247,7 +256,6 @@ describe("integration — AdReady backend", () => {
         body: {
           title: "کمپین منتشرشده",
           status: "published",
-          plan: "done_for_you",
         },
       }),
       { params: { id: PAGE_1 } }
@@ -261,6 +269,28 @@ describe("integration — AdReady backend", () => {
     expect(body.campaignPage.status).toBe("published");
     expect(body.campaignPage.plan).toBe("free");
     expect(body.campaignPage.publishedAt).toBeTruthy();
+  });
+
+  it("rejects publication before payment", async () => {
+    db.reset({
+      campaign_pages: [page()],
+      campaign_leads: [],
+      campaign_events: [],
+    });
+
+    const response = await updateCampaign(
+      authedRequest(`/api/adready/campaigns/${PAGE_1}`, USER_1, {
+        method: "PATCH",
+        body: { status: "published" },
+      }),
+      { params: { id: PAGE_1 } }
+    );
+
+    expect(response.status).toBe(422);
+    expect(await jsonBody<{ error: string }>(response)).toMatchObject({
+      error: "payment_required",
+    });
+    expect(db.tables.campaign_pages[0].status).toBe("draft");
   });
 
   it("does not let the generic draft API accept client-generated AI content", async () => {

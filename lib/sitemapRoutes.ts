@@ -15,6 +15,7 @@ export const SITEMAP_PATHS = [
   "/doctors",
   "/bizcard",
   "/adready",
+  "/fastweb",
   "/website-design",
   "/googlesabt",
   "/ai",
@@ -40,6 +41,7 @@ export const SITEMAP_EXCLUDED_PATTERNS = [
   /^\/ai\/battle(?:\/|$)/,
   /^\/ai\/share(?:\/|$)/,
   /^\/b\/[^/]+$/,
+  /^\/s\/[^/]+$/,
   /^\/seo\/(?!doctor$|clinic$)/,
   /^\/website\/(?!doctor$|clinic$)/,
 ] as const;

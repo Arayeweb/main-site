@@ -11,7 +11,14 @@ export const CAMPAIGN_PLANS = [
   "starter",
   "pro",
   "business",
-  "done_for_you",
+  "monthly",
+  "lifetime",
+] as const;
+export const CAMPAIGN_PAYMENT_STATUSES = [
+  "unpaid",
+  "pending",
+  "paid",
+  "failed",
 ] as const;
 export const CAMPAIGN_LEAD_STATUSES = [
   "new",
@@ -23,6 +30,8 @@ export const CAMPAIGN_LEAD_STATUSES = [
 
 export type CampaignPageStatus = (typeof CAMPAIGN_PAGE_STATUSES)[number];
 export type CampaignPlan = (typeof CAMPAIGN_PLANS)[number];
+export type CampaignPaymentStatus =
+  (typeof CAMPAIGN_PAYMENT_STATUSES)[number];
 export type CampaignLeadStatus = (typeof CAMPAIGN_LEAD_STATUSES)[number];
 export type JsonObject = Record<string, unknown>;
 
@@ -53,6 +62,9 @@ export interface CampaignPage {
   generatedContent: JsonObject;
   customContent: JsonObject;
   seoVisibility: boolean;
+  paymentStatus: CampaignPaymentStatus;
+  activePackage: "monthly" | "lifetime" | null;
+  paidAt: string | null;
   publishedAt: string | null;
   expiresAt: string | null;
   createdAt: string;
@@ -98,7 +110,7 @@ export interface CampaignEvent {
 type DbRow = Record<string, unknown>;
 
 export const CAMPAIGN_PAGE_COLUMNS =
-  "id, user_id, title, slug, status, plan, goal, business_name, business_type, city, website_or_instagram, contact_phone, whatsapp_number, telegram_username, product_or_service_name, short_description, price_range, main_benefit, target_audience, campaign_channel, campaign_tone, template_key, theme_key, generated_content, custom_content, seo_visibility, published_at, expires_at, created_at, updated_at" as const;
+  "id, user_id, title, slug, status, plan, goal, business_name, business_type, city, website_or_instagram, contact_phone, whatsapp_number, telegram_username, product_or_service_name, short_description, price_range, main_benefit, target_audience, campaign_channel, campaign_tone, template_key, theme_key, generated_content, custom_content, seo_visibility, payment_status, active_package, paid_at, published_at, expires_at, created_at, updated_at" as const;
 
 export const CAMPAIGN_LEAD_COLUMNS =
   "id, campaign_page_id, user_id, full_name, phone, email, message, utm_source, utm_medium, utm_campaign, utm_content, utm_term, referrer, page_path, status, created_at, updated_at" as const;
@@ -156,6 +168,15 @@ export function mapCampaignPage(row: DbRow): CampaignPage {
     generatedContent: jsonObject(row.generated_content),
     customContent: jsonObject(row.custom_content),
     seoVisibility: row.seo_visibility === true,
+    paymentStatus:
+      typeof row.payment_status === "string"
+        ? (row.payment_status as CampaignPaymentStatus)
+        : "unpaid",
+    activePackage:
+      row.active_package === "monthly" || row.active_package === "lifetime"
+        ? row.active_package
+        : null,
+    paidAt: nullableString(row.paid_at),
     publishedAt: nullableString(row.published_at),
     expiresAt: nullableString(row.expires_at),
     createdAt: String(row.created_at),
@@ -328,15 +349,7 @@ export function parseCampaignPageInput(
   }
 
   if ("expiresAt" in body) {
-    if (body.expiresAt === null || body.expiresAt === "") {
-      row.expires_at = null;
-    } else {
-      const date = new Date(String(body.expiresAt));
-      if (Number.isNaN(date.getTime())) {
-        return { ok: false, error: "invalid_expiresAt" };
-      }
-      row.expires_at = date.toISOString();
-    }
+    return { ok: false, error: "expiresAt_server_managed" };
   }
 
   if (!options.create && "status" in body) {

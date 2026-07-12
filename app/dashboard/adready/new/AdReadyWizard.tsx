@@ -32,6 +32,8 @@ import {
 } from "@/lib/adreadyContent";
 import { pushGtmEvent } from "@/lib/gtm";
 import { buildAdReadyLoginUrl } from "@/lib/adreadyAuth";
+import CampaignPageView from "@/components/adready/CampaignPageView";
+import CampaignPublishPanel from "@/components/adready/CampaignPublishPanel";
 
 type FormState = {
   campaignGoal: string;
@@ -413,7 +415,6 @@ export default function AdReadyWizard() {
         }),
       });
       setFinalSaved(true);
-      window.location.assign(`/dashboard/adready/pages/${draftId}`);
     } catch (error) {
       if ((error as Error).message !== "unauthorized") {
         setRequestError(errorMessage((error as Error).message));
@@ -852,16 +853,32 @@ export default function AdReadyWizard() {
               />
               <RequestError message={requestError} />
               {finalSaved && (
-                <div className="arw-final-success" role="status">
-                  <CheckCircle2 size={21} />
-                  <div>
-                    <strong>پیش‌نویس نهایی ذخیره شد.</strong>
-                    <span>
-                      صفحه جزئیات کمپین در فاز بعد اضافه می‌شود؛ فعلاً پیش‌نمایش همین‌جا
-                      در دسترس است.
-                    </span>
+                <>
+                  <div className="arw-final-success" role="status">
+                    <CheckCircle2 size={21} />
+                    <div>
+                      <strong>پیش‌نمایش نهایی ذخیره شد.</strong>
+                      <span>
+                        حالا یک پلن انتخاب کنید تا صفحه با لینک عمومی منتشر شود.
+                      </span>
+                    </div>
                   </div>
-                </div>
+                  {draftId && (
+                    <CampaignPublishPanel
+                      campaignId={draftId}
+                      status="preview"
+                      paymentStatus="unpaid"
+                    />
+                  )}
+                  {draftId && (
+                    <Link
+                      href={`/dashboard/adready/pages/${draftId}`}
+                      className="arw-help-text"
+                    >
+                      ادامه مدیریت صفحه در داشبورد
+                    </Link>
+                  )}
+                </>
               )}
               <WizardActions
                 primaryLabel={
@@ -1009,117 +1026,22 @@ function CampaignPreview({
   templateKey: string;
 }) {
   return (
-    <article className={`arw-preview arw-preview-${templateKey}`}>
-      <section className="arw-preview-hero">
-        <span className="arw-preview-kicker">{form.campaignGoal}</span>
-        <h2>{content.headline}</h2>
-        <p>{content.subheadline}</p>
-        <button type="button">{content.ctaText}</button>
-      </section>
-
-      <section className="arw-preview-section arw-preview-split">
-        <div>
-          <span className="arw-preview-label">مسئله مخاطب</span>
-          <h3>این پیشنهاد برای شماست اگر...</h3>
-          <ul>
-            {content.problemBullets.map((item) => (
-              <li key={item}>
-                <span>!</span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="arw-benefit-panel">
-          <span className="arw-preview-label">مزیت‌ها</span>
-          <h3>چیزی که دریافت می‌کنید</h3>
-          <ul>
-            {content.benefits.map((item) => (
-              <li key={item}>
-                <CheckCircle2 size={18} />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="arw-preview-section arw-offer-box">
-        <div>
-          <span className="arw-preview-label">پیشنهاد کمپین</span>
-          <h3>{content.offerSection.title}</h3>
-          <p>{content.offerSection.description}</p>
-        </div>
-        <ul>
-          {content.offerSection.bullets.map((item) => (
-            <li key={item}>
-              <Check size={17} />
-              {item}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="arw-preview-section arw-lead-mock">
-        <div>
-          <span className="arw-preview-label">فرم لید</span>
-          <h3>{content.formTitle}</h3>
-          <p>برای دریافت اطلاعات بیشتر، مشخصات تماس را وارد کنید.</p>
-        </div>
-        <div className="arw-mock-form" aria-label="نمونه فرم لید">
-          <input disabled placeholder="نام و نام خانوادگی" />
-          <input disabled placeholder="شماره موبایل" />
-          <button type="button">{content.ctaText}</button>
-        </div>
-      </section>
-
-      <section className="arw-preview-section">
-        <span className="arw-preview-label">پرسش‌های پرتکرار</span>
-        <h3>قبل از اقدام شاید این سؤال‌ها را داشته باشید</h3>
-        <div className="arw-faq-list">
-          {content.faq.map((item, index) => (
-            <details key={`${item.question}-${index}`} open={index === 0}>
-              <summary>{item.question}</summary>
-              <p>{item.answer}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      <section className="arw-preview-section arw-contact-mock">
-        <div>
-          <span className="arw-preview-label">راه ارتباطی سریع</span>
-          <h3>برای تصمیم‌گیری، مستقیم با ما در ارتباط باشید</h3>
-        </div>
-        <div>
-          <button type="button">
-            <MessageCircle size={17} />
-            واتساپ
-          </button>
-          <button type="button">
-            <MessageCircle size={17} />
-            تلگرام
-          </button>
-          <button type="button">
-            <Phone size={17} />
-            تماس
-          </button>
-        </div>
-      </section>
-
-      <section className="arw-preview-section arw-ad-copy">
-        <span className="arw-preview-label">زاویه‌های پیشنهادی تبلیغ</span>
-        <h3>متن‌های آماده برای شروع کمپین</h3>
-        <div>
-          {content.adCopyAngles.map((item, index) => (
-            <article key={`${item.angle}-${index}`}>
-              <span>{item.channel}</span>
-              <strong>{item.angle}</strong>
-              <p>{item.copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-    </article>
+    <div className="arw-preview">
+      <CampaignPageView
+        content={content}
+        businessName={form.businessName}
+        campaignGoal={form.campaignGoal}
+        city={form.city}
+        priceRange={form.priceRange}
+        templateKey={templateKey}
+        contacts={{
+          contactPhone: form.contactPhone,
+          whatsappNumber: form.whatsappNumber,
+          telegramUsername: form.telegramUsername,
+        }}
+        isPreview
+        showAdCopyAngles
+      />
+    </div>
   );
 }

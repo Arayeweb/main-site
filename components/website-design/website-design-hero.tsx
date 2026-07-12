@@ -9,7 +9,7 @@ import ShivaClinicHomePreview from "@/components/home/previews/ShivaClinicHomePr
 import DeepinHomePreview from "@/components/home/previews/DeepinHomePreview";
 import WebsiteDesignHeroLeadBar, {
   HERO_LEAD_BAR_ID,
-  HERO_LEAD_BAR_OPEN_EVENT,
+  openWebsiteDesignLead,
 } from "@/components/website-design/website-design-hero-lead-bar";
 
 const ACCENT = "#3157F6";
@@ -35,7 +35,7 @@ const FEATURED_PROJECTS = [
   {
     id: "deepinhq",
     name: "DeepinHQ",
-    description: "سایت محصول SaaS برای معرفی پلتفرم، قابلیت‌ها و ثبت‌نام کاربران",
+    description: "سایت معرفی نرم‌افزار برای معرفی پلتفرم، قابلیت‌ها و ثبت‌نام کاربران",
     href: "https://deepinhq.com",
     Preview: DeepinHomePreview,
     thumbLabel: "DeepinHQ",
@@ -189,9 +189,9 @@ export default function WebsiteDesignHero() {
               type="button"
               onClick={() => {
                 track("cta_click", { location: "website_design_hero_chat" });
-                window.dispatchEvent(new CustomEvent(HERO_LEAD_BAR_OPEN_EVENT));
+                openWebsiteDesignLead("website_design_hero");
                 const target = document.getElementById(HERO_LEAD_BAR_ID);
-                if (target) {
+                if (target && window.matchMedia("(min-width: 768px)").matches) {
                   target.scrollIntoView({ behavior: "smooth", block: "center" });
                 }
               }}

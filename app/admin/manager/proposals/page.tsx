@@ -6,7 +6,7 @@ export default function ManagerProposalsPage() {
   return (
     <ProposalsListPage
       panelLabel="مدیریت"
-      detailBasePath="/admin/sales/proposals"
+      detailBasePath="/admin/manager/proposals"
     />
   );
 }

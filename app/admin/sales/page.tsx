@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { fetchAds, fetchInvoices, fetchSalesLeads, fetchSalesStats } from '@/lib/adminApi';
 import {
-  CRM_SOURCE_LABELS,
+  resolveSourceLabel,
   mapAdCampaign,
   mapLeadRow,
   mapProposalFromInvoice,
@@ -19,10 +19,12 @@ import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAd
 export default function SalesDashboard() {
   const { data: statsData, loading: statsLoading, error: statsError } = useAdminFetch(() => fetchSalesStats(), []);
   const { data: leadsData, loading: leadsLoading } = useAdminFetch(() => fetchSalesLeads({ followup: 'due' }), []);
+  const { data: recentLeadsData } = useAdminFetch(() => fetchSalesLeads({ page_num: 0 }), []);
   const { data: proposalsData } = useAdminFetch(() => fetchInvoices({ kind: 'proforma', status: 'sent' }), []);
   const { data: adsData } = useAdminFetch(() => fetchAds(), []);
 
   const todayFollowUps = useMemo(() => (leadsData?.leads ?? []).map(mapLeadRow), [leadsData]);
+  const recentLeads = useMemo(() => (recentLeadsData?.leads ?? []).map(mapLeadRow).slice(0, 8), [recentLeadsData]);
   const openProposals = useMemo(
     () => (proposalsData?.invoices ?? []).map(mapProposalFromInvoice),
     [proposalsData]
@@ -38,11 +40,11 @@ export default function SalesDashboard() {
   const KPI = [
     { title: 'لیدهای جدید', value: String(stats.pipeline.new ?? 0), subtitle: 'در پایپ‌لاین', icon: UserPlus, iconColor: 'text-blue-600' },
     { title: 'پیگیری‌های سررسید', value: String(stats.followups_due), subtitle: 'نیاز به اقدام', icon: Bell, iconColor: 'text-amber-600' },
-    { title: 'پیشنهادهای باز', value: String(stats.pipeline.proposal ?? 0), subtitle: 'در انتظار پاسخ', icon: FileText, iconColor: 'text-violet-600' },
+    { title: 'لید در مرحله پیشنهاد', value: String(stats.pipeline.proposal ?? 0), subtitle: 'وضعیت CRM', icon: FileText, iconColor: 'text-violet-600' },
     { title: 'پیش‌فاکتورهای ارسال‌شده', value: String(openProposals.length), subtitle: 'فعال', icon: Send, iconColor: 'text-sky-600' },
     { title: 'فروش بسته‌شده', value: String(stats.won_this_month), subtitle: 'این ماه', icon: Award, iconColor: 'text-green-600' },
     { title: 'نرخ تبدیل', value: `${stats.win_rate}٪`, subtitle: 'لید به فروش', icon: TrendingUp, iconColor: 'text-teal-600' },
-    { title: 'بهترین منبع لید', value: CRM_SOURCE_LABELS[bestSource] ?? bestSource, subtitle: 'بیشترین تعداد', icon: Link2, iconColor: 'text-indigo-600' },
+    { title: 'بهترین منبع لید', value: resolveSourceLabel(bestSource), subtitle: 'بیشترین تعداد', icon: Link2, iconColor: 'text-indigo-600' },
     { title: 'رکوردهای تبلیغات', value: String(adsData?.ads?.length ?? 0), subtitle: 'ثبت‌شده', icon: Megaphone, iconColor: 'text-orange-600' },
   ];
 
@@ -68,7 +70,7 @@ export default function SalesDashboard() {
             {todayFollowUps.map((lead) => (
               <Link
                 key={lead.id}
-                href="/admin/sales/followups"
+                href={`/admin/sales/leads/${lead.id}`}
                 className="bg-white border border-amber-200 rounded-lg px-3 py-2 text-sm hover:border-amber-400 transition-colors"
               >
                 <span className="font-medium text-slate-800">{lead.name}</span>
@@ -80,6 +82,25 @@ export default function SalesDashboard() {
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-slate-900">لیدهای اخیر</h2>
+            <Link href="/admin/sales/leads" className="text-xs text-blue-600 hover:underline">همه</Link>
+          </div>
+          <div className="space-y-3">
+            {recentLeads.length === 0 && <p className="text-sm text-slate-400">لیدی ثبت نشده</p>}
+            {recentLeads.map((l) => (
+              <Link key={l.id} href={`/admin/sales/leads/${l.id}`} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 -mx-2 px-2 rounded">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">{l.name}</p>
+                  <p className="text-xs text-slate-400">{l.sourceLabel} · {l.page}</p>
+                </div>
+                <span className="text-xs text-slate-500">{l.createdAt}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-slate-900">پیش‌فاکتورهای ارسال‌شده</h2>
@@ -107,7 +128,7 @@ export default function SalesDashboard() {
           <div className="space-y-3">
             {activeCampaigns.length === 0 && <p className="text-sm text-slate-400">رکورد تبلیغاتی ثبت نشده</p>}
             {activeCampaigns.map((c) => (
-              <Link key={c.id} href={`/admin/manager/campaigns/${c.id}`} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 -mx-2 px-2 rounded">
+              <Link key={c.id} href={`/admin/sales/campaigns/${c.id}`} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 -mx-2 px-2 rounded">
                 <div>
                   <p className="text-sm font-medium text-slate-800">{c.name}</p>
                   <p className="text-xs text-slate-400">{c.channel} · {c.leads} لید</p>
@@ -123,6 +144,10 @@ export default function SalesDashboard() {
         <QuickLink href="/admin/sales/proposals/new" label="پیشنهاد جدید" />
         <QuickLink href="/admin/sales/lead-sources" label="منابع لید" />
         <QuickLink href="/admin/sales/pipeline" label="پایپ‌لاین" />
+        <QuickLink href="/admin/sales/website-briefs" label="بریف سایت" />
+        <QuickLink href="/admin/sales/bizcard-leads" label="کارت ویزیت" />
+        <QuickLink href="/admin/sales/content-sales" label="فروش محتوا" />
+        <QuickLink href="/admin/sales/freelance" label="فریلنس" />
       </div>
     </div>
   );

@@ -1538,9 +1538,16 @@
 .adready-plan-price {
   display: flex;
   min-height: 3.5rem;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 0.35rem;
   margin-top: 0.75rem;
+}
+
+.adready-plan-price del {
+  width: 100%;
+  color: var(--ar-muted);
+  font-size: 0.75rem;
 }
 
 .adready-plan-price strong {

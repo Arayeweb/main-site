@@ -25,7 +25,9 @@ export default function PublicOnlyChrome() {
     pathname.startsWith("/showcase") ||
     pathname.startsWith("/free-seo-audit") ||
     pathname.startsWith("/adready") ||
+    pathname.startsWith("/fastweb") ||
     pathname.startsWith("/campaign/") ||
+    pathname.startsWith("/s/") ||
     pathname.startsWith("/b/")
   )
     return null;

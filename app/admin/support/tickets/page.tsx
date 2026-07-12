@@ -1,12 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
 import { SearchInput } from '@/components/admin/ui/SearchInput';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
-import { Ticket, MoreHorizontal, Plus } from 'lucide-react';
-import { fetchTickets } from '@/lib/adminApi';
+import { ActionMenu } from '@/components/admin/ui/ActionMenu';
+import { Ticket, Plus } from 'lucide-react';
+import { createTicket, fetchTickets } from '@/lib/adminApi';
 import {
   API_TICKET_CATEGORY_LABELS,
   API_TICKET_PRIORITY_COLORS,
@@ -18,12 +20,19 @@ import {
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 
 export default function TicketsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [showForm, setShowForm] = useState(false);
+  const [subject, setSubject] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerContact, setCustomerContact] = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const { data, loading, error } = useAdminFetch(
-    () => fetchTickets(statusFilter === 'all' ? undefined : statusFilter),
+  const { data, loading, error, refetch } = useAdminFetch(
+    () => fetchTickets(statusFilter === 'all' ? {} : { status: statusFilter }),
     [statusFilter]
   );
 
@@ -46,12 +55,54 @@ export default function TicketsPage() {
         icon={Ticket}
         breadcrumb={[{ label: 'پشتیبانی' }, { label: 'تیکت‌ها' }]}
         actions={
-          <button className="flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+          >
             <Plus className="w-4 h-4" />
             تیکت جدید
           </button>
         }
       />
+
+      {showForm && (
+        <form
+          className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 space-y-3 max-w-xl"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setBusy(true);
+            const res = await createTicket({
+              subject,
+              customer_name: customerName || undefined,
+              customer_contact: customerContact || undefined,
+              message: message || undefined,
+            });
+            setBusy(false);
+            if (!res.ok) {
+              alert(res.error);
+              return;
+            }
+            setShowForm(false);
+            setSubject('');
+            setCustomerName('');
+            setCustomerContact('');
+            setMessage('');
+            refetch();
+            if (res.data?.ticket.id) {
+              router.push(`/admin/support/tickets/${res.data.ticket.id}`);
+            }
+          }}
+        >
+          <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="موضوع تیکت" value={subject} onChange={(e) => setSubject(e.target.value)} required />
+          <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="نام مشتری" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+          <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="تماس مشتری" value={customerContact} onChange={(e) => setCustomerContact(e.target.value)} dir="ltr" />
+          <textarea className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm min-h-[80px]" placeholder="پیام" value={message} onChange={(e) => setMessage(e.target.value)} />
+          <button type="submit" disabled={busy} className="bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-60">
+            {busy ? 'در حال ذخیره...' : 'ثبت تیکت'}
+          </button>
+        </form>
+      )}
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4 flex-wrap">
@@ -99,7 +150,11 @@ export default function TicketsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((ticket) => (
-                  <tr key={ticket.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={ticket.id}
+                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/admin/support/tickets/${ticket.id}`)}
+                  >
                     <td className="px-4 py-3.5">
                       <p className="font-medium text-slate-800">{ticket.title}</p>
                       <p className="text-xs text-slate-400 font-mono">{ticket.code}</p>
@@ -122,10 +177,8 @@ export default function TicketsPage() {
                     </td>
                     <td className="px-4 py-3.5 text-slate-500 tabular-nums">{ticket.createdAt}</td>
                     <td className="px-4 py-3.5 text-slate-500 tabular-nums text-xs">{ticket.lastUpdated}</td>
-                    <td className="px-4 py-3.5">
-                      <button className="p-1 rounded hover:bg-slate-100 text-slate-400">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
+                    <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                      <ActionMenu actions={[{ label: 'مشاهده', onClick: () => router.push(`/admin/support/tickets/${ticket.id}`) }]} />
                     </td>
                   </tr>
                 ))}

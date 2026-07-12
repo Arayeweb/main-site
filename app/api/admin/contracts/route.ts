@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
 import {
   dbError,
   isMissingTableError,
   normDate,
   num,
-  requireAdmin,
+  requireRoles,
   requireSession,
   str,
   unauthorized,
 } from '@/lib/adminRouteHelpers';
+import { parseUuid, syncLeadStatus } from '@/lib/crmWorkflow';
 import { serverDebugLog } from '@/lib/debugLog';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const CONTRACT_ROLES = ['admin', 'sales'] as const;
 
 const CONTRACT_TYPES = new Set([
   'website_design', 'custom_software', 'maintenance', 'seo', 'ai_chatbot', 'crm_dashboard', 'feature_development',
@@ -43,6 +46,8 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id');
   const clientId = req.nextUrl.searchParams.get('client_id');
   const projectId = req.nextUrl.searchParams.get('project_id');
+  const proformaId = req.nextUrl.searchParams.get('proforma_id');
+  const leadId = req.nextUrl.searchParams.get('lead_id');
 
   try {
     const supabase = getSupabaseAdmin();
@@ -63,6 +68,8 @@ export async function GET(req: NextRequest) {
     let q = supabase.from('crm_contracts').select('*').order('created_at', { ascending: false }).limit(500);
     if (clientId) q = q.eq('client_id', clientId);
     if (projectId) q = q.eq('project_id', projectId);
+    if (proformaId && parseUuid(proformaId)) q = q.eq('proforma_id', proformaId);
+    if (leadId && parseUuid(leadId)) q = q.eq('lead_id', leadId);
 
     const { data, error } = await q;
     if (error) {
@@ -80,7 +87,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!requireAdmin(req)) return unauthorized();
+  const session = requireRoles(req, [...CONTRACT_ROLES]);
+  if (!session) return unauthorized();
 
   let body: Record<string, unknown>;
   try {
@@ -97,7 +105,7 @@ export async function POST(req: NextRequest) {
 
   const row = {
     contract_number: str(body.contract_number, 50) || (await nextContractNumber()),
-    client_id: str(body.client_id, 64),
+    client_id: parseUuid(body.client_id),
     client_name,
     contract_type: contract_type && CONTRACT_TYPES.has(contract_type) ? contract_type : 'website_design',
     amount: num(body.amount),
@@ -109,7 +117,9 @@ export async function POST(req: NextRequest) {
     deliverables: Array.isArray(body.deliverables) ? body.deliverables : [],
     payment_terms: str(body.payment_terms, 2000),
     support_terms: str(body.support_terms, 2000),
-    project_id: str(body.project_id, 64),
+    project_id: parseUuid(body.project_id),
+    proforma_id: parseUuid(body.proforma_id),
+    lead_id: parseUuid(body.lead_id),
     notes: str(body.notes, 4000),
   };
 
@@ -124,7 +134,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!requireAdmin(req)) return unauthorized();
+  const session = requireRoles(req, [...CONTRACT_ROLES]);
+  if (!session) return unauthorized();
 
   let body: Record<string, unknown>;
   try {
@@ -151,12 +162,43 @@ export async function PATCH(req: NextRequest) {
     const p = str(body.payment_status, 30);
     if (p && PAYMENT_STATUSES.has(p)) patch.payment_status = p;
   }
+  if ('project_id' in body) patch.project_id = parseUuid(body.project_id);
 
   try {
     const supabase = getSupabaseAdmin();
+
+    let prevLeadId: string | null = null;
+    let prevSignature: string | null = null;
+    if ('signature_status' in body) {
+      const { data: prev } = await supabase
+        .from('crm_contracts')
+        .select('lead_id, signature_status')
+        .eq('id', id)
+        .maybeSingle();
+      prevLeadId = (prev?.lead_id as string | null) ?? null;
+      prevSignature = (prev?.signature_status as string | null) ?? null;
+    }
+
     const { data, error } = await supabase.from('crm_contracts').update(patch).eq('id', id).select().maybeSingle();
     if (error) return dbError(error.message);
     if (!data) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+
+    const newSignature = data.signature_status as string;
+    if (
+      prevLeadId &&
+      prevSignature !== 'signed' &&
+      (newSignature === 'signed' || newSignature === 'active')
+    ) {
+      await syncLeadStatus(
+        supabase,
+        prevLeadId,
+        'won',
+        session.role,
+        session.userId,
+        'قرارداد امضا شد — وضعیت لید به «برنده» تغییر کرد'
+      );
+    }
+
     return NextResponse.json({ ok: true, contract: data });
   } catch (e) {
     return dbError(String(e));

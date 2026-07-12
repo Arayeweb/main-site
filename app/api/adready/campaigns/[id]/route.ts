@@ -81,8 +81,27 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     return jsonNoStore({ ok: false, error: "not_found" }, { status: 404 });
   }
 
-  if (parsed.row.status === "published" && !existing.data.published_at) {
-    parsed.row.published_at = new Date().toISOString();
+  if (parsed.row.status === "published") {
+    const expiresAt =
+      typeof existing.data.expires_at === "string"
+        ? new Date(existing.data.expires_at)
+        : null;
+    const entitlementActive =
+      existing.data.payment_status === "paid" &&
+      (existing.data.active_package === "lifetime" ||
+        (existing.data.active_package === "monthly" &&
+          expiresAt !== null &&
+          !Number.isNaN(expiresAt.getTime()) &&
+          expiresAt > new Date()));
+    if (!entitlementActive) {
+      return jsonNoStore(
+        { ok: false, error: "payment_required" },
+        { status: 422 }
+      );
+    }
+    if (!existing.data.published_at) {
+      parsed.row.published_at = new Date().toISOString();
+    }
   }
   parsed.row.updated_at = new Date().toISOString();
 

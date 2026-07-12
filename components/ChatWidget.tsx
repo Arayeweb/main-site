@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
+import { getUtmParams } from "@/lib/utm";
 import { type SiteChatSource, type SiteChatPrefill } from "@/lib/openSiteChat";
 import { SITE_PHONE_DISPLAY, siteWhatsAppUrl } from "@/lib/siteContact";
 
@@ -93,22 +94,12 @@ const SCRIPT: Record<string, ScriptNode> = {
 /* ------------------------------------------------------------------ */
 /*  Tracking & lead submission                                          */
 /* ------------------------------------------------------------------ */
-function collectUtms(): Record<string, string> {
-  const params = new URLSearchParams(window.location.search);
-  const utms: Record<string, string> = {};
-  ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach((k) => {
-    const v = params.get(k);
-    if (v) utms[k] = v;
-  });
-  return utms;
-}
-
 function trackGuide(
   event: string,
   lead: LeadState,
   extra: Record<string, string | undefined> = {}
 ) {
-  const utms = collectUtms();
+  const utms = getUtmParams();
   pushGtmEvent(event, {
     click_source: lead.clickSource,
     intent: lead.intent || undefined,
@@ -121,7 +112,7 @@ function trackGuide(
 }
 
 function submitLead(lead: LeadState) {
-  const utms = collectUtms();
+  const utms = getUtmParams();
   fetch("/api/leads", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

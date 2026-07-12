@@ -12,7 +12,9 @@ export function getPaymentCallbackUrl(
     | "seo"
     | "doctors"
     | "googlesabt"
-    | "telegram",
+    | "telegram"
+    | "fastweb"
+    | "adready",
   vercelPath: string
 ): string {
   const paymentBase = process.env.PAYMENT_SERVICE_URL?.replace(/\/$/, "");

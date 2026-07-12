@@ -78,6 +78,8 @@ export default async function PublicCampaignPage({ params }: PageProps) {
         content={content}
         businessName={campaign.businessName}
         campaignGoal={campaign.goal}
+        city={campaign.city}
+        priceRange={campaign.priceRange}
         templateKey={campaign.templateKey}
         themeKey={campaign.themeKey}
         contacts={contacts}

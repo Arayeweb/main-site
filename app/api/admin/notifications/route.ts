@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
           type: 'ticket',
           title: t.priority === 'urgent' ? 'تیکت فوری' : 'تیکت باز',
           description: `${t.ticket_code} · ${t.subject}`,
-          href: '/admin/support/tickets',
+          href: `/admin/support/tickets/${t.id}`,
           created_at: t.created_at,
         });
       }
@@ -72,6 +72,7 @@ export async function GET(req: NextRequest) {
       const { data: invoices, error: invErr } = await supabase
         .from('invoices')
         .select('id, invoice_number, customer_name, status, due_date, created_at')
+        .eq('kind', 'invoice')
         .eq('status', 'sent')
         .lte('due_date', today)
         .order('due_date', { ascending: true })

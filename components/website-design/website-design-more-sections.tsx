@@ -19,7 +19,7 @@ export function WebsiteDesignSeoBlock() {
         <SectionHeader
           badge="آماده رشد"
           title="سایتی که برای سئو هم زیرساخت مناسبی دارد"
-          subtitle="در طراحی سایت، ساختار صفحات، سرعت، نسخه موبایل، متادیتا، لینک‌سازی داخلی و اصول فنی پایه از ابتدا در نظر گرفته می‌شوند."
+          subtitle="در طراحی سایت، ساختار صفحات، سرعت، نسخه موبایل، اطلاعات صفحات برای گوگل، پیوند بین صفحات و اصول فنی پایه از ابتدا در نظر گرفته می‌شوند."
         />
 
         <div className="mx-auto max-w-2xl text-center">
@@ -28,14 +28,14 @@ export function WebsiteDesignSeoBlock() {
             onClick={trackSeoClick}
             className="inline-flex items-center text-sm font-bold text-brand-600 transition-colors hover:text-brand-700"
           >
-            مشاهده راهکار SEO آرایه
+            مشاهده راهکار سئو آرایه
             <span aria-hidden="true" className="ms-1.5">
               ←
             </span>
           </Link>
           <p className="mt-6 text-sm leading-relaxed text-navy-500">
             سئو پایه و زیرساخت فنی بخشی از پروژه طراحی سایت است؛ اجرای مستمر سئو، محتوا و رشد
-            رتبه‌ها در راهکار مستقل SEO آرایه ارائه می‌شود.
+            رتبه‌ها در راهکار مستقل سئو آرایه ارائه می‌شود.
           </p>
         </div>
       </div>

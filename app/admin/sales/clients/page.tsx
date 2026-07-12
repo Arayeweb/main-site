@@ -6,7 +6,7 @@ export default function SalesClientsPage() {
   return (
     <ClientsListPage
       panel="sales"
-      detailBasePath="/admin/manager/clients"
+      detailBasePath="/admin/sales/clients"
       description="مشتریان فعال و تاریخچه همکاری"
     />
   );

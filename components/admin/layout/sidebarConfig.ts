@@ -31,6 +31,11 @@ export const salesSidebarItems: SidebarItem[] = [
   { label: 'مشتریان', href: '/admin/sales/clients', iconName: 'Users' },
   { label: 'پیشنهاد قیمت‌ها', href: '/admin/sales/proposals', iconName: 'FileText' },
   { label: 'قراردادها', href: '/admin/sales/contracts', iconName: 'FileCheck' },
+  { label: 'سایت فوری', href: '/admin/sales/fastweb', iconName: 'Zap' },
+  { label: 'بریف سایت', href: '/admin/sales/website-briefs', iconName: 'FileText' },
+  { label: 'کارت ویزیت', href: '/admin/sales/bizcard-leads', iconName: 'CreditCard' },
+  { label: 'فروش محتوا', href: '/admin/sales/content-sales', iconName: 'ShoppingBag' },
+  { label: 'فریلنس', href: '/admin/sales/freelance', iconName: 'Briefcase' },
   { label: 'کمپین‌ها', href: '/admin/sales/campaigns', iconName: 'Megaphone' },
   { label: 'منابع لید', href: '/admin/sales/lead-sources', iconName: 'Link2' },
 ];

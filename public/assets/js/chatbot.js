@@ -386,6 +386,12 @@
     ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
       if (p.has(k)) utms[k] = p.get(k);
     });
+    var src = (p.get("src") || "").trim();
+    if (src && !utms.utm_source) utms.utm_source = src;
+    var source = (p.get("source") || "").trim();
+    if (source && !utms.utm_source) utms.utm_source = source;
+    var promptSlug = (p.get("promptSlug") || "").trim();
+    if (promptSlug && !utms.utm_content) utms.utm_content = "prompt:" + promptSlug;
     var stored = {};
     try { stored = JSON.parse(sessionStorage.getItem("__utms") || "{}"); } catch (_) {}
     var merged = Object.assign({}, stored, utms);

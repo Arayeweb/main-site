@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
+import { FileText, Plus, ArrowRight, FileCheck, Loader2 } from 'lucide-react';
 import { FilterBar } from '@/components/admin/ui/FilterBar';
 import { ActionMenu } from '@/components/admin/ui/ActionMenu';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
-import { FileText, Plus, ArrowRight } from 'lucide-react';
-import { fetchInvoices, fetchInvoiceById, fetchSalesLeads } from '@/lib/adminApi';
+import { fetchInvoices, fetchInvoiceById, fetchSalesLeads, fetchContracts, createContract } from '@/lib/adminApi';
+import { InvoicePdfButton } from '@/components/admin/invoices/InvoicePdfButton';
 import {
   INVOICE_STATUS_COLORS,
   INVOICE_STATUS_LABELS,
@@ -18,6 +19,17 @@ import {
 } from '@/lib/adminMappers';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 import { formatCurrency } from '@/lib/utils';
+import { printInvoiceById } from '@/lib/invoicePrint';
+
+function inferContractType(service: string): string {
+  const s = service.toLowerCase();
+  if (s.includes('سئو') || s.includes('seo')) return 'seo';
+  if (s.includes('چت') || s.includes('هوش')) return 'ai_chatbot';
+  if (s.includes('crm') || s.includes('داشبورد')) return 'crm_dashboard';
+  if (s.includes('نگهداری') || s.includes('پشتیبانی')) return 'maintenance';
+  if (s.includes('نرم') || s.includes('اپ')) return 'custom_software';
+  return 'website_design';
+}
 
 interface ProposalsListProps {
   panelLabel: string;
@@ -130,7 +142,10 @@ export function ProposalsListPage({ panelLabel, detailBasePath, newHref }: Propo
                     <td className="px-4 py-3.5 text-slate-500 tabular-nums">{proposal.sentDate}</td>
                     <td className="px-4 py-3.5 text-slate-500 tabular-nums">{proposal.expiryDate}</td>
                     <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-                      <ActionMenu actions={[{ label: 'مشاهده', onClick: () => router.push(`${detailBasePath}/${proposal.id}`) }]} />
+                      <ActionMenu actions={[
+                        { label: 'مشاهده', onClick: () => router.push(`${detailBasePath}/${proposal.id}`) },
+                        { label: 'دانلود PDF', onClick: () => { void printInvoiceById(proposal.id); } },
+                      ]} />
                     </td>
                   </tr>
                 ))}
@@ -143,13 +158,28 @@ export function ProposalsListPage({ panelLabel, detailBasePath, newHref }: Propo
   );
 }
 
-export function ProposalDetailPage({ id, backHref, panelLabel }: { id: string; backHref: string; panelLabel: string }) {
-  const { data, loading, error } = useAdminFetch(() => fetchInvoiceById(id), [id]);
+export function ProposalDetailPage({
+  id,
+  backHref,
+  panelLabel,
+  contractDetailBasePath = '/admin/manager/contracts',
+}: {
+  id: string;
+  backHref: string;
+  panelLabel: string;
+  contractDetailBasePath?: string;
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const { data, loading, error, refetch } = useAdminFetch(() => fetchInvoiceById(id), [id]);
+  const { data: contractData } = useAdminFetch(() => fetchContracts({ proforma_id: id }), [id]);
 
   if (loading) return <AdminLoadingState />;
   if (error) return <AdminErrorState error={error} />;
 
   const proposal = data?.invoice ? mapProposalFromInvoice(data.invoice) : null;
+  const invoice = data?.invoice ?? null;
+  const linkedContract = contractData?.contracts?.[0] ?? null;
 
   if (!proposal) {
     return (
@@ -168,10 +198,60 @@ export function ProposalDetailPage({ id, backHref, panelLabel }: { id: string; b
         icon={FileText}
         breadcrumb={[{ label: panelLabel }, { label: 'پیشنهادها', href: backHref }, { label: proposal.number }]}
         actions={
-          <Link href={backHref} className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
-            <ArrowRight className="w-4 h-4" />
-            بازگشت
-          </Link>
+          <div className="flex items-center gap-2">
+            {linkedContract ? (
+              <Link
+                href={`${contractDetailBasePath}/${linkedContract.id}`}
+                className="flex items-center gap-1.5 text-sm bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700"
+              >
+                <FileCheck className="w-4 h-4" />
+                مشاهده قرارداد
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={async () => {
+                  if (!invoice) return;
+                  setBusy(true);
+                  const service = proposal.service;
+                  const res = await createContract({
+                    client_id: invoice.client_id,
+                    client_name: invoice.customer_name,
+                    contract_type: inferContractType(service),
+                    amount: invoice.grand_total ?? 0,
+                    scope_of_work: service,
+                    payment_terms: invoice.terms || `بابت پیش‌فاکتور ${proposal.number}`,
+                    deliverables: (invoice.items ?? []).map((i) => i.title).filter(Boolean),
+                    proforma_id: invoice.id,
+                    lead_id: invoice.lead_id,
+                    signature_status: 'draft',
+                    notes: invoice.note,
+                  });
+                  setBusy(false);
+                  if (!res.ok) {
+                    alert(res.error);
+                    return;
+                  }
+                  const contractId = res.data?.contract.id;
+                  if (contractId) {
+                    router.push(`${contractDetailBasePath}/${contractId}`);
+                  } else {
+                    refetch();
+                  }
+                }}
+                className="flex items-center gap-1.5 text-sm bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-800 disabled:opacity-60"
+              >
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCheck className="w-4 h-4" />}
+                تبدیل به قرارداد
+              </button>
+            )}
+            <InvoicePdfButton invoiceId={id} invoice={invoice ?? undefined} variant="primary" />
+            <Link href={backHref} className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
+              <ArrowRight className="w-4 h-4" />
+              بازگشت
+            </Link>
+          </div>
         }
       />
 
@@ -181,11 +261,42 @@ export function ProposalDetailPage({ id, backHref, panelLabel }: { id: string; b
           <span className="text-lg font-bold text-slate-900">{formatCurrency(proposal.amount)}</span>
         </div>
         <InfoRow label="مشتری" value={proposal.client} />
+        {proposal.leadId && (
+          <InfoRow label="لید مرتبط" value={proposal.leadId.slice(0, 8) + '…'} />
+        )}
         <InfoRow label="خدمت پیشنهادی" value={proposal.service} />
         <InfoRow label="تاریخ ارسال" value={proposal.sentDate} />
         <InfoRow label="اعتبار تا" value={proposal.expiryDate} />
         {proposal.notes && <InfoRow label="یادداشت" value={proposal.notes} />}
       </div>
+
+      {invoice?.items && invoice.items.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-100 text-sm font-bold text-slate-900">اقلام</div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm" dir="rtl">
+              <thead>
+                <tr className="bg-slate-50/60 border-b border-slate-100">
+                  {['شرح', 'تعداد', 'قیمت واحد', 'تخفیف', 'مالیات'].map((h) => (
+                    <th key={h} className="text-right px-4 py-3 text-xs font-semibold text-slate-500">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {invoice.items.map((item, idx) => (
+                  <tr key={idx}>
+                    <td className="px-4 py-3 text-slate-800">{item.title}</td>
+                    <td className="px-4 py-3 tabular-nums">{item.qty}</td>
+                    <td className="px-4 py-3 tabular-nums">{formatCurrency(item.unit_price)}</td>
+                    <td className="px-4 py-3 tabular-nums">{item.discount ? `${item.discount}٪` : '—'}</td>
+                    <td className="px-4 py-3 tabular-nums">{item.tax ? `${item.tax}٪` : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

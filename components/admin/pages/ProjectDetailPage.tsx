@@ -6,8 +6,8 @@ import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { DetailTabs } from '@/components/admin/ui/DetailTabs';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
 import { ProgressBar } from '@/components/admin/ui/ProjectCard';
-import { FolderOpen, ArrowRight } from 'lucide-react';
-import { fetchProjects, fetchTickets } from '@/lib/adminApi';
+import { FolderOpen, ArrowRight, Loader2 } from 'lucide-react';
+import { fetchProjects, fetchTickets, updateProject } from '@/lib/adminApi';
 import {
   API_PROJECT_STATUS_COLORS,
   API_PROJECT_STATUS_LABELS,
@@ -17,15 +17,19 @@ import {
 } from '@/lib/adminMappers';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 
+const PROJECT_STATUSES = ['intake', 'design', 'development', 'review', 'delivered', 'paused'] as const;
+
 interface ProjectDetailPageProps {
   id: string;
   backHref: string;
   panelLabel: string;
+  canEditStatus?: boolean;
 }
 
-export function ProjectDetailPage({ id, backHref, panelLabel }: ProjectDetailPageProps) {
+export function ProjectDetailPage({ id, backHref, panelLabel, canEditStatus = true }: ProjectDetailPageProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const { data: projectsData, loading: pLoading, error: pError } = useAdminFetch(() => fetchProjects(), [id]);
+  const [statusBusy, setStatusBusy] = useState(false);
+  const { data: projectsData, loading: pLoading, error: pError, refetch } = useAdminFetch(() => fetchProjects(), [id]);
   const { data: ticketsData, loading: tLoading, error: tError } = useAdminFetch(() => fetchTickets(), [id]);
 
   const project = useMemo(() => {
@@ -75,10 +79,36 @@ export function ProjectDetailPage({ id, backHref, panelLabel }: ProjectDetailPag
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center gap-4">
-          <StatusBadge
-            label={API_PROJECT_STATUS_LABELS[project.status] ?? project.status}
-            colorClass={API_PROJECT_STATUS_COLORS[project.status] ?? 'bg-slate-50 text-slate-600 ring-slate-200'}
-          />
+          {canEditStatus ? (
+            <div className="flex items-center gap-2">
+              <select
+                className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white"
+                value={project.status}
+                disabled={statusBusy}
+                onChange={async (e) => {
+                  const next = e.target.value;
+                  setStatusBusy(true);
+                  const res = await updateProject(id, { status: next });
+                  setStatusBusy(false);
+                  if (!res.ok) {
+                    alert(res.error);
+                    return;
+                  }
+                  refetch();
+                }}
+              >
+                {PROJECT_STATUSES.map((s) => (
+                  <option key={s} value={s}>{API_PROJECT_STATUS_LABELS[s] ?? s}</option>
+                ))}
+              </select>
+              {statusBusy && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
+            </div>
+          ) : (
+            <StatusBadge
+              label={API_PROJECT_STATUS_LABELS[project.status] ?? project.status}
+              colorClass={API_PROJECT_STATUS_COLORS[project.status] ?? 'bg-slate-50 text-slate-600 ring-slate-200'}
+            />
+          )}
           <div className="flex-1 min-w-[200px] max-w-md">
             <ProgressBar value={project.progress} />
           </div>

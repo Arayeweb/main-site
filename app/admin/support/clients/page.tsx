@@ -6,7 +6,7 @@ export default function SupportClientsPage() {
   return (
     <ClientsListPage
       panel="support"
-      detailBasePath="/admin/manager/clients"
+      detailBasePath="/admin/support/clients"
       description="وضعیت پشتیبانی مشتریان فعال"
     />
   );

@@ -37,7 +37,7 @@ import { formatCurrency } from '@/lib/utils';
 export default function ManagerDashboard() {
   const { data: projectsData, loading: pLoading, error: pError } = useAdminFetch(() => fetchProjects(), []);
   const { data: ticketsData, loading: tLoading, error: tError } = useAdminFetch(() => fetchTickets(), []);
-  const { data: summaryData, loading: sLoading, error: sError } = useAdminFetch(() => fetchInvoiceSummary(), []);
+  const { data: summaryData, loading: sLoading, error: sError } = useAdminFetch(() => fetchInvoiceSummary('invoice'), []);
   const { data: leadsData } = useAdminFetch(() => fetchSalesLeads(), []);
   const { data: invoicesData } = useAdminFetch(() => fetchInvoices({ kind: 'invoice' }), []);
   const { data: tasksData } = useAdminFetch(() => fetchTasks(), []);
@@ -84,6 +84,7 @@ export default function ManagerDashboard() {
 
   const paid = summaryData?.summary?.paid?.IRR ?? 0;
   const outstanding = summaryData?.summary?.outstanding?.IRR ?? 0;
+  const paidThisMonth = summaryData?.summary?.paidThisMonth?.IRR ?? 0;
   const unpaidCount = (summaryData?.summary?.counts?.sent ?? 0) + (summaryData?.summary?.counts?.draft ?? 0);
 
   const KPI = [
@@ -92,7 +93,7 @@ export default function ManagerDashboard() {
     { title: 'پروژه‌های فعال', value: String(activeProjects.length), subtitle: 'در جریان', icon: FolderOpen, iconColor: 'text-blue-600' },
     { title: 'فاکتورهای پرداخت‌نشده', value: String(unpaidCount), subtitle: 'صورت‌حساب', icon: Receipt, iconColor: 'text-orange-600' },
     { title: 'تیکت‌های باز', value: String(openTickets.length), subtitle: 'نیاز به پیگیری', icon: Ticket, iconColor: 'text-red-600' },
-    { title: 'فروش ماه', value: formatAmount(paid), subtitle: 'دریافتی', icon: TrendingUp, iconColor: 'text-green-600' },
+    { title: 'فروش ماه', value: formatAmount(paidThisMonth), subtitle: 'دریافتی', icon: TrendingUp, iconColor: 'text-green-600' },
     { title: 'قراردادها', value: String(activeContracts.length), subtitle: 'فعال', icon: FileCheck, iconColor: 'text-violet-600' },
     { title: 'تسک‌ها', value: String(openTasks.length), subtitle: 'باز', icon: CheckSquare, iconColor: 'text-rose-600' },
     { title: 'درآمد تکرارشونده', value: formatAmount(mrr), subtitle: 'MRR تومان', icon: Repeat, iconColor: 'text-cyan-600' },

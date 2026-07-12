@@ -7,20 +7,27 @@ import { FilterBar } from '@/components/admin/ui/FilterBar';
 import { ActionMenu } from '@/components/admin/ui/ActionMenu';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
 import { Megaphone, Plus } from 'lucide-react';
-import { fetchAds } from '@/lib/adminApi';
+import { createAd, fetchAds } from '@/lib/adminApi';
 import { mapAdCampaign } from '@/lib/adminMappers';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 import { formatCurrency } from '@/lib/utils';
 
 interface CampaignsListProps {
   panelLabel?: string;
+  detailBasePath?: string;
 }
 
-export function CampaignsListPage({ panelLabel = 'مدیریت' }: CampaignsListProps) {
+export function CampaignsListPage({ panelLabel = 'مدیریت', detailBasePath = '/admin/manager/campaigns' }: CampaignsListProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [platform, setPlatform] = useState('instagram');
+  const [campaignName, setCampaignName] = useState('');
+  const [spend, setSpend] = useState('');
+  const [leads, setLeads] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const { data, loading, error } = useAdminFetch(() => fetchAds(), []);
+  const { data, loading, error, refetch } = useAdminFetch(() => fetchAds(), []);
   const campaigns = useMemo(() => (data?.ads ?? []).map(mapAdCampaign), [data]);
 
   const filtered = campaigns.filter((c) => !search || c.name.includes(search));
@@ -36,12 +43,56 @@ export function CampaignsListPage({ panelLabel = 'مدیریت' }: CampaignsList
         icon={Megaphone}
         breadcrumb={[{ label: panelLabel }, { label: 'کمپین‌ها' }]}
         actions={
-          <button className="flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+          >
             <Plus className="w-4 h-4" />
             رکورد تبلیغات
           </button>
         }
       />
+
+      {showForm && (
+        <form
+          className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 space-y-3 max-w-xl"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setBusy(true);
+            const res = await createAd({
+              date: new Date().toISOString().slice(0, 10),
+              platform,
+              campaign_name: campaignName || undefined,
+              spend: Number(String(spend).replace(/[^\d]/g, '')) || 0,
+              leads: Number(String(leads).replace(/[^\d]/g, '')) || 0,
+            });
+            setBusy(false);
+            if (!res.ok) {
+              alert(res.error);
+              return;
+            }
+            setShowForm(false);
+            setCampaignName('');
+            setSpend('');
+            setLeads('');
+            refetch();
+          }}
+        >
+          <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" value={platform} onChange={(e) => setPlatform(e.target.value)}>
+            <option value="instagram">اینستاگرام</option>
+            <option value="google">گوگل</option>
+            <option value="linkedin">لینکدین</option>
+            <option value="other">سایر</option>
+          </select>
+          <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="نام کمپین" value={campaignName} onChange={(e) => setCampaignName(e.target.value)} />
+          <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="هزینه (تومان)" value={spend} onChange={(e) => setSpend(e.target.value)} />
+          <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="تعداد لید" value={leads} onChange={(e) => setLeads(e.target.value)} />
+          <button type="submit" disabled={busy} className="bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-60">
+            {busy ? 'در حال ذخیره...' : 'ثبت رکورد'}
+          </button>
+        </form>
+      )}
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <FilterBar
@@ -69,7 +120,7 @@ export function CampaignsListPage({ panelLabel = 'مدیریت' }: CampaignsList
                   <tr
                     key={campaign.id}
                     className="hover:bg-slate-50/50 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/admin/manager/campaigns/${campaign.id}`)}
+                    onClick={() => router.push(`${detailBasePath}/${campaign.id}`)}
                   >
                     <td className="px-3 py-3.5 font-medium text-slate-800">{campaign.name}</td>
                     <td className="px-3 py-3.5 text-slate-600">{campaign.channel}</td>
@@ -77,7 +128,7 @@ export function CampaignsListPage({ panelLabel = 'مدیریت' }: CampaignsList
                     <td className="px-3 py-3.5 tabular-nums">{formatCurrency(campaign.spend)}</td>
                     <td className="px-3 py-3.5 text-center tabular-nums">{campaign.leads}</td>
                     <td className="px-3 py-3.5" onClick={(e) => e.stopPropagation()}>
-                      <ActionMenu actions={[{ label: 'مشاهده', onClick: () => router.push(`/admin/manager/campaigns/${campaign.id}`) }]} />
+                      <ActionMenu actions={[{ label: 'مشاهده', onClick: () => router.push(`${detailBasePath}/${campaign.id}`) }]} />
                     </td>
                   </tr>
                 ))}

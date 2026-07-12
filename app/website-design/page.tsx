@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/Navbar";
+import WebsiteDesignNavbar from "@/components/website-design/WebsiteDesignNavbar";
 import Footer from "@/components/Footer";
 import WebsiteDesignHero from "@/components/website-design/website-design-hero";
 import WebsiteDesignLogic from "@/components/website-design/website-design-logic";
@@ -26,14 +26,14 @@ import { websiteDesignFaq } from "@/data/website-design";
 export const metadata: Metadata = {
   title: "طراحی سایت حرفه‌ای و فروش‌محور | آرایه",
   description:
-    "طراحی سایت حرفه‌ای، سریع و فروش‌محور برای کسب‌وکارها؛ همراه با طراحی اختصاصی، فرم جذب لید، سئو پایه، اتصال ابزارهای تحلیل و پشتیبانی آرایه.",
+    "طراحی سایت حرفه‌ای، سریع و فروش‌محور برای کسب‌وکارها؛ همراه با طراحی اختصاصی، فرم تماس و درخواست، سئو پایه، آمار بازدید و پشتیبانی آرایه.",
   alternates: {
     canonical: "/website-design",
   },
   openGraph: {
     title: "طراحی سایت حرفه‌ای و فروش‌محور | آرایه",
     description:
-      "طراحی سایت حرفه‌ای، سریع و فروش‌محور برای کسب‌وکارها؛ همراه با طراحی اختصاصی، فرم جذب لید، سئو پایه، اتصال ابزارهای تحلیل و پشتیبانی آرایه.",
+      "طراحی سایت حرفه‌ای، سریع و فروش‌محور برای کسب‌وکارها؛ همراه با طراحی اختصاصی، فرم تماس و درخواست، سئو پایه، آمار بازدید و پشتیبانی آرایه.",
     url: "/website-design",
     type: "website",
     locale: "fa_IR",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "طراحی سایت حرفه‌ای و فروش‌محور | آرایه",
     description:
-      "طراحی سایت حرفه‌ای، سریع و فروش‌محور برای کسب‌وکارها؛ همراه با طراحی اختصاصی، فرم جذب لید، سئو پایه و اتصال ابزارهای تحلیل.",
+      "طراحی سایت حرفه‌ای، سریع و فروش‌محور برای کسب‌وکارها؛ همراه با طراحی اختصاصی، فرم تماس و درخواست، سئو پایه و آمار بازدید.",
   },
 };
 
@@ -58,7 +58,7 @@ const jsonLd = {
       areaServed: { "@type": "Country", name: "Iran" },
       url: "https://araaye.com/website-design",
       description:
-        "طراحی و توسعه سایت‌های حرفه‌ای برای جذب لید، اعتبارسازی، تبلیغات و رشد کسب‌وکار.",
+        "طراحی و توسعه سایت‌های حرفه‌ای برای جذب مشتری، ایجاد اعتماد، تبلیغات و رشد کسب‌وکار.",
     },
     {
       "@type": "FAQPage",
@@ -78,7 +78,7 @@ export default function WebsiteDesignPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar ctaHref="#chat" ctaLabel="گفت‌وگو درباره سایت" />
+      <WebsiteDesignNavbar />
       <main>
         <WebsiteDesignHero />
         <WebsiteDesignLogic />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
@@ -50,7 +51,11 @@ export default function FollowupsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {todayItems.map((lead) => (
-              <div key={lead.id} className="bg-white border border-red-200 rounded-xl p-4 shadow-sm">
+              <Link
+                key={lead.id}
+                href={`/admin/sales/leads/${lead.id}`}
+                className="bg-white border border-red-200 rounded-xl p-4 shadow-sm hover:border-red-300 transition-colors block"
+              >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <p className="font-bold text-slate-900 text-sm">{lead.name}</p>
                   <StatusBadge
@@ -73,7 +78,7 @@ export default function FollowupsPage() {
                     <span>{lead.assignedTo}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
@@ -88,7 +93,11 @@ export default function FollowupsPage() {
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <div className="divide-y divide-slate-100">
               {upcomingItems.map((lead) => (
-                <div key={lead.id} className="flex items-center justify-between gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors">
+                <Link
+                  key={lead.id}
+                  href={`/admin/sales/leads/${lead.id}`}
+                  className="flex items-center justify-between gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs shrink-0">
                       {lead.name.charAt(0)}
@@ -105,7 +114,7 @@ export default function FollowupsPage() {
                     />
                     <span className="text-xs text-slate-500 tabular-nums">{lead.nextFollowUp}</span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

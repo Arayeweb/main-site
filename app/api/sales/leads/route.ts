@@ -18,6 +18,13 @@ const CRM_STATUSES = new Set([
   "lost",
 ]);
 const PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 200;
+
+const LIST_SELECT =
+  'id, created_at, source, page, name, contact, company, goal, budget, plan, channel, sitetype, intent, detail, crm_status, owner_id, next_followup_at, crm_note, crm_updated_at';
+
+const FULL_SELECT =
+  `${LIST_SELECT}, utm_source, utm_medium, utm_campaign, utm_content, utm_term, referrer, raw, user_agent, consent`;
 
 function salesSession(req: NextRequest) {
   const session = getSession(req);
@@ -45,16 +52,18 @@ export async function GET(req: NextRequest) {
   const q = (sp.get("q") || "").trim();
   const followup = sp.get("followup") || "";
   const pageNum = Math.max(0, parseInt(sp.get("page_num") || "0", 10));
-  const offset = pageNum * PAGE_SIZE;
+  const pageSize = Math.min(
+    MAX_PAGE_SIZE,
+    Math.max(1, parseInt(sp.get("page_size") || String(PAGE_SIZE), 10))
+  );
+  const offset = pageNum * pageSize;
 
   try {
     const supabase = getSupabaseAdmin();
     let query = supabase
       .from("leads")
-      .select(
-        "id, created_at, source, page, name, contact, company, goal, budget, plan, crm_status, owner_id, next_followup_at, crm_note, crm_updated_at"
-      )
-      .range(offset, offset + PAGE_SIZE - 1);
+      .select(LIST_SELECT)
+      .range(offset, offset + pageSize - 1);
 
     // حالت یادآور: فقط پیگیری‌های باز که سررسیدشان امروز یا گذشته است، مرتب بر اساس تاریخ.
     if (followup === "due") {
@@ -87,8 +96,8 @@ export async function GET(req: NextRequest) {
       ok: true,
       leads: data || [],
       page_num: pageNum,
-      page_size: PAGE_SIZE,
-      has_more: (data || []).length === PAGE_SIZE,
+      page_size: pageSize,
+      has_more: (data || []).length === pageSize,
     });
   } catch (e) {
     console.error("[api/sales/leads] GET error:", e);

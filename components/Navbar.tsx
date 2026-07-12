@@ -13,6 +13,11 @@ const solutionLinks = [
     href: "/website-design",
   },
   {
+    label: "سایت فوری",
+    description: "سایت رسمی کسب‌وکار تا ۲۴ ساعت کاری",
+    href: "/fastweb",
+  },
+  {
     label: "آرایه SEO",
     description: "حضور در گوگل و جذب مشتری از جست‌وجو",
     href: "/seo",
@@ -39,6 +44,7 @@ interface NavbarProps {
   solid?: boolean;
   ctaHref?: string;
   ctaLabel?: string;
+  onCtaClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 function linkClass(onDarkHero: boolean, active = false) {
@@ -75,6 +81,7 @@ export default function Navbar({
   solid = false,
   ctaHref = CHAT_CTA_HREF,
   ctaLabel = "شروع گفت‌وگو",
+  onCtaClick,
 }: NavbarProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -118,6 +125,12 @@ export default function Navbar({
   }, [solutionsOpen]);
 
   function handleCtaClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (onCtaClick) {
+      event.preventDefault();
+      onCtaClick(event);
+      setOpen(false);
+      return;
+    }
     if (!opensChat) return;
     event.preventDefault();
     openSiteChat(open ? "navbar_mobile" : "navbar");

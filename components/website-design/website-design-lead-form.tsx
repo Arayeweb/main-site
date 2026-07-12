@@ -5,7 +5,7 @@ import SectionHeader from "@/components/home/SectionHeader";
 import { IconCheck, IconPhone } from "@/components/icons";
 import { pushGtmEvent } from "@/lib/gtm";
 import { getUtmParams } from "@/lib/utm";
-import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL } from "@/lib/siteContact";
+import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL, siteWhatsAppUrl } from "@/lib/siteContact";
 import {
   LEAD_FORM_ID,
   mainGoalOptions,
@@ -61,6 +61,30 @@ function analyticsPayload(extra: Record<string, string | number | boolean | unde
   };
 }
 
+function buildWhatsAppMessage(data: {
+  fullName: string;
+  phone: string;
+  businessName: string;
+  projectType: string;
+  mainGoal: string;
+  currentWebsite?: string;
+  budget?: string;
+  message?: string;
+}) {
+  const lines = [
+    "سلام، از صفحه طراحی سایت آرایه پیام می‌دهم.",
+    `نام: ${data.fullName}`,
+    `شماره تماس: ${data.phone}`,
+    `کسب‌وکار: ${data.businessName}`,
+    `نوع پروژه: ${data.projectType}`,
+    `هدف: ${data.mainGoal}`,
+  ];
+  if (data.currentWebsite) lines.push(`وب‌سایت فعلی: ${data.currentWebsite}`);
+  if (data.budget) lines.push(`بودجه: ${data.budget}`);
+  if (data.message) lines.push(`توضیحات: ${data.message}`);
+  return lines.join("\n");
+}
+
 export default function WebsiteDesignLeadForm() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -73,6 +97,16 @@ export default function WebsiteDesignLeadForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submittedLead, setSubmittedLead] = useState<{
+    fullName: string;
+    phone: string;
+    businessName: string;
+    projectType: string;
+    mainGoal: string;
+    currentWebsite: string;
+    budget: string;
+    message: string;
+  } | null>(null);
   const formStartedRef = useRef(false);
   const lastSubmitRef = useRef(0);
 
@@ -161,6 +195,22 @@ export default function WebsiteDesignLeadForm() {
       }
 
       pushGtmEvent("website_design_lead_submit", analyticsPayload({ projectType, mainGoal }));
+      pushGtmEvent("generate_lead", {
+        source: "website_design_landing",
+        page: "website-design",
+        projectType,
+        mainGoal,
+      });
+      setSubmittedLead({
+        fullName: fullName.trim(),
+        phone: normalizedPhone,
+        businessName: businessName.trim(),
+        projectType,
+        mainGoal,
+        currentWebsite: currentWebsite.trim(),
+        budget: budget.trim(),
+        message: message.trim(),
+      });
       setSuccess(true);
     } catch {
       setError("خطا در ارتباط. اتصال اینترنت را بررسی کنید.");
@@ -169,7 +219,9 @@ export default function WebsiteDesignLeadForm() {
     }
   };
 
-  if (success) {
+  if (success && submittedLead) {
+    const whatsappHref = siteWhatsAppUrl(buildWhatsAppMessage(submittedLead));
+
     return (
       <section id={LEAD_FORM_ID} className="section-py scroll-mt-24 bg-white">
         <div className="container-mx container-px">
@@ -178,12 +230,36 @@ export default function WebsiteDesignLeadForm() {
             role="status"
             aria-live="polite"
           >
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-teal-50 text-teal-700">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#EEF2FF] text-[#3157F6]">
               <IconCheck size={30} />
             </div>
+            <p className="text-lg font-extrabold text-navy-900">درخواست شما ثبت شد</p>
             <p className="mt-2 text-sm leading-relaxed text-navy-500">
-              درخواست شما ثبت شد. تیم آرایه برای بررسی پروژه با شما تماس می‌گیرد.
+              برای ادامه سریع‌تر، یکی از این دو مسیر را انتخاب کنید:
             </p>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() =>
+                  pushGtmEvent("website_design_lead_whatsapp", analyticsPayload())
+                }
+                className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-white transition-opacity hover:opacity-95 sm:max-w-[220px]"
+              >
+                <span aria-hidden="true">💬</span>
+                ادامه در واتساپ
+              </a>
+              <a
+                href={SITE_PHONE_TEL}
+                onClick={() => pushGtmEvent("website_design_lead_call", analyticsPayload())}
+                className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-navy-200 bg-white px-4 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50 sm:max-w-[220px]"
+              >
+                <IconPhone size={16} aria-hidden="true" />
+                تماس با {SITE_PHONE_DISPLAY}
+              </a>
+            </div>
           </div>
         </div>
       </section>

@@ -61,20 +61,46 @@ export default function WebsiteTypeComparison() {
       <div className="container-mx container-px">
         <SectionHeader
           badge="انتخاب مسیر درست"
-          title="سایت کامل نیاز دارید یا لندینگ‌پیج تبلیغاتی؟"
+          title="کدام محصول آرایه مناسب شماست؟"
         />
 
-        <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
+        <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
           <article className="rounded-2xl border border-navy-100 bg-white p-6 shadow-soft">
-            <h3 className="text-lg font-extrabold text-navy-900">سایت کامل</h3>
+            <h3 className="text-lg font-extrabold text-navy-900">سایت فوری</h3>
+            <p className="mt-1 text-xs font-bold text-navy-400">سایت رسمی دائمی</p>
+            <ul className="mt-4 space-y-2">
+              {[
+                "معرفی یک‌صفحه‌ای کسب‌وکار",
+                "قالب کنترل‌شده",
+                "نسخه اول تا ۲۴ ساعت کاری",
+                "پیش‌نمایش قبل از پرداخت",
+                "میزبانی یک‌ساله",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-navy-600">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/fastweb"
+              onClick={() => trackLink("website_design_fastweb_click")}
+              className="btn-secondary mt-6 w-full"
+            >
+              مشاهده سایت فوری
+            </Link>
+          </article>
+
+          <article className="rounded-2xl border border-navy-100 bg-white p-6 shadow-soft">
+            <h3 className="text-lg font-extrabold text-navy-900">طراحی اختصاصی</h3>
             <p className="mt-1 text-xs font-bold text-navy-400">مناسب برای</p>
             <ul className="mt-4 space-y-2">
               {[
                 "معرفی کامل برند",
                 "چند خدمت یا محصول",
-                "تولید محتوا",
+                "فروشگاه و امکانات سفارشی",
                 "سئو بلندمدت",
-                "اعتبارسازی",
+                "اعتبار و اعتماد",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-navy-600">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
@@ -88,13 +114,13 @@ export default function WebsiteTypeComparison() {
           </article>
 
           <article className="rounded-2xl border border-navy-100 bg-white p-6 shadow-soft">
-            <h3 className="text-lg font-extrabold text-navy-900">AdReady landing page</h3>
-            <p className="mt-1 text-xs font-bold text-navy-400">مناسب برای</p>
+            <h3 className="text-lg font-extrabold text-navy-900">AdReady</h3>
+            <p className="mt-1 text-xs font-bold text-navy-400">صفحه موقت برای کمپین تبلیغاتی</p>
             <ul className="mt-4 space-y-2">
               {[
                 "اجرای سریع کمپین",
                 "یک پیشنهاد مشخص",
-                "دریافت فوری لید",
+                "دریافت فوری درخواست",
                 "تبلیغات کلیکی",
                 "تست بازار",
               ].map((item) => (

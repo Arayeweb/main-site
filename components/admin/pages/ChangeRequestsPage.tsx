@@ -9,7 +9,7 @@ import { FilterBar } from '@/components/admin/ui/FilterBar';
 import { ActionMenu } from '@/components/admin/ui/ActionMenu';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
 import { GitPullRequest, ArrowRight } from 'lucide-react';
-import { fetchChangeRequestById, fetchChangeRequests } from '@/lib/adminApi';
+import { fetchChangeRequestById, fetchChangeRequests, updateChangeRequest } from '@/lib/adminApi';
 import { mapChangeRequestRow } from '@/lib/adminMappers';
 import { CHANGE_REQUEST_STATUS_COLORS, CHANGE_REQUEST_STATUS_LABELS, CHANGE_REQUEST_TYPE_LABELS } from '@/lib/adminTypes';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
@@ -105,7 +105,9 @@ export function ChangeRequestsListPage({ panelLabel, detailBasePath }: ChangeReq
 }
 
 export function ChangeRequestDetailPage({ id, backHref, panelLabel }: { id: string; backHref: string; panelLabel: string }) {
-  const { data, loading, error } = useAdminFetch(() => fetchChangeRequestById(id), [id]);
+  const [busy, setBusy] = useState(false);
+  const [assignee, setAssignee] = useState('');
+  const { data, loading, error, refetch } = useAdminFetch(() => fetchChangeRequestById(id), [id]);
   const cr = useMemo(() => (data?.change_request ? mapChangeRequestRow(data.change_request) : null), [data]);
 
   if (loading) return <AdminLoadingState />;
@@ -143,6 +145,82 @@ export function ChangeRequestDetailPage({ id, backHref, panelLabel }: { id: stri
           <div><span className="text-slate-400">زمان تخمینی: </span><span className="text-slate-700">{cr.estimatedTime}</span></div>
         </div>
         {cr.description && <p className="text-sm text-slate-700">{cr.description}</p>}
+        <div className="pt-4 border-t border-slate-100 space-y-3">
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">تغییر وضعیت</label>
+            <select
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              value={cr.status}
+              disabled={busy}
+              onChange={async (e) => {
+                setBusy(true);
+                const res = await updateChangeRequest(id, { status: e.target.value });
+                setBusy(false);
+                if (!res.ok) alert(res.error);
+                else refetch();
+              }}
+            >
+              {Object.entries(CHANGE_REQUEST_STATUS_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">مسئول</label>
+            <div className="flex gap-2">
+              <input
+                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                placeholder="نام مسئول"
+                defaultValue={cr.assignedTo === '—' ? '' : cr.assignedTo}
+                onChange={(e) => setAssignee(e.target.value)}
+              />
+              <button
+                type="button"
+                disabled={busy}
+                className="text-sm bg-slate-900 text-white px-3 py-2 rounded-lg disabled:opacity-60"
+                onClick={async () => {
+                  setBusy(true);
+                  const res = await updateChangeRequest(id, { assigned_to: assignee });
+                  setBusy(false);
+                  if (!res.ok) alert(res.error);
+                  else refetch();
+                }}
+              >
+                ذخیره
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              className="text-sm border border-green-200 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-50 disabled:opacity-60"
+              onClick={async () => {
+                setBusy(true);
+                const res = await updateChangeRequest(id, { customer_approval: 'approved', status: 'approved' });
+                setBusy(false);
+                if (!res.ok) alert(res.error);
+                else refetch();
+              }}
+            >
+              تایید مشتری
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              className="text-sm border border-red-200 text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 disabled:opacity-60"
+              onClick={async () => {
+                setBusy(true);
+                const res = await updateChangeRequest(id, { customer_approval: 'rejected', status: 'rejected' });
+                setBusy(false);
+                if (!res.ok) alert(res.error);
+                else refetch();
+              }}
+            >
+              رد درخواست
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

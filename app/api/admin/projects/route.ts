@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { getSession, hashPassword } from "@/lib/auth";
+import { getSession, hashPassword, type AdminRole } from "@/lib/auth";
+import { parseUuid } from "@/lib/crmWorkflow";
+import { num } from "@/lib/adminRouteHelpers";
 import { serverDebugLog } from "@/lib/debugLog";
 
 export const runtime = "nodejs";
@@ -15,13 +17,19 @@ const STATUSES = new Set([
   "paused",
 ]);
 const SERVICE_TYPES = new Set(["website", "landing", "chatbot", "other"]);
+const PROJECT_WRITE_ROLES: AdminRole[] = ["admin", "sales"];
+const PROJECT_PATCH_ROLES: AdminRole[] = ["admin", "support"];
 
 function requireAny(req: NextRequest) {
   return getSession(req);
 }
-function requireAdmin(req: NextRequest) {
+function requireProjectWriter(req: NextRequest) {
   const s = getSession(req);
-  return s && s.role === "admin" ? s : null;
+  return s && PROJECT_WRITE_ROLES.includes(s.role) ? s : null;
+}
+function requireProjectEditor(req: NextRequest) {
+  const s = getSession(req);
+  return s && PROJECT_PATCH_ROLES.includes(s.role) ? s : null;
 }
 function unauthorized() {
   return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
@@ -57,7 +65,9 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   const clientId = req.nextUrl.searchParams.get("client_id");
   const selectFields =
-    "id, created_at, updated_at, project_code, access_password, customer_name, customer_contact, title, service_type, status, progress_percent, estimated_delivery_at, last_note";
+    "id, created_at, updated_at, project_code, access_password, client_id, customer_name, customer_contact, title, service_type, status, progress_percent, estimated_delivery_at, last_note, owner_name, contract_amount, payment_status";
+
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   try {
     const supabase = getSupabaseAdmin();
@@ -75,15 +85,15 @@ export async function GET(req: NextRequest) {
     }
 
     let query = supabase.from("support_projects").select(selectFields).order("updated_at", { ascending: false }).limit(500);
-    // client_id filter only when migration 20250702_admin_ops has been applied
     if (clientId) {
-      const filtered = await supabase.from("support_projects").select(selectFields).eq("customer_contact", clientId).limit(500);
+      const filterCol = UUID_RE.test(clientId) ? "client_id" : "customer_contact";
+      const filtered = await supabase.from("support_projects").select(selectFields).eq(filterCol, clientId).limit(500);
       if (!filtered.error) {
         const projects = (filtered.data || []).map((p) => {
           const { access_password, ...rest } = p as Record<string, unknown>;
           return { ...rest, has_password: Boolean(access_password) };
         });
-        serverDebugLog('api/admin/projects:GET', 'success', { count: projects.length, filter: 'customer_contact' }, 'H1');
+        serverDebugLog('api/admin/projects:GET', 'success', { count: projects.length, filter: filterCol }, 'H1');
         return NextResponse.json({ ok: true, projects });
       }
     }
@@ -110,7 +120,7 @@ export async function GET(req: NextRequest) {
 
 // ساخت پروژه‌ی جدید (فقط admin).
 export async function POST(req: NextRequest) {
-  if (!requireAdmin(req)) return forbidden();
+  if (!requireProjectWriter(req)) return forbidden();
 
   let body: Record<string, unknown>;
   try {
@@ -135,6 +145,11 @@ export async function POST(req: NextRequest) {
     title,
     customer_name: str(body.customer_name ?? body.customerName, 200),
     customer_contact: str(body.customer_contact ?? body.contact, 200),
+    client_id: parseUuid(body.client_id ?? body.clientId),
+    contract_id: parseUuid(body.contract_id ?? body.contractId),
+    contract_amount: body.contract_amount != null || body.contractAmount != null
+      ? num(body.contract_amount ?? body.contractAmount)
+      : null,
     service_type,
     status,
     progress_percent: clampPercent(body.progress_percent ?? body.progressPercent) ?? 0,
@@ -175,9 +190,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ویرایش پروژه (با id). فیلدهای ارسالی به‌روزرسانی می‌شوند. (فقط admin)
+// ویرایش پروژه (با id). فیلدهای ارسالی به‌روزرسانی می‌شوند. (admin + support)
 export async function PATCH(req: NextRequest) {
-  if (!requireAdmin(req)) return forbidden();
+  if (!requireProjectEditor(req)) return forbidden();
 
   let body: Record<string, unknown>;
   try {
@@ -198,6 +213,10 @@ export async function PATCH(req: NextRequest) {
     patch.customer_name = str(body.customer_name ?? body.customerName, 200);
   if ("customer_contact" in body || "contact" in body)
     patch.customer_contact = str(body.customer_contact ?? body.contact, 200);
+  if ("client_id" in body || "clientId" in body)
+    patch.client_id = parseUuid(body.client_id ?? body.clientId);
+  if ("contract_amount" in body || "contractAmount" in body)
+    patch.contract_amount = num(body.contract_amount ?? body.contractAmount);
   if ("last_note" in body || "lastNote" in body)
     patch.last_note = str(body.last_note ?? body.lastNote, 4000);
   if ("estimated_delivery_at" in body || "estimatedDeliveryAt" in body)
@@ -208,6 +227,9 @@ export async function PATCH(req: NextRequest) {
     if (!s || !STATUSES.has(s))
       return NextResponse.json({ ok: false, error: "invalid_status" }, { status: 422 });
     patch.status = s;
+    if (s === "delivered") {
+      patch.progress_percent = 100;
+    }
   }
   if ("service_type" in body || "serviceType" in body) {
     const s = str(body.service_type ?? body.serviceType, 32);

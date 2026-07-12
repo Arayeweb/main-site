@@ -8,6 +8,9 @@
   --cp-accent-deep: #26391b;
   --cp-soft: #edf5df;
   --cp-radius: 22px;
+  --cp-font-display: inherit;
+  --cp-font-body: inherit;
+  position: relative;
   min-height: 100vh;
   overflow: hidden;
   color: var(--cp-ink);
@@ -16,7 +19,7 @@
     linear-gradient(90deg, rgba(43, 58, 45, 0.025) 1px, transparent 1px),
     var(--cp-bg);
   background-size: 32px 32px;
-  font-family: inherit;
+  font-family: var(--cp-font-body);
 }
 
 .campaign *,
@@ -28,6 +31,26 @@
 .campaign a {
   color: inherit;
   text-decoration: none;
+}
+
+.campaign h1,
+.campaign h2,
+.campaign h3,
+.campaign strong {
+  font-family: var(--cp-font-display);
+}
+
+.previewWatermark {
+  position: sticky;
+  z-index: 60;
+  top: 0;
+  padding: 0.62rem 1rem;
+  color: #3d320e;
+  background: #f7d968;
+  box-shadow: 0 6px 22px rgba(53, 45, 18, 0.16);
+  font-size: 0.67rem;
+  font-weight: 850;
+  text-align: center;
 }
 
 .brandBar {
@@ -267,10 +290,307 @@
   font-size: 0.63rem;
 }
 
+.artifactBody > svg {
+  color: var(--cp-accent);
+}
+
+.artifactBody > span {
+  width: auto;
+  height: auto;
+  border: 1px solid var(--cp-line);
+  padding: 0.35rem 0.65rem;
+  color: var(--cp-muted);
+  background: color-mix(in srgb, var(--cp-soft) 42%, var(--cp-paper));
+  font-size: 0.62rem;
+}
+
+.artifactBody > span:nth-of-type(2) {
+  width: auto;
+}
+
+.localArtifact,
+.shopArtifact,
+.clinicArtifact,
+.educationArtifact,
+.saasArtifact {
+  display: grid;
+  min-height: 350px;
+  align-content: center;
+  justify-items: center;
+  gap: 0.8rem;
+  padding: 2rem;
+}
+
+.localArtifact {
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 15%, color-mix(in srgb, var(--cp-accent) 20%, transparent), transparent 9rem),
+    var(--cp-paper);
+}
+
+.localMark {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 19px;
+  color: #fff;
+  background: var(--cp-accent);
+  box-shadow: 0 12px 25px color-mix(in srgb, var(--cp-accent) 25%, transparent);
+}
+
+.localArtifact small,
+.educationArtifact small {
+  color: var(--cp-accent);
+  font-weight: 800;
+}
+
+.localArtifact p,
+.clinicArtifact p {
+  max-width: 300px;
+  margin: 0;
+  color: var(--cp-muted);
+  font-size: 0.72rem;
+  line-height: 1.9;
+}
+
+.localArtifact button,
+.shopArtifact button,
+.clinicArtifact button,
+.educationArtifact button,
+.saasArtifact button {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  color: #fff;
+  background: var(--cp-accent-deep);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.shopArtifact {
+  justify-items: stretch;
+  background:
+    linear-gradient(155deg, color-mix(in srgb, var(--cp-soft) 68%, var(--cp-paper)), var(--cp-paper));
+}
+
+.shopArtifact > svg {
+  color: var(--cp-accent);
+}
+
+.artifactBadge {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.32rem 0.6rem;
+  color: #fff;
+  background: var(--cp-accent);
+  font-size: 0.58rem;
+  font-weight: 850;
+}
+
+.shopArtifact b {
+  color: var(--cp-accent);
+  font-size: 1.1rem;
+}
+
+.shopArtifact ul,
+.educationArtifact ol {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shopArtifact li,
+.educationArtifact li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--cp-muted);
+  font-size: 0.65rem;
+}
+
+.clinicArtifact {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--cp-soft) 68%, var(--cp-paper)), var(--cp-paper));
+}
+
+.clinicCalendar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 15px;
+  padding: 0.8rem 1rem;
+  color: var(--cp-accent-deep);
+  background: var(--cp-paper);
+  box-shadow: 0 12px 35px rgba(33, 106, 125, 0.1);
+  font-size: 0.75rem;
+  font-weight: 850;
+}
+
+.clinicArtifact > div:last-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.clinicArtifact > div:last-of-type span {
+  border: 1px solid var(--cp-line);
+  border-radius: 8px;
+  padding: 0.36rem 0.55rem;
+  color: var(--cp-muted);
+  background: var(--cp-paper);
+  font-size: 0.57rem;
+}
+
+.educationArtifact {
+  align-content: start;
+  justify-items: stretch;
+  padding-top: 2.4rem;
+  background: linear-gradient(180deg, var(--cp-paper), var(--cp-soft));
+}
+
+.educationArtifact > svg {
+  color: var(--cp-accent);
+}
+
+.educationArtifact li b {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--cp-accent);
+  font-size: 0.6rem;
+}
+
+.saasArtifact {
+  justify-items: stretch;
+  color: #eef5ff;
+  background: linear-gradient(145deg, #172d4d, #224e80);
+}
+
+.saasTop {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.saasChart {
+  display: flex;
+  height: 130px;
+  align-items: end;
+  justify-content: space-around;
+  gap: 0.6rem;
+  border-radius: 14px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.saasChart i {
+  width: 14%;
+  border-radius: 7px 7px 2px 2px;
+  background: linear-gradient(#79b6ff, #3979c3);
+}
+
+.saasChart i:nth-child(1) { height: 35%; }
+.saasChart i:nth-child(2) { height: 55%; }
+.saasChart i:nth-child(3) { height: 45%; }
+.saasChart i:nth-child(4) { height: 75%; }
+.saasChart i:nth-child(5) { height: 92%; }
+
+.saasStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+}
+
+.saasStats span {
+  display: grid;
+  border-radius: 9px;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #bdcee3;
+  font-size: 0.52rem;
+}
+
+.saasStats b {
+  color: #fff;
+  font-size: 0.7rem;
+}
+
+.trustBar {
+  display: flex;
+  width: min(100% - 2rem, 1050px);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: -1.2rem auto 0;
+  border: 1px solid var(--cp-line);
+  border-radius: calc(var(--cp-radius) - 4px);
+  padding: 0.8rem;
+  background: color-mix(in srgb, var(--cp-paper) 92%, transparent);
+  box-shadow: 0 14px 45px color-mix(in srgb, var(--cp-accent-deep) 7%, transparent);
+}
+
+.trustBar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--cp-muted);
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+
+.trustBar svg {
+  color: var(--cp-accent);
+}
+
 .section {
   width: min(100% - 2rem, 1180px);
   margin-inline: auto;
   padding: 4.5rem 0;
+}
+
+.objectionsSection {
+  padding-top: 2rem;
+}
+
+.objectionsGrid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.objectionsGrid article {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid var(--cp-line);
+  border-radius: var(--cp-radius);
+  padding: 1rem;
+  background: var(--cp-paper);
+}
+
+.objectionsGrid svg {
+  flex: 0 0 auto;
+  color: var(--cp-accent);
+}
+
+.objectionsGrid strong {
+  display: block;
+  font-size: 0.76rem;
+}
+
+.objectionsGrid p {
+  margin: 0.35rem 0 0;
+  color: var(--cp-muted);
+  font-size: 0.68rem;
+  line-height: 1.9;
 }
 
 .sectionIntro {
@@ -722,6 +1042,7 @@
   --cp-accent-deep: #463019;
   --cp-soft: #fff1dc;
   --cp-radius: 14px;
+  --cp-font-display: var(--font-vazirmatn), Tahoma, sans-serif;
 }
 
 .templateShop {
@@ -736,6 +1057,7 @@
   --cp-accent-deep: #173942;
   --cp-soft: #e7f6f8;
   --cp-radius: 28px;
+  --cp-font-display: var(--font-vazirmatn), Tahoma, sans-serif;
 }
 
 .templateEducation {
@@ -743,6 +1065,7 @@
   --cp-accent-deep: #392a1e;
   --cp-soft: #f5eadb;
   --cp-radius: 10px;
+  --cp-font-display: Tahoma, var(--font-vazirmatn), sans-serif;
 }
 
 .templateSaas {
@@ -750,6 +1073,7 @@
   --cp-accent-deep: #172d4d;
   --cp-soft: #e7f0fb;
   --cp-radius: 16px;
+  --cp-font-display: var(--font-vazirmatn), Tahoma, sans-serif;
 }
 
 .templateLocal .heroArtifact {
@@ -870,6 +1194,10 @@
   .faqList {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .objectionsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 920px) {
@@ -912,6 +1240,38 @@
 
   .templateEducation .heroArtifact {
     order: 1;
+  }
+
+  .templateLocal .hero {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .templateLocal .heroCopy {
+    display: grid;
+    max-width: 850px;
+    justify-items: center;
+  }
+
+  .templateLocal .heroActions {
+    justify-content: center;
+  }
+
+  .templateLocal .heroArtifact {
+    width: min(100%, 620px);
+  }
+
+  .templateShop .hero {
+    grid-template-columns: 0.95fr 1.05fr;
+  }
+
+  .templateClinic .hero {
+    grid-template-columns: 1fr 0.9fr;
+  }
+
+  .templateSaas .hero {
+    grid-template-columns: 0.9fr 1.1fr;
   }
 }
 

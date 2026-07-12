@@ -72,7 +72,7 @@ export default function SupportDashboard() {
               <div className="px-5 py-6 text-sm text-slate-400 text-center">تیکت فوری ندارید</div>
             )}
             {urgentTickets.map((t) => (
-              <Link key={t.id} href="/admin/support/tickets" className="block px-5 py-3.5 hover:bg-slate-50 transition-colors">
+              <Link key={t.id} href={`/admin/support/tickets/${t.id}`} className="block px-5 py-3.5 hover:bg-slate-50 transition-colors">
                 <p className="text-sm font-semibold text-slate-800">{t.title}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{t.client}</p>
               </Link>
@@ -90,7 +90,7 @@ export default function SupportDashboard() {
               <div className="px-5 py-6 text-sm text-slate-400 text-center">درخواست تغییری نیست</div>
             )}
             {changeRequests.slice(0, 4).map((cr) => (
-              <Link key={cr.id} href="/admin/support/tickets" className="block px-5 py-3.5 hover:bg-slate-50 transition-colors">
+              <Link key={cr.id} href={`/admin/support/change-requests/${cr.id}`} className="block px-5 py-3.5 hover:bg-slate-50 transition-colors">
                 <p className="text-sm font-medium text-slate-800">{cr.title}</p>
                 <p className="text-xs text-slate-500">{cr.client}</p>
               </Link>

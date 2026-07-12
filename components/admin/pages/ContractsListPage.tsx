@@ -25,9 +25,16 @@ import { formatCurrency } from '@/lib/utils';
 interface ContractsListProps {
   panelLabel?: string;
   showCreate?: boolean;
+  detailBasePath?: string;
+  newHref?: string;
 }
 
-export function ContractsListPage({ panelLabel = 'مدیریت', showCreate = true }: ContractsListProps) {
+export function ContractsListPage({
+  panelLabel = 'مدیریت',
+  showCreate = true,
+  detailBasePath = '/admin/manager/contracts',
+  newHref = '/admin/manager/contracts/new',
+}: ContractsListProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -52,7 +59,7 @@ export function ContractsListPage({ panelLabel = 'مدیریت', showCreate = tr
         icon={FileCheck}
         breadcrumb={[{ label: panelLabel }, { label: 'قراردادها' }]}
         actions={showCreate ? (
-          <Link href="/admin/manager/contracts/new" className="flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+          <Link href={newHref} className="flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
             <Plus className="w-4 h-4" />
             قرارداد جدید
           </Link>
@@ -90,7 +97,7 @@ export function ContractsListPage({ panelLabel = 'مدیریت', showCreate = tr
                   <tr
                     key={contract.id}
                     className="hover:bg-slate-50/50 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/admin/manager/contracts/${contract.id}`)}
+                    onClick={() => router.push(`${detailBasePath}/${contract.id}`)}
                   >
                     <td className="px-4 py-3.5 font-mono text-xs text-slate-600">{contract.number}</td>
                     <td className="px-4 py-3.5 font-medium text-slate-800">{contract.client}</td>
@@ -105,7 +112,7 @@ export function ContractsListPage({ panelLabel = 'مدیریت', showCreate = tr
                       <DocumentStatusBadge label={CONTRACT_PAYMENT_STATUS_LABELS[contract.paymentStatus] ?? contract.paymentStatus} colorClass={CONTRACT_PAYMENT_STATUS_COLORS[contract.paymentStatus] ?? 'bg-slate-50 text-slate-600 ring-slate-200'} />
                     </td>
                     <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-                      <ActionMenu actions={[{ label: 'مشاهده', onClick: () => router.push(`/admin/manager/contracts/${contract.id}`) }]} />
+                      <ActionMenu actions={[{ label: 'مشاهده', onClick: () => router.push(`${detailBasePath}/${contract.id}`) }]} />
                     </td>
                   </tr>
                 ))}

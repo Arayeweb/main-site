@@ -8,13 +8,14 @@ import {
   LayoutDashboard, FolderOpen, Users, CreditCard, FileText, UserCheck,
   BookOpen, Settings, BarChart2, UserPlus, Bell, FileCheck,
   Link2, Headphones, Kanban, Ticket, CheckSquare, Megaphone,
-  GitPullRequest, Wrench, LogOut, ChevronLeft, LineChart,
+  GitPullRequest, Wrench, LogOut, ChevronLeft, LineChart, Zap, ShoppingBag, Briefcase,
 } from 'lucide-react';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard, FolderOpen, Users, CreditCard, FileText, UserCheck,
   BookOpen, Settings, BarChart2, UserPlus, Bell, FileCheck,
-  Link2, Kanban, Ticket, CheckSquare, Megaphone, GitPullRequest, Wrench, LineChart,
+  Link2, Kanban, Ticket, CheckSquare, Megaphone, GitPullRequest, Wrench, LineChart, Zap,
+  ShoppingBag, Briefcase,
   HeadphonesIcon: Headphones,
 };
 

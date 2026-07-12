@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSession, type AdminRole } from "@/lib/auth";
+import { parseUuid, syncLeadStatus } from "@/lib/crmWorkflow";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,9 +95,10 @@ export async function GET(req: NextRequest) {
   if (searchParams.get("summary")) {
     try {
       const supabase = getSupabaseAdmin();
-      const { data, error } = await supabase
-        .from("invoices")
-        .select("status,kind,grand_total,currency,paid_at");
+      const kindFilter = searchParams.get("kind") || "invoice";
+      let q = supabase.from("invoices").select("status,kind,grand_total,currency,paid_at");
+      if (kindFilter) q = q.eq("kind", kindFilter);
+      const { data, error } = await q;
       if (error) {
         console.error("[api/admin/invoices] GET summary error:", error.message);
         return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
@@ -104,6 +106,9 @@ export async function GET(req: NextRequest) {
       const rows = data || [];
       const paid: Record<string, number> = {};
       const outstanding: Record<string, number> = {};
+      const paidThisMonth: Record<string, number> = {};
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const counts = { total: 0, paid: 0, sent: 0, draft: 0, cancelled: 0, invoice: 0, proforma: 0 };
       for (const r of rows) {
         const cur = r.currency || "IRR";
@@ -113,6 +118,9 @@ export async function GET(req: NextRequest) {
         if (r.status === "paid") {
           counts.paid++;
           paid[cur] = (paid[cur] || 0) + amt;
+          if (r.paid_at && r.paid_at >= monthStart) {
+            paidThisMonth[cur] = (paidThisMonth[cur] || 0) + amt;
+          }
         } else if (r.status === "sent") {
           counts.sent++;
           outstanding[cur] = (outstanding[cur] || 0) + amt;
@@ -123,7 +131,7 @@ export async function GET(req: NextRequest) {
           counts.cancelled++;
         }
       }
-      return NextResponse.json({ ok: true, summary: { paid, outstanding, counts } });
+      return NextResponse.json({ ok: true, summary: { paid, outstanding, paidThisMonth, counts } });
     } catch (e) {
       console.error("[api/admin/invoices] GET summary error:", e);
       return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
@@ -132,6 +140,9 @@ export async function GET(req: NextRequest) {
 
   const kind = searchParams.get("kind") || "";
   const status = searchParams.get("status") || "";
+  const customerName = searchParams.get("customer_name") || "";
+  const clientId = searchParams.get("client_id") || "";
+  const leadId = searchParams.get("lead_id") || "";
   const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10));
   const PAGE_SIZE = 30;
 
@@ -140,13 +151,16 @@ export async function GET(req: NextRequest) {
     let q = supabase
       .from("invoices")
       .select(
-        "id,invoice_number,kind,status,issue_date,due_date,customer_name,customer_contact,customer_address,items,subtotal,discount_total,tax_total,grand_total,currency,note,terms,created_at,paid_at"
+        "id,invoice_number,kind,status,issue_date,due_date,customer_name,customer_contact,customer_address,lead_id,client_id,project_id,items,subtotal,discount_total,tax_total,grand_total,currency,note,terms,created_at,paid_at"
       )
       .order("created_at", { ascending: false })
       .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
     if (kind) q = q.eq("kind", kind);
     if (status) q = q.eq("status", status);
+    if (customerName) q = q.eq("customer_name", customerName);
+    if (clientId && parseUuid(clientId)) q = q.eq("client_id", clientId);
+    if (leadId && parseUuid(leadId)) q = q.eq("lead_id", leadId);
 
     const { data, error } = await q;
     if (error) {
@@ -207,7 +221,9 @@ export async function POST(req: NextRequest) {
         customer_name,
         customer_contact: str(body.customer_contact, 200),
         customer_address: str(body.customer_address, 500),
-        project_id: str(body.project_id, 64) || null,
+        project_id: parseUuid(body.project_id),
+        lead_id: parseUuid(body.lead_id),
+        client_id: parseUuid(body.client_id),
         items: rawItems,
         currency: str(body.currency, 10) || "IRR",
         note: str(body.note, 1000),
@@ -226,6 +242,19 @@ export async function POST(req: NextRequest) {
         { status: dup ? 409 : 500 }
       );
     }
+
+    const lead_id = parseUuid(body.lead_id);
+    if (lead_id && kind === "proforma") {
+      await syncLeadStatus(
+        supabase,
+        lead_id,
+        "proposal",
+        session.role,
+        session.userId,
+        "پیش‌فاکتور صادر شد — وضعیت لید به «پیشنهاد» تغییر کرد"
+      );
+    }
+
     return NextResponse.json({ ok: true, invoice: data });
   } catch (e) {
     console.error("[api/admin/invoices] POST error:", e);
@@ -281,6 +310,13 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
+
+    let prevLeadId: string | null = null;
+    if ("status" in body && patch.status === "sent") {
+      const { data: prev } = await supabase.from("invoices").select("lead_id, kind").eq("id", id).maybeSingle();
+      prevLeadId = (prev?.lead_id as string | null) ?? null;
+    }
+
     const { data, error } = await supabase
       .from("invoices")
       .update(patch)
@@ -293,6 +329,18 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
     }
     if (!data) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+
+    if (prevLeadId && data.kind === "proforma" && data.status === "sent") {
+      await syncLeadStatus(
+        supabase,
+        prevLeadId,
+        "proposal",
+        session.role,
+        session.userId,
+        "پیش‌فاکتور ارسال شد"
+      );
+    }
+
     return NextResponse.json({ ok: true, invoice: data });
   } catch (e) {
     console.error("[api/admin/invoices] PATCH error:", e);

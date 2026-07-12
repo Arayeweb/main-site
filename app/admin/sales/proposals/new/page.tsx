@@ -53,6 +53,8 @@ function NewProposalForm() {
             status: 'draft',
             customer_name: customerName,
             customer_contact: selectedClient?.phone || lead?.phone || null,
+            lead_id: leadId || null,
+            client_id: clientId || null,
             note: [note, timeline ? `زمان‌بندی: ${timeline}` : ''].filter(Boolean).join('\n'),
             items: [{ title: service || lead?.need || 'خدمت', qty: 1, unit_price: unitPrice }],
           });

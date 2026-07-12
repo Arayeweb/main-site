@@ -35,6 +35,16 @@ const PRODUCTS = {
     failUrl: null,
     errorUrl: null,
   },
+  fastweb: {
+    verifyPath: "/api/fastweb/verify",
+    failUrl: "/fastweb/new?payment=failed",
+    errorUrl: "/fastweb/new?payment=error",
+  },
+  adready: {
+    verifyPath: "/api/adready/verify",
+    failUrl: "/dashboard/adready/pages?payment=failed",
+    errorUrl: "/dashboard/adready/pages?payment=error",
+  },
 };
 
 function redirect(res, url) {

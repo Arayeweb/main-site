@@ -4,8 +4,7 @@ import { useMemo } from 'react';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
 import { Link2 } from 'lucide-react';
-import { fetchSalesLeads, fetchSalesStats } from '@/lib/adminApi';
-import { CRM_SOURCE_LABELS } from '@/lib/adminMappers';
+import { fetchLeadSources } from '@/lib/adminApi';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 
 interface LeadSourcesPageProps {
@@ -13,60 +12,28 @@ interface LeadSourcesPageProps {
 }
 
 export function LeadSourcesPage({ panelLabel }: LeadSourcesPageProps) {
-  const { data: statsData, loading: sLoading, error: sError } = useAdminFetch(() => fetchSalesStats(), []);
-  const { data: leadsData, loading: lLoading, error: lError } = useAdminFetch(() => fetchSalesLeads(), []);
+  const { data, loading, error } = useAdminFetch(() => fetchLeadSources(), []);
 
   const sources = useMemo(() => {
-    const leads = leadsData?.leads ?? [];
-    const map = new Map<string, { leads: number; qualified: number; proposal: number; won: number }>();
-
-    for (const l of leads) {
-      const key = l.source || 'unknown';
-      const row = map.get(key) ?? { leads: 0, qualified: 0, proposal: 0, won: 0 };
-      row.leads += 1;
-      const status = l.crm_status ?? 'new';
-      if (status === 'qualified' || status === 'contacted') row.qualified += 1;
-      if (status === 'proposal') row.proposal += 1;
-      if (status === 'won') row.won += 1;
-      map.set(key, row);
-    }
-
-    const fromStats = statsData?.by_source ?? [];
-    if (fromStats.length > 0) {
-      return fromStats.map((s) => {
-        const agg = map.get(s.key) ?? { leads: s.count, qualified: 0, proposal: 0, won: 0 };
-        return {
-          source: s.key,
-          label: CRM_SOURCE_LABELS[s.key] ?? s.key,
-          leads: s.count,
-          qualified: agg.qualified,
-          proposal: agg.proposal,
-          won: agg.won,
-          conversion: s.count > 0 ? Math.round((agg.won / s.count) * 100) : 0,
-        };
-      });
-    }
-
-    return Array.from(map.entries()).map(([source, agg]) => ({
-      source,
-      label: CRM_SOURCE_LABELS[source] ?? source,
-      leads: agg.leads,
-      qualified: agg.qualified,
-      proposal: agg.proposal,
-      won: agg.won,
-      conversion: agg.leads > 0 ? Math.round((agg.won / agg.leads) * 100) : 0,
+    return (data?.sources ?? []).map((s) => ({
+      source: s.source,
+      label: s.label,
+      leads: s.leads,
+      qualified: s.qualifiedLeads,
+      proposal: s.proposals,
+      won: s.sales,
+      conversion: s.conversionRate,
     }));
-  }, [statsData, leadsData]);
+  }, [data]);
 
-  if (sLoading || lLoading) return <AdminLoadingState />;
-  if (sError) return <AdminErrorState error={sError} />;
-  if (lError) return <AdminErrorState error={lError} />;
+  if (loading) return <AdminLoadingState />;
+  if (error) return <AdminErrorState error={error} />;
 
   return (
     <div className="flex flex-col gap-6" dir="rtl">
       <AdminPageHeader
         title="منابع لید"
-        description="تحلیل عملکرد منابع جذب مشتری"
+        description="تحلیل عملکرد منابع جذب مشتری (از کل دیتابیس)"
         icon={Link2}
         breadcrumb={[{ label: panelLabel }, { label: 'منابع لید' }]}
       />

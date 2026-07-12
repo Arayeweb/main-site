@@ -5,7 +5,7 @@ import "./adready.css";
 
 const title = "AdReady | صفحه آماده تبلیغ";
 const description =
-  "با AdReady صفحه، متن، فرم درخواست و راه‌های تماس را آماده کن. پیش‌نمایش رایگان — پرداخت یک‌باره فقط برای انتشار.";
+  "با AdReady صفحه، متن، فرم درخواست و راه‌های تماس را آماده کن. پیش‌نمایش رایگان و انتشار یک‌ماهه یا مادام‌العمر.";
 
 export const metadata: Metadata = {
   title: { absolute: title },
@@ -44,8 +44,8 @@ const structuredData = {
       },
       offers: [
         { "@type": "Offer", name: "پیش‌نمایش", price: "0", priceCurrency: "IRR" },
-        { "@type": "Offer", name: "انتشار", price: "3900000", priceCurrency: "IRR" },
-        { "@type": "Offer", name: "اجرا توسط آرایه", price: "69000000", priceCurrency: "IRR" },
+        { "@type": "Offer", name: "انتشار یک‌ماهه", price: "15000000", priceCurrency: "IRR" },
+        { "@type": "Offer", name: "انتشار مادام‌العمر", price: "31000000", priceCurrency: "IRR" },
       ],
     },
     {

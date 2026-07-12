@@ -141,7 +141,7 @@ export default function ManagerAnalyticsPage() {
         <h2 className="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wide">بازدید و لید</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard title="کل بازدید" value={stats.total_views.toLocaleString('fa-IR')} subtitle="صفحات سایت" icon={Eye} iconColor="text-blue-600" />
-          <StatCard title="بازدید این هفته" value={stats.views_this_week.toLocaleString('fa-IR')} subtitle="۷ روز اخیر" icon={Eye} iconColor="text-sky-600" />
+          <StatCard title="بازیدیدکنندگان یکتا" value={(stats.unique_visitors ?? 0).toLocaleString('fa-IR')} subtitle="visitor_id مجزا" icon={Users} iconColor="text-emerald-600" />
           <StatCard title="کل لیدها" value={stats.total_leads.toLocaleString('fa-IR')} subtitle="ثبت‌شده" icon={Users} iconColor="text-violet-600" />
           <StatCard title="لید این هفته" value={stats.this_week.toLocaleString('fa-IR')} subtitle="۷ روز اخیر" icon={Users} iconColor="text-indigo-600" />
         </div>

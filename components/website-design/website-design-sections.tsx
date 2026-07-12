@@ -1,5 +1,5 @@
 import SectionHeader from "@/components/home/SectionHeader";
-import { audienceGroups, projectOutputCategories } from "@/data/website-design";
+import { audienceGroups, sitePreparationSteps } from "@/data/website-design";
 
 export function WebsiteDesignAudiences() {
   return (
@@ -35,12 +35,12 @@ export function WebsiteDesignOutputs() {
     <section className="section-py bg-navy-50/40">
       <div className="container-mx container-px">
         <SectionHeader
-          badge="خروجی پروژه"
-          title="در پایان چه چیزی تحویل می‌گیرید؟"
+          badge="مراحل آماده‌سازی سایت"
+          title="مراحل طراحی، ساخت و تحویل سایت شما"
         />
 
         <div className="grid gap-5 sm:grid-cols-2">
-          {projectOutputCategories.map((category) => (
+          {sitePreparationSteps.map((category) => (
             <article
               key={category.title}
               className="rounded-2xl border border-navy-100 bg-white p-5 shadow-soft sm:p-6"
@@ -58,9 +58,6 @@ export function WebsiteDesignOutputs() {
           ))}
         </div>
 
-        <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-navy-500">
-          جزئیات دقیق خروجی بر اساس نوع و ابعاد پروژه در پیشنهاد رسمی مشخص می‌شود.
-        </p>
       </div>
     </section>
   );

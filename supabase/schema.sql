@@ -40,7 +40,7 @@ alter table public.leads add column if not exists utm_content text;
 alter table public.leads add column if not exists utm_term text;
 alter table public.leads add column if not exists referrer text;
 
--- بازدیدهای صفحات با UTM (فقط وقتی utm_source داشته باشد ثبت می‌شود)
+-- بازدیدهای صفحات (utm_source اختیاری است؛ همه بازدیدها ثبت می‌شوند)
 create table if not exists public.page_views (
   id           uuid primary key default gen_random_uuid(),
   created_at   timestamptz not null default now(),
@@ -51,12 +51,14 @@ create table if not exists public.page_views (
   utm_content  text,
   utm_term     text,
   referrer     text,
-  user_agent   text
+  user_agent   text,
+  visitor_id   uuid
 );
 
 create index if not exists page_views_created_at_idx on public.page_views (created_at desc);
 create index if not exists page_views_utm_source_idx on public.page_views (utm_source);
 create index if not exists page_views_utm_campaign_idx on public.page_views (utm_campaign);
+create index if not exists page_views_visitor_id_idx on public.page_views (visitor_id);
 
 alter table public.page_views enable row level security;
 
@@ -709,6 +711,23 @@ create table if not exists public.crm_contracts (
 );
 create index if not exists crm_contracts_client_idx on public.crm_contracts (client_id);
 create index if not exists crm_contracts_status_idx on public.crm_contracts (signature_status);
+
+alter table public.crm_contracts
+  add column if not exists proforma_id uuid references public.invoices (id) on delete set null,
+  add column if not exists lead_id uuid references public.leads (id) on delete set null;
+create index if not exists crm_contracts_proforma_idx on public.crm_contracts (proforma_id);
+create index if not exists crm_contracts_lead_idx on public.crm_contracts (lead_id);
+
+alter table public.support_projects
+  add column if not exists contract_id uuid references public.crm_contracts (id) on delete set null;
+create index if not exists support_projects_contract_idx on public.support_projects (contract_id);
+
+alter table public.invoices
+  add column if not exists lead_id uuid references public.leads (id) on delete set null,
+  add column if not exists client_id uuid references public.crm_clients (id) on delete set null;
+create index if not exists invoices_lead_idx on public.invoices (lead_id);
+create index if not exists invoices_client_idx on public.invoices (client_id);
+
 alter table public.crm_contracts enable row level security;
 
 create table if not exists public.crm_change_requests (

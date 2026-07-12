@@ -4,6 +4,7 @@ import { ArrowRight, ExternalLink, FileWarning, Info, Pencil } from "lucide-reac
 import { notFound } from "next/navigation";
 import CampaignPageView from "@/components/adready/CampaignPageView";
 import CampaignAnalyticsPanel from "@/components/adready/CampaignAnalyticsPanel";
+import CampaignPublishPanel from "@/components/adready/CampaignPublishPanel";
 import {
   AdReadyDashboardFrame,
   CampaignStatusBadge,
@@ -27,8 +28,10 @@ export const metadata: Metadata = {
 
 export default async function AdReadyPageDetail({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams?: { paid?: string; payment?: string };
 }) {
   const returnTo = `/dashboard/adready/pages/${params.id}`;
   const session = requireAdReadySession(returnTo);
@@ -77,6 +80,17 @@ export default async function AdReadyPageDetail({
         </div>
       </section>
 
+      <CampaignPublishPanel
+        campaignId={page.id}
+        status={page.status}
+        paymentStatus={page.paymentStatus}
+        activePackage={page.activePackage}
+        expiresAt={page.expiresAt}
+        publicSlug={page.slug}
+        paid={searchParams?.paid === "1"}
+        paymentResult={searchParams?.payment}
+      />
+
       {page.status === "published" ? (
         <div className={styles.publishedNotice}>
           <ExternalLink size={17} />
@@ -105,6 +119,8 @@ export default async function AdReadyPageDetail({
             content={content}
             businessName={page.businessName}
             campaignGoal={page.goal}
+            city={page.city}
+            priceRange={page.priceRange}
             templateKey={page.templateKey}
             themeKey={page.themeKey}
             contacts={{
@@ -112,6 +128,7 @@ export default async function AdReadyPageDetail({
               whatsappNumber: page.whatsappNumber,
               telegramUsername: page.telegramUsername,
             }}
+            isPreview={page.status !== "published"}
             showAdCopyAngles
           />
         </div>

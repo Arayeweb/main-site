@@ -35,24 +35,57 @@
   });
   track("page_view", { title: document.title, referrer: document.referrer });
 
+  /* ---------- UTM helper — هم‌تراز با lib/utm.ts ----------
+     merge: URL → sessionStorage → merged همیشه ذخیره می‌شود (نه فقط وقتی utm_source داشته باشد).
+     shortcutها: ?src= و ?source= → utm_source | ?promptSlug= → utm_content | ?code= → arena_promo_code */
+  function getUtms() {
+    var STORAGE_KEY = "__utms";
+    var UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+    var p = new URLSearchParams(location.search);
+    var fromUrl = {};
+    UTM_KEYS.forEach(function (k) { var v = p.get(k); if (v) fromUrl[k] = v; });
+    var src = (p.get("src") || "").trim();
+    if (src && !fromUrl.utm_source) fromUrl.utm_source = src;
+    var source = (p.get("source") || "").trim();
+    if (source && !fromUrl.utm_source) fromUrl.utm_source = source;
+    var promptSlug = (p.get("promptSlug") || "").trim();
+    if (promptSlug && !fromUrl.utm_content) fromUrl.utm_content = "prompt:" + promptSlug;
+    var promoCode = (p.get("code") || "").trim();
+    if (promoCode) { try { sessionStorage.setItem("arena_promo_code", promoCode.toUpperCase()); } catch (_) {} }
+    var stored = {};
+    try { stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "{}"); } catch (_) {}
+    var merged = Object.assign({}, stored, fromUrl);
+    if (Object.keys(merged).length) { try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch (_) {} }
+    return merged;
+  }
+
+  /* ---------- visitor_id — ثابت در localStorage برای unique visitors ---------- */
+  function getVisitorId() {
+    var KEY = "__ary_visitor_id";
+    try {
+      var id = localStorage.getItem(KEY);
+      if (!id) {
+        id = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+          var r = (Math.random() * 16) | 0;
+          return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+        });
+        localStorage.setItem(KEY, id);
+      }
+      return id;
+    } catch (_) { return null; }
+  }
+
   /* ---------- page-view tracker ----------
-     هر بازدید صفحه را ثبت می‌کند (نه فقط ترافیک UTM‌دار).
-     UTM (در صورت وجود) هم ثبت و برای فرم‌ها ذخیره می‌شود.
+     هر بازدید صفحه را ثبت می‌کند.
      یک گارد کوتاه جلوی ثبت دوبارهٔ همان صفحه (reload/bfcache) را می‌گیرد. */
   (function () {
-    var p = new URLSearchParams(location.search);
-    var utmSource = p.get("utm_source");
-    var payload = {
+    var utms = getUtms();
+    var visitorId = getVisitorId();
+    var payload = Object.assign({
       page: location.pathname,
-      utm_source: utmSource || undefined,
-      utm_medium: p.get("utm_medium") || undefined,
-      utm_campaign: p.get("utm_campaign") || undefined,
-      utm_content: p.get("utm_content") || undefined,
-      utm_term: p.get("utm_term") || undefined,
       referrer: document.referrer || undefined,
-    };
-    // ذخیرهٔ UTM برای پیش‌پرکردن فرم‌ها (فقط وقتی موجود باشد)
-    if (utmSource) { try { sessionStorage.setItem("__utms", JSON.stringify(payload)); } catch (_) {} }
+      visitor_id: visitorId || undefined,
+    }, utms);
     // گارد ضدِ ثبت تکراری در بازهٔ کوتاه (مثلاً بازگشت bfcache یا دابل‌فایر)
     var dedupKey = "__pv_seen_" + location.pathname;
     try {

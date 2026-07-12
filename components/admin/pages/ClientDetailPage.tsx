@@ -39,8 +39,25 @@ export function ClientDetailPage({ clientId, backHref, panelLabel }: ClientDetai
   const { data: clientData, loading: cLoading, error: cError } = useAdminFetch(() => fetchClientById(clientId), [clientId]);
   const { data: projectsData } = useAdminFetch(() => fetchProjectsByClient(clientId), [clientId]);
   const { data: contractsData } = useAdminFetch(() => fetchContracts({ client_id: clientId }), [clientId]);
-  const { data: invoicesData } = useAdminFetch(() => fetchInvoices(), []);
-  const { data: ticketsData } = useAdminFetch(() => fetchTickets(), []);
+
+  const clientNameForFetch = clientData?.client?.name;
+  const clientPhoneForFetch = clientData?.client?.phone;
+
+  const { data: invoicesData } = useAdminFetch(
+    () => fetchInvoices({
+      kind: 'invoice',
+      ...(clientId ? { client_id: clientId } : {}),
+      ...(!clientId && clientNameForFetch ? { customer_name: clientNameForFetch } : {}),
+    }),
+    [clientId, clientNameForFetch]
+  );
+  const { data: ticketsData } = useAdminFetch(
+    () => fetchTickets({
+      ...(clientNameForFetch ? { customer_name: clientNameForFetch } : {}),
+      ...(clientPhoneForFetch ? { customer_contact: clientPhoneForFetch } : {}),
+    }),
+    [clientNameForFetch, clientPhoneForFetch]
+  );
   const { data: leadsData } = useAdminFetch(() => fetchSalesLeads(), []);
 
   const client = useMemo(() => {
@@ -72,22 +89,26 @@ export function ClientDetailPage({ clientId, backHref, panelLabel }: ClientDetai
 
   const projects = useMemo(() => (projectsData?.projects ?? []).map(mapProjectRow), [projectsData]);
   const contracts = useMemo(() => (contractsData?.contracts ?? []).map(mapContractRow), [contractsData]);
-  const invoices = useMemo(() => {
-    const name = client?.name ?? '';
-    return (invoicesData?.invoices ?? [])
-      .map(mapInvoiceRow)
-      .filter((i) => i.client === name || i.client.includes(name.split(' ')[0]));
-  }, [invoicesData, client]);
-  const tickets = useMemo(() => {
-    const name = client?.name ?? '';
-    return (ticketsData?.tickets ?? [])
-      .map(mapTicketRow)
-      .filter((t) => t.client.includes(name.split(' ')[0]));
-  }, [ticketsData, client]);
+  const invoices = useMemo(
+    () => (invoicesData?.invoices ?? []).map(mapInvoiceRow),
+    [invoicesData]
+  );
+  const tickets = useMemo(
+    () => (ticketsData?.tickets ?? []).map(mapTicketRow),
+    [ticketsData]
+  );
   const activities = useMemo(() => {
-    if (!leadsData || !ticketsData) return [];
-    return buildRecentActivities(leadsData.leads ?? [], ticketsData.tickets ?? [], projectsData?.projects ?? []);
-  }, [leadsData, ticketsData, projectsData]);
+    if (!client) return [];
+    const name = client.name;
+    const phone = client.phone;
+    const clientLeads = (leadsData?.leads ?? []).filter(
+      (l) => l.name === name || (phone && phone !== '—' && l.contact === phone)
+    );
+    const clientTickets = (ticketsData?.tickets ?? []).filter(
+      (t) => t.customer_name === name || (phone && phone !== '—' && t.customer_contact === phone)
+    );
+    return buildRecentActivities(clientLeads, clientTickets, projectsData?.projects ?? []);
+  }, [leadsData, ticketsData, projectsData, client]);
 
   if (cLoading) return <AdminLoadingState />;
   if (cError && !client) return <AdminErrorState error={cError} />;

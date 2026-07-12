@@ -8,7 +8,7 @@ export default function WebsiteDesignFinalCta() {
           سایت بعدی شما باید بخشی از سیستم فروش باشد
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-navy-200 sm:text-base">
-          برای طراحی سایتی که بتواند اعتماد بسازد، لید بگیرد و همراه کسب‌وکار رشد کند، درخواست
+          برای طراحی سایتی که اعتماد بسازد، مشتری جذب کند و همراه کسب‌وکار رشد کند، درخواست
           خود را ثبت کنید.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

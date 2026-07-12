@@ -22,9 +22,9 @@ export function useAdminFetch<T>(
         if (cancelled) return;
         if (!res.ok) {
           setError(res.error);
-          setData(null);
         } else {
           setData(res.data);
+          setError(null);
         }
         setLoading(false);
       })
@@ -53,8 +53,11 @@ export function AdminLoadingState({ label = 'در حال بارگذاری...' }:
 export function AdminErrorState({ error }: { error: string }) {
   const messages: Record<string, string> = {
     unauthorized: 'دسترسی غیرمجاز — دوباره وارد شوید.',
+    forbidden: 'شما مجوز انجام این عملیات را ندارید.',
     network_error: 'خطا در اتصال به سرور.',
     db_error: 'خطا در خواندن داده از پایگاه داده.',
+    not_found: 'مورد درخواستی یافت نشد.',
+    migration_required: 'جدول پایگاه داده هنوز migrate نشده — با مدیر سیستم تماس بگیرید.',
   };
   return (
     <div className="flex items-center justify-center py-16 text-sm text-red-600">

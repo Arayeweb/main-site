@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
@@ -8,7 +8,7 @@ import { SearchInput } from '@/components/admin/ui/SearchInput';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
 import { ActionMenu } from '@/components/admin/ui/ActionMenu';
 import { UserPlus, Upload } from 'lucide-react';
-import { fetchSalesLeads, importSalesLeads, patchSalesLead } from '@/lib/adminApi';
+import { fetchSalesLeads, importSalesLeads, patchSalesLead, type ApiLead } from '@/lib/adminApi';
 import { CRM_STATUS_COLORS, CRM_STATUS_LABELS, mapLeadRow } from '@/lib/adminMappers';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 
@@ -42,14 +42,29 @@ export default function LeadsPage() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [allLeads, setAllLeads] = useState<ApiLead[]>([]);
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState('');
   const { data, loading, error, refetch } = useAdminFetch(
-    () => fetchSalesLeads({ q: search || undefined }),
-    [search]
+    () => fetchSalesLeads({ q: search || undefined, page_num: page }),
+    [search, page]
   );
 
-  const leads = useMemo(() => (data?.leads ?? []).map(mapLeadRow), [data]);
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
+
+  useEffect(() => {
+    if (!data?.leads) return;
+    setAllLeads((prev) => {
+      if (page === 0) return data.leads;
+      const ids = new Set(prev.map((l) => l.id));
+      return [...prev, ...data.leads.filter((l) => !ids.has(l.id))];
+    });
+  }, [data, page]);
+
+  const leads = useMemo(() => allLeads.map(mapLeadRow), [allLeads]);
 
   async function handleImport(file: File) {
     setImporting(true);
@@ -74,8 +89,8 @@ export default function LeadsPage() {
     setImporting(false);
   }
 
-  if (loading) return <AdminLoadingState />;
-  if (error) return <AdminErrorState error={error} />;
+  if (loading && page === 0) return <AdminLoadingState />;
+  if (error && !data) return <AdminErrorState error={error} />;
 
   return (
     <div className="flex flex-col gap-6" dir="rtl">
@@ -129,21 +144,24 @@ export default function LeadsPage() {
             <table className="w-full text-sm min-w-[960px]" dir="rtl">
               <thead>
                 <tr className="bg-slate-50/60 border-b border-slate-100">
-                  {['#', 'نام', 'موبایل', 'کسب‌وکار', 'منبع', 'نیاز', 'پکیج', 'وضعیت', 'بودجه', 'آخرین تماس', 'پیگیری', ''].map((h) => (
+                  {['#', 'نام', 'موبایل', 'صفحه', 'منبع', 'نیاز', 'وضعیت', 'بودجه', 'ثبت', ''].map((h) => (
                     <th key={h} className="text-right px-4 py-3 text-xs font-semibold text-slate-500 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {leads.map((lead, idx) => (
-                  <tr key={lead.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={lead.id}
+                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/admin/sales/leads/${lead.id}`)}
+                  >
                     <td className="px-4 py-3.5 text-slate-400 text-xs">{idx + 1}</td>
                     <td className="px-4 py-3.5 font-medium text-slate-800">{lead.name}</td>
                     <td className="px-4 py-3.5 text-slate-500 tabular-nums" dir="ltr">{lead.phone}</td>
-                    <td className="px-4 py-3.5 text-slate-600">{lead.business}</td>
+                    <td className="px-4 py-3.5 text-slate-500 text-xs max-w-[120px] truncate">{lead.page}</td>
                     <td className="px-4 py-3.5 text-slate-500">{lead.sourceLabel}</td>
                     <td className="px-4 py-3.5 text-slate-600">{lead.need}</td>
-                    <td className="px-4 py-3.5 text-slate-500">{lead.plan}</td>
                     <td className="px-4 py-3.5">
                       <StatusBadge
                         label={CRM_STATUS_LABELS[lead.status] ?? lead.status}
@@ -151,11 +169,11 @@ export default function LeadsPage() {
                       />
                     </td>
                     <td className="px-4 py-3.5 text-slate-500">{lead.budget}</td>
-                    <td className="px-4 py-3.5 text-slate-500 tabular-nums">{lead.lastContact}</td>
-                    <td className="px-4 py-3.5 text-slate-500 tabular-nums">{lead.nextFollowUp}</td>
-                    <td className="px-4 py-3.5">
+                    <td className="px-4 py-3.5 text-slate-500 tabular-nums text-xs">{lead.createdAt}</td>
+                    <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                       <ActionMenu
                         actions={[
+                          { label: 'جزئیات', onClick: () => router.push(`/admin/sales/leads/${lead.id}`) },
                           { label: 'پیشنهاد قیمت', onClick: () => router.push(`/admin/sales/proposals/new?leadId=${lead.id}`) },
                           { label: 'تماس شد', onClick: () => void patchSalesLead(lead.id, { crm_status: 'contacted' }).then(() => refetch()) },
                           { label: 'واجد شرایط', onClick: () => void patchSalesLead(lead.id, { crm_status: 'qualified' }).then(() => refetch()) },
@@ -168,6 +186,17 @@ export default function LeadsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {data?.has_more && (
+          <div className="p-4 border-t border-slate-100 text-center">
+            <button
+              type="button"
+              onClick={() => setPage((p) => p + 1)}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              بارگذاری بیشتر
+            </button>
           </div>
         )}
       </div>

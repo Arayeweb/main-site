@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
 import { Kanban, Phone, Calendar } from 'lucide-react';
@@ -21,10 +22,27 @@ const COLUMN_ACCENT: Record<string, string> = {
 };
 
 export default function PipelinePage() {
-  const { data, loading, error } = useAdminFetch(() => fetchSalesLeads(), []);
-  const leads = useMemo(() => (data?.leads ?? []).map(mapLeadRow), [data]);
+  const [page, setPage] = useState(0);
+  const [allLeads, setAllLeads] = useState<ReturnType<typeof mapLeadRow>[]>([]);
 
-  if (loading) return <AdminLoadingState />;
+  const { data, loading, error } = useAdminFetch(
+    () => fetchSalesLeads({ page_num: page, page_size: 100 }),
+    [page]
+  );
+
+  useEffect(() => {
+    if (!data?.leads) return;
+    const mapped = data.leads.map(mapLeadRow);
+    setAllLeads((prev) => {
+      if (page === 0) return mapped;
+      const ids = new Set(prev.map((l) => l.id));
+      return [...prev, ...mapped.filter((l) => !ids.has(l.id))];
+    });
+  }, [data, page]);
+
+  const leads = useMemo(() => allLeads, [allLeads]);
+
+  if (loading && page === 0) return <AdminLoadingState />;
   if (error) return <AdminErrorState error={error} />;
 
   if (leads.length === 0) {
@@ -45,7 +63,7 @@ export default function PipelinePage() {
     <div className="flex flex-col gap-6" dir="rtl">
       <AdminPageHeader
         title="پایپ‌لاین فروش"
-        description="مرحله‌بندی لیدها"
+        description={`${leads.length} لید بارگذاری‌شده`}
         icon={Kanban}
         breadcrumb={[{ label: 'فروش' }, { label: 'پایپ‌لاین' }]}
       />
@@ -67,9 +85,10 @@ export default function PipelinePage() {
                     <p className="text-xs text-slate-400 text-center py-6">خالی</p>
                   )}
                   {columnLeads.map((lead) => (
-                    <div
+                    <Link
                       key={lead.id}
-                      className="bg-slate-50 border border-slate-200 rounded-lg p-3 cursor-pointer hover:shadow-sm hover:border-slate-300 transition-all"
+                      href={`/admin/sales/leads/${lead.id}`}
+                      className="bg-slate-50 border border-slate-200 rounded-lg p-3 hover:shadow-sm hover:border-slate-300 transition-all block"
                     >
                       <p className="text-sm font-semibold text-slate-800">{lead.name}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{lead.need}</p>
@@ -82,9 +101,9 @@ export default function PipelinePage() {
                         <span className="text-xs text-slate-400">{lead.nextFollowUp}</span>
                       </div>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-xs text-slate-400">{lead.budget}</span>
+                        <span className="text-xs text-slate-400">{lead.sourceLabel}</span>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -92,6 +111,18 @@ export default function PipelinePage() {
           );
         })}
       </div>
+
+      {data?.has_more && (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setPage((p) => p + 1)}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            بارگذاری لیدهای بیشتر
+          </button>
+        </div>
+      )}
     </div>
   );
 }
