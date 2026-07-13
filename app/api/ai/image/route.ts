@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 import {
@@ -8,6 +9,12 @@ import {
 } from "@/lib/aiCredits";
 import { hasImageGen } from "@/lib/aiModels";
 import { insertMediaJob } from "@/lib/aiMediaJobInsert";
+import { isOwnedAiUploadUrl } from "@/lib/aiUploadSecurity";
+import {
+  prepareRunAndReserveCredits,
+  refundCredits,
+} from "@/lib/billing/credits";
+import { isUuid } from "@/lib/ai/requestValidation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,9 +40,13 @@ export async function POST(req: NextRequest) {
 
   const threadId = typeof body.threadId === "string" && body.threadId ? body.threadId : null;
   const referenceImageUrl =
-    typeof body.referenceImageUrl === "string" && body.referenceImageUrl.startsWith("https://")
+    typeof body.referenceImageUrl === "string" &&
+    isOwnedAiUploadUrl(body.referenceImageUrl, session.userId)
       ? body.referenceImageUrl.trim()
       : null;
+  if (body.referenceImageUrl != null && !referenceImageUrl) {
+    return NextResponse.json({ ok: false, error: "invalid_reference" }, { status: 422 });
+  }
 
   const supabase = getSupabaseAdmin();
   const { data: user, error: userErr } = await supabase
@@ -61,14 +72,35 @@ export async function POST(req: NextRequest) {
   }
 
   const cost = imageGenCost(m);
-  if ((user.credits as number) < cost) {
+  const jobId = randomUUID();
+  const reservation = await prepareRunAndReserveCredits({
+    userId: session.userId,
+    runId: jobId,
+    mode: "direct",
+    conversationId: threadId && isUuid(threadId) ? threadId : jobId,
+    reservedCredits: cost,
+    metadata: {
+      source: "image_generation",
+      model: m.id,
+      prompt: prompt.slice(0, 1000),
+    },
+  });
+  if (!reservation.ok) {
     return NextResponse.json(
-      { ok: false, error: "insufficient_credits", upgradeUrl: "/ai/pricing" },
-      { status: 402 }
+      {
+        ok: false,
+        error:
+          reservation.error === "insufficient_credits"
+            ? "insufficient_credits"
+            : "server_error",
+        upgradeUrl: "/ai/pricing",
+      },
+      { status: reservation.error === "insufficient_credits" ? 402 : 500 }
     );
   }
 
   const { data: job, error: jobErr } = await insertMediaJob(supabase, {
+    id: jobId,
     user_id: session.userId,
     kind: "image",
     model_id: m.id,
@@ -81,16 +113,24 @@ export async function POST(req: NextRequest) {
 
   if (jobErr || !job) {
     console.error("[api/ai/image] job insert:", jobErr);
+    await refundCredits(
+      session.userId,
+      cost,
+      jobId,
+      "image job creation failed"
+    );
+    await supabase
+      .from("ai_runs")
+      .update({ status: "failed", completed_at: new Date().toISOString() })
+      .eq("id", jobId)
+      .eq("user_id", session.userId);
     return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
   }
-
-  const creditsRemaining = Math.max(0, (user.credits as number) - cost);
-  await supabase.from("ai_users").update({ credits: creditsRemaining }).eq("id", session.userId);
 
   return NextResponse.json({
     ok: true,
     jobId: job.id,
-    creditsRemaining,
+    creditsRemaining: reservation.creditsRemaining,
     creditCost: cost,
   });
 }

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { navTo } from "./helpers/aiPage";
 
 test.describe("Araaye AI — workspace modes", () => {
   test("guest home shows mode tabs and model bar", async ({ page }) => {
@@ -27,29 +28,28 @@ test.describe("Araaye AI — workspace modes", () => {
     );
   });
 
-  test("guest compare mode opens login sheet", async ({ page }) => {
+  test("guest can preview compare mode before sending", async ({ page }) => {
     await page.goto("/ai?mode=side_by_side");
-    await page.getByRole("tab", { name: "مقایسه" }).click();
-    await expect(page.getByRole("heading", { name: /ورود به آرایه AI/ })).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect(page.getByRole("tab", { name: "مقایسه" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    await expect(page.getByRole("button", { name: /DeepSeek Chat V3\.1/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Grok 4\.3/ })).toBeVisible();
   });
 
-  test("mode caption updates when switching tabs", async ({ page }) => {
+  test("locked council mode asks a guest to sign in", async ({ page }) => {
     await page.goto("/ai?mode=direct");
-    await expect(page.getByText("یک مدل، پاسخ فوری")).toBeVisible();
-    await page.getByRole("tab", { name: /همفکری/ }).click();
-    await expect(page.getByText(/چند مدل \+ نقد/)).toBeVisible();
+    const council = page.getByRole("tab", { name: /همفکری/ });
+    await council.click();
+    await expect(council).toHaveAttribute("aria-selected", "false");
+    await expect(page.getByRole("heading", { name: /ورود به آرایه AI/ })).toBeVisible();
   });
 
-  test("studio chip prompts guest login", async ({ page }) => {
+  test("studio navigation opens the image studio", async ({ page }) => {
     await page.goto("/ai");
-    await page
-      .getByRole("navigation", { name: "ابزارها" })
-      .getByRole("button", { name: "ساخت عکس" })
-      .click();
-    await expect(page.getByRole("heading", { name: /ورود به آرایه AI/ })).toBeVisible({
-      timeout: 10_000,
-    });
+    await navTo(page, "ساخت عکس");
+    await expect(page).toHaveURL(/\/ai\/image/);
+    await expect(page.getByRole("heading", { name: "استودیو تصویر" })).toBeVisible();
   });
 });

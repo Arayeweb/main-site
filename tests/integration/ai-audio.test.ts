@@ -12,6 +12,45 @@ const db = createTestSupabase({
 const mockRunAudioSpeech = vi.fn();
 const mockRunTranscribe = vi.fn();
 
+vi.mock("@/lib/ai/mediaBilling", () => ({
+  reserveMediaCredits: async (input: {
+    userId: string;
+    runId: string;
+    reservedCredits: number;
+  }) => {
+    const user = db.tables.ai_users.find((row) => row.id === input.userId);
+    if (!user || Number(user.credits) < input.reservedCredits) {
+      return { ok: false, error: "insufficient_credits" };
+    }
+    user.credits = Number(user.credits) - input.reservedCredits;
+    return {
+      ok: true,
+      runId: input.runId,
+      conversationId: input.runId,
+      plan: user.plan,
+      creditsRemaining: user.credits,
+    };
+  },
+  failMediaReservation: async (input: {
+    userId: string;
+    reservedCredits: number;
+  }) => {
+    const user = db.tables.ai_users.find((row) => row.id === input.userId);
+    if (user) user.credits = Number(user.credits) + input.reservedCredits;
+  },
+  settleMediaCredits: async (input: {
+    userId: string;
+    reservedCredits: number;
+    actualCredits: number;
+  }) => {
+    if (input.actualCredits > input.reservedCredits) return { ok: false };
+    const user = db.tables.ai_users.find((row) => row.id === input.userId);
+    if (!user) return { ok: false };
+    user.credits = Number(user.credits) + input.reservedCredits - input.actualCredits;
+    return { ok: true, creditsRemaining: user.credits };
+  },
+}));
+
 vi.mock("@/lib/supabase", () => ({
   getSupabaseAdmin: () => db,
 }));
@@ -70,8 +109,9 @@ describe("integration — /api/ai/audio", () => {
     expect(body.error).toBe("missing_text");
   });
 
-  it("blocks premium audio model on starter plan", async () => {
-    const token = signAIToken("user-aud", "starter");
+  it("blocks premium audio model on free plan", async () => {
+    db.tables.ai_users[0].plan = "free";
+    const token = signAIToken("user-aud", "free");
     const res = await POST_AUDIO(
       makeRequest("/api/ai/audio", {
         method: "POST",

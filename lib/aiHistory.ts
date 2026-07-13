@@ -76,7 +76,7 @@ export function buildRunHistoryItems(
   rows: Array<{
     id: string;
     mode: string;
-    metadata: { prompt?: string } | null;
+    metadata: { prompt?: string; persona_key?: string; source?: string } | null;
     created_at: string;
     conversation_id?: string | null;
   }>
@@ -84,6 +84,13 @@ export function buildRunHistoryItems(
   const groups = new Map<string, typeof rows>();
 
   for (const r of rows) {
+    // Media tools have their own legacy history rows in ai_battles. Their
+    // internal financial runs must not appear as duplicate chat conversations.
+    if (["audio_generation", "transcription", "image_generation"].includes(
+      String(r.metadata?.source ?? "")
+    )) {
+      continue;
+    }
     const rootId = r.conversation_id ?? r.id;
     const g = groups.get(rootId);
     if (g) g.push(r);
@@ -102,6 +109,7 @@ export function buildRunHistoryItems(
       latestRunId: latest.id,
       title: String(first.metadata?.prompt ?? "").slice(0, 80) || "گفتگو",
       tier: runModeToHistoryTier(first.mode),
+      personaKey: first.metadata?.persona_key ?? null,
       createdAt: latest.created_at,
       source: "run" as const,
     });

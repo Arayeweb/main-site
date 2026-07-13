@@ -7,6 +7,8 @@ import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
 import { UserPlus, ArrowRight, Phone, ExternalLink } from 'lucide-react';
 import {
+  fetchContracts,
+  fetchInvoices,
   fetchLeadActivities,
   fetchSalesLeadById,
   patchSalesLead,
@@ -45,10 +47,14 @@ export function LeadDetailPage({ id, backHref = '/admin/sales/leads', panelLabel
 
   const { data, loading, error, refetch } = useAdminFetch(() => fetchSalesLeadById(id), [id]);
   const { data: actData, refetch: refetchActs } = useAdminFetch(() => fetchLeadActivities(id), [id]);
+  const { data: invData } = useAdminFetch(() => fetchInvoices({ lead_id: id }), [id]);
+  const { data: contractData } = useAdminFetch(() => fetchContracts({ lead_id: id }), [id]);
 
   const lead = useMemo(() => (data?.lead ? mapLeadRow(data.lead) : null), [data]);
   const raw = data?.lead;
   const activities = actData?.activities ?? [];
+  const relatedInvoices = invData?.invoices ?? [];
+  const relatedContracts = contractData?.contracts ?? [];
 
   if (loading) return <AdminLoadingState />;
   if (error) return <AdminErrorState error={error} />;
@@ -150,6 +156,46 @@ export function LeadDetailPage({ id, backHref = '/admin/sales/leads', panelLabel
             <InfoRow label="جزئیات (چت‌بات)" value={raw.detail} />
             {lead.note && <InfoRow label="یادداشت CRM" value={lead.note} />}
           </div>
+
+          {(relatedInvoices.length > 0 || relatedContracts.length > 0) && (
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+              <h3 className="text-sm font-bold text-slate-900 mb-3">مرتبط با این لید</h3>
+              {relatedInvoices.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-slate-500 mb-2">پیش‌فاکتور / فاکتور</p>
+                  <div className="space-y-2">
+                    {relatedInvoices.map((inv) => (
+                      <Link
+                        key={inv.id}
+                        href={`/admin/sales/proposals/${inv.id}`}
+                        className="flex items-center justify-between text-sm border border-slate-100 rounded-lg px-3 py-2 hover:bg-slate-50"
+                      >
+                        <span className="font-medium text-slate-800">{inv.invoice_number}</span>
+                        <span className="text-xs text-slate-500">{inv.kind} · {inv.status}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {relatedContracts.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 mb-2">قراردادها</p>
+                  <div className="space-y-2">
+                    {relatedContracts.map((c) => (
+                      <Link
+                        key={c.id}
+                        href={`/admin/sales/contracts/${c.id}`}
+                        className="flex items-center justify-between text-sm border border-slate-100 rounded-lg px-3 py-2 hover:bg-slate-50"
+                      >
+                        <span className="font-medium text-slate-800">{c.contract_number}</span>
+                        <span className="text-xs text-slate-500">{c.signature_status}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {(raw.utm_source || raw.referrer) && (
             <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">

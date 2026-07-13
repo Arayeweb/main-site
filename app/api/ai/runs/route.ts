@@ -29,6 +29,7 @@ import {
 } from "@/lib/ai/runs/conversationContext";
 import { RunPerfTracker } from "@/lib/observability/perf";
 import type { ChatMessage } from "@/lib/ai/providers/interface";
+import { isOwnedAiUploadUrl } from "@/lib/aiUploadSecurity";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -143,6 +144,9 @@ export async function POST(req: NextRequest) {
 
   const promptCheck = validatePrompt(body.prompt ?? extractPromptFromMessages(body.messages));
   const attachments = parseAttachments(body.attachments);
+  if (attachments.some((attachment) => !isOwnedAiUploadUrl(attachment.url, session.userId))) {
+    return sseError("bad_request", 422);
+  }
   if (!promptCheck.ok && attachments.length === 0) {
     return sseError("missing_prompt", 422);
   }
@@ -188,6 +192,7 @@ export async function POST(req: NextRequest) {
       let closed = false;
       let activeRunId: string | null = null;
       let cleanup: (() => Promise<void>) | null = null;
+      let heartbeat: ReturnType<typeof setInterval> | null = null;
 
       const send = (chunk: string) => {
         if (closed) return;
@@ -200,6 +205,7 @@ export async function POST(req: NextRequest) {
       };
 
       send(encodeSSE({ type: "run_preparing", runId: "" }));
+      heartbeat = setInterval(() => send(": heartbeat\n\n"), 15_000);
 
       try {
         if (conversationId) {
@@ -239,6 +245,7 @@ export async function POST(req: NextRequest) {
           computeSurchargeCredits,
           webSearch: parsed.webSearch,
           personaSystem: persona?.systemPrompt,
+          personaKey,
         };
 
         const prepared = await prepareRun(runReq, perf);
@@ -269,6 +276,7 @@ export async function POST(req: NextRequest) {
           message: "",
         });
       } finally {
+        if (heartbeat) clearInterval(heartbeat);
         if (activeRunId) unregisterRunAbortController(activeRunId);
         if (cleanup) await cleanup();
         try {

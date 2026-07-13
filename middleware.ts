@@ -7,6 +7,24 @@ import { ADMIN_GATE_COOKIE, isAdminGateEnabled, verifyAdminGateCookieEdge } from
 
 const ADMIN_COOKIE = 'ary_admin';
 const PUBLIC_ADMIN_PATHS = ['/admin/gate'];
+const SHARED_ADMIN_PATHS = ['/admin/login', '/admin/select-panel'];
+
+const ROLE_ALLOWED_PREFIXES: Record<string, string[]> = {
+  admin: ['/admin'],
+  sales: ['/admin/sales', '/admin/select-panel', '/admin/login', '/admin/gate'],
+  support: ['/admin/support', '/admin/select-panel', '/admin/login', '/admin/gate'],
+  ai_superadmin: ['/admin/ai-ops', '/admin/select-panel', '/admin/login', '/admin/gate'],
+  ai_finance: ['/admin/ai-ops', '/admin/select-panel', '/admin/login', '/admin/gate'],
+  ai_support: ['/admin/ai-ops', '/admin/select-panel', '/admin/login', '/admin/gate'],
+  ai_ops: ['/admin/ai-ops', '/admin/select-panel', '/admin/login', '/admin/gate'],
+};
+
+function canAccessAdminPath(role: string, pathname: string): boolean {
+  if (role === 'admin') return true;
+  const prefixes = ROLE_ALLOWED_PREFIXES[role];
+  if (!prefixes) return SHARED_ADMIN_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
+  return prefixes.some((p) => pathname === p || pathname.startsWith(p + '/'));
+}
 const ROLE_DEFAULT_PANEL: Record<string, string> = {
   admin: '/admin/select-panel',
   sales: '/admin/sales',
@@ -111,6 +129,13 @@ export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     url.pathname = dest;
     url.searchParams.delete('next');
+    return NextResponse.redirect(url);
+  }
+
+  if (session && !canAccessAdminPath(session.role, pathname)) {
+    const url = req.nextUrl.clone();
+    url.pathname = ROLE_DEFAULT_PANEL[session.role] ?? '/admin/select-panel';
+    url.search = '';
     return NextResponse.redirect(url);
   }
 

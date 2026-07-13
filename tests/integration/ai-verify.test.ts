@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { createTestSupabase } from "../mocks/supabaseMock";
 import { makeRequest } from "../helpers/request";
 
@@ -17,13 +17,14 @@ vi.mock("@/lib/supabase", () => ({
 }));
 
 vi.mock("@/lib/zibal", () => ({
-  zibalVerify: (...args: unknown[]) => mockZibalVerify(...args),
+  resolveZibalVerify: (...args: unknown[]) => mockZibalVerify(...args),
 }));
 
 import { GET } from "@/app/api/ai/verify/route";
 
 describe("integration — /api/ai/verify payment callback", () => {
   beforeEach(() => {
+    process.env.AI_PAYMENTS_ENABLED = "true";
     db.reset({
       ai_users: [{ id: "user-1", plan: "free", credits: 5 }],
       ai_orders: [
@@ -50,6 +51,10 @@ describe("integration — /api/ai/verify payment callback", () => {
       paid: true,
       amount: 99000,
     });
+  });
+
+  afterAll(() => {
+    delete process.env.AI_PAYMENTS_ENABLED;
   });
 
   it("redirects to error when trackId is missing", async () => {

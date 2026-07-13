@@ -20,7 +20,10 @@ export default async function RunPage({ params }: { params: { id: string } }) {
   }
 
   const threadData = await loadConversationThreadByRunId(params.id, session.userId);
-  const runs = threadData?.runs ?? [serializeRun(bundle)];
+  // threadData.runs only contains terminal-status runs; if the anchor run is still
+  // "running" (e.g. stuck) the array is [] — an empty array is truthy so ?? won't
+  // fire. Always fall back to the anchor run so `latest` is never undefined.
+  const runs = threadData?.runs?.length ? threadData.runs : [serializeRun(bundle)];
   const conversationId = threadData?.conversationId ?? bundle.run.conversation_id ?? bundle.run.id;
   const thread = threadToHydration(conversationId, runs);
   const latest = runs[runs.length - 1];

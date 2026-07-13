@@ -13,6 +13,7 @@ const db = createTestSupabase({
 
 const mockRunImageGen = vi.fn();
 const mockClaimAndProcess = vi.fn();
+const mockPrepareRunAndReserveCredits = vi.fn();
 
 vi.mock("@/lib/supabase", () => ({
   getSupabaseAdmin: () => db,
@@ -26,13 +27,19 @@ vi.mock("@/lib/aiImageJob", () => ({
   claimAndProcessImageJob: (...args: unknown[]) => mockClaimAndProcess(...args),
 }));
 
+vi.mock("@/lib/billing/credits", () => ({
+  prepareRunAndReserveCredits: (...args: unknown[]) =>
+    mockPrepareRunAndReserveCredits(...args),
+  refundCredits: vi.fn().mockResolvedValue({ ok: true, balance: 0 }),
+}));
+
 import { POST } from "@/app/api/ai/image/route";
 import { GET as pollGET } from "@/app/api/ai/image/[jobId]/route";
 
 describe("integration — /api/ai/image", () => {
   beforeEach(() => {
     db.reset({
-      ai_users: [{ id: "user-img", plan: "starter", credits: 10 }],
+      ai_users: [{ id: "user-img", plan: "starter", credits: 20 }],
       ai_battles: [],
       ai_usage: [],
       ai_media_jobs: [],
@@ -40,6 +47,22 @@ describe("integration — /api/ai/image", () => {
     });
     mockRunImageGen.mockReset();
     mockClaimAndProcess.mockReset();
+    mockPrepareRunAndReserveCredits.mockImplementation(
+      async (input: { userId: string; runId: string; reservedCredits: number }) => {
+        const user = db.tables.ai_users.find((row) => row.id === input.userId);
+        if (!user || Number(user.credits) < input.reservedCredits) {
+          return { ok: false, error: "insufficient_credits" };
+        }
+        user.credits = Number(user.credits) - input.reservedCredits;
+        return {
+          ok: true,
+          runId: input.runId,
+          conversationId: input.runId,
+          plan: user.plan,
+          creditsRemaining: user.credits,
+        };
+      }
+    );
   });
 
   it("requires authentication", async () => {
@@ -118,7 +141,7 @@ describe("integration — /api/ai/image", () => {
     expect(body.ok).toBe(true);
     expect(body.jobId).toBeTruthy();
     expect(body.creditsRemaining).toBe(0);
-    expect(body.creditCost).toBe(10);
+    expect(body.creditCost).toBe(20);
     expect(db.tables.ai_media_jobs).toHaveLength(1);
     expect(db.tables.ai_media_jobs[0].status).toBe("pending");
     expect(db.tables.ai_media_jobs[0].kind).toBe("image");
@@ -128,7 +151,7 @@ describe("integration — /api/ai/image", () => {
 
   it("stores reference image URL on job", async () => {
     const token = signAIToken("user-img", "starter");
-    const ref = "https://test.storage.example/user/ref.png";
+    const ref = "https://test-project.supabase.co/storage/v1/object/public/ai-uploads/user-img/ref.png";
     await POST(
       makeRequest("/api/ai/image", {
         method: "POST",
@@ -141,6 +164,24 @@ describe("integration — /api/ai/image", () => {
       })
     );
     expect(db.tables.ai_media_jobs[0].reference_url).toBe(ref);
+  });
+
+  it("rejects another user's reference image URL", async () => {
+    const token = signAIToken("user-img", "starter");
+    const res = await POST(
+      makeRequest("/api/ai/image", {
+        method: "POST",
+        cookies: { [AI_COOKIE]: token },
+        body: {
+          prompt: "same style",
+          model: "image-lite",
+          referenceImageUrl:
+            "https://test-project.supabase.co/storage/v1/object/public/ai-uploads/other-user/ref.png",
+        },
+      })
+    );
+    expect(res.status).toBe(422);
+    expect(db.tables.ai_media_jobs).toHaveLength(0);
   });
 
   it("poll returns completed image when job finishes", async () => {
@@ -213,7 +254,7 @@ describe("integration — /api/ai/image", () => {
   });
 
   it("image generation does not double-deduct across separate jobs", async () => {
-    db.tables.ai_users[0].credits = 25;
+    db.tables.ai_users[0].credits = 40;
     const token = signAIToken("user-img", "starter");
     await POST(
       makeRequest("/api/ai/image", {
@@ -234,7 +275,25 @@ describe("integration — /api/ai/image", () => {
       0
     );
     expect(db.tables.ai_media_jobs).toHaveLength(2);
-    expect(25 - (db.tables.ai_users[0].credits as number)).toBe(totalJobCost);
+    expect(40 - (db.tables.ai_users[0].credits as number)).toBe(totalJobCost);
+  });
+
+  it("allows only one concurrent job when the wallet covers one image", async () => {
+    db.tables.ai_users[0].credits = 20;
+    const token = signAIToken("user-img", "starter");
+    const request = (prompt: string) =>
+      POST(
+        makeRequest("/api/ai/image", {
+          method: "POST",
+          cookies: { [AI_COOKIE]: token },
+          body: { prompt, model: "image-lite" },
+        })
+      );
+
+    const responses = await Promise.all([request("first"), request("second")]);
+    expect(responses.map((res) => res.status).sort()).toEqual([200, 402]);
+    expect(db.tables.ai_media_jobs).toHaveLength(1);
+    expect(db.tables.ai_users[0].credits).toBe(0);
   });
 
   it("failed image generation refunds credits via claimAndProcess", async () => {
@@ -251,10 +310,10 @@ describe("integration — /api/ai/image", () => {
 
     mockClaimAndProcess.mockImplementation(async () => {
       const user = db.tables.ai_users[0];
-      user.credits = (user.credits as number) + 10;
+      user.credits = (user.credits as number) + 20;
       db.tables.ai_credit_ledger.push({
         user_id: "user-img",
-        delta: 10,
+        delta: 20,
         balance_after: user.credits,
         reason: "image_refund",
         note: `Refund for failed image job ${jobId}`,
@@ -270,7 +329,7 @@ describe("integration — /api/ai/image", () => {
       { params: { jobId } }
     );
 
-    expect(db.tables.ai_users[0].credits).toBe(10);
+    expect(db.tables.ai_users[0].credits).toBe(20);
     expect(db.tables.ai_credit_ledger.some((e) => e.reason === "image_refund")).toBe(true);
   });
 });

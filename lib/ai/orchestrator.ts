@@ -23,6 +23,7 @@ import { settleRun, type CallSettlement } from "@/lib/ai/usage/settle";
 import {
   buildPricingSnapshot,
   creditsForProviderCost,
+  resolveProviderCostUsd,
   WEB_SEARCH_MIN_CREDITS,
 } from "@/lib/ai/pricing/costToCredits";
 import { prepareRunAndReserveCredits, refundCredits } from "@/lib/billing/credits";
@@ -60,6 +61,7 @@ export type RunRequest = {
   webSearch?: boolean;
   computeSurchargeCredits?: number;
   personaSystem?: string;
+  personaKey?: string | null;
 };
 
 export type RunPrepError = {
@@ -222,7 +224,11 @@ export async function prepareRun(
     mode: req.mode,
     conversationId,
     reservedCredits,
-    metadata: { models, prompt: req.prompt.slice(0, 4000) },
+    metadata: {
+      models,
+      prompt: req.prompt.slice(0, 4000),
+      ...(req.personaKey ? { persona_key: req.personaKey } : {}),
+    },
   });
   perf?.mark("run_created");
   perf?.mark("credits_reserved");
@@ -330,11 +336,21 @@ export async function prepareRun(
       if (callResults.length > 0) {
         const callRows = callResults.map((r) => {
           const creditsCharged = r.succeeded ? creditsForCall(r) : 0;
+          const providerCost = effectiveProviderCost(r);
           const snapshot = buildPricingSnapshot({
             modelId: r.model,
-            providerCostUsd: r.costUsd,
+            providerCostUsd: providerCost.costUsd,
+            providerCostMissing: r.succeeded && providerCost.missing,
             creditsCharged,
           });
+          if (snapshot.pricingFlags.length > 0) {
+            console.warn(JSON.stringify({
+              src: "ai-pricing-alert",
+              runId,
+              model: r.model,
+              flags: snapshot.pricingFlags,
+            }));
+          }
           return {
             run_id: runId,
             provider: r.provider,
@@ -346,9 +362,9 @@ export async function prepareRun(
             input_tokens: r.inputTokens,
             output_tokens: r.outputTokens,
             cached_tokens: r.cachedTokens,
-            reasoning_tokens: 0,
+            reasoning_tokens: r.reasoningTokens,
             tool_cost_usd: snapshot.toolCostUsd,
-            cost_usd: r.costUsd,
+            cost_usd: r.succeeded ? providerCost.costUsd : 0,
             exchange_rate_toman: snapshot.usdToToman,
             pricing_multiplier: snapshot.multiplier,
             credit_value_toman: snapshot.creditValueToman,
@@ -423,44 +439,28 @@ export async function prepareRun(
       : fatal || !anySuccess
         ? "failed"
         : "completed";
+    const successfulCosts = callResults
+      .filter((r) => r.succeeded)
+      .map((r) => effectiveProviderCost(r));
+    const totalProviderCostUsd = Number(
+      successfulCosts.reduce((sum, item) => sum + item.costUsd, 0).toFixed(8)
+    );
+    const runPricing = buildPricingSnapshot({
+      modelId: models[0] ?? "economy",
+      providerCostUsd: totalProviderCostUsd,
+      providerCostMissing: successfulCosts.some((item) => item.missing),
+      creditsCharged: chargedCredits,
+    });
     await supabase
       .from("ai_runs")
       .update({
         status,
       charged_credits: chargedCredits,
       refunded_credits: settlementFailed ? 0 : refundedCredits,
-      total_provider_cost_usd: Number(
-        callResults
-          .filter((r) => r.succeeded)
-          .reduce((sum, r) => sum + (Number(r.costUsd) || 0), 0)
-          .toFixed(8)
-      ),
-      total_revenue_toman: chargedCredits * buildPricingSnapshot({
-        modelId: models[0] ?? "economy",
-        providerCostUsd: 0,
-        creditsCharged: 1,
-      }).creditValueToman,
-      total_gross_profit_toman:
-        chargedCredits * buildPricingSnapshot({
-          modelId: models[0] ?? "economy",
-          providerCostUsd: 0,
-          creditsCharged: 1,
-        }).creditValueToman -
-        Math.round(
-          callResults
-            .filter((r) => r.succeeded)
-            .reduce((sum, r) => sum + (Number(r.costUsd) || 0), 0) *
-            buildPricingSnapshot({
-              modelId: models[0] ?? "economy",
-              providerCostUsd: 0,
-              creditsCharged: 1,
-            }).usdToToman
-        ),
-      pricing_snapshot: buildPricingSnapshot({
-        modelId: models[0] ?? "economy",
-        providerCostUsd: 0,
-        creditsCharged: chargedCredits || 1,
-      }),
+      total_provider_cost_usd: totalProviderCostUsd,
+      total_revenue_toman: runPricing.revenueToman,
+      total_gross_profit_toman: runPricing.grossProfitToman,
+      pricing_snapshot: runPricing,
       completed_at: new Date().toISOString(),
       })
       .eq("id", runId)
@@ -470,16 +470,28 @@ export async function prepareRun(
 
     // ---------- trace ----------
     for (const r of callResults) {
+      const providerCost = effectiveProviderCost(r);
+      const snapshot = buildPricingSnapshot({
+        modelId: r.model,
+        providerCostUsd: providerCost.costUsd,
+        providerCostMissing: r.succeeded && providerCost.missing,
+        creditsCharged: r.succeeded ? creditsForCall(r) : 0,
+      });
       traceModelCall({
         runId,
         userId: req.userId,
         mode: req.mode,
         provider: r.provider,
         model: r.model,
+        displayedModel: snapshot.displayedModel,
+        actualModel: snapshot.actualModel,
         inputTokens: r.inputTokens,
         outputTokens: r.outputTokens,
         cachedTokens: r.cachedTokens,
-        costUsd: r.costUsd,
+        reasoningTokens: r.reasoningTokens,
+        costUsd: r.succeeded ? providerCost.costUsd : 0,
+        providerCostMissing: r.succeeded && providerCost.missing,
+        pricingFlags: snapshot.pricingFlags,
         creditsCharged: r.succeeded ? creditsForCall(r) : 0,
         ttftMs: r.ttftMs,
         latencyMs: r.latencyMs,
@@ -492,6 +504,10 @@ export async function prepareRun(
       mode: req.mode,
       status,
       chargedCredits,
+      refundedCredits,
+      providerCostUsd: totalProviderCostUsd,
+      grossMarginPercent: runPricing.grossMarginPercent,
+      pricingFlags: runPricing.pricingFlags,
       durationMs: Date.now() - startedAt,
     });
 
@@ -560,4 +576,9 @@ function creditsForCall(r: ModeCallResult): number {
     r.outputTokens
   );
   return credits + (r.extraCredits ?? 0);
+}
+
+function effectiveProviderCost(r: ModeCallResult): { costUsd: number; missing: boolean } {
+  if (!r.succeeded) return { costUsd: 0, missing: false };
+  return resolveProviderCostUsd(r.model, r.costUsd, r.inputTokens, r.outputTokens);
 }

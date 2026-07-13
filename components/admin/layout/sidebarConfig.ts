@@ -36,6 +36,7 @@ export const salesSidebarItems: SidebarItem[] = [
   { label: 'کارت ویزیت', href: '/admin/sales/bizcard-leads', iconName: 'CreditCard' },
   { label: 'فروش محتوا', href: '/admin/sales/content-sales', iconName: 'ShoppingBag' },
   { label: 'فریلنس', href: '/admin/sales/freelance', iconName: 'Briefcase' },
+  { label: 'لیدهای AdReady', href: '/admin/sales/adready-leads', iconName: 'Target' },
   { label: 'کمپین‌ها', href: '/admin/sales/campaigns', iconName: 'Megaphone' },
   { label: 'منابع لید', href: '/admin/sales/lead-sources', iconName: 'Link2' },
 ];

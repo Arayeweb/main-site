@@ -15,10 +15,15 @@ export type CallTrace = {
   mode: string;
   provider: string;
   model: string;
+  displayedModel?: string;
+  actualModel?: string;
   inputTokens?: number;
   outputTokens?: number;
   cachedTokens?: number;
+  reasoningTokens?: number;
   costUsd?: number;
+  providerCostMissing?: boolean;
+  pricingFlags?: string[];
   creditsCharged?: number;
   ttftMs?: number | null;
   latencyMs?: number;
@@ -36,7 +41,15 @@ export function traceRunStarted(t: RunTrace & { models: string[]; reservedCredit
 }
 
 export function traceRunDone(
-  t: RunTrace & { status: string; chargedCredits: number; durationMs: number }
+  t: RunTrace & {
+    status: string;
+    chargedCredits: number;
+    refundedCredits: number;
+    providerCostUsd: number;
+    grossMarginPercent: number;
+    pricingFlags: string[];
+    durationMs: number;
+  }
 ) {
   emit("run_done", t);
 }

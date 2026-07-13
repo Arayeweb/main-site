@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { createTestSupabase } from "../mocks/supabaseMock";
 import { makeRequest, jsonBody } from "../helpers/request";
 import { signAIToken, AI_COOKIE } from "@/lib/aiAuth";
@@ -25,6 +25,7 @@ import { POST } from "@/app/api/ai/battle/route";
 
 describe("integration — /api/ai/battle", () => {
   beforeEach(() => {
+    process.env.LEGACY_AI_GENERATION_ENABLED = "true";
     db.reset({
       ai_users: [
         {
@@ -49,6 +50,24 @@ describe("integration — /api/ai/battle", () => {
       tokensUsed: 80,
       costUsd: 0.008,
     });
+  });
+
+  afterAll(() => {
+    delete process.env.LEGACY_AI_GENERATION_ENABLED;
+  });
+
+  it("is fail-closed by default so legacy fixed-price billing cannot be replayed", async () => {
+    delete process.env.LEGACY_AI_GENERATION_ENABLED;
+    const token = signAIToken("user-1", "starter");
+    const res = await POST(
+      makeRequest("/api/ai/battle", {
+        method: "POST",
+        cookies: { [AI_COOKIE]: token },
+        body: { prompt: "سلام", mode: "battle" },
+      })
+    );
+    expect(res.status).toBe(410);
+    expect(mockRunBattle).not.toHaveBeenCalled();
   });
 
   it("rejects empty prompt", async () => {

@@ -111,7 +111,9 @@ describe("integration — orchestration billing & ownership", () => {
     expect(run.status).toBe("completed");
     expect(runBillingInvariant(run)).toBe(true);
     expect(run.charged_credits).toBe(1);
-    expect(run.refunded_credits).toBe(run.reserved_credits - run.charged_credits);
+    expect(run.refunded_credits).toBe(
+      Number(run.reserved_credits) - Number(run.charged_credits)
+    );
     expect(events.some((e) => e.type === "run_done")).toBe(true);
     expect(events.some((e) => e.type === "run_error" && e.errorCode === "server_error")).toBe(false);
   });
@@ -132,7 +134,9 @@ describe("integration — orchestration billing & ownership", () => {
     expect(run.status).toBe("completed");
     expect(runBillingInvariant(run)).toBe(true);
     expect(run.charged_credits).toBe(3);
-    expect(run.refunded_credits).toBe(run.reserved_credits - run.charged_credits);
+    expect(run.refunded_credits).toBe(
+      Number(run.reserved_credits) - Number(run.charged_credits)
+    );
   });
 
   it("compare with one failed model refunds failed side", async () => {

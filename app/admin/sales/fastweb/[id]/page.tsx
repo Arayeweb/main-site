@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowRight, ExternalLink, Zap } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
+import { PromoteToCrmButton } from '@/components/admin/ui/PromoteToCrmButton';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
 import { fetchFastWebOrder, patchFastWebOrder } from '@/lib/adminApi';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
@@ -112,7 +113,8 @@ export default function FastWebAdminDetailPage() {
         ]}
       />
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 items-center">
+        <PromoteToCrmButton sourceType="fastweb" sourceId={order.id} />
         <Link
           href="/admin/sales/fastweb"
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"

@@ -89,6 +89,11 @@ export const CRM_SOURCE_LABELS: Record<string, string> = {
   'showcase-kaveh-iron': 'شوکیس — کاوه آهن',
   'showcase-shiva-hearing': 'شوکیس — شیوا شنوایی',
   'showcase-medisa-studio': 'شوکیس — مدیسا استودیو',
+  promoted_bizcard: 'کارت ویزیت (منتقل‌شده)',
+  promoted_website_brief: 'بریف سایت (منتقل‌شده)',
+  promoted_fastweb: 'سایت فوری (منتقل‌شده)',
+  promoted_content_sales: 'فروش محتوا (منتقل‌شده)',
+  promoted_adready: 'AdReady (منتقل‌شده)',
 };
 
 /** برچسب فارسی منبع لید — شامل الگوهای پویا مثل industry_audit_* و showcase-* */

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { createTestSupabase } from "../mocks/supabaseMock";
 import { makeRequest } from "../helpers/request";
 import { readSseEvents, readFirstSseChunk } from "../helpers/sse";
@@ -28,6 +28,7 @@ import { POST } from "@/app/api/ai/chat/route";
 
 describe("integration — /api/ai/chat (SSE streaming)", () => {
   beforeEach(() => {
+    process.env.LEGACY_AI_GENERATION_ENABLED = "true";
     db.reset({
       ai_users: [
         { id: "user-chat", plan: "starter", credits: 20 },
@@ -49,6 +50,28 @@ describe("integration — /api/ai/chat (SSE streaming)", () => {
         return { content: "سلام دنیا", tokensUsed: 42, costUsd: 0.004 };
       }
     );
+  });
+
+  afterAll(() => {
+    delete process.env.LEGACY_AI_GENERATION_ENABLED;
+  });
+
+  it("is fail-closed by default so fixed-cost legacy billing cannot be replayed", async () => {
+    delete process.env.LEGACY_AI_GENERATION_ENABLED;
+    const token = signAIToken("user-chat", "starter");
+    const res = await POST(
+      makeRequest("/api/ai/chat", {
+        method: "POST",
+        cookies: { [AI_COOKIE]: token },
+        body: { prompt: "سلام", model: "economy" },
+      })
+    );
+    expect(res.status).toBe(410);
+    expect(await readSseEvents(res)).toContainEqual({
+      type: "error",
+      error: "legacy_endpoint_disabled",
+    });
+    expect(mockStreamDirect).not.toHaveBeenCalled();
   });
 
   it("returns 401 SSE error when unauthenticated", async () => {

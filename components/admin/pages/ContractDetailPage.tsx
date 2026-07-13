@@ -32,6 +32,9 @@ interface ContractDetailPageProps {
   /** Admin-only actions: convert to project, create invoice */
   showAdminActions?: boolean;
   projectBasePath?: string;
+  paymentsHref?: string;
+  /** When true, project creation shows alert instead of navigating (for roles without support panel access) */
+  projectHandoffOnly?: boolean;
 }
 
 export function ContractDetailPage({
@@ -40,6 +43,8 @@ export function ContractDetailPage({
   panelLabel,
   showAdminActions = true,
   projectBasePath = '/admin/manager/projects',
+  paymentsHref = '/admin/manager/payments',
+  projectHandoffOnly = false,
 }: ContractDetailPageProps) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -103,6 +108,10 @@ export function ContractDetailPage({
       adminOnly: true,
       onClick: () => runAction('project', async () => {
         if (contract.projectId) {
+          if (projectHandoffOnly) {
+            alert('پروژه از قبل برای این قرارداد ثبت شده است.');
+            return;
+          }
           router.push(`${projectBasePath}/${contract.projectId}`);
           return;
         }
@@ -119,6 +128,10 @@ export function ContractDetailPage({
         const projectId = res.data?.project.id;
         if (projectId) {
           await updateContract(id, { project_id: projectId });
+          if (projectHandoffOnly) {
+            alert('پروژه ثبت شد و به تیم پشتیبانی ارجاع شد.');
+            return;
+          }
           router.push(`${projectBasePath}/${projectId}`);
         }
       }),
@@ -143,7 +156,7 @@ export function ContractDetailPage({
           }],
         });
         if (!res.ok) { alert(res.error); return; }
-        router.push('/admin/manager/payments');
+        router.push(paymentsHref);
       }),
     },
   ].filter((a) => showAdminActions || !('adminOnly' in a && a.adminOnly));

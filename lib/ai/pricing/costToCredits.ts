@@ -15,6 +15,7 @@ export type PricingSnapshot = PricingConfig & {
   providerCostToman: number;
   grossProfitToman: number;
   grossMarginPercent: number;
+  pricingFlags: string[];
 };
 
 const DEFAULT_USD_TO_TOMAN = 220_000;
@@ -125,17 +126,35 @@ export function creditsForProviderCost(
   outputTokens: number,
   config: PricingConfig = getPricingConfig()
 ): number {
-  const costUsd =
-    Number.isFinite(providerCostUsd) && providerCostUsd > 0
-      ? providerCostUsd
-      : estimateProviderCostUsd(modelId, inputTokens, outputTokens);
+  const { costUsd } = resolveProviderCostUsd(
+    modelId,
+    providerCostUsd,
+    inputTokens,
+    outputTokens
+  );
   return Math.max(minCreditsForModel(modelId), providerCostToCredits(costUsd, config));
+}
+
+export function resolveProviderCostUsd(
+  modelId: string,
+  providerCostUsd: number,
+  inputTokens: number,
+  outputTokens: number
+): { costUsd: number; missing: boolean } {
+  if (Number.isFinite(providerCostUsd) && providerCostUsd > 0) {
+    return { costUsd: providerCostUsd, missing: false };
+  }
+  return {
+    costUsd: estimateProviderCostUsd(modelId, inputTokens, outputTokens),
+    missing: true,
+  };
 }
 
 export function buildPricingSnapshot(input: {
   modelId: string;
   providerCostUsd: number;
   toolCostUsd?: number;
+  providerCostMissing?: boolean;
   creditsCharged: number;
   config?: PricingConfig;
 }): PricingSnapshot & { displayedModel: string; actualModel: string } {
@@ -149,6 +168,13 @@ export function buildPricingSnapshot(input: {
   const grossMarginPercent =
     revenueToman > 0 ? Number(((grossProfitToman / revenueToman) * 100).toFixed(2)) : 0;
   const model = getModel(input.modelId);
+  const pricingFlags: string[] = [];
+  if (input.providerCostMissing) pricingFlags.push("missing_provider_cost");
+  if (!model) pricingFlags.push("unknown_model");
+  if (revenueToman > 0 && grossMarginPercent / 100 < config.minGrossMargin) {
+    pricingFlags.push("gross_margin_below_minimum");
+  }
+  if (totalCostUsd > 0.25) pricingFlags.push("abnormal_cost_spike");
 
   return {
     ...config,
@@ -159,6 +185,7 @@ export function buildPricingSnapshot(input: {
     providerCostToman,
     grossProfitToman,
     grossMarginPercent,
+    pricingFlags,
     displayedModel: model?.name ?? input.modelId,
     actualModel: modelRouteId(input.modelId),
   };

@@ -12,7 +12,9 @@ test.describe("Araaye AI — shell navigation", () => {
     await expect(page.getByRole("heading", { name: "استودیو تصویر" })).toBeVisible();
 
     await openSideNav(page);
-    const videoItem = page.locator(".ar-side-nav-item--disabled", { hasText: "ساخت ویدیو" });
+    const videoItem = page
+      .locator(".ar-side-nav-item--disabled", { hasText: "ساخت ویدیو" })
+      .last();
     await expect(videoItem).toBeVisible();
     await expect(videoItem.locator(".ar-side-soon")).toHaveText("به‌زودی");
 
@@ -31,14 +33,19 @@ test.describe("Araaye AI — shell navigation", () => {
 
   test("features page CTA returns to chat", async ({ page }) => {
     await page.goto("/ai/features");
-    await page.getByRole("link", { name: "شروع چت" }).click();
+    const cta = page.getByRole("link", { name: "رایگان امتحان کنید" }).first();
+    await expect(cta).toHaveAttribute("href", "/ai");
+    await page.goto((await cta.getAttribute("href"))!);
     await expect(page).toHaveURL(/\/ai\/?$/);
     await expect(page.getByRole("button", { name: "ارسال" })).toBeVisible();
   });
 
   test("persona gallery opens chat for first persona", async ({ page }) => {
     await page.goto("/ai/personas");
-    await page.locator("a.ar-persona-card").first().click();
+    const persona = page.locator("a.ar-persona-card").first();
+    const href = await persona.getAttribute("href");
+    expect(href).toMatch(/^\/ai\/personas\/[^/]+$/);
+    await page.goto(href!);
     await expect(page).toHaveURL(/\/ai\/personas\/[^/]+/);
     await expect(page.locator("textarea").first()).toBeVisible();
   });

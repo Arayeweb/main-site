@@ -183,7 +183,7 @@ export const COMPARE_MODELS: AIModelInfo[] = [
   {
     id: "cmp-grok-4",
     routeId: "x-ai/grok-4.3",
-    name: "Grok 4",
+    name: "Grok 4.3",
     poweredBy: "xAI",
     brand: "grok",
     color: "#1A1A1A",
@@ -220,7 +220,7 @@ export const COMPARE_MODELS: AIModelInfo[] = [
   {
     id: "cmp-gemini-flash",
     routeId: "google/gemini-2.5-flash-lite",
-    name: "Gemini 2.5 Flash",
+    name: "Gemini 2.5 Flash Lite",
     poweredBy: "Google",
     brand: "gemini",
     color: "#4285F4",
@@ -232,8 +232,8 @@ export const COMPARE_MODELS: AIModelInfo[] = [
   },
   {
     id: "cmp-llama-70b",
-    routeId: "meta-llama/llama-3.3-70b-instruct",
-    name: "Llama 3.3 70B",
+    routeId: "meta-llama/llama-4-maverick",
+    name: "Llama 4 Maverick",
     poweredBy: "Meta",
     brand: "llama",
     color: "#0668E1",

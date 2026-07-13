@@ -77,7 +77,7 @@ async function fetchWithRetry(
   url: string,
   init: RequestInit,
   signal: AbortSignal | undefined,
-  maxAttempts = 3
+  maxAttempts = 1
 ): Promise<Response> {
   let lastErr: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -110,6 +110,7 @@ type OpenRouterStreamChunk = {
     total_tokens?: number;
     cost?: number;
     prompt_tokens_details?: { cached_tokens?: number };
+    completion_tokens_details?: { reasoning_tokens?: number };
   };
 };
 
@@ -181,6 +182,7 @@ export class OpenRouterProvider implements AIProvider {
     let inputTokens = 0;
     let outputTokens = 0;
     let cachedTokens = 0;
+    let reasoningTokens = 0;
     let costUsd = 0;
     let ttftMs: number | null = null;
     let completed = false;
@@ -227,6 +229,9 @@ export class OpenRouterProvider implements AIProvider {
             if (usage.prompt_tokens_details?.cached_tokens != null) {
               cachedTokens = usage.prompt_tokens_details.cached_tokens;
             }
+            if (usage.completion_tokens_details?.reasoning_tokens != null) {
+              reasoningTokens = usage.completion_tokens_details.reasoning_tokens;
+            }
             if (usage.cost != null) costUsd = usage.cost;
             // fallback: بعضی مدل‌ها فقط total_tokens می‌دهند
             if (
@@ -259,6 +264,7 @@ export class OpenRouterProvider implements AIProvider {
       inputTokens,
       outputTokens,
       cachedTokens,
+      reasoningTokens,
       costUsd,
       ttftMs,
       latencyMs: Date.now() - startedAt,

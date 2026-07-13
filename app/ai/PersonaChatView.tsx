@@ -21,6 +21,11 @@ import { PERSONA_DISCLAIMER_FA } from "@/lib/aiPersonas";
 import PersonaImage from "./PersonaImage";
 import MarkdownMessage from "./MarkdownMessage";
 import type { ChatTurn } from "./DirectChatView";
+import {
+  classifyRunStreamError,
+  startRunStream,
+  type RunSSEEvent,
+} from "@/lib/ai/client/runStream";
 
 type Vote = "up" | "down";
 
@@ -137,105 +142,60 @@ export default function PersonaChatView({
     }
 
     try {
-      const chatUrl = guestMode ? "/api/ai/chat/guest" : "/api/ai/chat";
-      const res = await fetch(chatUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: ac.signal,
-        body: JSON.stringify({
-          prompt: q,
-          threadId: activeThreadId,
-          personaKey: persona.id,
-          ...(guestMode ? {} : { model: chatModel }),
-        }),
-      });
-
-      if (res.status === 401) {
-        if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-        setErr(guestMode ? "guest_persona_limit" : "unauthorized");
-        if (guestMode) promptPersonaLogin();
-        setStreaming(false);
-        return;
-      }
-      if (res.status === 402) {
-        if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-        else setTurns((t) => t.map((x) => (x.id === tmpId ? { ...x, streaming: false } : x)));
-        setErr("credits_out");
-        setStreaming(false);
-        return;
-      }
-      if (!res.ok || !res.body) {
-        if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-        setErr("server_error");
-        setStreaming(false);
-        return;
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
       let full = "";
-
-      while (true) {
-        if (ac.signal.aborted) break;
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const chunks = buffer.split("\n\n");
-        buffer = chunks.pop() || "";
-
-        for (const chunk of chunks) {
-          const line = chunk.trim();
-          if (!line.startsWith("data:")) continue;
-          let data: Record<string, unknown>;
-          try {
-            data = JSON.parse(line.slice(5).trim());
-          } catch {
-            continue;
-          }
-
-          if (data.type === "delta" && typeof data.text === "string") {
-            full += data.text;
-            setTurns((t) =>
-              t.map((x) => (x.id === tmpId ? { ...x, response: full } : x))
-            );
-          } else if (data.type === "error") {
-            if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
-            if (data.error === "guest_persona_limit") {
-              setErr("guest_persona_limit");
-              promptPersonaLogin();
-            } else {
-              setErr(
-                data.error === "network_error"
-                  ? "network_error"
-                  : data.error === "ai_error"
-                    ? "ai_error"
-                    : "server_error"
+      let creditsRemaining: number | undefined;
+      const result = await startRunStream(
+        {
+          mode: "direct",
+          model: chatModel,
+          prompt: q,
+          conversationId: activeThreadId,
+          personaKey: persona.id,
+        },
+        {
+          onEvent: (ev: RunSSEEvent) => {
+            if (ev.type === "model_delta") {
+              full += ev.text;
+              setTurns((t) =>
+                t.map((x) => (x.id === tmpId ? { ...x, response: full } : x))
               );
+            } else if (ev.type === "usage_update") {
+              creditsRemaining = ev.creditsRemaining;
             }
-            setStreaming(false);
-            return;
-          } else if (data.type === "done") {
-            if (typeof data.guestDirectRemaining === "number") {
-              window.dispatchEvent(
-                new CustomEvent("ai:guest-direct-remaining", { detail: data.guestDirectRemaining })
-              );
-            }
-            finishTurn(
-              tmpId,
-              q,
-              String(data.id),
-              String(data.threadId),
-              String(data.responseA ?? full),
-              !!data.isNewThread,
-              data.creditsRemaining
-            );
-            setStreaming(false);
-            return;
-          }
-        }
+          },
+        },
+        ac.signal
+      );
+
+      if (result.status === "completed" && result.runId) {
+        finishTurn(
+          tmpId,
+          q,
+          result.runId,
+          activeThreadId ?? result.runId,
+          full,
+          !activeThreadId,
+          creditsRemaining
+        );
+        setStreaming(false);
+        return;
       }
+
+      if (result.status === "aborted" || result.status === "cancelled") {
+        setTurns((t) =>
+          t.map((x) => (x.id === tmpId ? { ...x, streaming: false } : x))
+        );
+        setStreaming(false);
+        return;
+      }
+
+      const code = classifyRunStreamError(result.lastErrorCode ?? "server_error");
+      if (!opts?.replaceTurnId) setTurns((t) => t.filter((x) => x.id !== tmpId));
+      if (code === "unauthorized") setErr("unauthorized");
+      else if (code === "insufficient_credits") setErr("credits_out");
+      else if (code === "network_error") setErr("network_error");
+      else if (code === "provider_error") setErr("ai_error");
+      else setErr("server_error");
     } catch (e) {
       if (ac.signal.aborted) {
         setTurns((t) =>

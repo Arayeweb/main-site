@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { FileText, ArrowRight } from 'lucide-react';
-import { fetchClients, fetchSalesLeads, createInvoice } from '@/lib/adminApi';
+import { fetchClients, fetchSalesLeadById, createInvoice } from '@/lib/adminApi';
 import { mapClientRow, mapLeadRow } from '@/lib/adminMappers';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 
@@ -21,19 +21,27 @@ function NewProposalForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const { data: leadsData, loading: lLoading, error: lError } = useAdminFetch(() => fetchSalesLeads(), []);
+  const { data: leadData, loading: lLoading, error: lError } = useAdminFetch(
+    () => {
+      if (!leadId) {
+        return Promise.resolve({ ok: true as const, data: { lead: null as unknown as import('@/lib/adminApi').ApiLead } });
+      }
+      return fetchSalesLeadById(leadId);
+    },
+    [leadId]
+  );
   const { data: clientsData, loading: cLoading, error: cError } = useAdminFetch(() => fetchClients(), []);
 
   const lead = useMemo(() => {
-    if (!leadId) return undefined;
-    const raw = (leadsData?.leads ?? []).find((l) => l.id === leadId);
-    return raw ? mapLeadRow(raw) : undefined;
-  }, [leadsData, leadId]);
+    if (!leadId || !leadData?.lead) return undefined;
+    return mapLeadRow(leadData.lead);
+  }, [leadData, leadId]);
 
   const clients = useMemo(() => (clientsData?.clients ?? []).map(mapClientRow), [clientsData]);
 
-  if (lLoading || cLoading) return <AdminLoadingState />;
-  if (lError) return <AdminErrorState error={lError} />;
+  if (lLoading && leadId) return <AdminLoadingState />;
+  if (lError && leadId) return <AdminErrorState error={lError} />;
+  if (cLoading) return <AdminLoadingState />;
   if (cError) return <AdminErrorState error={cError} />;
 
   const selectedClient = clients.find((c) => c.id === clientId);

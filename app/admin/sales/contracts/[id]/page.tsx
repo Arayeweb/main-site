@@ -10,7 +10,9 @@ export default function SalesContractDetailPage({ params }: { params: Promise<{ 
       id={id}
       backHref="/admin/sales/contracts"
       panelLabel="فروش"
-      showAdminActions={false}
+      showAdminActions
+      projectHandoffOnly
+      paymentsHref="/admin/sales/proposals"
     />
   );
 }

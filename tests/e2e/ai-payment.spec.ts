@@ -1,12 +1,12 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Araaye AI — payment redirects", () => {
-  test("verify callback without trackId redirects to pricing error", async ({ request }) => {
+  test("verify callback fails closed while payments are disabled", async ({ request }) => {
     const res = await request.get("/api/ai/verify", { maxRedirects: 0 });
     expect(res.status()).toBeGreaterThanOrEqual(300);
     expect(res.status()).toBeLessThan(400);
     const location = res.headers()["location"] || "";
-    expect(location).toContain("payment=error");
+    expect(location).toContain("payment=unavailable");
   });
 
   test("pricing page shows payment status query params", async ({ page }) => {

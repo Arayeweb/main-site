@@ -24,6 +24,7 @@ export type RunStreamRequest = {
   conversationId?: string | null;
   threadId?: string | null;
   webSearch?: boolean;
+  personaKey?: string | null;
   attachments?: { url: string; mime: string; name?: string; size?: number; text?: string }[];
 };
 
@@ -205,6 +206,7 @@ export async function startRunStream(
   if (req.modelB) body.modelB = req.modelB;
   if (req.messages?.length) body.messages = req.messages;
   if (req.prompt) body.prompt = req.prompt;
+  if (req.personaKey) body.personaKey = req.personaKey;
 
   const conv = req.conversationId ?? req.threadId;
   if (conv) {

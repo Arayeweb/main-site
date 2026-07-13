@@ -73,7 +73,8 @@ async function* failStream(): AsyncGenerator<ModelStreamEvent> {
 describe("telegram webhook — integration", () => {
   beforeEach(() => {
     tgDb = createTelegramSupabase();
-    sendMessage.mockClear();
+    sendMessage.mockReset().mockResolvedValue({ ok: true });
+    sendTypingAction.mockReset().mockResolvedValue({ ok: true });
     mockStreamChat.mockReset().mockImplementation(() => okStream());
     prepareRun.mockReset();
     zibalRequest.mockReset().mockResolvedValue({
@@ -176,7 +177,7 @@ describe("telegram webhook — integration", () => {
       })
     );
     const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
-    expect(text).toContain("کند شده");
+    expect(text).toContain("دوباره امتحان کن");
   });
 
   it("5. compare command returns web link", async () => {

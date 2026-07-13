@@ -123,6 +123,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const { id } = params;
     const body = await req.json();
 
+    if (
+      typeof body.credit_delta === "number" &&
+      body.credit_delta !== 0 &&
+      process.env.AI_ADMIN_CREDIT_ADJUSTMENTS_ENABLED !== "true"
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "credit_adjustments_disabled" },
+        { status: 503 }
+      );
+    }
+
     const { data: current } = await supabase.from("ai_users").select("id, credits, plan, status").eq("id", id).single();
     if (!current) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 

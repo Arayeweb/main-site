@@ -6,6 +6,7 @@ import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { SearchInput } from '@/components/admin/ui/SearchInput';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
+import { PromoteToCrmButton } from '@/components/admin/ui/PromoteToCrmButton';
 import { fetchContentSalesOrders, type ApiContentSalesOrder } from '@/lib/adminApi';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 import { formatFaDateTime } from '@/lib/adminMappers';
@@ -98,7 +99,7 @@ export default function ContentSalesOrdersPage() {
             <table className="w-full text-sm min-w-[900px]" dir="rtl">
               <thead>
                 <tr className="bg-slate-50/60 border-b border-slate-100">
-                  {['تاریخ', 'خریدار', 'موبایل', 'مبلغ', 'وضعیت', 'پرداخت', ''].map((h) => (
+                  {['تاریخ', 'خریدار', 'موبایل', 'مبلغ', 'وضعیت', 'پرداخت', 'تراکنش', 'CRM'].map((h) => (
                     <th key={h} className="text-right px-4 py-3 text-xs font-semibold text-slate-500 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -125,6 +126,9 @@ export default function ContentSalesOrdersPage() {
                     </td>
                     <td className="px-4 py-3.5 text-xs text-slate-400" dir="ltr">
                       {row.zibal_track_id ? row.zibal_track_id.slice(0, 12) + '…' : '—'}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <PromoteToCrmButton sourceType="content_sales" sourceId={row.id} />
                     </td>
                   </tr>
                 ))}

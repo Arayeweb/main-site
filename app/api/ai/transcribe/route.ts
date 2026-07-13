@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 import { runTranscribe } from "@/lib/aiEngine";
@@ -9,6 +10,12 @@ import {
 } from "@/lib/aiCredits";
 import { creditsForProviderCost } from "@/lib/ai/pricing/costToCredits";
 import { hasTranscribe } from "@/lib/aiModels";
+import { isUuid } from "@/lib/ai/requestValidation";
+import {
+  failMediaReservation,
+  reserveMediaCredits,
+  settleMediaCredits,
+} from "@/lib/ai/mediaBilling";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -93,10 +100,27 @@ export async function POST(req: NextRequest) {
     durationClient > 0 ? durationClient : estimateDurationSec(file.size, mime);
   const estimatedCost = transcribeCost(m, durationSec);
 
-  if ((user.credits as number) < estimatedCost) {
+  const billingRunId = randomUUID();
+  const reservation = await reserveMediaCredits({
+    userId: session.userId,
+    runId: billingRunId,
+    conversationId: threadId && isUuid(threadId) ? threadId : billingRunId,
+    reservedCredits: estimatedCost,
+    source: "transcription",
+    modelId: m.id,
+    prompt: file.name,
+  });
+  if (!reservation.ok) {
     return NextResponse.json(
-      { ok: false, error: "insufficient_credits", upgradeUrl: "/ai/pricing" },
-      { status: 402 }
+      {
+        ok: false,
+        error:
+          reservation.error === "insufficient_credits"
+            ? "insufficient_credits"
+            : "server_error",
+        upgradeUrl: "/ai/pricing",
+      },
+      { status: reservation.error === "insufficient_credits" ? 402 : 500 }
     );
   }
 
@@ -108,6 +132,12 @@ export async function POST(req: NextRequest) {
     result = await runTranscribe(audioBase64, format, m.id, language);
   } catch (e) {
     console.error("[api/ai/transcribe] failed:", e);
+    await failMediaReservation({
+      userId: session.userId,
+      runId: billingRunId,
+      reservedCredits: estimatedCost,
+      note: "transcription provider failed",
+    });
     return NextResponse.json({ ok: false, error: "ai_error" }, { status: 502 });
   }
 
@@ -151,11 +181,27 @@ export async function POST(req: NextRequest) {
 
   if (insErr || !battle) {
     console.error("[api/ai/transcribe] insert:", insErr);
+    await failMediaReservation({
+      userId: session.userId,
+      runId: billingRunId,
+      reservedCredits: estimatedCost,
+      note: "transcription persistence failed",
+    });
     return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
   }
 
-  const creditsRemaining = Math.max(0, (user.credits as number) - cost);
-  await supabase.from("ai_users").update({ credits: creditsRemaining }).eq("id", session.userId);
+  const settlement = await settleMediaCredits({
+    userId: session.userId,
+    runId: billingRunId,
+    modelId: m.id,
+    reservedCredits: estimatedCost,
+    actualCredits: cost,
+    providerCostUsd: result.costUsd,
+    inputTokens: result.tokensUsed ?? 0,
+  });
+  if (!settlement.ok) {
+    return NextResponse.json({ ok: false, error: "settlement_failed" }, { status: 500 });
+  }
 
   await supabase.from("ai_usage").insert({
     user_id: session.userId,
@@ -172,7 +218,7 @@ export async function POST(req: NextRequest) {
     id: battle.id,
     threadId: resolvedThreadId,
     text: result.text,
-    creditsRemaining,
+    creditsRemaining: settlement.creditsRemaining,
     isNewThread: !threadId,
   });
 }

@@ -54,7 +54,20 @@ export async function settleRun(
   reserved: number,
   calls: CallSettlement[]
 ): Promise<SettleResult> {
-  const actual = Math.min(computeActualCredits(calls), reserved);
+  const actual = computeActualCredits(calls);
+
+  // Never silently undercharge an abnormal provider-cost spike. The run remains
+  // settlement_failed for reconciliation instead of pretending the reserve
+  // covered usage that exceeded it.
+  if (actual > reserved) {
+    return {
+      ok: false,
+      error: "settlement_failed",
+      chargedCredits: 0,
+      refundedCredits: 0,
+      creditsRemaining: null,
+    };
+  }
 
   if (actual === 0) {
     const refunded = reserved;

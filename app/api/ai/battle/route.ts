@@ -39,6 +39,12 @@ function publicModel(id: string) {
 }
 
 export async function POST(req: NextRequest) {
+  if (process.env.LEGACY_AI_GENERATION_ENABLED !== "true") {
+    return NextResponse.json(
+      { ok: false, error: "legacy_endpoint_disabled" },
+      { status: 410 }
+    );
+  }
   const session = getAISession(req);
   const isGuest = !session;
 

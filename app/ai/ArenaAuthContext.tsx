@@ -117,9 +117,10 @@ export function ArenaAuthProvider({
   const [hasContentBundle, setHasContentBundle] = useState(false);
   const [guestBattlesRemaining, setGuestBattlesRemaining] = useState<number | null>(null);
   const [guestDirectRemaining, setGuestDirectRemaining] = useState<number | null>(null);
-  const [historyItems, setHistoryItems] = useState<HistoryItem[]>(() =>
-    readHistoryCache(initialAuthed ? initialUserId : null)
-  );
+  // Always start with [] so server and client render identically (avoids hydration
+  // mismatch: readHistoryCache reads localStorage which is unavailable on the server).
+  // The cache is loaded client-side in the first useEffect below.
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const userIdRef = useRef<string | null>(initialAuthed ? initialUserId : null);
 
   const loadHistory = useCallback((opts?: { force?: boolean }) => {
@@ -170,6 +171,13 @@ export function ArenaAuthProvider({
       }
     });
   }, []);
+
+  // Hydrate history from local cache immediately on mount (before the auth fetch
+  // resolves) so the sidebar is populated without a visible flash.
+  useEffect(() => {
+    setHistoryItems(readHistoryCache(initialAuthed ? initialUserId : null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally only on mount — initialAuthed/initialUserId are stable props
 
   useEffect(() => {
     loadHistory();

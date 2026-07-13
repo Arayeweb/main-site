@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
@@ -11,6 +11,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  if (process.env.AI_PAYMENTS_ENABLED !== "true") {
+    return NextResponse.json(
+      { ok: false, error: "payments_disabled" },
+      { status: 503 }
+    );
+  }
   const session = getAISession(req);
   if (!session) {
     return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });

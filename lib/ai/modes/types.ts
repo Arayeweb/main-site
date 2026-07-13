@@ -15,6 +15,7 @@ export type ModeCallResult = {
   inputTokens: number;
   outputTokens: number;
   cachedTokens: number;
+  reasoningTokens: number;
   costUsd: number;
   extraCredits?: number;
   ttftMs: number | null;

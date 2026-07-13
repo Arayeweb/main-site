@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Admin AI Ops panel", () => {
-  test("redirects unauthenticated users to admin login", async ({ page }) => {
+  test("redirects unauthenticated users to the internal access gate", async ({ page }) => {
     await page.goto("/admin/ai-ops/users");
-    await page.waitForURL(/\/admin\/login/, { timeout: 15_000 });
+    await page.waitForURL(/\/admin\/gate\?next=/, { timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "دسترسی داخلی" })).toBeVisible();
   });
 
   // TODO: Set E2E_ADMIN_PASSWORD for full admin E2E against staging DB

@@ -109,7 +109,7 @@ export async function settleCredits(
     p_user_id: userId,
     p_run_id: runId,
     p_reserved: reserved,
-    p_actual: Math.min(actual, reserved),
+    p_actual: actual,
   });
 
   if (error) {

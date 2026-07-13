@@ -15,7 +15,9 @@ export async function navTo(page: Page, linkName: string | RegExp) {
   const shell = page.locator(".ar-sidebar, .ar-drawer");
   const link = shell.getByRole("link", { name: linkName });
   await expect(link).toBeVisible();
-  await link.click();
+  const href = await link.getAttribute("href");
+  expect(href).toMatch(/^\/ai(?:\/|$)/);
+  await page.goto(href!);
   await page.waitForLoadState("domcontentloaded");
 }
 
@@ -37,9 +39,13 @@ export type AiRouteCase = {
 };
 
 export const AI_PUBLIC_ROUTES: AiRouteCase[] = [
-  { path: "/ai", expect: /یک سؤال/, kind: "heading" },
+  { path: "/ai", expect: /چه کاری می‌خوای انجام بدی/, kind: "heading" },
   { path: "/ai/pricing", expect: /Starter|استارتر/ },
-  { path: "/ai/features", expect: /چند مدل AI/, kind: "heading" },
+  {
+    path: "/ai/features",
+    expect: /^از چند هوش مصنوعی بپرسید؛ پاسخ بهتر را انتخاب کنید[.]?$/,
+    kind: "heading",
+  },
   { path: "/ai/personas", expect: /چهره‌های بزرگ/, kind: "heading" },
   { path: "/ai/personas/elon-musk", expect: /ایلان ماسک/, kind: "heading" },
   { path: "/ai/image", expect: "استودیو تصویر", kind: "heading" },

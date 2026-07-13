@@ -104,6 +104,15 @@ export async function GET(
     return NextResponse.json({ ok: true, status: "dismissed" });
   }
 
+  // Public video generation is disabled. Completed historical output remains
+  // readable above, but pending jobs must not poll/retry a provider indirectly.
+  if (process.env.PUBLIC_VIDEO_GENERATION_ENABLED !== "true") {
+    return NextResponse.json(
+      { ok: false, error: "feature_disabled" },
+      { status: 503 }
+    );
+  }
+
   if (!row.polling_url && !row.openrouter_job_id) {
     return NextResponse.json({ ok: false, error: "invalid_job" }, { status: 500 });
   }

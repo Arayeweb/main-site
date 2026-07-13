@@ -42,6 +42,20 @@ describe("buildRunHistoryItems", () => {
     expect(items[0].latestRunId).toBe("run-solo");
     expect(items[0].tier).toBe("council");
   });
+
+  it("excludes internal media billing runs from chat history", () => {
+    const items = buildRunHistoryItems([
+      {
+        id: "media-run",
+        mode: "direct",
+        metadata: { prompt: "audio.mp3", source: "transcription" },
+        created_at: "2026-07-06T10:00:00.000Z",
+        conversation_id: "media-run",
+      },
+    ]);
+
+    expect(items).toEqual([]);
+  });
 });
 
 describe("mergeHistoryItems", () => {

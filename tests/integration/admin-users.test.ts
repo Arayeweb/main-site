@@ -20,6 +20,7 @@ import { PATCH } from "@/app/api/admin/ai-ops/users/[id]/route";
 
 describe("integration — admin PATCH /api/admin/ai-ops/users/:id", () => {
   beforeEach(() => {
+    delete process.env.AI_ADMIN_CREDIT_ADJUSTMENTS_ENABLED;
     db.reset({
       ai_users: [
         {
@@ -62,6 +63,7 @@ describe("integration — admin PATCH /api/admin/ai-ops/users/:id", () => {
   });
 
   it("updates user plan and credits for ai_superadmin", async () => {
+    process.env.AI_ADMIN_CREDIT_ADJUSTMENTS_ENABLED = "true";
     const token = signUserToken("admin-1", "ai_superadmin");
     const res = await PATCH(
       makeRequest("/api/admin/ai-ops/users/target-user", {
@@ -77,5 +79,21 @@ describe("integration — admin PATCH /api/admin/ai-ops/users/:id", () => {
     expect(body.user.plan).toBe("pro");
     expect(body.user.credits).toBe(30);
     expect(db.tables.ai_credit_ledger).toHaveLength(1);
+  });
+
+  it("fails closed for credit changes until atomic adjustments are enabled", async () => {
+    const token = signUserToken("admin-1", "ai_superadmin");
+    const res = await PATCH(
+      makeRequest("/api/admin/ai-ops/users/target-user", {
+        method: "PATCH",
+        cookies: { [ADMIN_COOKIE]: token },
+        body: { credit_delta: 20 },
+      }),
+      { params: { id: "target-user" } }
+    );
+
+    expect(res.status).toBe(503);
+    expect(db.tables.ai_users[0].credits).toBe(10);
+    expect(db.tables.ai_credit_ledger).toHaveLength(0);
   });
 });

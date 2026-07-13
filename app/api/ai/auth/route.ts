@@ -129,19 +129,39 @@ export async function POST(req: NextRequest) {
 
     if (error || !user) {
       console.error("[api/ai/auth POST]", error);
+      if ((error as { code?: string } | null)?.code === "23505") {
+        return jsonNoStore({ ok: false, error: "phone_taken" }, { status: 409 });
+      }
       return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
     }
 
-    await supabase.from("ai_credit_lots").insert({
+    const signupExpiresAt = new Date();
+    signupExpiresAt.setUTCFullYear(signupExpiresAt.getUTCFullYear() + 1);
+    const { error: lotError } = await supabase.from("ai_credit_lots").insert({
       user_id: user.id,
       source: "signup_bonus",
       amount: FREE_SIGNUP_CREDITS,
       remaining: FREE_SIGNUP_CREDITS,
+      expires_at: signupExpiresAt.toISOString(),
       metadata: {
         guest_token: getGuestState(req)?.token ?? null,
         signup_bonus_granted: true,
       },
     });
+    const { error: ledgerError } = lotError
+      ? { error: lotError }
+      : await supabase.from("ai_credit_ledger").insert({
+          user_id: user.id,
+          delta: FREE_SIGNUP_CREDITS,
+          balance_after: FREE_SIGNUP_CREDITS,
+          reason: "signup_bonus",
+          note: "initial signup credit grant",
+        });
+    if (lotError || ledgerError) {
+      console.error("[api/ai/auth POST] signup credit grant failed");
+      await supabase.from("ai_users").delete().eq("id", user.id);
+      return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
+    }
 
     // ساخت کد معرفی AI-XXXXXX
     let referralCode: string | null = null;

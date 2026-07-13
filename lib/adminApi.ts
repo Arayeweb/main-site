@@ -265,6 +265,41 @@ export function patchFreelanceProject(id: string, body: { status?: string; resul
   }, 'H2');
 }
 
+export function promoteToCrmLead(
+  sourceType: 'bizcard' | 'website_brief' | 'fastweb' | 'content_sales' | 'adready',
+  id: string
+) {
+  return adminFetch<{ id: string; already_exists?: boolean }>('/api/sales/leads/promote', {
+    method: 'POST',
+    body: JSON.stringify({ source_type: sourceType, id }),
+  }, 'H2');
+}
+
+export interface ApiAdreadyLead {
+  id: string;
+  created_at: string;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  message: string | null;
+  status: string;
+  utm_source: string | null;
+  campaign_title: string | null;
+  campaign_slug: string | null;
+}
+
+export function fetchAdreadyLeads(params?: { q?: string; page_num?: number }) {
+  const sp = new URLSearchParams();
+  if (params?.q) sp.set('q', params.q);
+  if (params?.page_num != null) sp.set('page_num', String(params.page_num));
+  const qs = sp.toString();
+  return adminFetch<{ leads: ApiAdreadyLead[]; has_more: boolean; migration_required?: boolean }>(
+    `/api/admin/adready-leads${qs ? `?${qs}` : ''}`,
+    undefined,
+    'H1'
+  );
+}
+
 export interface SalesStats {
   total: number;
   active: number;
@@ -728,11 +763,12 @@ export interface ApiContract {
   notes: string | null;
 }
 
-export function fetchContracts(params?: { client_id?: string; project_id?: string; proforma_id?: string }) {
+export function fetchContracts(params?: { client_id?: string; project_id?: string; proforma_id?: string; lead_id?: string }) {
   const sp = new URLSearchParams();
   if (params?.client_id) sp.set('client_id', params.client_id);
   if (params?.project_id) sp.set('project_id', params.project_id);
   if (params?.proforma_id) sp.set('proforma_id', params.proforma_id);
+  if (params?.lead_id) sp.set('lead_id', params.lead_id);
   const qs = sp.toString();
   return adminFetch<{ contracts: ApiContract[] }>(
     `/api/admin/contracts${qs ? `?${qs}` : ''}`,

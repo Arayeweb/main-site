@@ -107,4 +107,19 @@ describe("aiCredits — pricing & access", () => {
   it("exports MAX_PROMPT_CHARS as 4000", () => {
     expect(MAX_PROMPT_CHARS).toBe(4000);
   });
+
+  it("keeps displayed model names aligned with provider routes", () => {
+    expect(getModel("cmp-grok-4")).toMatchObject({
+      routeId: "x-ai/grok-4.3",
+      name: "Grok 4.3",
+    });
+    expect(getModel("cmp-gemini-flash")).toMatchObject({
+      routeId: "google/gemini-2.5-flash-lite",
+      name: "Gemini 2.5 Flash Lite",
+    });
+    expect(getModel("cmp-llama-70b")).toMatchObject({
+      routeId: "meta-llama/llama-4-maverick",
+      name: "Llama 4 Maverick",
+    });
+  });
 });

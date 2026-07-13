@@ -5,6 +5,7 @@ import {
   getPricingConfig,
   minCreditsForModel,
   providerCostToCredits,
+  resolveProviderCostUsd,
 } from "@/lib/ai/pricing/costToCredits";
 
 describe("costToCredits — cost-based AI pricing", () => {
@@ -44,4 +45,26 @@ describe("costToCredits — cost-based AI pricing", () => {
     expect(getPricingConfig().usdToToman).toBeGreaterThan(0);
     expect(getPricingConfig().multiplier).toBeGreaterThan(1);
   });
+
+  it("uses a conservative estimate and flags missing provider cost", () => {
+    const resolved = resolveProviderCostUsd("precise", 0, 100, 200);
+    expect(resolved.missing).toBe(true);
+    expect(resolved.costUsd).toBeGreaterThan(0);
+
+    const snapshot = buildPricingSnapshot({
+      modelId: "precise",
+      providerCostUsd: resolved.costUsd,
+      providerCostMissing: resolved.missing,
+      creditsCharged: 7,
+      config,
+    });
+    expect(snapshot.pricingFlags).toContain("missing_provider_cost");
+  });
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, -1])(
+    "rejects invalid provider cost %s",
+    (value) => {
+      expect(() => providerCostToCredits(value, config)).toThrow("Invalid provider cost");
+    }
+  );
 });

@@ -2,8 +2,11 @@ import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { runImageGen, type ImageGenResult } from "@/lib/aiEngine";
 import { persistImageGen } from "@/lib/aiPersist";
-import { MAX_BATTLE_COST_USD } from "@/lib/aiCredits";
-import { imageModelFallbackChain } from "@/lib/aiModels";
+import { MAX_BATTLE_COST_USD, imageGenCost } from "@/lib/aiCredits";
+import { getModel, imageModelFallbackChain } from "@/lib/aiModels";
+import { refundCredits } from "@/lib/billing/credits";
+import { creditsForProviderCost } from "@/lib/ai/pricing/costToCredits";
+import { settleMediaCredits } from "@/lib/ai/mediaBilling";
 
 export type ImageJobRow = {
   id: string;
@@ -27,29 +30,27 @@ export async function refundImageJobCredits(
   amount: number,
   jobId: string
 ) {
-  const { data: user } = await supabase
-    .from("ai_users")
-    .select("credits")
-    .eq("id", userId)
-    .maybeSingle();
-  if (!user) return;
-  const newBal = (user.credits as number) + amount;
-  await supabase.from("ai_users").update({ credits: newBal }).eq("id", userId);
-  await supabase.from("ai_credit_ledger").insert({
-    user_id: userId,
-    delta: amount,
-    balance_after: newBal,
-    reason: "image_refund",
-    note: `Refund for failed image job ${jobId}`,
-  });
+  const refunded = await refundCredits(userId, amount, jobId, "failed image generation");
+  await supabase
+    .from("ai_runs")
+    .update({
+      status: refunded.ok ? "failed" : "settlement_failed",
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", jobId)
+    .eq("user_id", userId);
 }
 
 async function runImageGenWithFallback(
   prompt: string,
   primaryModel: string,
-  opts: { referenceImageUrl?: string }
+  opts: { referenceImageUrl?: string },
+  reservedCredits: number
 ): Promise<{ gen: ImageGenResult; modelId: string }> {
-  const models = imageModelFallbackChain(primaryModel);
+  const models = imageModelFallbackChain(primaryModel).filter((modelId) => {
+    const model = getModel(modelId);
+    return !!model && imageGenCost(model) <= reservedCredits;
+  });
   let lastError: Error = new Error("no_image");
 
   for (const modelId of models) {
@@ -113,9 +114,12 @@ export async function claimAndProcessImageJob(
   const job = claimed as ImageJobRow;
   try {
     const prompt = job.prompt || "";
-    const { gen, modelId: usedModelId } = await runImageGenWithFallback(prompt, job.model_id, {
-      referenceImageUrl: job.reference_url || undefined,
-    });
+    const { gen, modelId: usedModelId } = await runImageGenWithFallback(
+      prompt,
+      job.model_id,
+      { referenceImageUrl: job.reference_url || undefined },
+      job.credit_cost
+    );
 
     if (gen.costUsd > MAX_BATTLE_COST_USD) {
       console.warn(`[aiImageJob] cost alert: $${gen.costUsd.toFixed(4)}`);
@@ -153,6 +157,21 @@ export async function claimAndProcessImageJob(
 
     if (!persist) throw new Error("persist_failed");
 
+    const actualCredits = Math.max(
+      imageGenCost(getModel(usedModelId)!),
+      creditsForProviderCost(usedModelId, gen.costUsd, gen.tokensUsed, 0)
+    );
+    const settlement = await settleMediaCredits({
+      userId,
+      runId: jobId,
+      modelId: usedModelId,
+      reservedCredits: job.credit_cost,
+      actualCredits,
+      providerCostUsd: gen.costUsd,
+      inputTokens: gen.tokensUsed ?? 0,
+    });
+    if (!settlement.ok) throw new Error("settlement_failed");
+
     await supabase
       .from("ai_media_jobs")
       .update({
@@ -164,19 +183,27 @@ export async function claimAndProcessImageJob(
         completed_at: new Date().toISOString(),
       })
       .eq("id", jobId);
-
     return "done";
   } catch (e) {
     console.error("[aiImageJob] process failed:", e);
+    const errorMessage = e instanceof Error ? e.message : "generation_failed";
     await supabase
       .from("ai_media_jobs")
       .update({
         status: "failed",
-        error: e instanceof Error ? e.message : "generation_failed",
+        error: errorMessage,
         completed_at: new Date().toISOString(),
       })
       .eq("id", jobId);
-    await refundImageJobCredits(supabase, userId, job.credit_cost, jobId);
+    if (errorMessage === "settlement_failed") {
+      await supabase
+        .from("ai_runs")
+        .update({ status: "settlement_failed", completed_at: new Date().toISOString() })
+        .eq("id", jobId)
+        .eq("user_id", userId);
+    } else {
+      await refundImageJobCredits(supabase, userId, job.credit_cost, jobId);
+    }
     return "failed";
   }
 }

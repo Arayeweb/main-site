@@ -39,6 +39,7 @@ export type ModelStreamEvent =
       inputTokens: number;
       outputTokens: number;
       cachedTokens: number;
+      reasoningTokens?: number;
       costUsd: number;
       ttftMs: number | null;
       latencyMs: number;

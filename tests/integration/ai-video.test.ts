@@ -36,6 +36,7 @@ import { POST as DISMISS_VIDEO_JOB } from "@/app/api/ai/video/[jobId]/dismiss/ro
 
 describe("integration — /api/ai/video", () => {
   beforeEach(() => {
+    process.env.PUBLIC_VIDEO_GENERATION_ENABLED = "true";
     db.reset({
       ai_users: [{ id: "user-vid", plan: "starter", credits: 100 }],
       ai_media_jobs: [],
@@ -60,7 +61,34 @@ describe("integration — /api/ai/video", () => {
   });
 
   afterEach(() => {
+    delete process.env.PUBLIC_VIDEO_GENERATION_ENABLED;
     vi.unstubAllGlobals();
+  });
+
+  it("blocks indirect provider polling while public video generation is disabled", async () => {
+    delete process.env.PUBLIC_VIDEO_GENERATION_ENABLED;
+    const jobId = "job-disabled-poll";
+    db.tables.ai_media_jobs.push({
+      id: jobId,
+      user_id: "user-vid",
+      kind: "video",
+      model_id: "video-seedance",
+      prompt: "test",
+      status: "processing",
+      polling_url: "https://openrouter.ai/poll/disabled",
+      credit_cost: 60,
+    });
+
+    const token = signAIToken("user-vid", "starter");
+    const res = await GET_VIDEO_JOB(
+      makeRequest(`/api/ai/video/${jobId}`, {
+        cookies: { [AI_COOKIE]: token },
+      }),
+      { params: { jobId } }
+    );
+
+    expect(res.status).toBe(503);
+    expect(mockPollVideoJob).not.toHaveBeenCalled();
   });
 
   it("keeps public video generation disabled", async () => {

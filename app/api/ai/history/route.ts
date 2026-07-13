@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
       runRows as Array<{
         id: string;
         mode: string;
-        metadata: { prompt?: string } | null;
+        metadata: { prompt?: string; persona_key?: string; source?: string } | null;
         created_at: string;
         conversation_id: string | null;
       }>

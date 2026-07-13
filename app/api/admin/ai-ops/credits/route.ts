@@ -57,6 +57,15 @@ export async function POST(req: NextRequest) {
   const session = requireAiOpsModule(req, "credits");
   if (!isAiOpsSession(session)) return session;
 
+  // Until the wallet + lot + ledger mutation is moved behind one database RPC,
+  // keep this corruption-prone financial path unavailable by default.
+  if (process.env.AI_ADMIN_CREDIT_ADJUSTMENTS_ENABLED !== "true") {
+    return NextResponse.json(
+      { ok: false, error: "credit_adjustments_disabled" },
+      { status: 503 }
+    );
+  }
+
   try {
     const supabase = getSupabaseAdmin();
     const body = await req.json();

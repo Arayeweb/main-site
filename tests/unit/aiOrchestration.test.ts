@@ -243,6 +243,18 @@ describe("usage/settle", () => {
     });
   });
 
+  it("fails closed instead of silently capping usage above the reserve", async () => {
+    const rpc = vi.fn();
+    vi.mocked(getSupabaseAdmin).mockReturnValue({ rpc } as never);
+
+    const result = await settleRun("user-1", "run-overflow", 5, [
+      { model: "a", credits: 8, succeeded: true },
+    ]);
+
+    expect(result).toMatchObject({ ok: false, error: "settlement_failed" });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("returns settlement_failed when full refund RPC fails", async () => {
     vi.mocked(getSupabaseAdmin).mockReturnValue({
       rpc: vi.fn().mockResolvedValue({ data: null, error: { message: "db down" } }),

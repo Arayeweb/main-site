@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { createTestSupabase } from "../mocks/supabaseMock";
 import { makeRequest, jsonBody } from "../helpers/request";
 import { signAIToken, AI_COOKIE } from "@/lib/aiAuth";
@@ -25,6 +25,7 @@ import { POST } from "@/app/api/ai/checkout/route";
 
 describe("integration — /api/ai/checkout", () => {
   beforeEach(() => {
+    process.env.AI_PAYMENTS_ENABLED = "true";
     db.reset({
       ai_users: [{ id: "user-1", phone: "09123456789", plan: "free", credits: 5 }],
       ai_orders: [],
@@ -37,6 +38,10 @@ describe("integration — /api/ai/checkout", () => {
       trackId: "track-123",
       redirectUrl: "https://gateway.zibal.ir/start/track-123",
     });
+  });
+
+  afterAll(() => {
+    delete process.env.AI_PAYMENTS_ENABLED;
   });
 
   it("requires authentication", async () => {

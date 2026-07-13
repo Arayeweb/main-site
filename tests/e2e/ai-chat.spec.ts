@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Araaye AI — chat & credits", () => {
-  test("guest send stays enabled with empty prompt", async ({ page }) => {
+  test("guest send is disabled with an empty prompt", async ({ page }) => {
     await page.goto("/ai");
     const sendBtn = page.getByRole("button", { name: "ارسال" });
-    await expect(sendBtn).toBeEnabled();
+    await expect(sendBtn).toBeDisabled();
     await expect(page).toHaveURL(/\/ai/);
   });
 

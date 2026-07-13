@@ -8,6 +8,7 @@ import { SearchInput } from '@/components/admin/ui/SearchInput';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
 import { ActionMenu } from '@/components/admin/ui/ActionMenu';
+import { PromoteToCrmButton } from '@/components/admin/ui/PromoteToCrmButton';
 import { fetchBizcardLeads, patchBizcardLead, type ApiBizcardLead } from '@/lib/adminApi';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 import { formatFaDateTime } from '@/lib/adminMappers';
@@ -106,7 +107,7 @@ export default function BizcardLeadsPage() {
             <table className="w-full text-sm min-w-[1000px]" dir="rtl">
               <thead>
                 <tr className="bg-slate-50/60 border-b border-slate-100">
-                  {['تاریخ', 'کسب‌وکار', 'موبایل', 'صنف', 'شهر', 'امتیاز', 'خدمت', 'وضعیت', ''].map((h) => (
+                  {['تاریخ', 'کسب‌وکار', 'موبایل', 'صنف', 'شهر', 'امتیاز', 'خدمت', 'وضعیت', 'CRM', ''].map((h) => (
                     <th key={h} className="text-right px-4 py-3 text-xs font-semibold text-slate-500 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -141,6 +142,9 @@ export default function BizcardLeadsPage() {
                         label={STATUS_LABELS[row.sales_status] ?? row.sales_status}
                         colorClass={STATUS_COLORS[row.sales_status] ?? 'bg-slate-50 text-slate-600 ring-slate-200'}
                       />
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <PromoteToCrmButton sourceType="bizcard" sourceId={row.id} />
                     </td>
                     <td className="px-4 py-3.5">
                       <ActionMenu

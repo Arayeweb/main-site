@@ -4,6 +4,7 @@ import { use, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ClipboardList } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
+import { PromoteToCrmButton } from '@/components/admin/ui/PromoteToCrmButton';
 import { fetchWebsiteBrief, patchWebsiteBrief } from '@/lib/adminApi';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 import {
@@ -88,13 +89,16 @@ export default function WebsiteBriefDetailPage({ params }: { params: Promise<{ i
           { label: String(brief.contact_name ?? '') },
         ]}
         actions={
-          <Link
-            href="/admin/sales/website-briefs"
-            className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
-          >
-            <ArrowRight className="w-4 h-4" />
-            بازگشت به لیست
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <PromoteToCrmButton sourceType="website_brief" sourceId={id} />
+            <Link
+              href="/admin/sales/website-briefs"
+              className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
+            >
+              <ArrowRight className="w-4 h-4" />
+              بازگشت به لیست
+            </Link>
+          </div>
         }
       />
 
