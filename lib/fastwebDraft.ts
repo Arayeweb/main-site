@@ -24,12 +24,15 @@ export function createEmptyBrief(): FastWebBrief {
     offerings: "",
     mainAdvantage: "",
     audience: "",
+    audiencePresets: [],
     sections: suggestedSectionsForGoal(undefined),
     style: "modern",
     brandColor: "#0F4C5C",
     logoUrl: "",
     imageNotes: "",
     favoriteSites: "",
+    attachmentUrl: "",
+    attachmentName: "",
     contacts: {
       phone: "",
       whatsapp: "",
@@ -42,6 +45,13 @@ export function createEmptyBrief(): FastWebBrief {
     slugPreference: "",
     domainChoice: "subdomain",
     customDomain: "",
+    legalName: "",
+    nationalId: "",
+    companyRegistrationNumber: "",
+    postalCode: "",
+    enamadUrl: "",
+    samandehiUrl: "",
+    socialLinksRaw: "",
   };
 }
 

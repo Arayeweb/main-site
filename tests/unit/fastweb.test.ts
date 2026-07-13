@@ -33,6 +33,11 @@ describe("fastweb helpers", () => {
   it("builds slug candidate", () => {
     expect(buildSlugCandidate("My Cafe")).toMatch(/my-cafe|cafe/i);
     expect(buildSlugCandidate("کافه محلی")).toMatch(/^biz-/);
+    expect(buildSlugCandidate("My Cafe", "custom-shop")).toBe("custom-shop");
+  });
+
+  it("suggests expertise sections", () => {
+    expect(suggestedSectionsForGoal("expertise")).toContain("portfolio");
   });
 
   it("parses preview content", () => {

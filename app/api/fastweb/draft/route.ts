@@ -60,10 +60,21 @@ export async function POST(req: NextRequest) {
 
       if (current && current.payment_status !== "paid") {
         const preview = buildDraftPreview(brief);
+        let slug = current.slug as string;
+        if (brief.slugPreference?.trim()) {
+          const slugBase = buildSlugCandidate(
+            businessName || "business",
+            brief.slugPreference
+          );
+          if (slugBase !== slug) {
+            slug = await ensureUniqueSlug(slugBase);
+          }
+        }
         const { data, error } = await supabase
           .from("fastweb_orders")
           .update({
             brief,
+            slug,
             business_name: businessName,
             package: packageKey,
             amount_toman: pkg.priceToman,

@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabaseAdmin();
     const { data: row, error } = await supabase
       .from("fastweb_orders")
-      .select("id, access_token, payment_status")
+      .select("id, access_token, payment_status, promo_code")
       .eq("zibal_track_id", trackId)
       .maybeSingle();
 
@@ -63,6 +63,21 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(
           `${SITE_URL}/fastweb/new?payment=error&trackId=${trackId}`
         );
+      }
+
+      if (row.promo_code) {
+        const { data: promo } = await supabase
+          .from("fastweb_promo_codes")
+          .select("id, used_count")
+          .eq("code", row.promo_code as string)
+          .maybeSingle();
+
+        if (promo) {
+          await supabase
+            .from("fastweb_promo_codes")
+            .update({ used_count: (promo.used_count as number) + 1 })
+            .eq("id", promo.id);
+        }
       }
     }
 

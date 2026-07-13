@@ -14,6 +14,7 @@ import {
   classifyRunStreamError,
   runStreamErrorMessage,
 } from "@/lib/ai/client/runStream";
+import { buildMultiModelRunMessages } from "@/lib/ai/client/buildMessages";
 import type { RunSSEEvent } from "@/lib/ai/streaming/sse";
 import type { StaticRunHydration } from "@/lib/ai/runs/types";
 
@@ -101,6 +102,20 @@ export default function CouncilSessionView({
     let liveSummary = "";
 
     const models = modelAId && modelBId ? [modelAId, modelBId] : undefined;
+    const historyMessages =
+      archivedTurns.length > 0
+        ? buildMultiModelRunMessages(
+            archivedTurns.map((t) => ({
+              id: t.runId,
+              prompt: t.prompt,
+              answers: t.answers,
+              summary: t.summary,
+              critique: t.critique,
+              selectedVote: t.selectedVote,
+              modelIds: t.models,
+            }))
+          )
+        : undefined;
 
     const result = await startRunStream(
       {
@@ -109,6 +124,7 @@ export default function CouncilSessionView({
         modelA: modelAId,
         modelB: modelBId,
         prompt: userPrompt,
+        ...(historyMessages?.length ? { messages: historyMessages } : {}),
         conversationId: conv,
       },
       {

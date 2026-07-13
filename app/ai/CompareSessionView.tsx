@@ -19,6 +19,7 @@ import {
   classifyRunStreamError,
   runStreamErrorMessage,
 } from "@/lib/ai/client/runStream";
+import { buildMultiModelRunMessages } from "@/lib/ai/client/buildMessages";
 import type { RunSSEEvent } from "@/lib/ai/streaming/sse";
 import type { StaticRunHydration } from "@/lib/ai/runs/types";
 import ArenaComposer from "./ArenaComposer";
@@ -164,6 +165,18 @@ export default function CompareSessionView({
     const conv = conversationRef.current ?? conversationId;
     const liveResponses: Record<string, string> = { [modelAId]: "", [modelBId]: "" };
     const liveErrors: Record<string, string> = {};
+    const historyMessages =
+      archivedTurns.length > 0
+        ? buildMultiModelRunMessages(
+            archivedTurns.map((t) => ({
+              id: t.runId ?? undefined,
+              prompt: t.prompt,
+              responses: t.responses,
+              selectedVote: t.selectedVote,
+              modelIds: t.modelIds,
+            }))
+          )
+        : undefined;
 
     const result = await startRunStream(
       {
@@ -172,6 +185,7 @@ export default function CompareSessionView({
         modelA: modelAId,
         modelB: modelBId,
         prompt: userPrompt,
+        ...(historyMessages?.length ? { messages: historyMessages } : {}),
         conversationId: conv,
         webSearch,
       },

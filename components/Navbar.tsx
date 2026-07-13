@@ -14,7 +14,7 @@ const solutionLinks = [
   },
   {
     label: "سایت فوری",
-    description: "سایت رسمی کسب‌وکار تا ۲۴ ساعت کاری",
+    description: "نسخه اول قابل انتشار در ۲۴ ساعت کاری",
     href: "/fastweb",
   },
   {

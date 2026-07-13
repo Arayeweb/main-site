@@ -8,6 +8,7 @@ import {
   type FastWebBrief,
 } from "@/lib/fastweb";
 import { getPaymentCallbackUrl } from "@/lib/paymentCallback";
+import { resolveFastWebPromoCode } from "@/lib/fastwebPromo";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { zibalRequest } from "@/lib/zibal";
 
@@ -28,6 +29,8 @@ export async function POST(req: NextRequest) {
   const phoneRaw = typeof body.phone === "string" ? body.phone : "";
   const phone = normalizeIranPhone(phoneRaw);
   const packageKey = isFastWebPackageKey(body.package) ? body.package : null;
+  const promoCodeRaw =
+    typeof body.promoCode === "string" ? body.promoCode.trim() : "";
 
   if (!isUuid(orderId) || !accessToken) {
     return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
@@ -70,13 +73,34 @@ export async function POST(req: NextRequest) {
       },
     };
 
+    let amountToman: number = pkg.priceToman;
+    let discountToman = 0;
+    let appliedPromoCode: string | null = null;
+
+    if (promoCodeRaw) {
+      const promo = await resolveFastWebPromoCode(
+        supabase,
+        promoCodeRaw,
+        packageKey
+      );
+      if ("error" in promo) {
+        return jsonNoStore(
+          { ok: false, error: promo.error, message: promo.message },
+          { status: 422 }
+        );
+      }
+      amountToman = promo.finalAmountToman;
+      discountToman = promo.discountToman;
+      appliedPromoCode = promo.promoCode;
+    }
+
     const callbackUrl = getPaymentCallbackUrl(
       "fastweb",
       "/api/fastweb/verify"
     );
 
     const zibal = await zibalRequest({
-      amountToman: pkg.priceToman,
+      amountToman,
       callbackUrl,
       description: `آرایه سایت فوری - ${pkg.name} - ${row.business_name || phone}`,
       orderId: `fastweb-${orderId}`,
@@ -96,7 +120,9 @@ export async function POST(req: NextRequest) {
         phone,
         brief,
         package: packageKey,
-        amount_toman: pkg.priceToman,
+        amount_toman: amountToman,
+        discount_toman: discountToman,
+        promo_code: appliedPromoCode,
         payment_status: "pending",
         zibal_track_id: zibal.trackId,
       })

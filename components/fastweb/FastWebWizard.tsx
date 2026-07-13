@@ -3,33 +3,28 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  FormEvent,
+  useCallback,
   useEffect,
   useMemo,
   useState,
   useTransition,
 } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Loader2,
-  Monitor,
-  Smartphone,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import Logo from "@/components/Logo";
-import FastWebSiteView from "@/components/fastweb/FastWebSiteView";
-import { formatPriceToman } from "@/lib/aiPricingConfig";
+import StepBusiness from "@/components/fastweb/wizard-steps/StepBusiness";
+import StepContacts from "@/components/fastweb/wizard-steps/StepContacts";
+import StepDomain from "@/components/fastweb/wizard-steps/StepDomain";
+import StepGoalAudience from "@/components/fastweb/wizard-steps/StepGoalAudience";
+import StepPayment from "@/components/fastweb/wizard-steps/StepPayment";
+import StepPreview from "@/components/fastweb/wizard-steps/StepPreview";
+import StepStyle from "@/components/fastweb/wizard-steps/StepStyle";
 import { pushGtmEvent } from "@/lib/gtm";
 import {
-  FASTWEB_GOALS,
   FASTWEB_PACKAGES,
-  FASTWEB_STYLES,
   isFastWebPackageKey,
   normalizeIranPhone,
-  suggestedSectionsForGoal,
   type FastWebBrief,
   type FastWebPackageKey,
-  type FastWebStyleId,
 } from "@/lib/fastweb";
 import { buildDraftPreview } from "@/lib/fastwebContent";
 import {
@@ -40,24 +35,38 @@ import {
 } from "@/lib/fastwebDraft";
 
 const STEP_LABELS = [
-  "هدف",
   "کسب‌وکار",
+  "هدف و مخاطب",
   "ظاهر",
+  "آدرس سایت",
   "تماس",
   "پیش‌نمایش",
   "پرداخت",
 ] as const;
 
-const PREVIEW_STEP = 4;
-const PAY_STEP = 5;
+const PREVIEW_STEP = 5;
+const PAY_STEP = 6;
+
+type SlugStatus = "idle" | "checking" | "ok" | "taken" | "invalid";
 
 type ApiEnvelope = {
   ok?: boolean;
   error?: string;
+  message?: string;
   accessToken?: string;
   order?: { id: string; slug?: string; temporaryHostHint?: string };
   redirectUrl?: string;
   alreadyPaid?: boolean;
+  slugs?: string[];
+  available?: boolean;
+  valid?: boolean;
+  url?: string;
+  name?: string;
+  listAmountToman?: number;
+  discountToman?: number;
+  finalAmountToman?: number;
+  promoCode?: string;
+  label?: string;
 };
 
 async function apiJson(url: string, init?: RequestInit): Promise<ApiEnvelope> {
@@ -84,20 +93,42 @@ export default function FastWebWizard() {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestedSlugs, setSuggestedSlugs] = useState<string[]>([]);
+  const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [couponLabel, setCouponLabel] = useState<string | null>(null);
+  const [couponList, setCouponList] = useState(0);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponFinal, setCouponFinal] = useState(0);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponApplying, setCouponApplying] = useState(false);
   const [, startTransition] = useTransition();
 
   const paymentFlag = searchParams.get("payment");
-
-  // Deterministic, instant preview from the brief — no AI, no cost.
   const preview = useMemo(() => buildDraftPreview(brief), [brief]);
+
+  const slugHint = useMemo(() => {
+    const base =
+      brief.slugPreference?.trim() ||
+      brief.businessName
+        ?.trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "")
+        .slice(0, 24) ||
+      "business";
+    return `${base || "business"}.araaye.site`;
+  }, [brief.slugPreference, brief.businessName]);
 
   useEffect(() => {
     const draft = loadFastWebDraft();
     const pkgParam = searchParams.get("package");
     if (draft) {
       setBrief({ ...createEmptyBrief(), ...draft.brief });
-      // Never restore straight into preview/pay without re-confirming inputs.
-      setStep(Math.min(draft.step, 3));
+      setStep(Math.min(draft.step, 4));
       if (draft.orderId) setOrderId(draft.orderId);
       if (draft.accessToken) setAccessToken(draft.accessToken);
       if (draft.packageKey) setPackageKey(draft.packageKey);
@@ -120,18 +151,36 @@ export default function FastWebWizard() {
     });
   }, [hydrated, step, orderId, accessToken, packageKey, brief]);
 
-  const slugHint = useMemo(() => {
-    const base =
-      brief.slugPreference?.trim() ||
-      brief.businessName
-        ?.trim()
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "")
-        .slice(0, 24) ||
-      "business";
-    return `${base || "business"}.araaye.site`;
-  }, [brief.slugPreference, brief.businessName]);
+  useEffect(() => {
+    if (step !== 3) return;
+    const slug = brief.slugPreference?.trim();
+    if (!slug) {
+      setSlugStatus("idle");
+      return;
+    }
+    setSlugStatus("checking");
+    const t = setTimeout(() => {
+      void apiJson(`/api/fastweb/check-slug?slug=${encodeURIComponent(slug)}`).then(
+        (data) => {
+          if (!data.ok) {
+            setSlugStatus("idle");
+            return;
+          }
+          if (!data.valid) setSlugStatus("invalid");
+          else if (data.available) setSlugStatus("ok");
+          else setSlugStatus("taken");
+        }
+      );
+    }, 400);
+    return () => clearTimeout(t);
+  }, [brief.slugPreference, step]);
+
+  useEffect(() => {
+    setCouponApplied(false);
+    setCouponLabel(null);
+    setCouponDiscount(0);
+    setCouponError(null);
+  }, [packageKey]);
 
   function patchBrief(patch: Partial<FastWebBrief>) {
     setBrief((prev) => ({ ...prev, ...patch }));
@@ -161,27 +210,103 @@ export default function FastWebWizard() {
     return { orderId: data.order.id, accessToken: data.accessToken };
   }
 
+  async function handleUpload(file: File) {
+    setUploading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/fastweb/upload", { method: "POST", body: fd });
+      const data = (await res.json().catch(() => ({}))) as ApiEnvelope;
+      if (!data.ok || !data.url) {
+        setError("آپلود فایل ممکن نشد.");
+        return;
+      }
+      patchBrief({
+        attachmentUrl: data.url,
+        attachmentName: data.name || file.name,
+      });
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleSuggestSlug() {
+    setSuggesting(true);
+    setError(null);
+    try {
+      const data = await apiJson("/api/fastweb/suggest-slug", {
+        method: "POST",
+        body: JSON.stringify({
+          businessName: brief.businessName,
+          industry: brief.industry,
+          city: brief.city,
+          shortDescription: brief.shortDescription,
+        }),
+      });
+      if (!data.ok || !data.slugs?.length) {
+        setError("پیشنهاد نام ممکن نشد. خودتان یک نام وارد کنید.");
+        return;
+      }
+      setSuggestedSlugs(data.slugs);
+    } finally {
+      setSuggesting(false);
+    }
+  }
+
+  const applyCoupon = useCallback(async () => {
+    setCouponApplying(true);
+    setCouponError(null);
+    try {
+      const data = await apiJson("/api/fastweb/apply-coupon", {
+        method: "POST",
+        body: JSON.stringify({ package: packageKey, promoCode: couponCode }),
+      });
+      if (!data.ok) {
+        setCouponApplied(false);
+        setCouponError(data.message || "کد معتبر نیست.");
+        return;
+      }
+      setCouponApplied(true);
+      setCouponLabel(data.label || null);
+      setCouponList(data.listAmountToman || FASTWEB_PACKAGES[packageKey].priceToman);
+      setCouponDiscount(data.discountToman || 0);
+      setCouponFinal(data.finalAmountToman || FASTWEB_PACKAGES[packageKey].priceToman);
+    } finally {
+      setCouponApplying(false);
+    }
+  }, [couponCode, packageKey]);
+
   async function goNext() {
     setError(null);
 
-    if (step === 0 && !brief.goal) {
-      setError("هدف سایت را انتخاب کنید.");
-      return;
-    }
-    if (step === 1) {
+    if (step === 0) {
       if (!brief.businessName?.trim() || !brief.shortDescription?.trim()) {
-        setError("نام کسب‌وکار و توضیح کوتاه لازم است.");
+        setError("نام کسب‌وکار و توضیح کسب‌وکار لازم است.");
         return;
       }
     }
-    if (step === 3) {
+    if (step === 1 && !brief.goal) {
+      setError("هدف سایت را انتخاب کنید.");
+      return;
+    }
+    if (step === 3 && brief.slugPreference?.trim()) {
+      if (slugStatus === "invalid" || slugStatus === "taken") {
+        setError("آدرس سایت معتبر نیست یا قبلاً گرفته شده.");
+        return;
+      }
+      if (slugStatus === "checking") {
+        setError("لطفاً چند لحظه صبر کنید تا آدرس بررسی شود.");
+        return;
+      }
+    }
+    if (step === 4) {
       const p = normalizeIranPhone(brief.contacts?.phone || "");
       if (!p) {
         setError("شماره تماس معتبر وارد کنید.");
         return;
       }
       patchContacts({ phone: p });
-      // Persist the draft (also stores deterministic preview server-side).
       setBusy(true);
       try {
         const draft = await ensureDraft();
@@ -203,7 +328,7 @@ export default function FastWebWizard() {
     setStep((s) => Math.max(s - 1, 0));
   }
 
-  async function startCheckout(e: FormEvent) {
+  async function startCheckout(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     const normalized = normalizeIranPhone(phone || brief.contacts?.phone || "");
@@ -226,6 +351,7 @@ export default function FastWebWizard() {
           accessToken: ids.accessToken,
           phone: normalized,
           package: packageKey,
+          promoCode: couponApplied ? couponCode : undefined,
         }),
       });
       if (data.alreadyPaid && data.redirectUrl) {
@@ -234,7 +360,7 @@ export default function FastWebWizard() {
         return;
       }
       if (!data.ok || !data.redirectUrl) {
-        setError("اتصال به درگاه ممکن نشد. دوباره تلاش کنید.");
+        setError(data.message || "اتصال به درگاه ممکن نشد. دوباره تلاش کنید.");
         return;
       }
       clearFastWebDraft();
@@ -289,327 +415,86 @@ export default function FastWebWizard() {
         ) : null}
 
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/80 sm:p-8">
-          {/* Step 0: Goal */}
           {step === 0 ? (
-            <section>
-              <h1 className="text-2xl font-bold">از سایت چه نتیجه‌ای می‌خواهید؟</h1>
-              <p className="mt-2 text-sm text-slate-600">
-                یک گزینه اصلی انتخاب کنید تا ساختار پیشنهادی تنظیم شود.
-              </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {FASTWEB_GOALS.map((g) => (
-                  <button
-                    key={g.id}
-                    type="button"
-                    onClick={() =>
-                      patchBrief({
-                        goal: g.id,
-                        sections: suggestedSectionsForGoal(g.id),
-                      })
-                    }
-                    className={`rounded-xl border px-4 py-4 text-right transition ${
-                      brief.goal === g.id
-                        ? "border-[#0F4C5C] bg-teal-50"
-                        : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    <span className="font-medium">{g.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
+            <StepBusiness
+              brief={brief}
+              onPatch={patchBrief}
+              onUpload={handleUpload}
+              uploading={uploading}
+            />
           ) : null}
 
-          {/* Step 1: Business + audience */}
           {step === 1 ? (
-            <section className="space-y-4">
-              <h1 className="text-2xl font-bold">اطلاعات کسب‌وکار</h1>
-              <Field
-                label="نام کسب‌وکار"
-                value={brief.businessName || ""}
-                onChange={(v) => patchBrief({ businessName: v })}
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label="حوزه فعالیت"
-                  value={brief.industry || ""}
-                  onChange={(v) => patchBrief({ industry: v })}
-                  placeholder="مثلاً کلینیک پوست، کافه، خدمات ساختمانی"
-                />
-                <Field
-                  label="شهر یا محدوده فعالیت"
-                  value={brief.city || ""}
-                  onChange={(v) => patchBrief({ city: v })}
-                />
-              </div>
-              <Field
-                label="توضیح کوتاه"
-                value={brief.shortDescription || ""}
-                onChange={(v) => patchBrief({ shortDescription: v })}
-                textarea
-                placeholder="کسب‌وکارتان چه می‌کند و چرا مشتری باید شما را انتخاب کند؟"
-              />
-              <Field
-                label="خدمات یا محصولات اصلی"
-                value={brief.offerings || ""}
-                onChange={(v) => patchBrief({ offerings: v })}
-                textarea
-                placeholder="هر مورد در یک خط"
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label="مزیت اصلی"
-                  value={brief.mainAdvantage || ""}
-                  onChange={(v) => patchBrief({ mainAdvantage: v })}
-                />
-                <Field
-                  label="بیشتر چه کسانی از شما خرید می‌کنند؟"
-                  value={brief.audience || ""}
-                  onChange={(v) => patchBrief({ audience: v })}
-                  placeholder="مثلاً خانواده‌های غرب تهران"
-                />
-              </div>
-            </section>
+            <StepGoalAudience brief={brief} onPatch={patchBrief} />
           ) : null}
 
-          {/* Step 2: Style */}
           {step === 2 ? (
-            <section className="space-y-5">
-              <h1 className="text-2xl font-bold">ظاهر سایت</h1>
-              <p className="text-sm text-slate-600">
-                بخش‌های سایت بر اساس هدف شما از قبل انتخاب شده‌اند و در پیش‌نمایش
-                قابل تغییرند.
-              </p>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {FASTWEB_STYLES.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => patchBrief({ style: s.id as FastWebStyleId })}
-                    className={`rounded-xl border p-4 text-right ${
-                      brief.style === s.id
-                        ? "border-[#0F4C5C] bg-teal-50"
-                        : "border-slate-200"
-                    }`}
-                  >
-                    <p className="font-semibold">{s.label}</p>
-                    <p className="mt-1 text-xs text-slate-500 leading-6">{s.hint}</p>
-                  </button>
-                ))}
-              </div>
-              <label className="block text-sm">
-                <span className="font-medium">رنگ برند</span>
-                <div className="mt-2 flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={brief.brandColor || "#0F4C5C"}
-                    onChange={(e) => patchBrief({ brandColor: e.target.value })}
-                    className="h-10 w-14 cursor-pointer rounded border border-slate-200"
-                  />
-                  <input
-                    value={brief.brandColor || "#0F4C5C"}
-                    onChange={(e) => patchBrief({ brandColor: e.target.value })}
-                    className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                  />
-                </div>
-              </label>
-              <Field
-                label="لینک لوگو (اختیاری)"
-                value={brief.logoUrl || ""}
-                onChange={(v) => patchBrief({ logoUrl: v })}
-                placeholder="https://..."
-              />
-              <Field
-                label="نمونه سایت موردعلاقه (اختیاری)"
-                value={brief.favoriteSites || ""}
-                onChange={(v) => patchBrief({ favoriteSites: v })}
-                placeholder="آدرس یک یا دو سایت"
-              />
-            </section>
+            <StepStyle brief={brief} onPatch={patchBrief} />
           ) : null}
 
-          {/* Step 3: Contacts */}
           {step === 3 ? (
-            <section className="space-y-4">
-              <h1 className="text-2xl font-bold">اطلاعات تماس</h1>
-              <p className="text-sm text-slate-600">
-                کد ملی فقط بعد از خرید و برای فاکتور رسمی گرفته می‌شود.
-              </p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label="شماره تماس"
-                  value={brief.contacts?.phone || ""}
-                  onChange={(v) => patchContacts({ phone: v })}
-                  placeholder="0912..."
-                />
-                <Field
-                  label="واتساپ"
-                  value={brief.contacts?.whatsapp || ""}
-                  onChange={(v) => patchContacts({ whatsapp: v })}
-                />
-                <Field
-                  label="اینستاگرام"
-                  value={brief.contacts?.instagram || ""}
-                  onChange={(v) => patchContacts({ instagram: v })}
-                  placeholder="@username"
-                />
-                <Field
-                  label="ساعت کاری"
-                  value={brief.contacts?.hours || ""}
-                  onChange={(v) => patchContacts({ hours: v })}
-                />
-              </div>
-              <Field
-                label="آدرس"
-                value={brief.contacts?.address || ""}
-                onChange={(v) => patchContacts({ address: v })}
-                textarea
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label="لینک نقشه / لوکیشن"
-                  value={brief.contacts?.locationUrl || ""}
-                  onChange={(v) => patchContacts({ locationUrl: v })}
-                />
-                <Field
-                  label="ایمیل"
-                  value={brief.contacts?.email || ""}
-                  onChange={(v) => patchContacts({ email: v })}
-                />
-              </div>
-            </section>
+            <StepDomain
+              brief={brief}
+              slugHint={slugHint}
+              slugStatus={slugStatus}
+              suggestedSlugs={suggestedSlugs}
+              suggesting={suggesting}
+              onPatch={patchBrief}
+              onSuggest={() => void handleSuggestSlug()}
+            />
           ) : null}
 
-          {/* Step 4: Preview + address */}
+          {step === 4 ? (
+            <StepContacts
+              brief={brief}
+              onPatch={patchBrief}
+              onPatchContacts={patchContacts}
+            />
+          ) : null}
+
           {step === PREVIEW_STEP ? (
-            <section>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h1 className="text-2xl font-bold">پیش‌نمایش سایت</h1>
-                  <p className="mt-1 text-sm text-slate-600">
-                    این ساختار، ظاهر و رنگ سایت شماست. متن نهایی را تیم آرایه
-                    می‌نویسد و قبل از انتشار کنترل می‌کند.
-                  </p>
-                </div>
-                <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewMode("mobile")}
-                    className={`rounded-md p-2 ${
-                      previewMode === "mobile" ? "bg-white shadow-sm" : ""
-                    }`}
-                  >
-                    <Smartphone className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewMode("desktop")}
-                    className={`rounded-md p-2 ${
-                      previewMode === "desktop" ? "bg-white shadow-sm" : ""
-                    }`}
-                  >
-                    <Monitor className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div
-                className={`mx-auto mt-6 overflow-hidden rounded-2xl border border-slate-200 shadow-inner ${
-                  previewMode === "mobile" ? "max-w-[390px]" : "w-full"
-                }`}
-              >
-                <FastWebSiteView content={preview} brief={brief} mode="preview" />
-              </div>
-
-              <div className="mt-6 rounded-xl bg-slate-50 p-4">
-                <p className="text-sm font-medium">آدرس سایت</p>
-                <p className="mt-1 text-xs text-slate-500">
-                  برای شروع مجبور نیستید دامنه بخرید؛ سایت روی آدرس موقت تحویل
-                  می‌شود و اتصال دامنه اختصاصی را بعد انجام می‌دهیم.
-                </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                  <label className="block text-sm">
-                    <span className="font-medium">نامک زیردامنه</span>
-                    <input
-                      value={brief.slugPreference || ""}
-                      onChange={(e) =>
-                        patchBrief({ slugPreference: e.target.value })
-                      }
-                      placeholder="my-business"
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-[#0F4C5C]"
-                    />
-                  </label>
-                  <p className="pb-2 text-sm text-slate-600">{slugHint}</p>
-                </div>
-              </div>
-            </section>
+            <StepPreview
+              brief={brief}
+              preview={preview}
+              previewMode={previewMode}
+              slugHint={slugHint}
+              onPreviewMode={setPreviewMode}
+            />
           ) : null}
 
-          {/* Step 5: Pay */}
           {step === PAY_STEP ? (
-            <section>
-              <h1 className="text-2xl font-bold">انتخاب بسته و پرداخت</h1>
-              <p className="mt-2 text-sm text-slate-600">
-                نسخه اول قابل انتشار تا ۲۴ ساعت کاری، پس از تکمیل اطلاعات و پرداخت.
-              </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {(Object.values(FASTWEB_PACKAGES) as Array<(typeof FASTWEB_PACKAGES)["fast"]>).map(
-                  (pkg) => (
-                    <button
-                      key={pkg.key}
-                      type="button"
-                      onClick={() => setPackageKey(pkg.key)}
-                      className={`rounded-xl border p-4 text-right ${
-                        packageKey === pkg.key
-                          ? "border-[#0F4C5C] bg-teal-50"
-                          : "border-slate-200"
-                      }`}
-                    >
-                      <p className="font-bold">{pkg.name}</p>
-                      <p className="mt-1 text-lg font-bold text-[#0F4C5C]">
-                        {formatPriceToman(pkg.priceToman)} تومان
-                      </p>
-                      <ul className="mt-3 space-y-1 text-xs text-slate-600">
-                        {pkg.features.slice(0, 4).map((f) => (
-                          <li key={f}>• {f}</li>
-                        ))}
-                      </ul>
-                    </button>
-                  )
-                )}
-              </div>
-              <form onSubmit={startCheckout} className="mt-6 space-y-4">
-                <Field
-                  label="موبایل برای پیگیری سفارش"
-                  value={phone || brief.contacts?.phone || ""}
-                  onChange={(v) => {
-                    setPhone(v);
-                    patchContacts({ phone: v });
-                  }}
-                  placeholder="0912..."
-                />
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F4C5C] px-4 py-3 text-sm font-bold text-white disabled:opacity-60"
-                >
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  پرداخت و ثبت سفارش
-                </button>
-                <p className="text-center text-xs text-slate-500">
-                  یا{" "}
-                  <Link href="/website-design" className="underline">
-                    طراحی سایت اختصاصی
-                  </Link>{" "}
-                  اگر به فروشگاه، پنل یا امکانات سفارشی نیاز دارید.
-                </p>
-              </form>
-            </section>
+            <StepPayment
+              brief={brief}
+              packageKey={packageKey}
+              phone={phone || brief.contacts?.phone || ""}
+              busy={busy}
+              slugHint={slugHint}
+              coupon={{
+                code: couponCode,
+                applied: couponApplied,
+                label: couponLabel,
+                listAmountToman: couponList,
+                discountToman: couponDiscount,
+                finalAmountToman: couponFinal,
+                error: couponError,
+                applying: couponApplying,
+              }}
+              onPackageChange={(key) => {
+                setPackageKey(key);
+                setCouponApplied(false);
+              }}
+              onPhoneChange={(v) => {
+                setPhone(v);
+                patchContacts({ phone: v });
+              }}
+              onCouponCodeChange={setCouponCode}
+              onApplyCoupon={() => void applyCoupon()}
+              onSubmit={(e) => void startCheckout(e)}
+            />
           ) : null}
 
           {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
 
-          {/* Nav buttons */}
           {step < PAY_STEP ? (
             <div className="mt-8 flex items-center justify-between gap-3">
               <button
@@ -628,7 +513,7 @@ export default function FastWebWizard() {
                 className="inline-flex items-center gap-2 rounded-xl bg-[#0F4C5C] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60"
               >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {step === 3
+                {step === 4
                   ? "ذخیره و مشاهده پیش‌نمایش"
                   : step === PREVIEW_STEP
                     ? "ادامه به پرداخت"
@@ -640,43 +525,5 @@ export default function FastWebWizard() {
         </div>
       </main>
     </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  textarea,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  textarea?: boolean;
-}) {
-  const cls =
-    "mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-[#0F4C5C]";
-  return (
-    <label className="block text-sm">
-      <span className="font-medium">{label}</span>
-      {textarea ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={3}
-          className={cls}
-        />
-      ) : (
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className={cls}
-        />
-      )}
-    </label>
   );
 }

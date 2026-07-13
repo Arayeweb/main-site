@@ -39,14 +39,26 @@ export const FASTWEB_PACKAGES = {
 export type FastWebPackageKey = keyof typeof FASTWEB_PACKAGES;
 
 export const FASTWEB_GOALS = [
-  { id: "leads", label: "تماس و درخواست مشتری" },
+  { id: "leads", label: "دریافت تماس و درخواست مشتری" },
   { id: "services", label: "معرفی خدمات" },
-  { id: "portfolio", label: "نمایش نمونه‌کار" },
+  { id: "portfolio", label: "نمایش نمونه‌کارها" },
   { id: "products", label: "معرفی محصولات" },
-  { id: "presence", label: "حضور رسمی در اینترنت" },
+  { id: "expertise", label: "معرفی خودم و تخصصم" },
+  { id: "presence", label: "داشتن یک سایت برای کسب‌وکار" },
 ] as const;
 
 export type FastWebGoalId = (typeof FASTWEB_GOALS)[number]["id"];
+
+export const FASTWEB_AUDIENCE_PRESETS = [
+  { id: "men", label: "آقایان" },
+  { id: "women", label: "خانم‌ها" },
+  { id: "both_genders", label: "هر دو جنسیت" },
+  { id: "families", label: "خانواده‌ها" },
+  { id: "businesses", label: "کسب‌وکارها (B2B)" },
+  { id: "young_adults", label: "جوانان" },
+] as const;
+
+export type FastWebAudiencePresetId = (typeof FASTWEB_AUDIENCE_PRESETS)[number]["id"];
 
 export const FASTWEB_SECTIONS = [
   { id: "hero", label: "معرفی اصلی", required: true },
@@ -134,16 +146,28 @@ export interface FastWebBrief {
   offerings?: string;
   mainAdvantage?: string;
   audience?: string;
+  audiencePresets?: FastWebAudiencePresetId[] | string[];
   sections?: FastWebSectionId[];
   style?: FastWebStyleId;
   brandColor?: string;
   logoUrl?: string;
   imageNotes?: string;
   favoriteSites?: string;
+  /** Reference file/image uploaded by the customer (e.g. logo, moodboard, brief PDF). */
+  attachmentUrl?: string;
+  attachmentName?: string;
   contacts?: FastWebContacts;
   slugPreference?: string;
   domainChoice?: "subdomain" | "custom";
   customDomain?: string;
+  /** Official business info for the invoice — optional, collected pre-purchase. */
+  legalName?: string;
+  nationalId?: string;
+  companyRegistrationNumber?: string;
+  postalCode?: string;
+  enamadUrl?: string;
+  samandehiUrl?: string;
+  socialLinksRaw?: string;
 }
 
 export interface FastWebFaqItem {
@@ -240,6 +264,8 @@ export function suggestedSectionsForGoal(
       return ["hero", "portfolio", "about", "testimonials", "faq", "contact"];
     case "products":
       return ["hero", "products", "about", "faq", "contact"];
+    case "expertise":
+      return ["hero", "about", "services", "portfolio", "testimonials", "faq", "contact"];
     case "presence":
       return ["hero", "services", "about", "portfolio", "faq", "contact"];
     default:
@@ -258,7 +284,11 @@ export function pickTemplateKey(brief: FastWebBrief): FastWebTemplateKey {
       return "clinic-service";
     }
   }
-  if (goal === "portfolio" || /طراح|معمار|عکاس|portfolio|نمونه‌کار/.test(industry)) {
+  if (
+    goal === "portfolio" ||
+    goal === "expertise" ||
+    /طراح|معمار|عکاس|portfolio|نمونه‌کار/.test(industry)
+  ) {
     return "portfolio-services";
   }
   return "local-business";
@@ -275,13 +305,19 @@ function slugifyFa(input: string): string {
     .slice(0, 48);
 }
 
-export function buildSlugCandidate(businessName: string, fallback?: string): string {
-  const base = slugifyFa(businessName) || slugifyFa(fallback || "") || "business";
+/**
+ * Builds a slug candidate. If the customer picked a `preferred` subdomain
+ * (brief.slugPreference), it takes priority over the business name.
+ */
+export function buildSlugCandidate(businessName: string, preferred?: string): string {
+  const preferredSlug = slugifyFa(preferred || "");
+  const base = preferredSlug || slugifyFa(businessName) || "business";
   // Prefer latin-ish: if mostly Persian, use transliteration-lite hash suffix
   const hasLatin = /[a-z0-9]/.test(base);
   if (hasLatin) return base.replace(/[^\w-]/g, "").slice(0, 40) || "business";
+  const seed = preferred?.trim() || businessName;
   const suffix = Math.abs(
-    Array.from(businessName).reduce((a, c) => a + c.charCodeAt(0), 0)
+    Array.from(seed).reduce((a, c) => a + c.charCodeAt(0), 0)
   )
     .toString(36)
     .slice(0, 6);

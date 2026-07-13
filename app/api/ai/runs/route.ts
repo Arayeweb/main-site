@@ -59,6 +59,17 @@ function extractPromptFromMessages(raw: unknown): string | undefined {
   return undefined;
 }
 
+function parseClientHistory(raw: unknown): ChatMessage[] {
+  if (!Array.isArray(raw)) return [];
+  const history: ChatMessage[] = [];
+  for (const item of raw as { role?: string; content?: string }[]) {
+    if (item.role === "user" || item.role === "assistant") {
+      history.push({ role: item.role, content: String(item.content ?? "") });
+    }
+  }
+  return history;
+}
+
 function sseError(code: string, status: number): Response {
   return new Response(
     encodeSSE({ type: "run_error", runId: "", errorCode: code, message: friendlyError(code) }),
@@ -225,12 +236,9 @@ export async function POST(req: NextRequest) {
         if (conversationId) {
           const priorRuns = await loadConversationRuns(session.userId, conversationId);
           history = buildConversationHistory(priorRuns);
-        } else if (mode === "direct" && Array.isArray(body.messages) && body.messages.length > 0) {
-          for (const item of body.messages as { role?: string; content?: string }[]) {
-            if (item.role === "user" || item.role === "assistant") {
-              history.push({ role: item.role, content: String(item.content ?? "") });
-            }
-          }
+        }
+        if (history.length === 0) {
+          history = parseClientHistory(body.messages);
         }
 
         const runReq: RunRequest = {
