@@ -24,6 +24,7 @@ export default function SitePageviewTracker() {
       pathname.startsWith("/doctors") ||
       pathname.startsWith("/demo") ||
       pathname.startsWith("/showcase") ||
+      pathname.startsWith("/showdemoto") ||
       pathname.startsWith("/free-seo-audit")
     ) {
       return;

@@ -23,6 +23,7 @@ export default function PublicOnlyChrome() {
     pathname.startsWith("/doctors") ||
     pathname.startsWith("/demo") ||
     pathname.startsWith("/showcase") ||
+    pathname.startsWith("/showdemoto") ||
     pathname.startsWith("/free-seo-audit") ||
     pathname.startsWith("/adready") ||
     pathname.startsWith("/fastweb") ||

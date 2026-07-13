@@ -35,7 +35,7 @@ export function getShowcaseVisitorId(): string | null {
 }
 
 export type ShowcaseLeadPayload = {
-  source: ShowcaseLeadSource;
+  source: ShowcaseLeadSource | `showdemoto-${string}`;
   page: string;
   name: string;
   contact: string;

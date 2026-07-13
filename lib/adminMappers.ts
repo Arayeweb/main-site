@@ -106,6 +106,9 @@ export function resolveSourceLabel(source: string): string {
   if (source.startsWith('showcase-')) {
     return `شوکیس — ${source.replace('showcase-', '').replace(/-/g, ' ')}`;
   }
+  if (source.startsWith('showdemoto-')) {
+    return `دموی مشتری — ${source.replace('showdemoto-', '').replace(/-/g, ' ')}`;
+  }
   return source;
 }
 

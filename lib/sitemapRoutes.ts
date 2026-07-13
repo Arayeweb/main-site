@@ -37,6 +37,7 @@ export const SITEMAP_EXCLUDED_PATTERNS = [
   /^\/admin(?:\/|$)/,
   /^\/demo(?:\/|$)/,
   /^\/showcase(?:\/|$)/,
+  /^\/showdemoto(?:\/|$)/,
   /^\/ai\/runs(?:\/|$)/,
   /^\/ai\/battle(?:\/|$)/,
   /^\/ai\/share(?:\/|$)/,
