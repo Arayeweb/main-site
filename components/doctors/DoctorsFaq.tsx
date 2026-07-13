@@ -8,7 +8,7 @@ export default function DoctorsFaq() {
         <SectionHeader
           badge="سؤالات پرتکرار"
           badgeClassName="bg-sky-50 text-sky-700"
-          title="هر چیزی که باید قبل از شروع بدانید"
+          title="پاسخ سؤال‌های رایج پزشکان"
         />
 
         <div className="mx-auto flex max-w-2xl flex-col gap-3">

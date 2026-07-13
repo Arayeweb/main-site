@@ -120,7 +120,7 @@ export default function FastWebWizard() {
         .replace(/[^a-z0-9-]/g, "")
         .slice(0, 24) ||
       "business";
-    return `${base || "business"}.araaye.site`;
+    return `araaye.com/s/${base || "business"}`;
   }, [brief.slugPreference, brief.businessName]);
 
   useEffect(() => {

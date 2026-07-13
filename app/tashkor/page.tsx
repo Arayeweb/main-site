@@ -11,10 +11,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function TashkorPage() {
+export default function TashkorPage({
+  searchParams,
+}: {
+  searchParams?: { from?: string };
+}) {
+  const fromAudit =
+    searchParams?.from === "doctors_audit" || searchParams?.from === "doctors_hero";
+
   return (
     <>
-      <Navbar ctaHref="/doctors#packages" ctaLabel="مشاهده پکیج‌ها" />
+      <Navbar ctaHref="/doctors#audit" ctaLabel="بررسی رایگان مطب" />
       <main className="min-h-[70vh] bg-gradient-to-b from-sky-50/70 via-white to-white py-16 sm:py-24">
         <div className="container-mx container-px">
           <div className="mx-auto max-w-lg text-center">
@@ -24,7 +31,9 @@ export default function TashkorPage() {
 
             <h1 className="text-2xl font-extrabold text-navy-900 sm:text-3xl">درخواست شما ثبت شد</h1>
             <p className="mt-4 text-base leading-relaxed text-navy-500">
-              کارشناس آرایه در کمتر از ۲ ساعت کاری برای پیشنهاد اختصاصی مطب‌تان تماس می‌گیرد.
+              {fromAudit
+                ? "سه ایراد مهم و پیشنهادهای عملی را تا پایان روز کاری در واتساپ می‌فرستیم."
+                : "کارشناس آرایه در کمتر از ۲ ساعت کاری با شما تماس می‌گیرد."}
             </p>
 
             <div className="mt-8 rounded-2xl border border-sky-100 bg-white p-5 shadow-card text-right">
@@ -32,7 +41,11 @@ export default function TashkorPage() {
               <ul className="mt-3 space-y-2 text-sm text-navy-500">
                 <li className="flex items-start gap-2">
                   <IconCheck size={16} className="mt-0.5 shrink-0 text-sky-600" />
-                  <span>کارشناس ما پیشنهاد قیمت متناسب با نیاز مطب‌تان را آماده می‌کند.</span>
+                  <span>
+                    {fromAudit
+                      ? "گزارش بررسی مطب را در واتساپ دریافت می‌کنید."
+                      : "کارشناس ما بر اساس نیازتان پیشنهاد مناسب را آماده می‌کند."}
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <IconCheck size={16} className="mt-0.5 shrink-0 text-sky-600" />

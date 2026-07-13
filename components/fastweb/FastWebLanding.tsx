@@ -96,7 +96,7 @@ function BrowserFrame({ children }: { children: ReactNode }) {
         <span className="h-2.5 w-2.5 rounded-full bg-navy-200" aria-hidden="true" />
         <span className="h-2.5 w-2.5 rounded-full bg-navy-200" aria-hidden="true" />
         <span className="mr-auto truncate rounded-md bg-white px-3 py-1 text-[11px] font-medium text-navy-400 ring-1 ring-navy-100">
-          clinic-shiva.araaye.com
+          araaye.com/s/shiva-hearing
         </span>
       </div>
       <div className="pointer-events-none select-none overflow-hidden [&>div]:!rounded-none [&>div]:!border-0 [&>div]:!shadow-none">

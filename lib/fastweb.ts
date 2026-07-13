@@ -366,7 +366,7 @@ export function mapFastWebOrder(
     createdAt: String(row.created_at || ""),
     updatedAt: String(row.updated_at || ""),
     publicPath: `/s/${slug}`,
-    temporaryHostHint: `${slug}.araaye.site`,
+    temporaryHostHint: `araaye.com/s/${slug}`,
   };
   if (opts?.includeAccessToken && typeof row.access_token === "string") {
     mapped.accessToken = row.access_token;

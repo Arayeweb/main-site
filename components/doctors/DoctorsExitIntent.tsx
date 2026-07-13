@@ -94,8 +94,8 @@ export default function DoctorsExitIntent() {
           source: leadSource,
           page: "/doctors",
           contact: digits,
-          goal: "doctor_site",
-          plan: "consultation",
+          goal: "clinic_audit",
+          plan: "free_report",
           channel: "doctors_landing",
           consent: true,
           referrer: document.referrer || null,
@@ -108,7 +108,7 @@ export default function DoctorsExitIntent() {
         setError("ثبت ناموفق بود. دوباره تلاش کنید.");
         return;
       }
-      pushGtmEvent("generate_lead", { source: leadSource, goal: "doctor_site", page: "doctors" });
+      pushGtmEvent("generate_lead", { source: leadSource, goal: "clinic_audit", page: "doctors" });
       setSuccess(true);
     } catch {
       setError("خطا در ارتباط. دوباره تلاش کنید.");
@@ -122,7 +122,7 @@ export default function DoctorsExitIntent() {
       className="fixed inset-0 z-[70] flex items-end justify-center bg-navy-900/60 p-0 backdrop-blur-sm animate-fade-in sm:items-center sm:p-5"
       role="dialog"
       aria-modal="true"
-      aria-label="پیشنهاد قیمت اختصاصی مطب"
+      aria-label="گزارش رایگان مطب"
       onClick={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
       }}
@@ -139,17 +139,16 @@ export default function DoctorsExitIntent() {
 
         {success ? (
           <>
-            <h3 className="text-lg font-extrabold text-sky-700">ثبت شد ✓</h3>
+            <h3 className="text-lg font-extrabold text-sky-700">ثبت شد</h3>
             <p className="mt-2 text-sm leading-relaxed text-navy-500">
-              کارشناس آرایه در کمتر از ۲ ساعت کاری برای پیشنهاد اختصاصی مطب‌تان تماس می‌گیرد.
+              سه ایراد مهم و پیشنهادهای عملی را تا پایان روز کاری در واتساپ می‌فرستیم.
             </p>
           </>
         ) : (
           <>
-            <h3 className="text-lg font-extrabold text-sky-700">یک لحظه، دکتر! 🩺</h3>
+            <h3 className="text-lg font-extrabold text-sky-700">گزارش رایگان مسیر جذب بیمار</h3>
             <p className="mt-2 text-sm leading-relaxed text-navy-500">
-              قبل از رفتن، <b className="text-navy-800">پیشنهاد قیمت اختصاصی مطب‌تان</b> را بگیرید —
-              مشاوره رایگان، بدون هیچ تعهدی.
+              قبل از رفتن، وضعیت حضور مطب در گوگل و مسیر نوبت را برایتان بررسی می‌کنیم.
             </p>
             <form onSubmit={handleSubmit} className="mt-5 flex gap-2" noValidate>
               <input
@@ -170,7 +169,7 @@ export default function DoctorsExitIntent() {
                 disabled={loading}
                 className="rounded-xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition-all hover:bg-sky-700 disabled:opacity-60"
               >
-                {loading ? "..." : "بگیر"}
+                {loading ? "..." : "بفرست"}
               </button>
             </form>
             {error ? (
@@ -178,11 +177,7 @@ export default function DoctorsExitIntent() {
                 {error}
               </p>
             ) : null}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-navy-400">
-              <span>✓ تماس در ۲ ساعت کاری</span>
-              <span>✓ کاملاً رایگان</span>
-              <span>✓ بدون تعهد</span>
-            </div>
+            <p className="mt-4 text-[11px] text-navy-400">تا پایان روز کاری در واتساپ</p>
           </>
         )}
       </div>

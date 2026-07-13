@@ -27,10 +27,10 @@ export default function StepDomain({
       <div>
         <h1 className="text-2xl font-bold">آدرس سایت‌تان را انتخاب کنید</h1>
         <p className="mt-2 text-sm text-slate-600">
-          یک نام برای زیردامنه انتخاب کنید (حداقل ۵ حرف، فقط حروف لاتین و عدد).
+          یک نام برای آدرس سایت انتخاب کنید (حداقل ۵ حرف، فقط حروف لاتین و عدد).
           برای شروع مجبور نیستید دامنه بخرید؛ سایت روی{" "}
           <span dir="ltr" className="font-mono text-xs">
-            *.araaye.site
+            araaye.com/s/...
           </span>{" "}
           تحویل می‌شود.
         </p>
@@ -39,6 +39,12 @@ export default function StepDomain({
       <label className="block text-sm">
         <span className="font-medium">آدرس سایت</span>
         <div className="mt-2 flex overflow-hidden rounded-xl border border-slate-200 focus-within:border-[#0F4C5C]">
+          <span
+            dir="ltr"
+            className="flex items-center border-l border-slate-200 bg-slate-50 px-3 text-sm text-slate-500"
+          >
+            araaye.com/s/
+          </span>
           <input
             value={brief.slugPreference || ""}
             onChange={(e) =>
@@ -52,12 +58,6 @@ export default function StepDomain({
             dir="ltr"
             className="min-w-0 flex-1 px-3 py-2.5 text-sm outline-none"
           />
-          <span
-            dir="ltr"
-            className="flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm text-slate-500"
-          >
-            .araaye.site
-          </span>
         </div>
         <p className="mt-2 text-sm text-slate-600">
           پیش‌نمایش:{" "}
@@ -103,7 +103,7 @@ export default function StepDomain({
               className="rounded-xl border border-slate-200 px-3 py-2 text-sm hover:border-[#0F4C5C] hover:bg-teal-50"
               dir="ltr"
             >
-              {slug}.araaye.site
+              araaye.com/s/{slug}
             </button>
           ))}
         </div>
