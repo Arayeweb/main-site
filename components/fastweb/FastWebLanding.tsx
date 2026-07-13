@@ -4,11 +4,8 @@ import { Check, X } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SectionHeader from "@/components/home/SectionHeader";
-import { ShowcaseHomePreview } from "@/components/home/ShowcaseHomePreview";
 import ShivaClinicHomePreview from "@/components/home/previews/ShivaClinicHomePreview";
-import { designOutputSamples } from "@/lib/outputSamples";
 
-export const FASTWEB_EXAMPLES_ID = "fastweb-examples";
 export const FASTWEB_ORDER_HREF = "/fastweb/new";
 
 export const fastwebFaq = [
@@ -134,12 +131,6 @@ export default function FastWebLanding() {
                   >
                     سایتم را توضیح می‌دهم
                   </Link>
-                  <a
-                    href={`#${FASTWEB_EXAMPLES_ID}`}
-                    className="text-sm font-bold text-navy-600 underline decoration-navy-200 underline-offset-4 transition-colors hover:text-teal-700 hover:decoration-teal-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-                  >
-                    دیدن نمونه‌ها
-                  </a>
                 </div>
 
                 <ul className="mt-8 flex flex-wrap gap-2">
@@ -208,49 +199,6 @@ export default function FastWebLanding() {
                     {step.title}
                   </h3>
                   <p className="mt-2 text-sm leading-7 text-navy-500">{step.text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Portfolio examples */}
-        <section
-          id={FASTWEB_EXAMPLES_ID}
-          className="section-py scroll-mt-24 bg-white"
-        >
-          <div className="container-mx container-px">
-            <SectionHeader
-              badge="نمونه‌کارها"
-              title="نمونه‌هایی از خروجی"
-              subtitle="نمونه‌های واقعی از سایت‌هایی که آرایه برای کسب‌وکارها آماده کرده است."
-            />
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-              {designOutputSamples.map((sample) => (
-                <article key={sample.key} className="group">
-                  <Link
-                    href={sample.showcasePath}
-                    className="block overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-                  >
-                    <ShowcaseHomePreview sampleKey={sample.key} />
-                  </Link>
-                  <div className="mt-4 text-right">
-                    <h3 className="text-base font-extrabold text-navy-900 sm:text-lg">
-                      {sample.name}
-                    </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-navy-500">
-                      {sample.goal}
-                    </p>
-                    <Link
-                      href={sample.showcasePath}
-                      className="mt-3 inline-flex items-center text-sm font-bold text-teal-700 transition-colors hover:text-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-                    >
-                      مشاهده صفحه
-                      <span aria-hidden="true" className="mr-1.5">
-                        ←
-                      </span>
-                    </Link>
-                  </div>
                 </article>
               ))}
             </div>
