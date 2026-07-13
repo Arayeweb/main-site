@@ -406,15 +406,6 @@ export default function AdReadyLanding() {
       </main>
 
       <Footer />
-
-      <div className="adready-sticky-cta">
-        <AdReadyCta
-          location="mobile_sticky"
-          label="پیش‌نمایش رایگان بساز"
-          className="adready-sticky-button"
-          showArrow={false}
-        />
-      </div>
     </div>
   );
 }
