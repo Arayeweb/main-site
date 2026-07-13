@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-export type ShowDemoSlug = "salamat-farda-eye";
+export type ShowDemoSlug = "salamat-farda-eye" | "dr-kordian";
 
 export type ShowDemoLeadSource = `showdemoto-${ShowDemoSlug}`;
 

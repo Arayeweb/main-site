@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import SalamatFardaSite from "@/components/showdemoto/salamat-farda/SalamatFardaSite";
+import KordianDemoEntry from "@/components/showdemoto/dr-kordian/KordianDemoEntry";
 import type { ShowDemoEntry, ShowDemoSlug } from "./types";
 
 const entries: ShowDemoEntry[] = [
@@ -11,6 +12,15 @@ const entries: ShowDemoEntry[] = [
     leadSource: "showdemoto-salamat-farda-eye",
     page: "/showdemoto/salamat-farda-eye",
     Component: SalamatFardaSite,
+  },
+  {
+    slug: "dr-kordian",
+    title: "Dr. Kordian — Ophthalmologist",
+    description:
+      "Premium bilingual medical website (EN/RU) with CMS preview for international eye-care patients.",
+    leadSource: "showdemoto-dr-kordian",
+    page: "/showdemoto/dr-kordian/en",
+    Component: KordianDemoEntry,
   },
 ];
 
