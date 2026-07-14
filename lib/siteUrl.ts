@@ -1,7 +1,11 @@
-/** Canonical site origin — no trailing slash. */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com").replace(
-  /\/$/,
-  ""
+/** Strip trailing slash and www — matches next.config.js canonical host (araaye.com). */
+export function canonicalOrigin(url: string): string {
+  return url.replace(/\/$/, "").replace(/^(https?:\/\/)www\./i, "$1");
+}
+
+/** Canonical site origin — no trailing slash, no www subdomain. */
+export const SITE_URL = canonicalOrigin(
+  process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com"
 );
 
 /** Normalize a path: leading slash, no trailing slash (except root). */

@@ -1,10 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { absoluteUrl, canonicalUrl, normalizePath, SITE_URL } from "@/lib/siteUrl";
+import {
+  absoluteUrl,
+  canonicalOrigin,
+  canonicalUrl,
+  normalizePath,
+  SITE_URL,
+} from "@/lib/siteUrl";
 
 describe("siteUrl", () => {
   it("SITE_URL has no trailing slash and is a valid origin", () => {
     expect(SITE_URL).toMatch(/^https?:\/\/[^/]+$/);
     expect(SITE_URL.endsWith("/")).toBe(false);
+  });
+
+  it("canonicalOrigin strips www and trailing slash", () => {
+    expect(canonicalOrigin("https://www.araaye.com/")).toBe("https://araaye.com");
+    expect(canonicalOrigin("https://araaye.com")).toBe("https://araaye.com");
+    expect(canonicalOrigin("http://www.localhost:3000/")).toBe("http://localhost:3000");
   });
 
   it("normalizePath keeps root and removes trailing slashes", () => {
