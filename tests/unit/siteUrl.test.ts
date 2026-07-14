@@ -19,6 +19,11 @@ describe("siteUrl", () => {
     expect(canonicalOrigin("http://www.localhost:3000/")).toBe("http://localhost:3000");
   });
 
+  it("canonicalOrigin adds https when protocol is missing", () => {
+    expect(canonicalOrigin("araaye.com")).toBe("https://araaye.com");
+    expect(() => new URL(canonicalOrigin("araaye.com"))).not.toThrow();
+  });
+
   it("normalizePath keeps root and removes trailing slashes", () => {
     expect(normalizePath("/")).toBe("/");
     expect(normalizePath("")).toBe("/");

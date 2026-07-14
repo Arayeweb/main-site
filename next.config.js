@@ -52,7 +52,7 @@ const nextConfig = {
     // صفحات استاتیک از public/ سرو می‌شوند؛ این rewriteها مسیرهای تمیز می‌سازند.
     return [
       // Homepage is now served by Next.js app/page.tsx
-      { source: "/about", destination: "/about.html" },
+      // /about from Next.js (app/about/page.tsx) — rewrite حذف شد
       { source: "/clinic", destination: "/clinic.html" },
       // /doctors از Next.js (app/doctors/page.tsx) سرو می‌شود — rewrite حذف شد
       { source: "/restaurant", destination: "/restaurant.html" },
