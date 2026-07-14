@@ -8,7 +8,7 @@ import { CreditCard, Plus } from 'lucide-react';
 import { createInvoice, fetchInvoices, fetchInvoiceSummary, type ApiInvoice } from '@/lib/adminApi';
 import { INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS, mapInvoiceRow } from '@/lib/adminMappers';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
-import { printInvoiceById } from '@/lib/invoicePrint';
+import { invoicePrintHref } from '@/lib/invoicePrint';
 import { ActionMenu } from '@/components/admin/ui/ActionMenu';
 
 export default function PaymentsPage() {
@@ -153,7 +153,8 @@ export default function PaymentsPage() {
                     <td className="px-5 py-3.5 text-slate-500 tabular-nums">{p.paidDate ?? '—'}</td>
                     <td className="px-5 py-3.5">
                       <ActionMenu actions={[
-                        { label: 'دانلود PDF', onClick: () => { void printInvoiceById(p.id); } },
+                        { label: 'مشاهده', href: `/admin/manager/invoices/${p.id}` },
+                        { label: 'چاپ / PDF', href: invoicePrintHref('/admin/manager/invoices', p.id) },
                       ]} />
                     </td>
                   </tr>

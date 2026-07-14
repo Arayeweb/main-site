@@ -19,7 +19,7 @@ import {
 } from '@/lib/adminMappers';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 import { formatCurrency } from '@/lib/utils';
-import { printInvoiceById } from '@/lib/invoicePrint';
+import { invoicePrintHref } from '@/lib/invoicePrint';
 
 function inferContractType(service: string): string {
   const s = service.toLowerCase();
@@ -144,7 +144,7 @@ export function ProposalsListPage({ panelLabel, detailBasePath, newHref }: Propo
                     <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                       <ActionMenu actions={[
                         { label: 'مشاهده', onClick: () => router.push(`${detailBasePath}/${proposal.id}`) },
-                        { label: 'دانلود PDF', onClick: () => { void printInvoiceById(proposal.id); } },
+                        { label: 'چاپ / PDF', href: invoicePrintHref(detailBasePath, proposal.id) },
                       ]} />
                     </td>
                   </tr>
@@ -246,7 +246,7 @@ export function ProposalDetailPage({
                 تبدیل به قرارداد
               </button>
             )}
-            <InvoicePdfButton invoiceId={id} invoice={invoice ?? undefined} variant="primary" />
+            <InvoicePdfButton printHref={invoicePrintHref(backHref, id)} variant="primary" />
             <Link href={backHref} className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
               <ArrowRight className="w-4 h-4" />
               بازگشت

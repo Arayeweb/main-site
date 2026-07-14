@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import SalamatFardaSite from "@/components/showdemoto/salamat-farda/SalamatFardaSite";
 import KordianDemoEntry from "@/components/showdemoto/dr-kordian/KordianDemoEntry";
+import PediatricSite from "@/components/showdemoto/pediatric/PediatricSite";
 import type { ShowDemoEntry, ShowDemoSlug } from "./types";
 
 const entries: ShowDemoEntry[] = [
@@ -21,6 +22,15 @@ const entries: ShowDemoEntry[] = [
     leadSource: "showdemoto-dr-kordian",
     page: "/showdemoto/dr-kordian/en",
     Component: KordianDemoEntry,
+  },
+  {
+    slug: "dr-ahmadi-pediatric",
+    title: "مطب کودکان نوین — دکتر نازنین احمدی",
+    description:
+      "سایت نمونه برای متخصص اطفال و کودکان با چت‌بات نوبت‌دهی — طراحی روشن و دوستانه برای ارائه به مشتری.",
+    leadSource: "showdemoto-dr-ahmadi-pediatric",
+    page: "/showdemoto/dr-ahmadi-pediatric",
+    Component: PediatricSite,
   },
 ];
 

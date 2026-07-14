@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FileText, ArrowRight } from 'lucide-react';
+import { FileText, ArrowRight, Plus } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { StatusBadge } from '@/components/admin/ui/StatusBadge';
 import { FilterBar } from '@/components/admin/ui/FilterBar';
@@ -14,14 +14,15 @@ import { fetchInvoiceById, fetchInvoices } from '@/lib/adminApi';
 import { InvoicePdfButton } from '@/components/admin/invoices/InvoicePdfButton';
 import { formatCurrency } from '@/lib/utils';
 import { INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS, mapInvoiceRow } from '@/lib/adminMappers';
-import { printInvoiceById } from '@/lib/invoicePrint';
+import { invoicePrintHref } from '@/lib/invoicePrint';
 
 interface InvoicesListProps {
   panelLabel: string;
   detailBasePath: string;
+  newHref?: string;
 }
 
-export function InvoicesListPage({ panelLabel, detailBasePath }: InvoicesListProps) {
+export function InvoicesListPage({ panelLabel, detailBasePath, newHref }: InvoicesListProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -51,6 +52,17 @@ export function InvoicesListPage({ panelLabel, detailBasePath }: InvoicesListPro
         description="مدیریت و دانلود فاکتورهای صادر شده"
         icon={FileText}
         breadcrumb={[{ label: panelLabel }, { label: 'فاکتورها' }]}
+        actions={
+          newHref ? (
+            <Link
+              href={newHref}
+              className="flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              فاکتور جدید
+            </Link>
+          ) : undefined
+        }
       />
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -107,8 +119,8 @@ export function InvoicesListPage({ panelLabel, detailBasePath }: InvoicesListPro
                     <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                       <ActionMenu
                         actions={[
-                          { label: 'مشاهده', onClick: () => router.push(`${detailBasePath}/${inv.id}`) },
-                          { label: 'دانلود PDF', onClick: () => { void printInvoiceById(inv.id); } },
+                          { label: 'مشاهده', href: `${detailBasePath}/${inv.id}` },
+                          { label: 'چاپ / PDF', href: invoicePrintHref(detailBasePath, inv.id) },
                         ]}
                       />
                     </td>
@@ -159,7 +171,7 @@ export function InvoiceDetailPage({
         breadcrumb={[{ label: panelLabel }, { label: 'فاکتورها', href: backHref }, { label: invoice.invoice_number }]}
         actions={
           <div className="flex items-center gap-2">
-            <InvoicePdfButton invoiceId={id} invoice={invoice} variant="primary" />
+            <InvoicePdfButton printHref={invoicePrintHref(backHref, id)} variant="primary" />
             <Link href={backHref} className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
               <ArrowRight className="w-4 h-4" />
               بازگشت

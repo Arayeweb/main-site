@@ -179,24 +179,26 @@ export function buildInvoicePrintHtml(
     `</body></html>`;
 }
 
+export function invoicePrintHref(basePath: string, invoiceId: string): string {
+  return `${basePath.replace(/\/$/, '')}/${invoiceId}/print`;
+}
+
+export function downloadInvoiceAsHtml(inv: ApiInvoice, company?: InvoicePrintCompany): void {
+  const html = buildInvoicePrintHtml(inv, company);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${inv.invoice_number || 'invoice'}.html`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/** @deprecated Use invoice print page route instead of popup */
 export function printInvoice(inv: ApiInvoice, company?: InvoicePrintCompany): void {
-  try {
-    const html = buildInvoicePrintHtml(inv, company);
-    const win = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
-    if (!win) {
-      alert('پنجره چاپ باز نشد. لطفاً popup blocker را غیرفعال کنید.');
-      return;
-    }
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    win.onload = () => {
-      win.print();
-    };
-  } catch {
-    alert('خطا در ساخت فایل PDF فاکتور');
-  }
+  downloadInvoiceAsHtml(inv, company);
 }
 
 export function companyFromSettings(settings: Record<string, unknown> | undefined): InvoicePrintCompany {
@@ -211,22 +213,24 @@ export function companyFromSettings(settings: Record<string, unknown> | undefine
   };
 }
 
-export async function printInvoiceById(invoiceId: string, invoice?: ApiInvoice): Promise<boolean> {
-  const { fetchInvoiceById, fetchCompanySettings } = await import('@/lib/adminApi');
-  if (invoice) {
-    const settingsRes = await fetchCompanySettings();
-    const company = settingsRes.ok ? companyFromSettings(settingsRes.data.settings) : undefined;
-    printInvoice(invoice, company);
+export async function printInvoiceById(
+  invoiceId: string,
+  invoice?: ApiInvoice,
+  printBasePath?: string
+): Promise<boolean> {
+  if (printBasePath && typeof window !== 'undefined') {
+    window.location.assign(invoicePrintHref(printBasePath, invoiceId));
     return true;
   }
-  const [invoiceRes, settingsRes] = await Promise.all([
-    fetchInvoiceById(invoiceId),
-    fetchCompanySettings(),
-  ]);
 
+  const { fetchInvoiceById, fetchCompanySettings } = await import('@/lib/adminApi');
+  const invoiceRes = invoice
+    ? { ok: true as const, data: { invoice } }
+    : await fetchInvoiceById(invoiceId);
   if (!invoiceRes.ok || !invoiceRes.data.invoice) return false;
 
+  const settingsRes = await fetchCompanySettings();
   const company = settingsRes.ok ? companyFromSettings(settingsRes.data.settings) : undefined;
-  printInvoice(invoiceRes.data.invoice, company);
+  downloadInvoiceAsHtml(invoiceRes.data.invoice, company);
   return true;
 }

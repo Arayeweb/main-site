@@ -3,6 +3,12 @@
 import { InvoicesListPage } from '@/components/admin/pages/InvoicesPage';
 
 export default function ManagerInvoicesPage() {
-  return <InvoicesListPage panelLabel="مدیریت" detailBasePath="/admin/manager/invoices" />;
+  return (
+    <InvoicesListPage
+      panelLabel="مدیریت"
+      detailBasePath="/admin/manager/invoices"
+      newHref="/admin/manager/invoices/new"
+    />
+  );
 }
 
