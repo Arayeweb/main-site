@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 
 const ROLE_DEFAULT_PANEL: Record<string, string> = {
@@ -22,7 +21,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -49,10 +47,10 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Redirect: honour ?next param first, then fall back to role default
+      // Full navigation so middleware sees the new session cookie (router.push can skip it).
       const next = new URLSearchParams(window.location.search).get('next');
       const dest = next ?? ROLE_DEFAULT_PANEL[data.user.role] ?? '/admin/select-panel';
-      router.push(dest);
+      window.location.assign(dest);
     } catch {
       setError('خطای شبکه. اتصال اینترنت را بررسی کنید.');
       setLoading(false);

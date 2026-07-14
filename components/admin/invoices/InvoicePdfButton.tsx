@@ -28,6 +28,8 @@ export function InvoicePdfButton({
     try {
       const ok = await printInvoiceById(invoiceId, invoice);
       if (!ok) alert('خطا در بارگذاری فاکتور');
+    } catch {
+      alert('خطا در ساخت فایل PDF فاکتور');
     } finally {
       setBusy(false);
     }
