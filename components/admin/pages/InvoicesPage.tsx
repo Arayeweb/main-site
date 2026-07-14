@@ -138,6 +138,7 @@ export function InvoiceDetailPage({
   if (error) return <AdminErrorState error={error} />;
 
   const invoice = data?.invoice ?? null;
+  const items = invoice && Array.isArray(invoice.items) ? invoice.items : [];
   if (!invoice) {
     return (
       <div className="text-center py-20 text-slate-500" dir="rtl">
@@ -186,7 +187,7 @@ export function InvoiceDetailPage({
         {invoice.terms && <InfoRow label="شرایط پرداخت" value={invoice.terms} />}
       </div>
 
-      {invoice.items && invoice.items.length > 0 && (
+      {items.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-100 text-sm font-bold text-slate-900">اقلام</div>
           <div className="overflow-x-auto">
@@ -201,7 +202,7 @@ export function InvoiceDetailPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {invoice.items.map((item, idx) => (
+                {items.map((item, idx) => (
                   <tr key={idx}>
                     <td className="px-4 py-3 text-slate-800">{item.title}</td>
                     <td className="px-4 py-3 tabular-nums">{item.qty}</td>

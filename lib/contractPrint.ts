@@ -47,15 +47,19 @@ export function buildContractPrintHtml(contract: ApiContract): string {
 }
 
 export function printContract(contract: ApiContract): void {
-  const html = buildContractPrintHtml(contract);
-  const win = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
-  if (!win) {
-    alert('پنجره چاپ باز نشد. لطفاً popup blocker را غیرفعال کنید.');
-    return;
+  try {
+    const html = buildContractPrintHtml(contract);
+    const win = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
+    if (!win) {
+      alert('پنجره چاپ باز نشد. لطفاً popup blocker را غیرفعال کنید.');
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.onload = () => win.print();
+  } catch {
+    alert('خطا در ساخت فایل PDF قرارداد');
   }
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  win.onload = () => win.print();
 }

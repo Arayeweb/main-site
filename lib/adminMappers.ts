@@ -319,7 +319,7 @@ export function mapContractRow(c: import('@/lib/adminApi').ApiContract) {
     signatureStatus: c.signature_status,
     paymentStatus: c.payment_status,
     scopeOfWork: c.scope_of_work ?? '',
-    deliverables: c.deliverables ?? [],
+    deliverables: Array.isArray(c.deliverables) ? c.deliverables : [],
     paymentTerms: c.payment_terms ?? '',
     supportTerms: c.support_terms,
     projectId: c.project_id,

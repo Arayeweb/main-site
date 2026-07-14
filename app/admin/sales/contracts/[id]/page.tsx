@@ -1,10 +1,11 @@
-'use client';
-
-import { use } from 'react';
 import { ContractDetailPage } from '@/components/admin/pages/ContractDetailPage';
 
-export default function SalesContractDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default async function SalesContractDetailPage({
+  params,
+}: {
+  params: { id: string } | Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   return (
     <ContractDetailPage
       id={id}
