@@ -9,7 +9,13 @@
 
 ### /start
 - [ ] `/start` shows welcome message with main menu keyboard
+- [ ] Welcome copy guides the user to press چت سریع and pick a model
 - [ ] Forced join gate still works when channels are required
+
+### Unified chat entry
+- [ ] Sending any text before a model is selected shows the model picker (AI is NOT called)
+- [ ] After selecting a model, the same text flow reaches the AI
+- [ ] No implicit economy fallback when no model is chosen
 
 ### Main menu
 - [ ] Main menu shows: چت سریع، مقایسه، همفکری، خرید اعتبار، پشتیبانی، پاک کردن تاریخچه
@@ -28,10 +34,13 @@
 
 ### Chat response lifecycle
 - [ ] Send a simple question after model selection
-- [ ] Bot sends exactly one loading message: `⏳ دارم فکر می‌کنم...`
+- [ ] Loading message `⏳ دارم فکر می‌کنم...` appears immediately (before quota/history reads)
+- [ ] While the model streams, the loading message updates progressively (throttled ~1s)
 - [ ] Loading message is **edited** into the final answer (no separate answer message)
-- [ ] Final answer is short and Persian-first
+- [ ] Final answer is short and Persian-first, same tone as the web (Arena) direct chat
+- [ ] Simple greetings ("سلام") go through the model too (no hardcoded shortcut reply)
 - [ ] No extra compare CTA message after every answer
+- [ ] Insufficient-credit / limit messages replace the loading message (no stuck `⏳`)
 
 ### Paid model with credits
 - [ ] Select paid model with enough credit
@@ -49,8 +58,9 @@
 
 ### Clear history
 - [ ] Press **پاک کردن تاریخچه**
-- [ ] One short confirmation message
-- [ ] Chat context cleared; payment history untouched
+- [ ] One short confirmation message ("همین مدل فعاله — سوال بعدی را بفرست")
+- [ ] Chat context cleared; selected model and state preserved (no re-pick needed)
+- [ ] Payment history untouched
 
 ## Error handling
 

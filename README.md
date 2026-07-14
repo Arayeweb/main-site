@@ -41,26 +41,32 @@
 | `POST /api/support/tickets` | ثبت تیکت پشتیبانی |
 | `POST/GET/DELETE /api/admin/login` | ورود/بررسی نشست/خروج ادمین |
 | `GET/POST/PATCH /api/admin/projects` | لیست/ساخت/ویرایش پروژه‌ها (محافظت‌شده) |
-| `POST /api/telegram` | webhook ربات تلگرام (دستیار مشاورهٔ آرایه) |
+| `POST /api/telegram/webhook` | webhook ربات تلگرام AI (چت با مدل‌ها) |
+| `POST /api/telegram` | webhook قدیمی مشاور فروش (`lib/telegramBot.ts`) |
 | `GET/PATCH /api/admin/tickets` | لیست/تغییر وضعیت تیکت‌ها (محافظت‌شده) |
 
-## ربات تلگرام (دستیار آرایه)
+## ربات تلگرام
 
-ربات در `lib/telegramBot.ts` پیاده‌سازی شده و با OpenRouter به یک مدل زبانی متصل می‌شود (`OPENROUTER_MODEL`، پیش‌فرض `openai/gpt-4o`). نقش آن مشاورهٔ فروش هوشمند برای مطب‌ها، کلینیک‌ها و مراکز درمانی است:
+دو ربات جدا با یک `TELEGRAM_BOT_TOKEN` (فقط یکی را فعال کنید):
 
-- خوشامد گرم و پرسیدن دردسر اصلی مطب یا مرکز درمانی.
-- توضیح راه‌حل آرایه بر اساس درد مخاطب (نوبت‌دهی، جذب بیمار، سایت، پاسخگویی ۲۴ساعته).
-- قیمت دقیق نمی‌دهد؛ آن را بهانه‌ای برای وصل کردن به همکار انسانی می‌کند.
-- شماره تماس را می‌گیرد و یک خلاصهٔ لید داغ (`🔴 لید داغ`) برای `TELEGRAM_ADMIN_CHAT_ID` می‌فرستد.
-- لید همچنین در جدول `leads` با `source=telegram_bot` ذخیره می‌شود.
+| ربات | webhook | کد |
+|------|---------|-----|
+| **AI چت** (مدل‌ها، سهمیه رایگان) | `https://araaye.com/api/telegram/webhook` | `lib/telegram/handler.ts` |
+| مشاور فروش (لید) | `https://araaye.com/api/telegram` | `lib/telegramBot.ts` |
 
-برای راه‌اندازی webhook:
+**مهم:** `NEXT_PUBLIC_SITE_URL` و webhook باید بدون `www` باشند (`https://araaye.com`). دامنهٔ `www` به apex ریدایرکت می‌شود و تلگرام redirect را دنبال نمی‌کند.
+
+برای راه‌اندازی webhook ربات AI:
 
 ```bash
-curl -F "url=https://YOUR_SITE/api/telegram" \
-     -F "secret_token=YOUR_TELEGRAM_WEBHOOK_SECRET" \
-     https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook
+node scripts/telegram-set-webhook.mjs
+# یا دستی:
+curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://araaye.com/api/telegram/webhook","secret_token":"YOUR_TELEGRAM_WEBHOOK_SECRET","allowed_updates":["message","callback_query"]}'
 ```
+
+بررسی: `curl https://araaye.com/api/telegram/health` و `getWebhookInfo` در Bot API.
 
 ## پنل پشتیبانی
 

@@ -108,9 +108,18 @@ export function seedTelegramUser(
     phone?: string;
     total_messages?: number;
     created_at?: string;
+    selectedModelId?: string;
   }
 ) {
   type TelegramChatTurn = { role: "user" | "assistant"; content: string };
+  const stateData: Record<string, unknown> = opts.selectedModelId
+    ? {
+        selectedModelId: opts.selectedModelId,
+        mode: "quick_chat",
+        selectedModel: opts.selectedModelId,
+        selectedAt: new Date().toISOString(),
+      }
+    : {};
   const row = {
     id: opts.id || `tg-${opts.telegram_id}`,
     telegram_id: opts.telegram_id,
@@ -127,7 +136,7 @@ export function seedTelegramUser(
     total_web_clicks: 0,
     total_payments: 0,
     state: opts.state || "idle",
-    state_data: {},
+    state_data: stateData,
     chat_context: [] as TelegramChatTurn[],
     is_chat_running: false,
     created_at: opts.created_at || new Date().toISOString(),

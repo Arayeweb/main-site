@@ -59,7 +59,7 @@ export function modelPickerMessage(): string {
 }
 
 export function modelSelectedMessage(model: TelegramChatModel): string {
-  const shortName = model.subtitle.split("·").pop()?.trim() || model.label;
+  const shortName = getModel(model.id)?.name || model.label;
   if (model.tier === "free") {
     return `${shortName} فعاله. سوالت را بفرست.`;
   }

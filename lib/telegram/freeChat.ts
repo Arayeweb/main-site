@@ -33,7 +33,8 @@ function trimHistory(history: ChatContextEntry[], maxMessages = 4): ChatContextE
 export async function runFreeDirectChat(
   prompt: string,
   history: ChatContextEntry[],
-  modelId = "economy"
+  modelId = "economy",
+  onDelta?: (fullText: string) => void
 ): Promise<FreeChatResult> {
   const { freeChatMaxTokens, freeChatTimeoutMs } = getTelegramConfig();
   const ac = new AbortController();
@@ -60,7 +61,10 @@ export async function runFreeDirectChat(
       },
       ac.signal
     )) {
-      if (ev.type === "delta") text += ev.text;
+      if (ev.type === "delta") {
+        text += ev.text;
+        onDelta?.(text);
+      }
       if (ev.type === "error") {
         clearTimeout(timer);
         return { ok: false, error: "provider_error" };

@@ -112,7 +112,7 @@ describe("telegram webhook — integration", () => {
   });
 
   it("2. Telegram update text routes to chat", async () => {
-    seedTelegramUser(tgDb.db, { telegram_id: 20, state: "idle" });
+    seedTelegramUser(tgDb.db, { telegram_id: 20, state: "chat", selectedModelId: "economy" });
     const res = await webhookPost(
       makeRequest("/api/telegram/webhook", {
         method: "POST",
@@ -139,6 +139,8 @@ describe("telegram webhook — integration", () => {
       free_daily_used: 3,
       araaye_user_id: null,
       created_at: yesterday,
+      state: "chat",
+      selectedModelId: "economy",
     });
     await webhookPost(
       makeRequest("/api/telegram/webhook", {
@@ -160,7 +162,7 @@ describe("telegram webhook — integration", () => {
 
   it("4. provider failure sends friendly error", async () => {
     mockStreamChat.mockImplementation(() => failStream());
-    seedTelegramUser(tgDb.db, { telegram_id: 22, state: "idle" });
+    seedTelegramUser(tgDb.db, { telegram_id: 22, state: "chat", selectedModelId: "economy" });
     await webhookPost(
       makeRequest("/api/telegram/webhook", {
         method: "POST",
@@ -238,7 +240,8 @@ describe("telegram webhook — integration", () => {
   it("7. Telegram direct chat only uses last 4 history messages", async () => {
     const row = seedTelegramUser(tgDb.db, {
       telegram_id: 40,
-      state: "idle",
+      state: "chat",
+      selectedModelId: "economy",
     });
     row.chat_context = [
       { role: "user", content: "1" },
@@ -260,7 +263,7 @@ describe("telegram webhook — integration", () => {
   });
 
   it("8. Telegram free path caps max_tokens", async () => {
-    seedTelegramUser(tgDb.db, { telegram_id: 41, state: "idle" });
+    seedTelegramUser(tgDb.db, { telegram_id: 41, state: "chat", selectedModelId: "economy" });
     await webhookPost(
       makeRequest("/api/telegram/webhook", {
         method: "POST",
@@ -273,7 +276,7 @@ describe("telegram webhook — integration", () => {
   });
 
   it("9. Telegram direct chat does not call compare/council orchestrator", async () => {
-    seedTelegramUser(tgDb.db, { telegram_id: 42, state: "idle" });
+    seedTelegramUser(tgDb.db, { telegram_id: 42, state: "chat", selectedModelId: "economy" });
     await webhookPost(
       makeRequest("/api/telegram/webhook", {
         method: "POST",
@@ -282,5 +285,19 @@ describe("telegram webhook — integration", () => {
       })
     );
     expect(prepareRun).not.toHaveBeenCalled();
+  });
+
+  it("10. message without a selected model shows picker, not AI", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 50, state: "idle" });
+    await webhookPost(
+      makeRequest("/api/telegram/webhook", {
+        method: "POST",
+        headers: { "x-telegram-bot-api-secret-token": "test-secret" },
+        body: { update_id: 10, message: { message_id: 10, chat: { id: 210 }, from: { id: 50 }, text: "بدون مدل" } },
+      })
+    );
+    expect(mockStreamChat).not.toHaveBeenCalled();
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain("مدل");
   });
 });

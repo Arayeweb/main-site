@@ -37,6 +37,7 @@ export async function runPaidDirectChat(opts: {
   prompt: string;
   history: ChatContextEntry[];
   modelId?: string;
+  onDelta?: (fullText: string) => void;
 }): Promise<PaidChatResult> {
   const modelId = opts.modelId || "economy";
   const { freeChatTimeoutMs } = getTelegramConfig();
@@ -86,7 +87,10 @@ export async function runPaidDirectChat(opts: {
       },
       ac.signal
     )) {
-      if (ev.type === "delta") text += ev.text;
+      if (ev.type === "delta") {
+        text += ev.text;
+        opts.onDelta?.(text);
+      }
       if (ev.type === "error") return { ok: false, error: ev.errorCode };
       if (ev.type === "done") {
         text = ev.text || text;

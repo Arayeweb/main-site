@@ -2,7 +2,7 @@
 // Telegram acquisition bot — configuration from env
 // =========================================================
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.araaye.com";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export function getTelegramConfig() {
   const timeoutMs = Number(process.env.TELEGRAM_PROVIDER_TIMEOUT_MS || "10000");

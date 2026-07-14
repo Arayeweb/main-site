@@ -40,9 +40,64 @@ export type TelegramApiResult = {
   description?: string;
 };
 
+/** ویرایش با همان متن قبلی خطای «not modified» می‌دهد — آن را موفق تلقی کن. */
+function isNotModified(res: TelegramApiResult): boolean {
+  return Boolean(res.description && res.description.includes("not modified"));
+}
+
 export async function sendLoadingMessage(chatId: number): Promise<number | null> {
   const res = (await sendMessage(chatId, LOADING_MESSAGE)) as TelegramApiResult;
   return res.ok ? (res.result?.message_id ?? null) : null;
+}
+
+/** حداکثر طول پیش‌نمایش استریم — کمی زیر سقف تلگرام تا escape از حد نگذرد. */
+const PARTIAL_PREVIEW_MAX = 3800;
+
+/**
+ * ویرایشگر تدریجی پیام بارگذاری در حین استریم مدل.
+ * `onDelta` را روی هر توکن صدا بزن؛ خودش throttle و رشد حداقلی را رعایت می‌کند.
+ */
+export function createPartialEditor(
+  chatId: number,
+  messageId: number | null,
+  opts: { throttleMs?: number; minGrowthChars?: number } = {}
+): { onDelta: (fullText: string) => void; firstEditAt: () => number | null } {
+  const throttleMs = opts.throttleMs ?? 900;
+  const minGrowth = opts.minGrowthChars ?? 40;
+  let lastEditAt = 0;
+  let lastRenderedLen = 0;
+  let lastRendered = "";
+  let inflight = false;
+  let firstEditAt: number | null = null;
+
+  async function render(fullText: string) {
+    if (!messageId || inflight) return;
+    const trimmed = fullText.trim();
+    if (!trimmed || trimmed === lastRendered) return;
+    const now = Date.now();
+    if (now - lastEditAt < throttleMs) return;
+    if (trimmed.length - lastRenderedLen < minGrowth) return;
+
+    const preview =
+      trimmed.length > PARTIAL_PREVIEW_MAX ? trimmed.slice(0, PARTIAL_PREVIEW_MAX) : trimmed;
+    inflight = true;
+    lastEditAt = now;
+    lastRendered = trimmed;
+    lastRenderedLen = trimmed.length;
+    try {
+      const res = (await editMessageText(chatId, messageId, preview)) as TelegramApiResult;
+      if (res.ok && firstEditAt === null) firstEditAt = Date.now();
+    } finally {
+      inflight = false;
+    }
+  }
+
+  return {
+    onDelta(fullText: string) {
+      void render(fullText);
+    },
+    firstEditAt: () => firstEditAt,
+  };
 }
 
 export async function editOrSendMessage(
@@ -75,7 +130,7 @@ export async function deliverBotResponse(
       chunks[0],
       firstExtra
     )) as TelegramApiResult;
-    if (!edited.ok) {
+    if (!edited.ok && !isNotModified(edited)) {
       await sendMessage(chatId, chunks[0], firstExtra);
     }
   } else {

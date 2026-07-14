@@ -7,7 +7,13 @@
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.araaye.com").replace(/\/$/, "");
+
+/** Canonical origin — no www (next.config redirects www → apex; Telegram won't follow). */
+function canonicalSiteUrl(url) {
+  return url.replace(/\/$/, "").replace(/^(https?:\/\/)www\./i, "$1");
+}
+
+const siteUrl = canonicalSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com");
 
 if (!token) {
   console.error("TELEGRAM_BOT_TOKEN is required");

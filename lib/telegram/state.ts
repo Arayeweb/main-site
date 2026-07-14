@@ -70,13 +70,13 @@ export async function getChatContext(userId: string): Promise<ChatContextEntry[]
 }
 
 export async function clearChatContext(userId: string) {
+  // فقط تاریخچه چت پاک می‌شود؛ مدل انتخاب‌شده و state حفظ می‌شوند تا کاربر
+  // بدون انتخاب دوبارهٔ مدل، گفتگو را ادامه دهد.
   const supabase = getSupabaseAdmin();
   await supabase
     .from("telegram_users")
     .update({
       chat_context: [],
-      state: "idle",
-      state_data: {},
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId);

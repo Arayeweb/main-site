@@ -149,9 +149,13 @@ describe("telegram acquisition — unit", () => {
       free_daily_used: 3,
       araaye_user_id: null,
       created_at: yesterday,
+      state: "chat",
+      selectedModelId: "economy",
     });
     await handleTextMessage(100, 11, tgDb.db.tables.telegram_users[0] as never, "سوال");
-    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    const text = [...sendMessage.mock.calls, ...editMessageText.mock.calls]
+      .map((c) => c[2] ?? c[1])
+      .join(" ");
     expect(text).toContain("سهمیه رایگان");
     expect(mockStreamChat).not.toHaveBeenCalled();
   });
@@ -321,12 +325,12 @@ describe("telegram acquisition — unit", () => {
     expect(editMessageReplyMarkup).toHaveBeenCalled();
   });
 
-  it("17. greeting shortcut پاسخ می‌دهد و provider صدا نمی‌خورد", async () => {
-    seedTelegramUser(tgDb.db, { telegram_id: 30, state: "idle" });
+  it("17. greeting با مدل انتخاب‌شده از خود مدل پاسخ می‌گیرد (بدون shortcut ثابت)", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 30, state: "chat", selectedModelId: "economy" });
     const user = tgDb.db.tables.telegram_users[0] as never;
     await handleTextMessage(100, 30, user, "سلام");
-    expect(mockStreamChat).not.toHaveBeenCalled();
-    expect(sendMessage.mock.calls.some((c) => String(c[1]).includes("آماده‌ام"))).toBe(true);
+    expect(mockStreamChat).toHaveBeenCalled();
+    expect(sendMessage.mock.calls.some((c) => String(c[1]).includes("آماده‌ام"))).toBe(false);
   });
 
   it("18. مدل سریع به provider model سریع map می‌شود", () => {
@@ -337,7 +341,7 @@ describe("telegram acquisition — unit", () => {
   });
 
   it("19. typing قبل از provider ارسال می‌شود", async () => {
-    seedTelegramUser(tgDb.db, { telegram_id: 31, state: "idle" });
+    seedTelegramUser(tgDb.db, { telegram_id: 31, state: "chat", selectedModelId: "economy" });
     const user = tgDb.db.tables.telegram_users[0] as never;
     await handleTextMessage(100, 31, user, "سوال تست");
     expect(sendTypingAction).toHaveBeenCalled();
@@ -348,7 +352,7 @@ describe("telegram acquisition — unit", () => {
 
   it("20. timeout or provider error edits loading message", async () => {
     mockStreamChat.mockReset().mockImplementation(() => hangingStream());
-    seedTelegramUser(tgDb.db, { telegram_id: 32, state: "idle" });
+    seedTelegramUser(tgDb.db, { telegram_id: 32, state: "chat", selectedModelId: "economy" });
     const user = tgDb.db.tables.telegram_users[0] as never;
     await handleTextMessage(100, 32, user, "سوال timeout");
     const text = [...sendMessage.mock.calls, ...editMessageText.mock.calls]
@@ -360,7 +364,7 @@ describe("telegram acquisition — unit", () => {
   });
 
   it("21. AI response edits loading message instead of sending a second answer", async () => {
-    seedTelegramUser(tgDb.db, { telegram_id: 33, state: "idle" });
+    seedTelegramUser(tgDb.db, { telegram_id: 33, state: "chat", selectedModelId: "economy" });
     const user = tgDb.db.tables.telegram_users[0] as never;
     await handleTextMessage(100, 33, user, "سوال تست");
     expect(sendMessage).toHaveBeenCalledWith(100, expect.stringContaining("دارم فکر"));
@@ -409,7 +413,7 @@ describe("telegram acquisition — unit", () => {
 
   it("24. edit failure falls back to sendMessage", async () => {
     editMessageText.mockResolvedValueOnce({ ok: false, description: "message cant be edited" });
-    seedTelegramUser(tgDb.db, { telegram_id: 36, state: "idle" });
+    seedTelegramUser(tgDb.db, { telegram_id: 36, state: "chat", selectedModelId: "economy" });
     const user = tgDb.db.tables.telegram_users[0] as never;
     await handleTextMessage(100, 36, user, "سوال fallback");
     expect(sendMessage).toHaveBeenCalledWith(100, "پاسخ تست", expect.anything());

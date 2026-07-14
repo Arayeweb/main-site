@@ -20,6 +20,7 @@ import {
   mediaWebCtaKeyboard,
 } from "./keyboards";
 import {
+  createPartialEditor,
   deliverBotResponse,
   editOrSendMessage,
   removeInlineKeyboard,
@@ -96,8 +97,6 @@ interface TelegramMessage {
 }
 
 let commandsRegistered = false;
-const TELEGRAM_GREETING_REPLY = `سلام، آماده‌ام.
-سوالت را همینجا بنویس تا جوابش را برات آماده کنم.`;
 
 function modelStateData(modelId: string): Record<string, unknown> {
   return {
@@ -137,11 +136,6 @@ function isPerfEnabled(): boolean {
 function perfLog(label: string, payload: Record<string, unknown>) {
   if (!isPerfEnabled()) return;
   console.log(`[telegram/perf] ${label}`, payload);
-}
-
-function isSimpleGreeting(text: string): boolean {
-  const normalized = text.trim().toLowerCase();
-  return ["سلام", "درود", "hi", "hello", "چطوری", "خوبی", "شروع"].includes(normalized);
 }
 
 async function ensureCommands() {
@@ -535,7 +529,9 @@ export async function handleTextMessage(
   marks.session_load_ms = Date.now() - startedAt;
   const selectedModelId = stateData.selectedModelId as string | undefined;
 
-  if (user.state === "chat" && !selectedModelId) {
+  // مسیر واحد: تا وقتی مدلی انتخاب نشده، همیشه انتخابگر مدل نشان داده می‌شود
+  // (نه پاسخ خودکار با economy).
+  if (!selectedModelId) {
     await sendMessage(chatId, COPY.modelRequired, {
       reply_markup: modelPickerKeyboard(),
     });
@@ -557,12 +553,25 @@ export async function handleTextMessage(
   let loadingMessageId: number | null = null;
 
   try {
-    const modelId = (selectedModelId as string) || "economy";
+    const modelId = selectedModelId;
     const model = getTelegramChatModel(modelId);
     const modelInfo = getModel(modelId);
-    const quotaStart = Date.now();
-    const quota = await getFreeQuotaStatus(telegramId);
-    marks.quota_credit_check_ms = Date.now() - quotaStart;
+
+    // حس سرعت: بلافاصله typing + پیام بارگذاری، قبل از خواندن‌های DB و مدل.
+    void sendTypingAction(chatId);
+    loadingMessageId = await sendLoadingMessage(chatId);
+    marks.loading_sent_ms = Date.now() - startedAt;
+
+    // خواندن سهمیه و تاریخچه به‌صورت موازی تا زمان تا اولین توکن کمتر شود.
+    const readStart = Date.now();
+    const [quota, history] = await Promise.all([
+      getFreeQuotaStatus(telegramId),
+      getChatContext(user.id),
+    ]);
+    marks.quota_credit_check_ms = Date.now() - readStart;
+    marks.history_load_ms = Date.now() - readStart;
+    const historyForPrompt = history.slice(-4);
+
     let responseText = "";
     let aiRunId: string | null = null;
     let usedFree = false;
@@ -570,49 +579,15 @@ export async function handleTextMessage(
     let completionTokens = 0;
     let providerTtftMs: number | null = null;
     let providerTotalMs = 0;
-    let fallbackUsed = false;
+    const fallbackUsed = false;
     let timeoutUsed = getTelegramConfig().freeChatTimeoutMs;
-    const historyStart = Date.now();
-    const history = await getChatContext(user.id);
-    marks.history_load_ms = Date.now() - historyStart;
-    const historyForPrompt = history.slice(-4);
     const providerName = "openrouter";
-    const typingStart = Date.now();
-    void sendTypingAction(chatId);
-    marks.telegram_typing_ack_ms = Date.now() - typingStart;
     const creditCost = creditCostForTelegramModel(modelId);
-    const useFreeTier =
-      model?.tier === "free" && quota.ok && quota.canUse;
+    const useFreeTier = model?.tier === "free" && quota.ok && quota.canUse;
 
     const reportAiError = async (message: string, keyboard?: InlineKeyboard) => {
       await deliverBotResponse(chatId, loadingMessageId, message, keyboard ? { reply_markup: keyboard } : {});
     };
-
-    if (isSimpleGreeting(text)) {
-      await sendMessage(chatId, TELEGRAM_GREETING_REPLY);
-      marks.telegram_send_ms = Date.now() - startedAt;
-      marks.total_ms = Date.now() - startedAt;
-      perfLog("chat_message", {
-        ...marks,
-        parse_update_ms: 0,
-        prompt_build_ms: 0,
-        provider_request_start_ms: null,
-        provider_ttft_ms: null,
-        provider_total_ms: 0,
-        post_process_ms: 0,
-        db_save_ms: 0,
-        selected_model_key: modelId,
-        actual_provider_model_id: modelInfo?.routeId ?? modelId,
-        provider_name: "local_shortcut",
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        max_tokens: 0,
-        history_messages_count: 0,
-        fallback_used: false,
-        timeout_used: 0,
-      });
-      return;
-    }
 
     if (!useFreeTier) {
       if (model?.tier === "premium") {
@@ -621,9 +596,7 @@ export async function handleTextMessage(
           credits = await getAraayeCredits(user.araaye_user_id);
         }
         if (credits < creditCost) {
-          await sendMessage(chatId, COPY.premiumModelNoCredits(model.label, creditCost), {
-            reply_markup: limitReachedKeyboard(),
-          });
+          await reportAiError(COPY.premiumModelNoCredits(model.label, creditCost), limitReachedKeyboard());
           await trackEvent("free_limit_reached", {
             telegramUserId: user.id,
             telegramId,
@@ -631,9 +604,7 @@ export async function handleTextMessage(
           return;
         }
       } else if (!user.araaye_user_id) {
-        await sendMessage(chatId, COPY.freeLimitReached, {
-          reply_markup: limitReachedKeyboard(),
-        });
+        await reportAiError(COPY.freeLimitReached, limitReachedKeyboard());
         await trackEvent("free_limit_reached", {
           telegramUserId: user.id,
           telegramId,
@@ -642,9 +613,7 @@ export async function handleTextMessage(
       } else {
         const credits = await getAraayeCredits(user.araaye_user_id);
         if (credits < creditCost) {
-          await sendMessage(chatId, COPY.freeLimitReached, {
-            reply_markup: limitReachedKeyboard(),
-          });
+          await reportAiError(COPY.freeLimitReached, limitReachedKeyboard());
           await trackEvent("free_limit_reached", {
             telegramUserId: user.id,
             telegramId,
@@ -654,12 +623,11 @@ export async function handleTextMessage(
       }
     }
 
-    loadingMessageId = await sendLoadingMessage(chatId);
+    const partial = createPartialEditor(chatId, loadingMessageId);
 
     if (useFreeTier) {
-      marks.prompt_build_ms = Date.now() - startedAt - (marks.history_load_ms || 0);
       marks.provider_request_start_ms = Date.now() - startedAt;
-      const result = await runFreeDirectChat(text, historyForPrompt, modelId);
+      const result = await runFreeDirectChat(text, historyForPrompt, modelId, partial.onDelta);
       if (!result.ok) {
         if (result.error === "timeout") {
           await reportAiError("الان پاسخ‌دهی مدل کند شده. چند لحظه بعد دوباره بفرست.");
@@ -685,13 +653,13 @@ export async function handleTextMessage(
       responseText = result.text;
       usedFree = true;
     } else if (user.araaye_user_id) {
-      marks.prompt_build_ms = Date.now() - startedAt - (marks.history_load_ms || 0);
       marks.provider_request_start_ms = Date.now() - startedAt;
       const result = await runPaidDirectChat({
         araayeUserId: user.araaye_user_id,
         prompt: text,
         history: historyForPrompt,
         modelId,
+        onDelta: partial.onDelta,
       });
       if (!result.ok) {
         if (result.error === "insufficient_credits") {
@@ -760,9 +728,12 @@ export async function handleTextMessage(
     marks.post_process_ms = Date.now() - sendStart;
     marks.provider_total_ms = providerTotalMs;
     marks.total_ms = Date.now() - startedAt;
+    const firstEditAt = partial.firstEditAt();
     perfLog("chat_message", {
       ...marks,
       parse_update_ms: 0,
+      first_edit_ms: firstEditAt !== null ? firstEditAt - startedAt : null,
+      provider_ttft_ms: providerTtftMs,
       selected_model_key: modelId,
       actual_provider_model_id: modelInfo?.routeId ?? modelId,
       provider_name: providerName,

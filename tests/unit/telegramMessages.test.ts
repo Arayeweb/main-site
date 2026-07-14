@@ -17,11 +17,13 @@ describe("telegram messages helpers", () => {
 });
 
 describe("telegram system prompt", () => {
-  it("uses Persian mobile-friendly rules", () => {
+  it("reuses the Persian direct prompt with a mobile-brevity suffix", () => {
     const prompt = telegramSystemPrompt();
     expect(prompt).toBe(TELEGRAM_SYSTEM_PROMPT);
-    expect(prompt).toContain("Persian Telegram AI assistant");
-    expect(prompt).toContain("3 to 6 lines maximum");
-    expect(prompt).not.toContain("markdown table");
+    // همان لحن فارسی نسخه وب
+    expect(prompt).toContain("دستیار هوشمند فارسی‌زبان");
+    // قید کوتاهی موبایل
+    expect(prompt).toContain("۳ تا ۶ خط");
+    expect(prompt).toContain("موبایل");
   });
 });
