@@ -4,34 +4,42 @@ import Footer from "@/components/Footer";
 import SectionHeader from "@/components/home/SectionHeader";
 import IndustryStickyCta from "./IndustryStickyCta";
 import IndustryAuditForm from "./IndustryAuditForm";
+import IndustryRelatedLinks from "./IndustryRelatedLinks";
+import IndustryPageAnalytics from "./IndustryPageAnalytics";
 import { IconCheck, DynamicIcon } from "@/components/icons";
+import { canonicalUrl } from "@/lib/siteUrl";
+import { ORGANIZATION_ID, SITE_NAME } from "@/lib/seo/siteIdentity";
 
 export default function IndustryLandingPage({ page }: { page: IndustryLandingPageContent }) {
-  const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com").replace(/\/$/, "");
+  const pageUrl = canonicalUrl(page.meta.canonicalPath);
+  const hubUrl =
+    page.serviceType === "seo" ? canonicalUrl("/seo") : canonicalUrl("/website-design");
+  const hubName = page.serviceType === "seo" ? "خدمات سئو سایت" : "طراحی سایت حرفه‌ای";
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Organization",
-        name: "آرایه",
-        url: SITE_URL,
+        "@id": ORGANIZATION_ID,
+        name: SITE_NAME,
+        url: canonicalUrl("/"),
       },
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "آرایه", item: `${SITE_URL}/` },
+          { "@type": "ListItem", position: 1, name: SITE_NAME, item: canonicalUrl("/") },
           {
             "@type": "ListItem",
             position: 2,
-            name: page.serviceType === "seo" ? "سئو" : "طراحی سایت",
-            item: page.serviceType === "seo" ? `${SITE_URL}/seo` : `${SITE_URL}/`,
+            name: hubName,
+            item: hubUrl,
           },
           {
             "@type": "ListItem",
             position: 3,
             name: page.persianIndustryName,
-            item: `${SITE_URL}${page.meta.canonicalPath}`,
+            item: pageUrl,
           },
         ],
       },
@@ -42,9 +50,9 @@ export default function IndustryLandingPage({ page }: { page: IndustryLandingPag
           page.serviceType === "seo"
             ? `سئو برای ${page.persianIndustryName}`
             : `طراحی سایت برای ${page.persianIndustryName}`,
-        provider: { "@type": "Organization", name: "آرایه", url: SITE_URL },
+        provider: { "@type": "Organization", name: SITE_NAME, url: canonicalUrl("/") },
         areaServed: { "@type": "Country", name: "Iran" },
-        url: `${SITE_URL}${page.meta.canonicalPath}`,
+        url: pageUrl,
         description: page.meta.description,
       },
       {
@@ -60,6 +68,7 @@ export default function IndustryLandingPage({ page }: { page: IndustryLandingPag
 
   return (
     <>
+      <IndustryPageAnalytics serviceType={page.serviceType} slug={page.slug} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <Navbar
@@ -387,6 +396,8 @@ export default function IndustryLandingPage({ page }: { page: IndustryLandingPag
             </div>
           </div>
         </section>
+
+        <IndustryRelatedLinks serviceType={page.serviceType} slug={page.slug} />
       </main>
 
       <Footer />

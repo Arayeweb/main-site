@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
 import { getUtmParams } from "@/lib/utm";
+import { industryOrganicSource } from "@/lib/seo/programmaticPages";
+import type { IndustrySlug } from "@/lib/seo/industries";
 import { IconCheck, IconPhone } from "@/components/icons";
 import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL } from "@/lib/siteContact";
 
@@ -42,7 +44,7 @@ export default function IndustryAuditForm({
   slug,
 }: {
   serviceType: "seo" | "website";
-  slug: string;
+  slug: IndustrySlug;
 }) {
   const [website, setWebsite] = useState("");
   const [phone, setPhone] = useState("");
@@ -52,6 +54,18 @@ export default function IndustryAuditForm({
 
   const goal = serviceType === "seo" ? "seo_audit_free" : "website_audit_free";
   const channel = serviceType === "seo" ? "seo_landing" : "website_landing";
+  const pagePath = `/${serviceType}/${slug}`;
+  const organicSource = industryOrganicSource(serviceType, slug);
+
+  const trackPayload = {
+    page: pagePath,
+    landingPage: pagePath,
+    product: serviceType,
+    industry: slug,
+    source: organicSource,
+    channel,
+    ...getUtmParams(),
+  };
 
   const normalizedWebsiteHint = useMemo(() => normalizeWebsiteUrl(website), [website]);
 
@@ -77,8 +91,8 @@ export default function IndustryAuditForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          source: `industry_audit_${serviceType}`,
-          page: `/${serviceType}/${slug}`,
+          source: organicSource,
+          page: pagePath,
           contact: p,
           goal,
           plan: "free_audit",
@@ -96,7 +110,8 @@ export default function IndustryAuditForm({
         return;
       }
 
-      pushGtmEvent("generate_lead", { source: "industry_audit", page: `/${serviceType}/${slug}` });
+      pushGtmEvent("lead_submit", { ...trackPayload, cta: "industry_audit_form" });
+      pushGtmEvent("generate_lead", { source: organicSource, page: pagePath });
       setSuccess(true);
     } catch {
       setError("خطا در ارتباط. اتصال اینترنت را بررسی کنید.");
@@ -144,7 +159,12 @@ export default function IndustryAuditForm({
             <input
               id="audit-website"
               value={website}
-              onChange={(e) => setWebsite(e.target.value)}
+              onChange={(e) => {
+                setWebsite(e.target.value);
+                if (!website && e.target.value) {
+                  pushGtmEvent("form_start", { ...trackPayload, field: "website" });
+                }
+              }}
               placeholder="مثلاً example.com"
               inputMode="url"
               dir="ltr"
@@ -190,7 +210,7 @@ export default function IndustryAuditForm({
         <a
           href={SITE_PHONE_TEL}
           className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 px-6 py-3 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
-          onClick={() => pushGtmEvent("phone_click", { location: "industry_audit_form" })}
+          onClick={() => pushGtmEvent("call_click", { ...trackPayload, location: "industry_audit_form" })}
         >
           <IconPhone size={16} />
           ترجیح می‌دهم اول صحبت کنم — {SITE_PHONE_DISPLAY}

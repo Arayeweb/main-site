@@ -1,26 +1,25 @@
 {
-  "name": "آرایه — سایت‌ساز تبدیل‌محور",
+  "name": "آرایه",
   "short_name": "آرایه",
-  "description": "طراحی سایت اختصاصی همراه با چت‌بات هوشمند، فرم لید، رزرو و سفارش آنلاین و اتصال به CRM.",
-  "lang": "fa-IR",
-  "dir": "rtl",
+  "description": "توسعه نرم‌افزار اختصاصی، طراحی سایت، وب‌اپلیکیشن و هوش مصنوعی.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
-  "background_color": "#0E1A2B",
-  "theme_color": "#0E1A2B",
+  "display": "browser",
+  "dir": "rtl",
+  "lang": "fa",
+  "background_color": "#ffffff",
+  "theme_color": "#0a1929",
   "icons": [
-    {
-      "src": "/assets/logo-icon.png",
-      "sizes": "120x120",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
     {
       "src": "/assets/logo-icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }

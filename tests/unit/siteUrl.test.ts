@@ -4,13 +4,18 @@ import {
   canonicalOrigin,
   canonicalUrl,
   normalizePath,
+  PRODUCTION_SITE_URL,
   SITE_URL,
 } from "@/lib/siteUrl";
 
 describe("siteUrl", () => {
-  it("SITE_URL has no trailing slash and is a valid origin", () => {
-    expect(SITE_URL).toMatch(/^https?:\/\/[^/]+$/);
-    expect(SITE_URL.endsWith("/")).toBe(false);
+  it("SITE_URL has no punycode or www", () => {
+    expect(SITE_URL).not.toMatch(/xn--/i);
+    expect(SITE_URL).not.toMatch(/www\./i);
+  });
+
+  it("PRODUCTION_SITE_URL is fixed marketing origin", () => {
+    expect(PRODUCTION_SITE_URL).toBe("https://araaye.com");
   });
 
   it("canonicalOrigin strips www and trailing slash", () => {

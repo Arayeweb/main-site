@@ -19,6 +19,19 @@ describe("sitemapRoutes", () => {
     expect(SITEMAP_PATHS).toContain("/prompts");
   });
 
+  it("includes published programmatic industry URLs", () => {
+    expect(SITEMAP_PATHS).toContain("/seo/doctor");
+    expect(SITEMAP_PATHS).toContain("/seo/dentist");
+    expect(SITEMAP_PATHS).toContain("/website/dentist");
+    expect(SITEMAP_PATHS).toContain("/website/beauty-clinic");
+    expect(SITEMAP_PATHS).toContain("/blog/jozb-shagerd-khososi");
+  });
+
+  it("does not list draft industry routes", () => {
+    expect(SITEMAP_PATHS).not.toContain("/website/cafe");
+    expect(SITEMAP_PATHS).not.toContain("/seo/restaurant");
+  });
+
   it("does not list noindex or internal routes", () => {
     const urls = SITEMAP_PATHS.join(" ");
     expect(urls).not.toMatch(/\/admin/);
@@ -28,7 +41,7 @@ describe("sitemapRoutes", () => {
     expect(urls).not.toMatch(/\/ai\/share/);
     expect(urls).not.toMatch(/\/b\//);
     expect(SITEMAP_PATHS).not.toContain("/seo/restaurant");
-    expect(SITEMAP_PATHS).not.toContain("/website/lawyer");
+    expect(SITEMAP_PATHS).toContain("/website/lawyer");
   });
 
   it("flags excluded path patterns", () => {
@@ -38,7 +51,8 @@ describe("sitemapRoutes", () => {
     expect(isSitemapExcludedPath("/ai/battle/1")).toBe(true);
     expect(isSitemapExcludedPath("/ai/share/foo")).toBe(true);
     expect(isSitemapExcludedPath("/b/my-card")).toBe(true);
-    expect(isSitemapExcludedPath("/seo/restaurant")).toBe(true);
+    expect(isSitemapExcludedPath("/seo/restaurant")).toBe(false);
+    expect(isSitemapExcludedPath("/website/cafe")).toBe(false);
     expect(isSitemapExcludedPath("/seo/doctor")).toBe(false);
   });
 

@@ -4,14 +4,16 @@ import Script from "next/script";
 import PublicOnlyChrome from "@/components/PublicOnlyChrome";
 import SitePageviewTracker from "@/components/analytics/SitePageviewTracker";
 import { SITE_URL, canonicalUrl } from "@/lib/siteUrl";
+import { SITE_NAME } from "@/lib/seo/siteIdentity";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
     default: "آرایه | توسعه نرم‌افزار اختصاصی، وب‌اپلیکیشن و هوش مصنوعی",
-    template: "%s | آرایه",
+    template: `%s | ${SITE_NAME}`,
   },
   description:
     "آرایه شرکت توسعه نرم‌افزار است؛ سایت، وب‌اپلیکیشن، CRM، داشبورد، چت‌بات هوشمند و ابزارهای اختصاصی برای کسب‌وکارها می‌سازد.",
@@ -26,9 +28,8 @@ export const metadata: Metadata = {
     "اتوماسیون",
     "آرایه",
   ],
-  alternates: {
-    canonical: canonicalUrl("/"),
-  },
+  // Do NOT set a root canonical here — it would make every page without its own
+  // alternates.canonical self-reference the homepage. Each page/layout sets its own.
   openGraph: {
     title: "آرایه | توسعه نرم‌افزار اختصاصی، وب‌اپلیکیشن و هوش مصنوعی",
     description:
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     type: "website",
     url: canonicalUrl("/"),
     locale: "fa_IR",
-    siteName: "آرایه",
+    siteName: SITE_NAME,
     images: [
       {
         url: "/opengraph-image",
@@ -61,6 +62,10 @@ export const metadata: Metadata = {
     ],
     apple: "/assets/apple-touch-icon.png",
     shortcut: "/favicon-32.png",
+  },
+  manifest: "/site.webmanifest",
+  appleWebApp: {
+    title: SITE_NAME,
   },
   robots: {
     index: true,

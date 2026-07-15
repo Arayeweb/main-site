@@ -21,12 +21,14 @@ import {
 import WebsiteDesignFaq from "@/components/website-design/website-design-faq";
 import WebsiteDesignLeadForm from "@/components/website-design/website-design-lead-form";
 import WebsiteDesignFinalCta from "@/components/website-design/website-design-final-cta";
+import IndustryHubLinks from "@/components/seo/IndustryHubLinks";
+import { canonicalUrl } from "@/lib/siteUrl";
 import { websiteDesignFaq } from "@/data/website-design";
 
 export const metadata: Metadata = {
-  title: "طراحی سایت حرفه‌ای و فروش‌محور | آرایه",
+  title: "طراحی سایت حرفه‌ای | قیمت و نمونه | آرایه",
   description:
-    "طراحی سایت حرفه‌ای، سریع و فروش‌محور برای کسب‌وکارها؛ همراه با طراحی اختصاصی، فرم تماس و درخواست، سئو پایه، آمار بازدید و پشتیبانی آرایه.",
+    "طراحی سایت حرفه‌ای و اختصاصی برای کسب‌وکارها؛ سفارش طراحی سایت شرکتی و خدماتی با فرم تماس، سئو پایه و پشتیبانی. قیمت و هزینه طراحی سایت.",
   alternates: {
     canonical: "/website-design",
   },
@@ -54,9 +56,9 @@ const jsonLd = {
       name: "طراحی سایت حرفه‌ای و فروش‌محور",
       serviceType:
         "Website design, responsive development, lead capture forms, technical SEO foundations, analytics integration",
-      provider: { "@type": "Organization", name: "آرایه", url: "https://araaye.com/" },
+      provider: { "@type": "Organization", name: "آرایه", url: canonicalUrl("/") },
       areaServed: { "@type": "Country", name: "Iran" },
-      url: "https://araaye.com/website-design",
+      url: canonicalUrl("/website-design"),
       description:
         "طراحی و توسعه سایت‌های حرفه‌ای برای جذب مشتری، ایجاد اعتماد، تبلیغات و رشد کسب‌وکار.",
     },
@@ -94,6 +96,11 @@ export default function WebsiteDesignPage() {
         <WebsiteTypeComparison />
         <WebsiteDesignSeoBlock />
         <WebsiteDesignTechnology />
+        <IndustryHubLinks
+          productType="website"
+          title="طراحی سایت برای حوزه‌های مختلف"
+          subtitle="راهکارهای تخصصی طراحی سایت برای صنایعی که بیشترین جستجو و تبدیل را دارند."
+        />
         <WebsiteDesignLeadForm />
         <WebsiteDesignFinalCta />
       </main>

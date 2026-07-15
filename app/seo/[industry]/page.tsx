@@ -4,7 +4,7 @@ import type { IndustrySlug } from "@/lib/seo/industries";
 import { industries } from "@/lib/seo/industries";
 import { getIndustryLandingPageContent } from "@/lib/seo/pageContent";
 import type { ServiceType } from "@/lib/seo/pageContent";
-import { isIndexableMvp } from "@/lib/seo/indexable";
+import { isPublishedIndustryPage } from "@/lib/seo/programmaticPages";
 import IndustryLandingPage from "@/components/seo/IndustryLandingPage";
 
 const normalizeSlug = (v: string): IndustrySlug | null => {
@@ -29,7 +29,7 @@ export async function generateMetadata({
 
   const serviceType: ServiceType = "seo";
   const page = getIndustryLandingPageContent(serviceType, slug);
-  const indexable = isIndexableMvp(serviceType, slug);
+  const indexable = isPublishedIndustryPage(serviceType, slug);
 
   // absolute: جلوگیری از دوباره‌شدن «| آرایه» به‌خاطر title.template در root layout
   return {

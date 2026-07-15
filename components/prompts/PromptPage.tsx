@@ -162,6 +162,48 @@ export default function PromptPage({ prompt }: Props) {
           </div>
         </section>
 
+        {prompt.promptVariations && prompt.promptVariations.length > 0 ? (
+          <section>
+            <h2 className="text-xl font-extrabold text-navy-900">واریانت‌های آماده کپی</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-navy-500">
+              سه سبک رایج برای پرامپت طراحی لوگو — نام برند و صنعت را جایگزین کنید و مستقیم در
+              مدل تصویر بچسبانید.
+            </p>
+            <div className="mt-5 space-y-4">
+              {prompt.promptVariations.map((variant) => (
+                <div
+                  key={variant.label}
+                  className="rounded-2xl border border-navy-100 bg-white p-4 sm:p-5"
+                >
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-extrabold text-navy-900">{variant.label}</h3>
+                    <CopyPromptButton
+                      text={variant.text}
+                      slug={prompt.slug}
+                      label="کپی پرامپت"
+                      className="!px-3 !py-1.5 text-xs"
+                    />
+                  </div>
+                  <pre
+                    className="overflow-x-auto whitespace-pre-wrap rounded-xl border border-navy-100 bg-navy-950 p-3 text-sm leading-7 text-navy-50"
+                    dir="ltr"
+                  >
+                    {variant.text}
+                  </pre>
+                  <div className="mt-3">
+                    <RunInAraayeButton
+                      prompt={variant.text}
+                      slug={prompt.slug}
+                      label="اجرای این واریانت در Araaye AI"
+                      className="!px-4 !py-2 text-xs"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         {/* Example */}
         <section className="grid gap-6 lg:grid-cols-2">
           {prompt.exampleInput ? (

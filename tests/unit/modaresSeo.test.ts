@@ -4,8 +4,11 @@ import { MODARES_SEO, modaresJsonLd } from "@/lib/modaresSeo";
 
 describe("modaresSeo", () => {
   it("exposes the production title and description", () => {
-    expect(MODARES_SEO.title).toBe("طراحی سایت مدرس و معلم خصوصی | آرایه");
-    expect(MODARES_SEO.description).toContain("طراحی سایت اختصاصی برای مدرسان");
+    expect(MODARES_SEO.title).toBe(
+      "طراحی سایت مدرس خصوصی برای جذب شاگرد | قیمت و نمونه | آرایه",
+    );
+    expect(MODARES_SEO.description).toContain("سایت مستقل مدرس خصوصی");
+    expect(MODARES_SEO.description).toContain("۷.۵ میلیون");
     expect(MODARES_SEO.path).toBe("/modares");
   });
 

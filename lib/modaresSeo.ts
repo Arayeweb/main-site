@@ -7,9 +7,9 @@ function tomanToIrr(toman: number): number {
 }
 
 export const MODARES_SEO = {
-  title: "طراحی سایت مدرس و معلم خصوصی | آرایه",
+  title: "طراحی سایت مدرس خصوصی برای جذب شاگرد | قیمت و نمونه | آرایه",
   description:
-    "طراحی سایت اختصاصی برای مدرسان؛ معرفی کلاس‌ها، جذب شاگرد، انتشار مقاله، درخواست کلاس و فروش دوره با طراحی حرفه‌ای و زیرساخت اولیه سئو.",
+    "سایت مستقل مدرس خصوصی: معرفی حرفه‌ای، نمونه تدریس، فرم درخواست کلاس و جذب مستقیم شاگرد. قیمت ۷.۵ میلیون تومان — نسخه اول تا ۲ روز کاری.",
   path: "/modares",
 } as const;
 
@@ -23,7 +23,7 @@ export const modaresJsonLd = {
       provider: {
         "@type": "Organization",
         name: "آرایه",
-        url: "https://araaye.com/",
+        url: canonicalUrl("/"),
       },
       areaServed: { "@type": "Country", name: "Iran" },
       url: canonicalUrl("/modares"),

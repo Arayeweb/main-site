@@ -17,12 +17,14 @@ import SeoExitIntent from "@/components/seo/SeoExitIntent";
 import SeoStickyCta from "@/components/seo/SeoStickyCta";
 import SeoChatWidget from "@/components/seo/SeoChatWidget";
 import SeoPageAnalytics from "@/components/seo/SeoPageAnalytics";
+import IndustryHubLinks from "@/components/seo/IndustryHubLinks";
+import { canonicalUrl } from "@/lib/siteUrl";
 import { seoFaq, seoFooterColumns } from "@/lib/seoData";
 
 export const metadata: Metadata = {
-  title: "خدمات سئو آرایه | از جست‌وجو تا تماس و مشتری",
+  title: "خدمات سئو سایت | قیمت و پکیج | آرایه",
   description:
-    "سئوی کامل آرایه: استراتژی، فنی، محتوا، on-page، off-page، Local SEO، CRO و AI Search — با پکیج‌های شفاف و گزارش قابل‌اندازه‌گیری.",
+    "خدمات سئو سایت شرکتی و خدماتی: استراتژی، فنی، محتوا، Local SEO و CRO. قیمت و هزینه سئو سایت — سفارش سئو با گزارش تماس و فرم.",
   alternates: {
     canonical: "/seo",
   },
@@ -50,9 +52,9 @@ const jsonLd = {
       name: "خدمات سئو آرایه",
       serviceType:
         "SEO strategy, technical SEO, content SEO, on-page SEO, off-page SEO, local SEO, CRO, analytics",
-      provider: { "@type": "Organization", name: "آرایه", url: "https://araaye.com/" },
+      provider: { "@type": "Organization", name: "آرایه", url: canonicalUrl("/") },
       areaServed: { "@type": "Country", name: "Iran" },
-      url: "https://araaye.com/seo",
+      url: canonicalUrl("/seo"),
       description:
         "سئوی کامل آرایه برای تبدیل جست‌وجوی گوگل به تماس، درخواست و مشتری.",
     },
@@ -87,6 +89,11 @@ export default function SeoPage() {
         <SeoExecutionFlow />
         <SeoPackagesForm />
         <SeoFitCheck />
+        <IndustryHubLinks
+          productType="seo"
+          title="راهکارهای تخصصی سئو برای صنایع مختلف"
+          subtitle="سئوی صنعت‌محور با تمرکز روی تماس، فرم و نوبت — نه فقط رتبه."
+        />
         <SeoFaq />
         <SeoFinalCta />
       </main>

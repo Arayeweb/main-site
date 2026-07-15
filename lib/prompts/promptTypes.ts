@@ -28,6 +28,8 @@ export type AraayePrompt = {
     question: string;
     answer: string;
   }[];
+  /** Optional ready-to-copy alternates (e.g. logo style variants). */
+  promptVariations?: { label: string; text: string }[];
   metaTitle: string;
   metaDescription: string;
   canonicalPath: string;

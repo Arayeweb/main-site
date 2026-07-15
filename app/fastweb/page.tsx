@@ -3,12 +3,12 @@ import FastWebLanding, { fastwebFaq } from "@/components/fastweb/FastWebLanding"
 import { canonicalUrl } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
-  title: "سایت فوری آرایه | نسخه اول قابل انتشار در ۲۴ ساعت کاری",
+  title: "طراحی سایت فوری در ۲۴ ساعت کاری | قیمت و نمونه | آرایه",
   description:
-    "کسب‌وکارت را توضیح بده؛ آرایه نسخه اول قابل انتشار سایت را در ۲۴ ساعت کاری آماده می‌کند. قبل از انتشار، خروجی را می‌بینی و تأیید می‌کنی.",
-  alternates: { canonical: canonicalUrl("/fastweb") },
+    "کسب‌وکارتان را توضیح دهید؛ آرایه نسخه اول قابل انتشار سایت را در ۲۴ ساعت کاری آماده می‌کند. مشاهده نمونه، محدوده تحویل و شروع سفارش.",
+  alternates: { canonical: "/fastweb" },
   openGraph: {
-    title: "سایت فوری آرایه | نسخه اول قابل انتشار در ۲۴ ساعت کاری",
+    title: "طراحی سایت فوری در ۲۴ ساعت کاری | قیمت و نمونه | آرایه",
     description:
       "کاربر فقط کسب‌وکارش را توضیح می‌دهد؛ آرایه نسخه اول قابل انتشار سایت را در ۲۴ ساعت کاری آماده می‌کند.",
     url: canonicalUrl("/fastweb"),
@@ -30,9 +30,9 @@ const jsonLd = {
       "@type": "Service",
       name: "سایت فوری آرایه",
       serviceType: "First publishable business website delivery",
-      provider: { "@type": "Organization", name: "آرایه", url: "https://araaye.com/" },
+      provider: { "@type": "Organization", name: "آرایه", url: canonicalUrl("/") },
       areaServed: { "@type": "Country", name: "Iran" },
-      url: "https://araaye.com/fastweb",
+      url: canonicalUrl("/fastweb"),
       description:
         "کاربر فقط کسب‌وکارش را توضیح می‌دهد؛ آرایه نسخه اول قابل انتشار سایت را در ۲۴ ساعت کاری آماده می‌کند.",
       offers: [

@@ -1,16 +1,13 @@
 import { canonicalUrl } from "@/lib/siteUrl";
+import { getPublishedIndustryPaths } from "@/lib/seo/programmaticPages";
 import { getIndexablePromptPaths } from "@/lib/prompts/indexable";
 
-/** Paths included in /sitemap.xml — indexable marketing pages only. */
-export const SITEMAP_PATHS = [
+/** Static marketing paths always in sitemap. */
+const STATIC_SITEMAP_PATHS = [
   "/",
   "/about",
   "/contact",
   "/seo",
-  "/seo/doctor",
-  "/seo/clinic",
-  "/website/doctor",
-  "/website/clinic",
   "/free-seo-audit",
   "/doctors",
   "/bizcard",
@@ -30,6 +27,9 @@ export const SITEMAP_PATHS = [
   "/blog/clinic-seo-checklist",
   "/blog/local-seo-for-doctors",
   "/blog/clinic-website-features",
+  "/blog/jozb-shagerd-khososi",
+  "/blog/jozb-shagerd-zaban",
+  "/blog/matn-tablig-tadris-khososi",
   "/prompts",
 ] as const;
 
@@ -44,8 +44,13 @@ export const SITEMAP_EXCLUDED_PATTERNS = [
   /^\/ai\/share(?:\/|$)/,
   /^\/b\/[^/]+$/,
   /^\/s\/[^/]+$/,
-  /^\/seo\/(?!doctor$|clinic$)/,
-  /^\/website\/(?!doctor$|clinic$)/,
+] as const;
+
+/** @deprecated Use buildSitemapEntries — kept for tests referencing path list. */
+export const SITEMAP_PATHS = [
+  ...STATIC_SITEMAP_PATHS,
+  ...getPublishedIndustryPaths("seo"),
+  ...getPublishedIndustryPaths("website"),
 ] as const;
 
 export function isSitemapExcludedPath(path: string): boolean {
@@ -55,7 +60,14 @@ export function isSitemapExcludedPath(path: string): boolean {
 
 export function buildSitemapEntries(): { url: string; lastModified: Date }[] {
   const promptPaths = getIndexablePromptPaths().filter((path) => path !== "/prompts");
-  const paths = Array.from(new Set<string>([...SITEMAP_PATHS, ...promptPaths]));
+  const industryPaths = [
+    ...getPublishedIndustryPaths("seo"),
+    ...getPublishedIndustryPaths("website"),
+  ];
+  const paths = Array.from(
+    new Set<string>([...STATIC_SITEMAP_PATHS, ...industryPaths, ...promptPaths]),
+  ).filter((path) => !isSitemapExcludedPath(path));
+
   return paths.map((path) => ({
     url: canonicalUrl(path),
     lastModified: new Date(),

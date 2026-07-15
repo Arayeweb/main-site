@@ -86,4 +86,15 @@ describe("prompt catalog", () => {
     expect(params.get("source")).toBe("prompts");
     expect(params.get("promptSlug")).toBe("resume");
   });
+
+  it("logo-image targets consolidated logo prompt cluster", () => {
+    const logo = getPromptBySlug("logo-image");
+    expect(logo).toBeDefined();
+    expect(logo!.searchIntent).toBe("پرامپت ساخت لوگو");
+    expect(logo!.metaTitle).toContain("پرامپت ساخت و طراحی لوگو");
+    expect(logo!.title).toContain("پرامپت ساخت لوگو");
+    expect(logo!.promptVariations?.length).toBeGreaterThanOrEqual(3);
+    expect(logo!.basePrompt).toMatch(/Minimal flat vector logo/i);
+    expect(logo!.canonicalPath).toBe("/prompts/logo-image");
+  });
 });

@@ -114,14 +114,14 @@ export default function FastWebLanding() {
           <div className="container-mx container-px py-14 sm:py-20 lg:py-24">
             <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
               <div className="text-right">
-                <p className="text-sm font-bold text-teal-700">سایت فوری آرایه</p>
+                <p className="text-sm font-bold text-teal-700">طراحی سایت فوری</p>
                 <h1 className="mt-4 max-w-xl text-balance text-3xl font-extrabold leading-[1.25] tracking-tight text-navy-900 sm:text-4xl lg:text-[2.65rem]">
-                  کسب‌وکارت را توضیح بده؛ سایتت را سریع تحویل بگیر
+                  طراحی سایت فوری؛ نسخه اول قابل انتشار در ۲۴ ساعت کاری
                 </h1>
                 <p className="mt-5 max-w-xl text-[15px] leading-[1.9] text-navy-500 sm:text-base">
-                  در چند دقیقه بگو چه کاری می‌کنی و مشتری‌هایت چه چیزی می‌خواهند. آرایه
-                  ساختار، متن و طراحی نسخه اول سایتت را آماده می‌کند؛ قبل از انتشار هم آن
-                  را می‌بینی و تأیید می‌کنی.
+                  کسب‌وکارتان را توضیح دهید؛ آرایه نسخه اول قابل انتشار را در ۲۴ ساعت کاری — از
+                  لحظه تکمیل اطلاعات اولیه — آماده می‌کند. قبل از انتشار، خروجی را می‌بینید و
+                  تأیید می‌کنید.
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-4">

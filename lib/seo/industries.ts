@@ -1,6 +1,7 @@
 export type IndustrySlug =
   | "doctor"
   | "clinic"
+  | "dentist"
   | "beauty-clinic"
   | "restaurant"
   | "cafe"
@@ -28,6 +29,12 @@ export const industries: IndustryBase[] = [
     persianName: "کلینیک‌ها",
     englishName: "clinic",
     audienceHint: "لندینگ هر بخش + CRM + رزرو",
+  },
+  {
+    slug: "dentist",
+    persianName: "دندانپزشکی",
+    englishName: "dentist",
+    audienceHint: "نوبت‌دهی، خدمات درمان و تماس اورژانسی",
   },
   {
     slug: "beauty-clinic",

@@ -3,23 +3,25 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PromptsIndexClient from "@/components/prompts/PromptsIndexClient";
 import { canonicalUrl, SITE_URL } from "@/lib/siteUrl";
+import { SITE_NAME, websitePartOfRef } from "@/lib/seo/siteIdentity";
 import { ALL_PROMPTS } from "@/lib/prompts/promptData";
 
-const title = "پرامپت‌های آماده هوش مصنوعی | Araaye AI";
+const title = "پرامپت‌های آماده هوش مصنوعی | آرایه";
 const description =
   "کتابخانه رایگان پرامپت برای ChatGPT، Claude، Gemini و Araaye AI. کپی کن یا مستقیم داخل Araaye AI اجرا کن.";
+const promptsUrl = canonicalUrl("/prompts");
 
 export const metadata: Metadata = {
   title: { absolute: title },
   description,
-  alternates: { canonical: "/prompts" },
+  alternates: { canonical: promptsUrl },
   openGraph: {
     title,
     description,
-    url: "/prompts",
+    url: promptsUrl,
     type: "website",
     locale: "fa_IR",
-    siteName: "آرایه",
+    siteName: SITE_NAME,
   },
   twitter: {
     card: "summary_large_image",
@@ -36,10 +38,10 @@ export default function PromptsIndexPage() {
       {
         "@type": "WebPage",
         "@id": `${SITE_URL}/prompts#webpage`,
-        url: canonicalUrl("/prompts"),
+        url: promptsUrl,
         name: title,
         description,
-        isPartOf: { "@type": "WebSite", name: "آرایه", url: SITE_URL },
+        isPartOf: websitePartOfRef(),
         inLanguage: "fa-IR",
       },
       {
@@ -55,7 +57,7 @@ export default function PromptsIndexPage() {
             "@type": "ListItem",
             position: 2,
             name: "پرامپت‌های آماده",
-            item: canonicalUrl("/prompts"),
+            item: promptsUrl,
           },
         ],
       },

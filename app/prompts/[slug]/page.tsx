@@ -6,6 +6,7 @@ import PromptPage from "@/components/prompts/PromptPage";
 import { ALL_PROMPTS, getPromptBySlug } from "@/lib/prompts/promptData";
 import { isPromptIndexable } from "@/lib/prompts/indexable";
 import { canonicalUrl, SITE_URL } from "@/lib/siteUrl";
+import { SITE_NAME, websitePartOfRef } from "@/lib/seo/siteIdentity";
 
 export const dynamic = "force-static";
 
@@ -23,10 +24,12 @@ export async function generateMetadata({
 
   const indexable = isPromptIndexable(prompt.slug);
 
+  const pageUrl = canonicalUrl(prompt.canonicalPath);
+
   return {
     title: { absolute: prompt.metaTitle },
     description: prompt.metaDescription,
-    alternates: { canonical: prompt.canonicalPath },
+    alternates: { canonical: pageUrl },
     robots: {
       index: indexable,
       follow: true,
@@ -35,10 +38,10 @@ export async function generateMetadata({
     openGraph: {
       title: prompt.metaTitle,
       description: prompt.metaDescription,
-      url: prompt.canonicalPath,
+      url: pageUrl,
       type: "article",
       locale: "fa_IR",
-      siteName: "آرایه",
+      siteName: SITE_NAME,
     },
     twitter: {
       card: "summary_large_image",
@@ -62,7 +65,7 @@ export default function PromptSlugPage({ params }: { params: { slug: string } })
         url: pageUrl,
         name: prompt.metaTitle,
         description: prompt.metaDescription,
-        isPartOf: { "@type": "WebSite", name: "آرایه", url: SITE_URL },
+        isPartOf: websitePartOfRef(),
         inLanguage: "fa-IR",
       },
       {

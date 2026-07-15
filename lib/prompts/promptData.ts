@@ -2175,71 +2175,93 @@ We help clinics get found in local search without overpromising rankings.`,
   // ── AI Image ─────────────────────────────────────────────────
   p({
     slug: "logo-image",
-    title: "پرامپت طراحی لوگو با هوش مصنوعی",
+    title: "پرامپت ساخت لوگو با هوش مصنوعی؛ آماده کپی و استفاده",
     category: "image",
-    shortDescription: "پرامپت تصویر لوگو با سبک، ترکیب‌بندی و محدودیت‌های واضح.",
-    searchIntent: "پرامپت طراحی لوگو هوش مصنوعی",
-    targetUser: "بنیان‌گذار و طراح",
-    basePrompt: `یک پرامپت تصویر برای تولید لوگو بنویس و خود لوگو را توصیف کن.
+    shortDescription:
+      "پرامپت ساخت لوگو با هوش مصنوعی — انگلیسی، آماده کپی برای مدل تصویر. سه واریانت عملی: مینیمال، wordmark و badge.",
+    whatItDoes: [
+      "این صفحه برای کسانی است که می‌خواهند با پرامپت ساخت لوگو یا پرامپت طراحی لوگو، ایده اولیه برند بسازند — نه جایگزین طراح حرفه‌ای.",
+      "پرامپت اصلی و سه واریانت پایین را مستقیم کپی کنید و در استودیو تصویر Araaye AI یا هر مدل تصویر دیگر بچسبانید. نام برند، صنعت و رنگ را قبل از اجرا جایگزین کنید.",
+      "خروجی برای moodboard، تست نام و ورودی طراح انسانی مناسب است. برای لوگوی نهایی حقوقی، بررسی شباهت و بازبینی طراح لازم است.",
+    ],
+    searchIntent: "پرامپت ساخت لوگو",
+    targetUser: "بنیان‌گذار، طراح و صاحب کسب‌وکار",
+    basePrompt: `Minimal flat vector logo mark for "[BRAND NAME]", [INDUSTRY] business. Abstract geometric symbol (no long text), 2-3 brand colors, large negative space, centered on pure white background, professional and scalable at 32px favicon size. Clean edges, flat design, no mockup frame, no 3D gloss, no photorealistic texture.
 
-خروجی:
-1) پرامپت انگلیسی آماده برای مدل تصویر
-2) ترجمه فارسی همان پرامپت
-3) پارامترهای سبک (flat / minimal / geometric ...)
-4) چیزهایی که نباید در تصویر باشد (negative)
-5) ۳ واریانت کوتاه
+Negative prompt: cluttered details, busy background, gradient overload, drop shadows, 3D render, multiple unrelated icons, paragraph text, watermark`,
+    promptVariations: [
+      {
+        label: "واریانت ۱ — علامت هندسی مینیمال",
+        text: `Minimal geometric logo icon for "[BRAND NAME]". Single abstract mark built from 2-3 simple shapes, flat vector style, navy and teal palette, huge whitespace, centered on white, no text except optional single letter monogram, no mockup, no 3D.
 
-قوانین:
-- لوگو ساده و قابل استفاده در سایز کوچک
-- متن برند فقط اگر خواسته شده
-- برند: {{BRAND}}
-- صنعت: {{INDUSTRY}}
-- ترجیحات بصری: {{STYLE}}`,
+Negative: photorealistic, ornate, gradient mesh, cluttered, tiny illegible details`,
+      },
+      {
+        label: "واریانت ۲ — wordmark + آیکون",
+        text: `Professional wordmark logo for "[BRAND NAME]" with small geometric icon to the left. Sans-serif modern typography, flat vector, [INDUSTRY] tech feel, 2-color palette, horizontal layout, white background, balanced spacing, no mockup, no 3D.
+
+Negative: script font overload, 3D chrome, busy patterns, extra taglines, mockup presentation`,
+      },
+      {
+        label: "واریانت ۳ — badge / emblem",
+        text: `Circular badge-style logo emblem for "[BRAND NAME]", [INDUSTRY]. Simple icon inside round seal, flat vector, limited palette, clean lines, centered on white, vintage-modern balance, no photorealistic texture, no mockup.
+
+Negative: overly complex heraldry, gradients everywhere, realistic metal, cluttered ring text`,
+      },
+    ],
     exampleInput: `برند: Araaye
 صنعت: AI / نرم‌افزار
-سبک: مینیمال، هندسی، حرفه‌ای`,
-    exampleOutput: `English prompt: Minimal geometric logo mark for "Araaye", abstract letter A formed by clean overlapping planes, flat vector, navy and bright blue, large negative space, no mockups, no shadows, centered on white background
-Negative: photorealistic, 3D glossy, clutter, many colors
-واریانت: monochrome / rounded / badge`,
+رنگ: navy #0a1929 + teal #2e7d6b
+سبک: مینیمال هندسی`,
+    exampleOutput: `پرامپت پیشنهادی (کپی کن):
+Minimal flat vector logo mark for "Araaye", AI software company. Abstract letter A from overlapping planes, navy and teal, white background, no mockup.
+
+Negative: 3D glossy, clutter, many colors, long text inside logo
+
+نتیجه: ایده اولیه علامت — برای SVG نهایی به طراح ارجاع دهید.`,
     useCases: [
-      "ایده اولیه لوگو",
-      "Moodboard بصری",
-      "تست نام و علامت",
-      "ورودی برای طراح انسانی",
+      "ایده اولیه لوگو قبل از سفارش طراحی",
+      "Moodboard بصری برای تیم",
+      "تست نام برند و علامت",
+      "ورودی برای طراح انسانی یا طراحی سایت",
     ],
     commonMistakes: [
-      "خواستن جزئیات زیاد در لوگوی کوچک",
-      "فراموش کردن negative prompt",
-      "درخواست لوگوی نهایی حقوقی بدون بررسی شباهت",
-      "متن طولانی داخل لوگو",
+      "جزئیات زیاد در لوگوی کوچک — favicon ناخوانا می‌شود",
+      "فراموش کردن negative prompt — خروجی شلوغ یا mockup می‌شود",
+      "انتظار لوگوی حقوقی نهایی بدون بررسی شباهت",
+      "متن طولانی داخل لوگو — مدل تصویر متن را خراب می‌کند",
     ],
     relatedPrompts: ["avatar", "instagram-poster", "product-photo"],
     faq: [
       {
-        question: "خروجی جایگزین طراح است؟",
+        question: "تفاوت پرامپت ساخت لوگو و پرامپت طراحی لوگو چیست؟",
         answer:
-          "خیر؛ برای ایده‌پردازی و پیش‌نمایش است. برای برند نهایی بررسی حرفه‌ای لازم است.",
+          "در عمل همان نیت جستجو را پوشش می‌دهند. این صفحه یک پرامپت آماده کپی برای مدل تصویر می‌دهد — نه آموزش تئوری.",
       },
       {
-        question: "چرا پرامپت انگلیسی؟",
-        answer: "بیشتر مدل‌های تصویر با انگلیسی دقیق‌تر عمل می‌کنند؛ ترجمه فارسی هم داده می‌شود.",
+        question: "آیا این پرامپت لوگو هوش مصنوعی جایگزین طراح است؟",
+        answer:
+          "خیر؛ برای ایده‌پردازی و پیش‌نمایش است. برای برند نهایی، بررسی حرفه‌ای و فایل وکتور لازم است.",
       },
       {
-        question: "می‌توانم در Araaye AI تصویر بسازم؟",
-        answer: "پرامپت را کپی کن و در استودیو تصویر Araaye AI استفاده کن.",
+        question: "چطور در Araaye AI اجرا کنم؟",
+        answer:
+          "پرامپت را کپی کنید، روی «اجرا در Araaye AI» بزنید یا در استودیو تصویر /ai بچسبانید.",
       },
       {
-        question: "رنگ برند را چطور بدهم؟",
-        answer: "کد رنگ یا توضیح ساده در STYLE بنویس.",
+        question: "چرا پرامپت انگلیسی است؟",
+        answer:
+          "مدل‌های تصویر (DALL·E، Midjourney، Stable Diffusion) با انگلیسی دقیق‌تر عمل می‌کنند.",
       },
       {
-        question: "وکتور واقعی می‌دهد؟",
-        answer: "مدل تصویر معمولاً raster می‌دهد؛ برای SVG به طراح یا ابزار تبدیل نیاز داری.",
+        question: "خروجی وکتور SVG می‌دهد؟",
+        answer:
+          "معمولاً raster است. برای SVG از طراح یا ابزار تبدیل استفاده کنید.",
       },
     ],
-    metaTitle: "پرامپت طراحی لوگو با هوش مصنوعی | رایگان برای Araaye AI",
+    metaTitle: "پرامپت ساخت و طراحی لوگو با هوش مصنوعی + نمونه آماده | آرایه",
     metaDescription:
-      "پرامپت آماده تولید لوگو مینیمال با نسخه انگلیسی، negative و واریانت‌ها. اجرا در Araaye AI.",
+      "پرامپت ساخت لوگو با هوش مصنوعی — آماده کپی + ۳ واریانت طراحی لوگو. پرامپت لوگو هوش مصنوعی برای Araaye AI و مدل‌های تصویر.",
   }),
 
   p({

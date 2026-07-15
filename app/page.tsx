@@ -9,7 +9,9 @@ import AraayeAiTeaser from "@/components/home/AraayeAiTeaser";
 import HomeFaq from "@/components/home/HomeFaq";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
-import { SITE_URL, canonicalUrl } from "@/lib/siteUrl";
+import HomeServiceLinks from "@/components/home/HomeServiceLinks";
+import { canonicalUrl } from "@/lib/siteUrl";
+import { buildHomeSiteGraphJsonLd } from "@/lib/seo/siteIdentity";
 
 export const metadata: Metadata = {
   alternates: {
@@ -17,28 +19,7 @@ export const metadata: Metadata = {
   },
 };
 
-const homeJsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      name: "آرایه",
-      url: SITE_URL,
-      description:
-        "آرایه شرکت توسعه نرم‌افزار است؛ سایت، وب‌اپلیکیشن، CRM، داشبورد، چت‌بات هوشمند و ابزارهای اختصاصی برای کسب‌وکارها می‌سازد.",
-      inLanguage: "fa-IR",
-      publisher: { "@type": "Organization", name: "آرایه", url: SITE_URL },
-    },
-    {
-      "@type": "Organization",
-      name: "آرایه",
-      url: SITE_URL,
-      description:
-        "توسعه نرم‌افزار اختصاصی، طراحی سایت، وب‌اپلیکیشن، CRM و هوش مصنوعی برای کسب‌وکارهای ایرانی.",
-      logo: `${SITE_URL}/assets/logo-icon-192.png`,
-    },
-  ],
-};
+const homeJsonLd = buildHomeSiteGraphJsonLd();
 
 export default function HomePage() {
   return (
@@ -50,6 +31,7 @@ export default function HomePage() {
       <Navbar ctaLabel="درخواست مشاوره" />
       <main className="pb-20 sm:pb-0">
         <Hero />
+        <HomeServiceLinks />
         <CustomerPath />
         <OutputSamples />
         <CollaborationProcess />

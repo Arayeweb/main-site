@@ -203,14 +203,31 @@ export default function SeoHeroAuditForm() {
     }
   };
 
+  const buildWhatsAppMessage = () =>
+    [
+      "سلام، درخواست بررسی اولیه سئو ثبت کردم.",
+      `نام: ${name.trim()}`,
+      `کسب‌وکار: ${businessName.trim()}`,
+      businessInput.trim() ? `سایت/نام: ${businessInput.trim()}` : null,
+      industry.trim() ? `حوزه: ${industry.trim()}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
   const chooseChannel = (channel: ContactChannel) => {
     setContactChannel(channel);
-    setSuccessPhase("schedule");
     setError(null);
     trackSeoEvent(channel === "call" ? "seo_phone_click" : "seo_whatsapp_click", {
       goal: goal || undefined,
       business_type: industry.trim(),
     });
+
+    if (channel === "whatsapp") {
+      setSuccessPhase("done");
+      return;
+    }
+
+    setSuccessPhase("schedule");
   };
 
   const confirmSchedule = async () => {
@@ -238,41 +255,31 @@ export default function SeoHeroAuditForm() {
           page: "/seo",
           name: name.trim(),
           contact,
-          goal: contactChannel === "whatsapp" ? "seo_whatsapp" : "seo_callback",
+          goal: "seo_callback",
           plan: "audit_initial",
-          channel: contactChannel === "whatsapp" ? "whatsapp" : "phone",
+          channel: "phone",
           company: businessName.trim(),
           detail: [
             `preferred_day: ${selectedDay}`,
             `preferred_day_fa: ${dayFa}`,
             `preferred_time: ${selectedTime}`,
             `preferred_time_fa: ${timeLabel}`,
-            `contact_pref: ${contactChannel}`,
+            `contact_pref: call`,
           ].join(" | "),
           referrer: document.referrer || null,
           ...getUtmParams(),
         }),
       });
       trackSeoEvent("seo_lead_submit", {
-        goal: contactChannel || undefined,
+        goal: "call",
         current_status: `${selectedDay}_${selectedTime}`,
         business_type: industry.trim(),
       });
     } catch {
-      // scheduling note is best-effort; still open channel
+      // scheduling note is best-effort
     } finally {
       setScheduleSaving(false);
       setSuccessPhase("done");
-    }
-
-    if (contactChannel === "whatsapp") {
-      const msg = [
-        `سلام، درخواست بررسی سئو ثبت کردم.`,
-        `نام: ${name.trim()}`,
-        `کسب‌وکار: ${businessName.trim()}`,
-        `زمان مناسب تماس: ${dayFa} — ${timeLabel}`,
-      ].join("\n");
-      window.open(siteWhatsAppUrl(msg), "_blank", "noopener,noreferrer");
     }
   };
 
@@ -289,7 +296,9 @@ export default function SeoHeroAuditForm() {
           <div className="seo-hero-audit-success-icon">
             <IconCheck size={28} />
           </div>
-          <p className="seo-hero-audit-success-title">زمان‌تان ثبت شد</p>
+          <p className="seo-hero-audit-success-title">
+            {contactChannel === "whatsapp" ? "آماده گفتگو در واتساپ" : "زمان‌تان ثبت شد"}
+          </p>
           <p className="seo-hero-audit-success-text">
             {contactChannel === "whatsapp"
               ? "گفتگو در واتساپ باز شد. اگر صفحه باز نشد، دوباره از دکمه زیر اقدام کنید."
@@ -297,9 +306,7 @@ export default function SeoHeroAuditForm() {
           </p>
           {contactChannel === "whatsapp" ? (
             <a
-              href={siteWhatsAppUrl(
-                `سلام، درخواست بررسی سئو — ${businessName.trim()} — زمان: ${dayFa} ${timeLabel}`
-              )}
+              href={siteWhatsAppUrl(buildWhatsAppMessage())}
               target="_blank"
               rel="noopener noreferrer"
               className="seo-btn-primary seo-hero-audit-channel-btn"
@@ -321,9 +328,7 @@ export default function SeoHeroAuditForm() {
         <div className="seo-hero-audit seo-hero-audit--success seo-hero-audit--schedule">
           <p className="seo-hero-audit-success-title">چه روز و ساعتی راحت‌ترید؟</p>
           <p className="seo-hero-audit-success-text">
-            {contactChannel === "whatsapp"
-              ? "زمان مناسب را انتخاب کنید؛ بعد گفتگو در واتساپ باز می‌شود."
-              : "زمان مناسب تماس را انتخاب کنید تا همان بازه با شما هماهنگ شویم."}
+            زمان مناسب تماس را انتخاب کنید تا همان بازه با شما هماهنگ شویم.
           </p>
 
           <p className="seo-hero-audit-cal-label">روز</p>
@@ -390,11 +395,7 @@ export default function SeoHeroAuditForm() {
               disabled={scheduleSaving}
               onClick={confirmSchedule}
             >
-              {scheduleSaving
-                ? "در حال ثبت..."
-                : contactChannel === "whatsapp"
-                  ? "تأیید و پیام در واتساپ"
-                  : "تأیید زمان تماس"}
+              {scheduleSaving ? "در حال ثبت..." : "تأیید زمان تماس"}
             </button>
           </div>
         </div>
@@ -419,13 +420,15 @@ export default function SeoHeroAuditForm() {
             <IconPhone size={16} />
             درخواست تماس
           </button>
-          <button
-            type="button"
+          <a
+            href={siteWhatsAppUrl(buildWhatsAppMessage())}
+            target="_blank"
+            rel="noopener noreferrer"
             className="seo-btn-secondary seo-hero-audit-channel-btn"
             onClick={() => chooseChannel("whatsapp")}
           >
             پیام در واتساپ
-          </button>
+          </a>
         </div>
       </div>
     );
