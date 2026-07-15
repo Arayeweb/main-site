@@ -18,7 +18,7 @@ import {
 import { SEO_PLAN_SELECT_EVENT } from "@/lib/seoPlanSelection";
 import { trackSeoEvent } from "@/lib/seoAnalytics";
 import { IconCheck, IconPhone } from "@/components/icons";
-import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL } from "@/lib/siteContact";
+import { SITE_PHONE_DISPLAY, SITE_PHONE_TEL, siteWhatsAppUrl } from "@/lib/siteContact";
 import SeoPackageCompare from "./SeoPackageCompare";
 
 const toLatinDigits = (s: string) =>
@@ -43,6 +43,16 @@ const oncePackages = seoPackages.filter((p) => p.pricePeriod === "once");
 const monthlyPackages = seoPackages.filter((p) => p.pricePeriod === "month");
 const enterprisePackage = getSeoPackage("enterprise");
 
+function buildSeoWhatsAppMessage(pkg: SeoPackage, business?: string): string {
+  const lines = [
+    "سلام، از صفحه سئو آرایه پیام می‌دهم.",
+    `پلن انتخابی: ${pkg.name}`,
+    `قیمت: ${formatPackagePrice(pkg)}`,
+  ];
+  if (business?.trim()) lines.push(`کسب‌وکار: ${business.trim()}`);
+  return lines.join("\n");
+}
+
 type PaymentState = "success" | "failed" | "error" | null;
 type FormMode = "package" | "quick";
 
@@ -55,7 +65,6 @@ export default function SeoPackagesForm() {
   const [contact, setContact] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [paying, setPaying] = useState(false);
   const [payment, setPayment] = useState<PaymentState>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const pricingTracked = useRef(false);
@@ -166,34 +175,6 @@ export default function SeoPackagesForm() {
       setError("خطا در ارتباط. اتصال اینترنت را بررسی کنید.");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const startCheckout = async () => {
-    setPaying(true);
-    setError(null);
-    pushGtmEvent("begin_checkout", { package: selected, page: "seo" });
-    try {
-      const res = await fetch("/api/seo/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          package: selected,
-          amount: pkg.price,
-          name: (formMode === "quick" ? bizInput : bizName).trim(),
-          contact: normalizeContact(contact).value,
-          website: formMode === "quick" ? bizInput.trim() : null,
-        }),
-      });
-      const data = (await res.json()) as { ok?: boolean; redirectUrl?: string };
-      if (data.ok && data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-        return;
-      }
-      throw new Error("checkout_failed");
-    } catch {
-      setError("مشکلی در اتصال به درگاه پرداخت پیش آمد. دوباره تلاش کنید یا تماس بگیرید.");
-      setPaying(false);
     }
   };
 
@@ -458,7 +439,7 @@ export default function SeoPackagesForm() {
                 <p>
                   پلن <b>{pkg.name}</b> را انتخاب کردی.
                   {pkg.checkoutEnabled
-                    ? " برای شروع، پرداخت آنلاین را انجام بده یا منتظر تماس تیم ما باش."
+                    ? " برای شروع سریع‌تر، در واتساپ پیام بده یا منتظر تماس تیم ما باش."
                     : " کارشناس ما در کمتر از ۲ ساعت کاری تماس می‌گیرد."}
                 </p>
 
@@ -468,28 +449,33 @@ export default function SeoPackagesForm() {
                     <b>{pkg.name}</b>
                   </div>
                   <div>
-                    <span>{pkg.checkoutEnabled ? "مبلغ قابل پرداخت" : "قیمت"}</span>
+                    <span>قیمت</span>
                     <b>{formatPackagePrice(pkg)}</b>
                   </div>
                 </div>
 
-                {error ? (
-                  <p className="seo-pricing-form-error" role="alert">
-                    {error}
-                  </p>
-                ) : null}
-
                 {pkg.checkoutEnabled ? (
-                  <button
-                    type="button"
-                    onClick={startCheckout}
-                    disabled={paying}
+                  <a
+                    href={siteWhatsAppUrl(
+                      buildSeoWhatsAppMessage(
+                        pkg,
+                        (formMode === "quick" ? bizInput : bizName).trim()
+                      )
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      trackSeoEvent("seo_whatsapp_click", { selected_plan: selected });
+                      pushGtmEvent("whatsapp_click", {
+                        location: "seo_form_success",
+                        page: "seo",
+                        package: selected,
+                      });
+                    }}
                     className="seo-btn-primary"
                   >
-                    {paying
-                      ? "در حال انتقال به درگاه پرداخت..."
-                      : `پرداخت آنلاین ${formatPackagePrice(pkg)}`}
-                  </button>
+                    پیام در واتساپ
+                  </a>
                 ) : null}
 
                 <a

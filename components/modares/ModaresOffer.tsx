@@ -21,6 +21,18 @@ export default function ModaresOffer({ variant }: ModaresOfferProps) {
 
         <div className="mx-auto mt-6 max-w-lg rounded-2xl border border-navy-100 bg-white p-5 shadow-soft sm:mt-8 sm:p-6">
           <p className="text-sm font-bold text-navy-700">{offer.title}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {offer.discountPercent ? (
+              <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-[11px] font-bold text-cyan-700 ring-1 ring-cyan-100">
+                {offer.discountPercent}٪ تخفیف
+              </span>
+            ) : null}
+            {offer.priceOriginal ? (
+              <span className="text-sm font-semibold text-navy-400 line-through">
+                {offer.priceOriginal}
+              </span>
+            ) : null}
+          </div>
           <p className="mt-2 text-2xl font-extrabold text-navy-900 sm:text-[1.75rem]">
             {offer.price}
           </p>

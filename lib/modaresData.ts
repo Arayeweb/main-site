@@ -11,10 +11,16 @@ export type ModaresContent = {
   h1: string;
   supportingCopy: string;
   price: string;
+  priceOriginal?: string;
+  discountPercent?: number;
 };
 
 export const MODARES_DELIVERY =
   "نسخه اولیه تا ۲ روز کاری پس از دریافت کامل محتوا";
+
+export const MODARES_STUDENT_PRICE_ORIGINAL_TOMAN = 10_000_000;
+export const MODARES_STUDENT_DISCOUNT_PERCENT = 25;
+export const MODARES_STUDENT_PRICE_TOMAN = 7_500_000;
 
 export const MODARES_TRUST_CHIPS = [
   "قرارداد رسمی",
@@ -207,6 +213,8 @@ export type ModaresOfferContent = {
   heading: string;
   title: string;
   price: string;
+  priceOriginal?: string;
+  discountPercent?: number;
   delivery: string;
   deliverables: readonly string[];
   cta: string;
@@ -217,7 +225,9 @@ export type ModaresOfferContent = {
 const MODARES_STUDENT_OFFER: ModaresOfferContent = {
   heading: "پیشنهاد مناسب برای شروع تدریس حرفه‌ای",
   title: "سایت حرفه‌ای مدرس",
-  price: "۱۰ میلیون تومان",
+  price: "۷.۵ میلیون تومان",
+  priceOriginal: "۱۰ میلیون تومان",
+  discountPercent: MODARES_STUDENT_DISCOUNT_PERCENT,
   delivery: MODARES_DELIVERY,
   deliverables: [
     "طراحی اختصاصی و سازگار با موبایل",
@@ -294,6 +304,8 @@ export function getModaresContent(variant: ModaresVariant): ModaresContent {
       variant === "students"
         ? "رزومه، کلاس‌ها و نمونه تدریس خود را حرفه‌ای نمایش دهید و درخواست کلاس دریافت کنید."
         : "با یک سایت اختصاصی، رزومه، کلاس‌ها، نمونه تدریس و مسیر درخواست شاگرد را در یک آدرس حرفه‌ای نمایش دهید.",
-    price: "سایت حرفه‌ای مدرس: ۱۰ میلیون تومان",
+    price: "سایت حرفه‌ای مدرس: ۷.۵ میلیون تومان",
+    priceOriginal: "۱۰ میلیون تومان",
+    discountPercent: MODARES_STUDENT_DISCOUNT_PERCENT,
   };
 }

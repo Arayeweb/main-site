@@ -33,9 +33,19 @@ export default function ModaresHero({ variant }: ModaresHeroProps) {
               {content.supportingCopy}
             </p>
 
-            <p className="mt-2 text-[13px] font-bold text-navy-800 sm:mt-4 sm:text-base">
-              {content.price}
-            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-4">
+              <p className="text-[13px] font-bold text-navy-800 sm:text-base">{content.price}</p>
+              {content.priceOriginal ? (
+                <span className="text-xs font-semibold text-navy-400 line-through sm:text-sm">
+                  {content.priceOriginal}
+                </span>
+              ) : null}
+              {content.discountPercent ? (
+                <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[11px] font-bold text-cyan-700 ring-1 ring-cyan-100">
+                  {content.discountPercent}٪ تخفیف
+                </span>
+              ) : null}
+            </div>
 
             <p className="mt-1.5 hidden text-xs text-navy-400 sm:block sm:text-sm">
               {MODARES_DELIVERY}

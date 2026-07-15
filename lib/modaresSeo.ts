@@ -1,5 +1,5 @@
 import { canonicalUrl } from "@/lib/siteUrl";
-import { MODARES_FAQ } from "@/lib/modaresData";
+import { MODARES_FAQ, MODARES_STUDENT_PRICE_TOMAN } from "@/lib/modaresData";
 
 /** مبلغ ریالی برای Schema.org (۱ تومان = ۱۰ ریال) */
 function tomanToIrr(toman: number): number {
@@ -32,7 +32,7 @@ export const modaresJsonLd = {
         {
           "@type": "Offer",
           name: "سایت حرفه‌ای مدرس",
-          price: tomanToIrr(10_000_000),
+          price: tomanToIrr(MODARES_STUDENT_PRICE_TOMAN),
           priceCurrency: "IRR",
           description: "نسخه اولیه تا ۲ روز کاری پس از دریافت کامل محتوا",
         },
