@@ -33,7 +33,7 @@ export class InMemorySupabase {
   };
 }
 
-type FilterOp = "eq" | "or" | "in" | "is" | "json_eq";
+type FilterOp = "eq" | "or" | "in" | "is" | "json_eq" | "gte";
 
 class QueryBuilder {
   private filters: Array<{ col: string; val: unknown; op: FilterOp; jsonOp?: string }> = [];
