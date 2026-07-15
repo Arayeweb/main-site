@@ -56,6 +56,7 @@ export const CRM_SOURCE_LABELS: Record<string, string> = {
   homepage_chatbot: 'چت‌بات سایت',
   seo_hero: 'سئو — فرم هیرو',
   seo_hero_audit: 'سئو — بررسی اولیه هیرو',
+  seo_hero_schedule: 'سئو — زمان تماس/واتساپ',
   seo_multistep: 'سئو — فرم پکیج',
   seo_package_quick: 'سئو — درخواست سریع پکیج',
   seo_chatbot: 'سئو — چت‌بات',

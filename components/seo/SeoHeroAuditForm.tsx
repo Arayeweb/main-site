@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { looksLikeWebsite } from "@/lib/seoBusinessInput";
 import { getUtmParams } from "@/lib/utm";
 import { trackSeoEvent } from "@/lib/seoAnalytics";
 import { SEO_AUDIT_PREFILL_EVENT } from "@/lib/seoPlanSelection";
-import { IconCheck } from "@/components/icons";
+import { IconCheck, IconPhone } from "@/components/icons";
+import { SITE_PHONE_TEL, siteWhatsAppUrl } from "@/lib/siteContact";
 
 const GOALS = [
   { value: "calls", label: "افزایش تماس و درخواست" },
@@ -23,6 +24,14 @@ const STATUSES = [
   { value: "active_seo", label: "پروژه فعال سئو داریم" },
 ] as const;
 
+const TIME_SLOTS = [
+  { value: "10-12", label: "۱۰ تا ۱۲" },
+  { value: "12-14", label: "۱۲ تا ۱۴" },
+  { value: "14-16", label: "۱۴ تا ۱۶" },
+  { value: "16-18", label: "۱۶ تا ۱۸" },
+  { value: "18-20", label: "۱۸ تا ۲۰" },
+] as const;
+
 const toLatinDigits = (s: string) =>
   s
     .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
@@ -32,8 +41,27 @@ function isPhone(v: string) {
   return /^(\+98|0098|0)?9\d{9}$/.test(toLatinDigits(v).replace(/[\s\-()]/g, ""));
 }
 
+function getNextDays(count: number) {
+  const days: { iso: string; weekday: string; dayMonth: string; isToday: boolean }[] = [];
+  const now = new Date();
+  for (let i = 0; i < count; i++) {
+    const d = new Date(now);
+    d.setHours(12, 0, 0, 0);
+    d.setDate(now.getDate() + i);
+    days.push({
+      iso: d.toISOString().slice(0, 10),
+      weekday: d.toLocaleDateString("fa-IR", { weekday: "short" }),
+      dayMonth: d.toLocaleDateString("fa-IR", { day: "numeric", month: "short" }),
+      isToday: i === 0,
+    });
+  }
+  return days;
+}
+
 type GoalValue = (typeof GOALS)[number]["value"];
 type StatusValue = (typeof STATUSES)[number]["value"];
+type ContactChannel = "call" | "whatsapp";
+type SuccessPhase = "choice" | "schedule" | "done";
 
 export default function SeoHeroAuditForm() {
   const [step, setStep] = useState(1);
@@ -48,6 +76,12 @@ export default function SeoHeroAuditForm() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [successPhase, setSuccessPhase] = useState<SuccessPhase>("choice");
+  const [contactChannel, setContactChannel] = useState<ContactChannel | null>(null);
+  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const days = useMemo(() => getNextDays(7), []);
 
   useEffect(() => {
     const onPrefill = (e: Event) => {
@@ -158,6 +192,10 @@ export default function SeoHeroAuditForm() {
         business_type: industry.trim(),
       });
       setSuccess(true);
+      setSuccessPhase("choice");
+      setContactChannel(null);
+      setSelectedDay("");
+      setSelectedTime("");
     } catch {
       setError("خطا در ارتباط. اتصال اینترنت را بررسی کنید.");
     } finally {
@@ -165,7 +203,204 @@ export default function SeoHeroAuditForm() {
     }
   };
 
+  const chooseChannel = (channel: ContactChannel) => {
+    setContactChannel(channel);
+    setSuccessPhase("schedule");
+    setError(null);
+    trackSeoEvent(channel === "call" ? "seo_phone_click" : "seo_whatsapp_click", {
+      goal: goal || undefined,
+      business_type: industry.trim(),
+    });
+  };
+
+  const confirmSchedule = async () => {
+    if (!selectedDay || !selectedTime) {
+      setError("روز و ساعت مناسب را انتخاب کنید.");
+      return;
+    }
+    setError(null);
+    setScheduleSaving(true);
+
+    const dayLabel = days.find((d) => d.iso === selectedDay);
+    const timeLabel = TIME_SLOTS.find((t) => t.value === selectedTime)?.label ?? selectedTime;
+    const dayFa = dayLabel
+      ? `${dayLabel.isToday ? "امروز" : dayLabel.weekday} ${dayLabel.dayMonth}`
+      : selectedDay;
+
+    try {
+      const digits = toLatinDigits(phone).replace(/\D/g, "");
+      const contact = "0" + digits.replace(/^0?/, "");
+      await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "seo_hero_schedule",
+          page: "/seo",
+          name: name.trim(),
+          contact,
+          goal: contactChannel === "whatsapp" ? "seo_whatsapp" : "seo_callback",
+          plan: "audit_initial",
+          channel: contactChannel === "whatsapp" ? "whatsapp" : "phone",
+          company: businessName.trim(),
+          detail: [
+            `preferred_day: ${selectedDay}`,
+            `preferred_day_fa: ${dayFa}`,
+            `preferred_time: ${selectedTime}`,
+            `preferred_time_fa: ${timeLabel}`,
+            `contact_pref: ${contactChannel}`,
+          ].join(" | "),
+          referrer: document.referrer || null,
+          ...getUtmParams(),
+        }),
+      });
+      trackSeoEvent("seo_lead_submit", {
+        goal: contactChannel || undefined,
+        current_status: `${selectedDay}_${selectedTime}`,
+        business_type: industry.trim(),
+      });
+    } catch {
+      // scheduling note is best-effort; still open channel
+    } finally {
+      setScheduleSaving(false);
+      setSuccessPhase("done");
+    }
+
+    if (contactChannel === "whatsapp") {
+      const msg = [
+        `سلام، درخواست بررسی سئو ثبت کردم.`,
+        `نام: ${name.trim()}`,
+        `کسب‌وکار: ${businessName.trim()}`,
+        `زمان مناسب تماس: ${dayFa} — ${timeLabel}`,
+      ].join("\n");
+      window.open(siteWhatsAppUrl(msg), "_blank", "noopener,noreferrer");
+    }
+  };
+
   if (success) {
+    if (successPhase === "done") {
+      const dayLabel = days.find((d) => d.iso === selectedDay);
+      const timeLabel = TIME_SLOTS.find((t) => t.value === selectedTime)?.label ?? selectedTime;
+      const dayFa = dayLabel
+        ? `${dayLabel.isToday ? "امروز" : dayLabel.weekday} ${dayLabel.dayMonth}`
+        : selectedDay;
+
+      return (
+        <div className="seo-hero-audit seo-hero-audit--success" role="status">
+          <div className="seo-hero-audit-success-icon">
+            <IconCheck size={28} />
+          </div>
+          <p className="seo-hero-audit-success-title">زمان‌تان ثبت شد</p>
+          <p className="seo-hero-audit-success-text">
+            {contactChannel === "whatsapp"
+              ? "گفتگو در واتساپ باز شد. اگر صفحه باز نشد، دوباره از دکمه زیر اقدام کنید."
+              : `تیم آرایه در ${dayFa}، ساعت ${timeLabel} با شما تماس می‌گیرد.`}
+          </p>
+          {contactChannel === "whatsapp" ? (
+            <a
+              href={siteWhatsAppUrl(
+                `سلام، درخواست بررسی سئو — ${businessName.trim()} — زمان: ${dayFa} ${timeLabel}`
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="seo-btn-primary seo-hero-audit-channel-btn"
+            >
+              باز کردن واتساپ
+            </a>
+          ) : (
+            <a href={SITE_PHONE_TEL} className="seo-btn-secondary seo-hero-audit-channel-btn">
+              <IconPhone size={16} />
+              تماس مستقیم
+            </a>
+          )}
+        </div>
+      );
+    }
+
+    if (successPhase === "schedule") {
+      return (
+        <div className="seo-hero-audit seo-hero-audit--success seo-hero-audit--schedule">
+          <p className="seo-hero-audit-success-title">چه روز و ساعتی راحت‌ترید؟</p>
+          <p className="seo-hero-audit-success-text">
+            {contactChannel === "whatsapp"
+              ? "زمان مناسب را انتخاب کنید؛ بعد گفتگو در واتساپ باز می‌شود."
+              : "زمان مناسب تماس را انتخاب کنید تا همان بازه با شما هماهنگ شویم."}
+          </p>
+
+          <p className="seo-hero-audit-cal-label">روز</p>
+          <div className="seo-hero-audit-days" role="listbox" aria-label="انتخاب روز">
+            {days.map((day) => (
+              <button
+                key={day.iso}
+                type="button"
+                role="option"
+                aria-selected={selectedDay === day.iso}
+                className={`seo-hero-audit-day ${selectedDay === day.iso ? "is-selected" : ""}`}
+                onClick={() => {
+                  setSelectedDay(day.iso);
+                  if (error) setError(null);
+                }}
+              >
+                <span className="seo-hero-audit-day-week">
+                  {day.isToday ? "امروز" : day.weekday}
+                </span>
+                <span className="seo-hero-audit-day-date">{day.dayMonth}</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="seo-hero-audit-cal-label">ساعت</p>
+          <div className="seo-hero-audit-times" role="listbox" aria-label="انتخاب ساعت">
+            {TIME_SLOTS.map((slot) => (
+              <button
+                key={slot.value}
+                type="button"
+                role="option"
+                aria-selected={selectedTime === slot.value}
+                className={`seo-hero-audit-time ${selectedTime === slot.value ? "is-selected" : ""}`}
+                onClick={() => {
+                  setSelectedTime(slot.value);
+                  if (error) setError(null);
+                }}
+              >
+                {slot.label}
+              </button>
+            ))}
+          </div>
+
+          {error ? (
+            <p className="seo-hero-audit-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="seo-hero-audit-actions seo-hero-audit-actions--center">
+            <button
+              type="button"
+              className="seo-hero-audit-back"
+              onClick={() => {
+                setSuccessPhase("choice");
+                setError(null);
+              }}
+            >
+              بازگشت
+            </button>
+            <button
+              type="button"
+              className="seo-btn-primary"
+              disabled={scheduleSaving}
+              onClick={confirmSchedule}
+            >
+              {scheduleSaving
+                ? "در حال ثبت..."
+                : contactChannel === "whatsapp"
+                  ? "تأیید و پیام در واتساپ"
+                  : "تأیید زمان تماس"}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="seo-hero-audit seo-hero-audit--success" role="status">
         <div className="seo-hero-audit-success-icon">
@@ -173,8 +408,25 @@ export default function SeoHeroAuditForm() {
         </div>
         <p className="seo-hero-audit-success-title">درخواست بررسی اولیه ثبت شد</p>
         <p className="seo-hero-audit-success-text">
-          تیم آرایه وضعیت سایت، صفحات هدف و فرصت‌های اصلی رشد را بررسی می‌کند.
+          چطور ادامه دهیم؟ تماس بگیریم یا در واتساپ هماهنگی کنیم.
         </p>
+        <div className="seo-hero-audit-channels">
+          <button
+            type="button"
+            className="seo-btn-primary seo-hero-audit-channel-btn"
+            onClick={() => chooseChannel("call")}
+          >
+            <IconPhone size={16} />
+            درخواست تماس
+          </button>
+          <button
+            type="button"
+            className="seo-btn-secondary seo-hero-audit-channel-btn"
+            onClick={() => chooseChannel("whatsapp")}
+          >
+            پیام در واتساپ
+          </button>
+        </div>
       </div>
     );
   }
