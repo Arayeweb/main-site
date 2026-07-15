@@ -8,7 +8,7 @@ import IndustryRelatedLinks from "./IndustryRelatedLinks";
 import IndustryPageAnalytics from "./IndustryPageAnalytics";
 import { IconCheck, DynamicIcon } from "@/components/icons";
 import { canonicalUrl } from "@/lib/siteUrl";
-import { ORGANIZATION_ID, SITE_NAME } from "@/lib/seo/siteIdentity";
+import { ORGANIZATION_ID, SITE_NAME, organizationProviderRef } from "@/lib/seo/siteIdentity";
 
 export default function IndustryLandingPage({ page }: { page: IndustryLandingPageContent }) {
   const pageUrl = canonicalUrl(page.meta.canonicalPath);
@@ -20,10 +20,7 @@ export default function IndustryLandingPage({ page }: { page: IndustryLandingPag
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Organization",
-        "@id": ORGANIZATION_ID,
-        name: SITE_NAME,
-        url: canonicalUrl("/"),
+        ...organizationProviderRef(),
       },
       {
         "@type": "BreadcrumbList",
@@ -50,7 +47,7 @@ export default function IndustryLandingPage({ page }: { page: IndustryLandingPag
           page.serviceType === "seo"
             ? `سئو برای ${page.persianIndustryName}`
             : `طراحی سایت برای ${page.persianIndustryName}`,
-        provider: { "@type": "Organization", name: SITE_NAME, url: canonicalUrl("/") },
+        provider: { "@id": ORGANIZATION_ID },
         areaServed: { "@type": "Country", name: "Iran" },
         url: pageUrl,
         description: page.meta.description,
@@ -91,6 +88,24 @@ export default function IndustryLandingPage({ page }: { page: IndustryLandingPag
           <div className="container-mx container-px pb-14 sm:pb-20">
             <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
               <div className="text-right">
+                <nav aria-label="مسیر صفحه" className="mb-4 text-xs text-white/50">
+                  <ol className="flex flex-wrap items-center gap-1.5">
+                    <li>
+                      <a href="/" className="hover:text-white/80">
+                        آرایه
+                      </a>
+                    </li>
+                    <li aria-hidden="true">/</li>
+                    <li>
+                      <a href={page.serviceType === "seo" ? "/seo" : "/website-design"} className="hover:text-white/80">
+                        {hubName}
+                      </a>
+                    </li>
+                    <li aria-hidden="true">/</li>
+                    <li className="text-white/70">{page.persianIndustryName}</li>
+                  </ol>
+                </nav>
+
                 <span className="badge mb-4 bg-brand-50 text-brand-700">
                   <DynamicIcon name="searchCheck" size={13} className="text-brand-500" />
                   {page.serviceType === "seo" ? "سیستم سرچ تا لید" : "سیستم جذب مشتری"}

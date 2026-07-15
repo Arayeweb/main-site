@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,7 +9,6 @@ export const dynamic = "force-dynamic";
 const ZIBAL_MERCHANT = process.env.ZIBAL_MERCHANT || "zibal";
 const ZIBAL_API = "https://api.zibal.ir/v1";
 const ZIBAL_GATEWAY = "https://gateway.zibal.ir/start";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
 // پکیج‌های پزشکان — مبلغ پرداخت آنلاین، پیش‌پرداخت رزرو است (تومان)
 // باید با doctorPackages در lib/doctorsData.ts هماهنگ بماند.

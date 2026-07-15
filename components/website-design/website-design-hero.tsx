@@ -166,7 +166,14 @@ export default function WebsiteDesignHero() {
             طراحی سایت آرایه
           </span>
 
-          <h1 className="mt-[28px] max-w-[950px] text-balance text-[clamp(2rem,4.2vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-navy-900">
+          <p className="mt-3 text-sm text-navy-400">
+            خدمتی از{" "}
+            <a href="/" className="font-bold text-navy-700 underline-offset-2 hover:underline">
+              شرکت آرایه
+            </a>
+          </p>
+
+          <h1 className="mt-[20px] max-w-[950px] text-balance text-[clamp(2rem,4.2vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-navy-900">
             <span className="block">سایتی که به مشتری نشان دهد</span>
             <span className="block">چرا باید شما را انتخاب کند</span>
           </h1>

@@ -76,8 +76,32 @@ async function verifyToken(token: string | undefined): Promise<{ role: string } 
   }
 }
 
+function permanentApexRedirect(req: NextRequest): NextResponse | null {
+  const host = (req.headers.get("host") ?? "").split(":")[0]?.toLowerCase() ?? "";
+  if (
+    host !== "www.araaye.com" &&
+    host !== "arayeweb.com" &&
+    host !== "www.arayeweb.com"
+  ) {
+    return null;
+  }
+  const url = req.nextUrl.clone();
+  url.protocol = "https:";
+  url.hostname = "araaye.com";
+  url.port = "";
+  return NextResponse.redirect(url, 308);
+}
+
 export async function middleware(req: NextRequest) {
+  const apex = permanentApexRedirect(req);
+  if (apex) return apex;
+
   const { pathname } = req.nextUrl;
+
+  // Host canonicalization runs globally; admin gate only on /admin.
+  if (!pathname.startsWith("/admin")) {
+    return NextResponse.next();
+  }
 
   const token = req.cookies.get(ADMIN_COOKIE)?.value;
   const session = await verifyToken(token);
@@ -145,5 +169,11 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: [
+    /*
+     * Host redirects (www / legacy) + admin gate.
+     * Skip static assets and Next internals.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|monitoring|.*\\..*).*)",
+  ],
 };

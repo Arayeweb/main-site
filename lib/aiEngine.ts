@@ -4,6 +4,7 @@
 
 import { Agent } from "undici";
 import { getModel, modelRouteId } from "./aiModels";
+import { SITE_URL } from "@/lib/siteUrl";
 
 import { DIRECT_SYSTEM_PROMPT, WEB_SEARCH_SUFFIX } from "./ai/prompts/direct";
 
@@ -67,7 +68,7 @@ function openRouterHeaders(apiKey: string) {
   return {
     Authorization: `Bearer ${apiKey}`,
     "Content-Type": "application/json",
-    "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com",
+    "HTTP-Referer": SITE_URL,
     "X-Title": "Araaye Arena",
   };
 }

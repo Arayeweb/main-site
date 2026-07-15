@@ -4,10 +4,9 @@ import BizcardChatWidget from "@/components/bizcard/BizcardChatWidget";
 import { fetchActiveBizcardBySlug, type BizcardRow } from "@/lib/bizcardDb";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { normalizeReactStyle } from "@/lib/style";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
-
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com").replace(/\/$/, "");
 
 type Bizcard = BizcardRow;
 

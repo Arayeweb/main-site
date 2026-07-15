@@ -6,20 +6,65 @@ import OutputSamples from "@/components/home/OutputSamples";
 import CollaborationProcess from "@/components/home/CollaborationProcess";
 import DoctorsSpecialtySection from "@/components/home/DoctorsSpecialtySection";
 import AraayeAiTeaser from "@/components/home/AraayeAiTeaser";
+import HomeBrandServices from "@/components/home/HomeBrandServices";
+import HomeCompanyIdentity from "@/components/home/HomeCompanyIdentity";
 import HomeFaq from "@/components/home/HomeFaq";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
-import HomeServiceLinks from "@/components/home/HomeServiceLinks";
 import { canonicalUrl } from "@/lib/siteUrl";
 import { buildHomeSiteGraphJsonLd } from "@/lib/seo/siteIdentity";
+import { homeFaq } from "@/lib/homeFaq";
+
+const HOME_TITLE = "شرکت آرایه | طراحی سایت، سئو و توسعه نرم‌افزار";
+const HOME_DESCRIPTION =
+  "شرکت آرایه ارائه‌دهنده خدمات طراحی سایت، سئو، توسعه نرم‌افزار اختصاصی و ابزارهای هوش مصنوعی برای رشد کسب‌وکارهاست. برای دریافت مشاوره با آرایه تماس بگیرید.";
 
 export const metadata: Metadata = {
+  title: { absolute: HOME_TITLE },
+  description: HOME_DESCRIPTION,
+  keywords: [
+    "شرکت آرایه",
+    "آرایه",
+    "شرکت هوش آرایه پارس",
+    "شرکت آرایه طراحی سایت",
+    "شرکت آرایه سئو",
+    "شرکت نرم‌افزاری آرایه",
+    "شرکت طراحی سایت آرایه",
+    "Araaye",
+    "araaye.com",
+  ],
   alternates: {
     canonical: canonicalUrl("/"),
   },
+  openGraph: {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    url: canonicalUrl("/"),
+    type: "website",
+    locale: "fa_IR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+  },
 };
 
-const homeJsonLd = buildHomeSiteGraphJsonLd();
+const siteGraph = buildHomeSiteGraphJsonLd();
+const homeJsonLd = {
+  ...siteGraph,
+  "@graph": [
+    ...siteGraph["@graph"],
+    {
+      "@type": "FAQPage",
+      mainEntity: homeFaq.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    },
+  ],
+};
 
 export default function HomePage() {
   return (
@@ -31,13 +76,14 @@ export default function HomePage() {
       <Navbar ctaLabel="درخواست مشاوره" />
       <main className="pb-20 sm:pb-0">
         <Hero />
-        <HomeServiceLinks />
+        <HomeBrandServices />
         <CustomerPath />
         <OutputSamples />
         <CollaborationProcess />
         <DoctorsSpecialtySection />
         <AraayeAiTeaser />
         <HomeFaq />
+        <HomeCompanyIdentity />
         <CTA />
       </main>
       <Footer />

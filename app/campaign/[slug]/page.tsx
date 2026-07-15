@@ -7,17 +7,14 @@ import {
   mergeCampaignPresentation,
 } from "@/lib/adreadyPresentation";
 import { getPublishedCampaignPage } from "@/lib/adreadyServer";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = { params: { slug: string } };
 
 function publicUrl(slug: string): string {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com").replace(
-    /\/$/,
-    ""
-  );
-  return `${base}/campaign/${encodeURIComponent(slug)}`;
+  return `${SITE_URL}/campaign/${encodeURIComponent(slug)}`;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

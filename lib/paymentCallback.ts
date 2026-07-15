@@ -1,7 +1,7 @@
-const DEFAULT_SITE_URL = "https://araaye.com";
+import { resolvePublicOrigin } from "@/lib/siteUrl";
 
 function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL).replace(/\/$/, "");
+  return resolvePublicOrigin();
 }
 
 /** Zibal browser callbacks — phase 2 routes through payment.araaye.com when enabled. */

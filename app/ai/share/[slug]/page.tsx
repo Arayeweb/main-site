@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import ShareBattlePage from "./ShareBattlePage";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export async function generateMetadata({
   params,

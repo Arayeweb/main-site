@@ -2,11 +2,10 @@ import { NextRequest } from "next/server";
 import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
 export async function GET(req: NextRequest) {
   const session = getAISession(req);

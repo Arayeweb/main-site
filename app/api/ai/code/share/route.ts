@@ -3,11 +3,10 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
 import { generateShareSlug } from "@/lib/aiPromo";
 import { extractCodeSnapshot } from "@/lib/codeStudio";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
 export async function POST(req: NextRequest) {
   const session = getAISession(req);

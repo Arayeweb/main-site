@@ -1,0 +1,22 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.araaye.com" }],
+      "destination": "https://araaye.com/:path*",
+      "statusCode": 308
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "arayeweb.com" }],
+      "destination": "https://araaye.com/:path*",
+      "statusCode": 308
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.arayeweb.com" }],
+      "destination": "https://araaye.com/:path*",
+      "statusCode": 308
+    }
+  ]
+}

@@ -28,10 +28,18 @@ const nextConfig = {
     ];
   },
   async redirects() {
+    // permanent: true → HTTP 308. Also mirrored in vercel.json + middleware (308)
+    // so www/legacy hosts stay permanent even if a platform host rule is temporary.
     return [
       {
         source: "/:path*",
         has: [{ type: "host", value: "arayeweb.com" }],
+        destination: "https://araaye.com/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.arayeweb.com" }],
         destination: "https://araaye.com/:path*",
         permanent: true,
       },

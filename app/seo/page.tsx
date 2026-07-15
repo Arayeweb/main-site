@@ -19,6 +19,7 @@ import SeoChatWidget from "@/components/seo/SeoChatWidget";
 import SeoPageAnalytics from "@/components/seo/SeoPageAnalytics";
 import IndustryHubLinks from "@/components/seo/IndustryHubLinks";
 import { canonicalUrl } from "@/lib/siteUrl";
+import { organizationProviderRef } from "@/lib/seo/siteIdentity";
 import { seoFaq, seoFooterColumns } from "@/lib/seoData";
 
 export const metadata: Metadata = {
@@ -52,11 +53,28 @@ const jsonLd = {
       name: "خدمات سئو آرایه",
       serviceType:
         "SEO strategy, technical SEO, content SEO, on-page SEO, off-page SEO, local SEO, CRO, analytics",
-      provider: { "@type": "Organization", name: "آرایه", url: canonicalUrl("/") },
+      provider: organizationProviderRef(),
       areaServed: { "@type": "Country", name: "Iran" },
       url: canonicalUrl("/seo"),
       description:
         "سئوی کامل آرایه برای تبدیل جست‌وجوی گوگل به تماس، درخواست و مشتری.",
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "آرایه",
+          item: canonicalUrl("/"),
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "خدمات سئو",
+          item: canonicalUrl("/seo"),
+        },
+      ],
     },
     {
       "@type": "FAQPage",

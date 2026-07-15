@@ -6,6 +6,8 @@ describe("getPaymentCallbackUrl", () => {
     PAYMENT_SERVICE_URL: process.env.PAYMENT_SERVICE_URL,
     PAYMENT_CALLBACKS_ENABLED: process.env.PAYMENT_CALLBACKS_ENABLED,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    NODE_ENV: process.env.NODE_ENV,
+    VERCEL_ENV: process.env.VERCEL_ENV,
   };
 
   afterEach(() => {
@@ -15,10 +17,12 @@ describe("getPaymentCallbackUrl", () => {
     }
   });
 
-  it("uses Vercel path when callbacks disabled", () => {
+  it("ignores bullet-masked NEXT_PUBLIC_SITE_URL in production", () => {
     delete process.env.PAYMENT_SERVICE_URL;
     delete process.env.PAYMENT_CALLBACKS_ENABLED;
-    process.env.NEXT_PUBLIC_SITE_URL = "https://araaye.com";
+    process.env.NEXT_PUBLIC_SITE_URL = `https://${"•".repeat(22)}`;
+    process.env.NODE_ENV = "production";
+    process.env.VERCEL_ENV = "production";
 
     expect(getPaymentCallbackUrl("ai", "/api/ai/verify")).toBe(
       "https://araaye.com/api/ai/verify"

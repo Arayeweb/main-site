@@ -7,6 +7,19 @@ import AboutHeroFlow from "./AboutHeroFlow";
 import AboutOriginGraphic from "./AboutOriginGraphic";
 import AboutProductCollage from "./AboutProductCollage";
 import {
+  COMPANY_ACTIVITY,
+  COMPANY_ADDRESS_FULL,
+  COMPANY_DISPLAY_NAME,
+  COMPANY_EMAIL,
+  COMPANY_LEGAL_NAME,
+  COMPANY_MAPS_URL,
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_PHONE_TEL,
+  COMPANY_SAME_AS,
+  COMPANY_TRADE_NAME,
+  COMPANY_VALUE_PROP,
+} from "@/lib/companyIdentity";
+import {
   designOutputSamples,
   googleOutputSamples,
   type OutputSample,
@@ -112,24 +125,101 @@ export default function AboutPageContent() {
       <section className="bg-white pt-28 pb-16 sm:pt-32 sm:pb-20 lg:pt-36">
         <div className="container-mx container-px">
           <div className="mx-auto max-w-3xl text-center">
-            <span className="badge mb-5 bg-navy-50 text-navy-600">درباره آرایه</span>
+            <span className="badge mb-5 bg-navy-50 text-navy-600">{COMPANY_DISPLAY_NAME}</span>
             <h1 className="text-balance text-[1.75rem] font-extrabold leading-[1.3] tracking-tight text-navy-900 sm:text-4xl lg:text-[2.65rem]">
-              فناوری باید به رشد کسب‌وکار کمک کند، نه آن را پیچیده‌تر کند.
+              درباره شرکت آرایه
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-navy-500 sm:text-lg">
-              آرایه راهکارهایی می‌سازد که کسب‌وکارها با آن‌ها بهتر دیده می‌شوند، درخواست مشتری
-              می‌گیرند و ارتباط با مشتریانشان را منظم‌تر پیگیری می‌کنند.
+              {COMPANY_VALUE_PROP}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a href="/#solutions" className="btn-primary">
-                راهکارهای آرایه را ببینید
-              </a>
+              <Link href="/" className="btn-primary">
+                صفحه اصلی شرکت آرایه
+              </Link>
               <a href="/#real-portfolio" className="btn-secondary">
                 نمونه خروجی‌ها
               </a>
             </div>
           </div>
           <AboutHeroFlow />
+        </div>
+      </section>
+
+      {/* Legal identity */}
+      <section className="border-y border-navy-100 bg-navy-50/40 py-14 sm:py-16">
+        <div className="container-mx container-px">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="text-center text-2xl font-extrabold text-navy-900 sm:text-3xl">
+              هویت شرکت
+            </h2>
+            <dl className="mt-8 space-y-4 rounded-[20px] border border-navy-100 bg-white p-6 text-right sm:p-8">
+              <div className="flex flex-col gap-1 border-b border-navy-50 pb-4 sm:flex-row sm:justify-between sm:gap-6">
+                <dt className="text-sm font-bold text-navy-400">نام تجاری</dt>
+                <dd className="text-base font-extrabold text-navy-900">{COMPANY_TRADE_NAME}</dd>
+              </div>
+              <div className="flex flex-col gap-1 border-b border-navy-50 pb-4 sm:flex-row sm:justify-between sm:gap-6">
+                <dt className="text-sm font-bold text-navy-400">نام حقوقی</dt>
+                <dd className="text-base font-extrabold text-navy-900">{COMPANY_LEGAL_NAME}</dd>
+              </div>
+              <div className="flex flex-col gap-1 border-b border-navy-50 pb-4 sm:flex-row sm:justify-between sm:gap-6">
+                <dt className="text-sm font-bold text-navy-400">حوزه فعالیت</dt>
+                <dd className="max-w-md text-sm font-semibold leading-relaxed text-navy-800 sm:text-left">
+                  {COMPANY_ACTIVITY}
+                </dd>
+              </div>
+              <div className="flex flex-col gap-1 border-b border-navy-50 pb-4 sm:flex-row sm:justify-between sm:gap-6">
+                <dt className="text-sm font-bold text-navy-400">آدرس</dt>
+                <dd className="max-w-md text-sm font-semibold leading-relaxed text-navy-800">
+                  <a
+                    href={COMPANY_MAPS_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-teal-800"
+                  >
+                    {COMPANY_ADDRESS_FULL}
+                  </a>
+                </dd>
+              </div>
+              <div className="flex flex-col gap-1 border-b border-navy-50 pb-4 sm:flex-row sm:justify-between sm:gap-6">
+                <dt className="text-sm font-bold text-navy-400">شماره تماس</dt>
+                <dd className="text-base font-extrabold text-navy-900" dir="ltr">
+                  <a href={COMPANY_PHONE_TEL} className="hover:text-teal-800">
+                    {COMPANY_PHONE_DISPLAY}
+                  </a>
+                </dd>
+              </div>
+              <div className="flex flex-col gap-1 border-b border-navy-50 pb-4 sm:flex-row sm:justify-between sm:gap-6">
+                <dt className="text-sm font-bold text-navy-400">ایمیل رسمی</dt>
+                <dd className="text-base font-extrabold text-navy-900" dir="ltr">
+                  <a href={`mailto:${COMPANY_EMAIL}`} className="hover:text-teal-800">
+                    {COMPANY_EMAIL}
+                  </a>
+                </dd>
+              </div>
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-6">
+                <dt className="text-sm font-bold text-navy-400">شبکه‌های اجتماعی</dt>
+                <dd className="flex gap-4 text-sm font-bold text-teal-800">
+                  <a href={COMPANY_SAME_AS[0]} target="_blank" rel="noopener noreferrer">
+                    LinkedIn
+                  </a>
+                  <a href={COMPANY_SAME_AS[1]} target="_blank" rel="noopener noreferrer">
+                    Instagram
+                  </a>
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-6 text-center text-sm leading-relaxed text-navy-500">
+              ارزش پیشنهادی ما: {COMPANY_VALUE_PROP}{" "}
+              <Link href="/#services" className="font-bold text-teal-800 hover:text-teal-950">
+                خدمات آرایه
+              </Link>{" "}
+              و{" "}
+              <Link href="/#real-portfolio" className="font-bold text-teal-800 hover:text-teal-950">
+                نمونه‌کارها
+              </Link>{" "}
+              را ببینید.
+            </p>
+          </div>
         </div>
       </section>
 

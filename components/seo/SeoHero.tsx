@@ -9,6 +9,13 @@ export default function SeoHero() {
           <div className="seo-hero-copy is-centered">
             <span className="seo-hero-badge">خدمات SEO آرایه</span>
 
+            <p className="mt-3 text-sm text-navy-400">
+              اجرا توسط{" "}
+              <a href="/" className="font-bold text-navy-700 underline-offset-2 hover:underline">
+                تیم آرایه
+              </a>
+            </p>
+
             <h1>
               <span className="seo-hero-title-line">از جست‌وجوی گوگل</span>
               <span className="seo-hero-title-line">

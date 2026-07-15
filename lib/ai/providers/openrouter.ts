@@ -6,6 +6,7 @@
 
 import { Agent } from "undici";
 import { getModel, modelRouteId } from "@/lib/aiModels";
+import { SITE_URL } from "@/lib/siteUrl";
 import type {
   AIProvider,
   ChatInput,
@@ -68,7 +69,7 @@ function headers(apiKey: string) {
   return {
     Authorization: `Bearer ${apiKey}`,
     "Content-Type": "application/json",
-    "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com",
+    "HTTP-Referer": SITE_URL,
     "X-Title": "Araaye Arena",
   };
 }

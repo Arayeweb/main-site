@@ -6,11 +6,10 @@ import { getAISession } from "@/lib/aiAuth";
 import { isUuid } from "@/lib/ai/requestValidation";
 import { generateShareSlug } from "@/lib/aiPromo";
 import { loadRunById } from "@/lib/ai/runs/loadRun";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
 
 export async function POST(
   req: NextRequest,

@@ -64,4 +64,4 @@ export const CONTACT_FAQ = [
   },
 ] as const;
 
-export const COMPANY_LEGAL_NAME = "شرکت هوش آرایه پارس";
+export { COMPANY_LEGAL_NAME } from "@/lib/companyIdentity";

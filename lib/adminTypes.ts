@@ -250,13 +250,13 @@ export const LEAD_SOURCE_KEY_LABELS: Record<string, string> = {
 export const DEFAULT_COMPANY_SETTINGS = {
   company: {
     brandName: 'آرایه',
-    legalName: 'شرکت هوش ارایه پارس مسئولیت محدود',
+    legalName: 'شرکت هوش آرایه پارس',
     registrationNumber: '',
     nationalId: '',
-    address: '',
-    phone: '',
-    email: 'info@araaye.com',
-    website: 'araaye.com',
+    address: 'تهران، خیابان کارگر شمالی، خیابان فرشی مقدم (۱۶)، پارک علم و فناوری دانشگاه تهران',
+    phone: '۰۹۹۹۱۳۰۰۷۸۸',
+    email: 'support@araaye.com',
+    website: 'https://araaye.com',
   },
   bank: {
     accountHolder: '',

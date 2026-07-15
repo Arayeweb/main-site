@@ -10,7 +10,12 @@ const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
 
 /** Canonical origin — no www (next.config redirects www → apex; Telegram won't follow). */
 function canonicalSiteUrl(url) {
-  return url.replace(/\/$/, "").replace(/^(https?:\/\/)www\./i, "$1");
+  const normalized = url.replace(/\/$/, "").replace(/^(https?:\/\/)www\./i, "$1");
+  // Reject masked/punycode env paste (same incident as sitemap •••• hostnames)
+  if (/[^\u0000-\u007F]/.test(normalized) || /xn--/i.test(normalized) || /[•●]/.test(normalized)) {
+    return "https://araaye.com";
+  }
+  return normalized || "https://araaye.com";
 }
 
 const siteUrl = canonicalSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com");

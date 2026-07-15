@@ -2,9 +2,9 @@ import { sendEmail } from "@/lib/resend";
 import { recommendedServiceLabels } from "./constants";
 import type { RecommendedService, WebsiteBriefInput } from "./types";
 import { primaryConversionGoalOptions, primaryBusinessProblemOptions } from "./constants";
+import { SITE_URL } from "@/lib/siteUrl";
 
 const NOTIFY_TO = process.env.WEBSITE_BRIEF_NOTIFY_EMAIL ?? process.env.ADMIN_NOTIFY_EMAIL ?? "support@araaye.com";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://araaye.com";
 
 function labelForGoal(value: string): string {
   return primaryConversionGoalOptions.find((o) => o.value === value)?.label ?? value;

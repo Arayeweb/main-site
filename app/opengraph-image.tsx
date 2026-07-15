@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "آرایه — توسعه نرم‌افزار اختصاصی";
+export const alt = "شرکت آرایه — طراحی سایت، سئو و نرم‌افزار";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -51,14 +51,14 @@ export default function OGImage() {
 
         {/* Main text */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <div style={{ fontSize: 96, fontWeight: 800, color: "#F6F8FA", lineHeight: 1.1 }}>
-            آرایه
+          <div style={{ fontSize: 72, fontWeight: 800, color: "#F6F8FA", lineHeight: 1.15 }}>
+            شرکت آرایه
           </div>
-          <div style={{ fontSize: 44, fontWeight: 700, color: "#F6F8FA", marginTop: 16, lineHeight: 1.3 }}>
-            توسعه نرم‌افزار اختصاصی
+          <div style={{ fontSize: 36, fontWeight: 700, color: "#F6F8FA", marginTop: 16, lineHeight: 1.35 }}>
+            طراحی سایت · سئو · نرم‌افزار
           </div>
-          <div style={{ fontSize: 28, fontWeight: 500, color: "#9FB2C2", marginTop: 12 }}>
-            سایت · وب‌اپلیکیشن · CRM · چت‌بات هوشمند
+          <div style={{ fontSize: 26, fontWeight: 500, color: "#9FB2C2", marginTop: 12 }}>
+            شرکت هوش آرایه پارس
           </div>
         </div>
 

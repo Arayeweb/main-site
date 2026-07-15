@@ -4,15 +4,13 @@
 // =====================================================
 
 import { normalizeContact, toLatin } from "@/lib/validateContact";
+import { SITE_URL } from "@/lib/siteUrl";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "openai/gpt-4o";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
-const LEADS_API_URL = process.env.NEXT_PUBLIC_SITE_URL
-  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/leads`
-  : null;
+const LEADS_API_URL = `${SITE_URL}/api/leads`;
 
 const API_BASE = `https://api.telegram.org/bot${BOT_TOKEN}`;
 

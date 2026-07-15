@@ -2,18 +2,21 @@ import {
   SITE_ALTERNATE_NAMES,
   SITE_NAME,
   buildHomeSiteGraphJsonLd,
+  organizationProviderRef,
   websitePartOfRef,
 } from "@/lib/seo/siteIdentity";
+import { COMPANY_LEGAL_NAME } from "@/lib/companyIdentity";
 import { SITE_URL } from "@/lib/siteUrl";
 
 describe("siteIdentity", () => {
-  it("exposes آرایه as the preferred Google site name with Latin/AI fallbacks", () => {
+  it("exposes آرایه as the preferred Google site name with brand fallbacks", () => {
     expect(SITE_NAME).toBe("آرایه");
-    expect(SITE_ALTERNATE_NAMES[0]).toBe("Araaye");
+    expect(SITE_ALTERNATE_NAMES[0]).toBe("شرکت آرایه");
+    expect(SITE_ALTERNATE_NAMES).toContain("Araaye");
     expect(SITE_ALTERNATE_NAMES).not.toContain("araaye.com");
   });
 
-  it("buildHomeSiteGraphJsonLd includes WebSite.name + alternateName for site names", () => {
+  it("buildHomeSiteGraphJsonLd includes WebSite + Organization brand identity once", () => {
     const graph = buildHomeSiteGraphJsonLd();
     const website = graph["@graph"].find((node) => node["@type"] === "WebSite");
     const org = graph["@graph"].find((node) => node["@type"] === "Organization");
@@ -21,11 +24,24 @@ describe("siteIdentity", () => {
     expect(website).toMatchObject({
       name: "آرایه",
       url: SITE_URL,
-      alternateName: ["Araaye", "آرایه AI", "Araaye AI"],
+      alternateName: ["شرکت آرایه", "Araaye"],
     });
     expect(org).toMatchObject({
       name: "آرایه",
+      legalName: COMPANY_LEGAL_NAME,
       url: SITE_URL,
+      email: "support@araaye.com",
+      telephone: "+98991300788",
+      alternateName: ["شرکت آرایه", "Araaye"],
+      sameAs: [
+        "https://www.linkedin.com/company/araaye",
+        "https://instagram.com/araayecom",
+      ],
+    });
+    expect(org?.address).toMatchObject({
+      "@type": "PostalAddress",
+      addressLocality: "تهران",
+      addressCountry: "IR",
     });
     expect(org?.logo).toMatchObject({
       "@type": "ImageObject",
@@ -38,6 +54,16 @@ describe("siteIdentity", () => {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
       name: "آرایه",
+      url: SITE_URL,
+    });
+  });
+
+  it("organizationProviderRef keeps legalName and logo consistent", () => {
+    expect(organizationProviderRef()).toMatchObject({
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "آرایه",
+      legalName: COMPANY_LEGAL_NAME,
       url: SITE_URL,
     });
   });

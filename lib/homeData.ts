@@ -396,18 +396,18 @@ export interface FooterColumn {
 }
 
 export const FOOTER_ADDRESS =
-  "تهران ، خیابان کارگر شمالی ، خیابان فرشی مقدم (۱۶) ، پارک علم و فناوری دانشگاه تهران";
+  "تهران، خیابان کارگر شمالی، خیابان فرشی مقدم (۱۶)، پارک علم و فناوری دانشگاه تهران";
 
 export const FOOTER_MAPS_URL =
   "https://www.google.com/maps/search/?api=1&query=%D8%AA%D9%87%D8%B1%D8%A7%D9%86+%D8%AE%DB%8C%D8%A7%D8%A8%D8%A7%D9%86+%DA%A9%D8%A7%D8%B1%DA%AF%D8%B1+%D8%B4%D9%85%D8%A7%D9%84%DB%8C+%D9%BE%D8%A7%D8%B1%DA%A9+%D8%B9%D9%84%D9%85+%D9%88+%D9%81%D9%86%D8%A7%D9%88%D8%B1%DB%8C+%D8%AF%D8%A7%D9%86%D8%B4%DA%AF%D8%A7%D9%87+%D8%AA%D9%87%D8%B1%D8%A7%D9%86";
 
 export const footerColumns: FooterColumn[] = [
   {
-    title: "آرایه",
+    title: "شرکت آرایه",
     links: [
       { label: "درباره ما", url: "/about" },
       { label: "نمونه‌کارها", url: "/#real-portfolio" },
-      { label: "راهکارها", url: "/#solutions" },
+      { label: "خدمات آرایه", url: "/#services" },
       { label: "تماس با ما", url: "/contact" },
     ],
   },

@@ -4,8 +4,9 @@
 // =========================================================
 
 import { AI_PACKAGES } from "@/lib/aiPackages";
+import { SITE_URL } from "@/lib/siteUrl";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://araaye.com";
+const SITE = SITE_URL;
 const CAMPAIGN = "micro_ig_jul26";
 const MEDIUM_IG = "instagram";
 const MEDIUM_TG = "telegram";

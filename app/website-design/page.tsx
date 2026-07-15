@@ -23,6 +23,7 @@ import WebsiteDesignLeadForm from "@/components/website-design/website-design-le
 import WebsiteDesignFinalCta from "@/components/website-design/website-design-final-cta";
 import IndustryHubLinks from "@/components/seo/IndustryHubLinks";
 import { canonicalUrl } from "@/lib/siteUrl";
+import { organizationProviderRef } from "@/lib/seo/siteIdentity";
 import { websiteDesignFaq } from "@/data/website-design";
 
 export const metadata: Metadata = {
@@ -56,11 +57,28 @@ const jsonLd = {
       name: "طراحی سایت حرفه‌ای و فروش‌محور",
       serviceType:
         "Website design, responsive development, lead capture forms, technical SEO foundations, analytics integration",
-      provider: { "@type": "Organization", name: "آرایه", url: canonicalUrl("/") },
+      provider: organizationProviderRef(),
       areaServed: { "@type": "Country", name: "Iran" },
       url: canonicalUrl("/website-design"),
       description:
         "طراحی و توسعه سایت‌های حرفه‌ای برای جذب مشتری، ایجاد اعتماد، تبلیغات و رشد کسب‌وکار.",
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "آرایه",
+          item: canonicalUrl("/"),
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "طراحی سایت",
+          item: canonicalUrl("/website-design"),
+        },
+      ],
     },
     {
       "@type": "FAQPage",
