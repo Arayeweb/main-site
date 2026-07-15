@@ -82,8 +82,8 @@ const nextConfig = {
       { source: "/qr", destination: "/qr.html" },
       { source: "/privacy", destination: "/privacy.html" },
       { source: "/tashakor", destination: "/tashakor.html" },
-      // بلاگ (قابل سرو روی subdomain یا مسیر /blog)
-      { source: "/blog", destination: "/blog/index.html" },
+      // /blog از Next.js (app/blog/page.tsx) سرو می‌شود — rewrite حذف شد
+      // مقالات استاتیک قدیمی هنوز از public/blog/posts سرو می‌شوند
       { source: "/blog/posts/:slug", destination: "/blog/posts/:slug.html" },
     ];
   },
