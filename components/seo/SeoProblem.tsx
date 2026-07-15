@@ -2,19 +2,15 @@ import { seoProblems } from "@/lib/seoData";
 
 export default function SeoProblem() {
   return (
-    <section className="seo-problem section-py">
+    <section className="seo-problem section-py" aria-label="مشکلاتی که آرایه شناسایی می‌کند">
       <div className="container-mx container-px">
         <div className="seo-problem-layout">
           <div className="seo-problem-intro">
-            <span className="seo-section-tag">چرا سئوی معمولی جواب نمی‌دهد</span>
-            <h2>
-              بازدید از گوگل می‌آید.
-              <br />
-              <em>مشتری نمی‌آید.</em>
-            </h2>
+            <span className="seo-section-tag">مشکلات رایج</span>
+            <h2>وقتی سئو فقط به رتبه فکر کند، مشتری گم می‌شود</h2>
             <p>
-              مشکل اکثر کسب‌وکارها رتبه پایین نیست — مسیر بعد از ورود کاربر طراحی نشده:
-              صفحه درست، فرم درست، CRM درست.
+              آرایه قبل از اجرا مشخص می‌کند کدام جست‌وجوها واقعاً می‌توانند به تماس،
+              درخواست یا فروش منجر شوند — و کجا مسیر تبدیل شکسته است.
             </p>
           </div>
 

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { normalizeContact } from "@/lib/validateContact";
 import { pageFromPath } from "@/lib/pageFromPath";
+import {
+  isTeachersCampaignLead,
+  teachersLeadDedupSinceIso,
+} from "@/lib/leadsDedup";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,15 +61,17 @@ export async function POST(req: NextRequest) {
   }
 
   const source = str(body.source) || "unknown";
+  const goal = str(body.goal);
+  const channel = str(body.channel);
   const row = {
     source,
     page: pageFromPath(body.page),
     name: str(body.name),
     contact: contact.value,
-    goal: str(body.goal),
+    goal,
     budget: str(body.budget),
     plan: str(body.plan),
-    channel: str(body.channel),
+    channel,
     sitetype: str(body.sitetype),
     intent: str(body.intent),
     detail: str(body.detail),
@@ -82,6 +88,25 @@ export async function POST(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
+
+    if (isTeachersCampaignLead(channel, goal)) {
+      const since = teachersLeadDedupSinceIso();
+      const { data: existing, error: lookupError } = await supabase
+        .from("leads")
+        .select("id")
+        .eq("contact", contact.value)
+        .eq("channel", channel)
+        .gte("created_at", since)
+        .limit(1)
+        .maybeSingle();
+
+      if (lookupError) {
+        console.error("[api/leads] teachers dedup lookup error:", lookupError.message);
+      } else if (existing) {
+        return NextResponse.json({ ok: true, duplicate: true });
+      }
+    }
+
     const { error } = await supabase.from("leads").insert(row);
     if (error) {
       console.error("[api/leads] insert error:", error.message);

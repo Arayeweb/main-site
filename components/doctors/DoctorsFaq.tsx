@@ -1,4 +1,4 @@
-import { doctorFaq } from "@/lib/doctorsData";
+import { doctorCooperationNote, doctorFaq } from "@/lib/doctorsData";
 import SectionHeader from "@/components/home/SectionHeader";
 
 export default function DoctorsFaq() {
@@ -27,6 +27,10 @@ export default function DoctorsFaq() {
             </details>
           ))}
         </div>
+
+        <p className="mx-auto mt-8 max-w-2xl text-center text-[12px] leading-relaxed text-navy-400">
+          {doctorCooperationNote}
+        </p>
       </div>
     </section>
   );

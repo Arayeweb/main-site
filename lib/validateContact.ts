@@ -12,9 +12,10 @@ export function isEmail(v: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
-/** موبایل ایران: با/بدون پیش‌شماره +98 / 0098 / 0 و سپس 9 و ۹ رقم. */
+/** موبایل ایران: 09، +98، 0098 یا 98 و سپس 9 و ۹ رقم. */
 export function isPhone(v: string): boolean {
-  return /^(\+98|0098|0)?9\d{9}$/.test(toLatin(v).replace(/[\s\-()]/g, ""));
+  const digits = toLatin(v).replace(/[\s\-()]/g, "");
+  return /^(\+98|0098|98|0)?9\d{9}$/.test(digits);
 }
 
 /** آیدی تلگرام: @ و حداقل ۵ کاراکتر (a-z, 0-9, _). */
@@ -38,7 +39,7 @@ export function normalizeContact(rawInput: string): {
   if (isPhone(raw)) {
     const digits = toLatin(raw).replace(/[\s\-()]/g, "");
     // به فرمت 09xxxxxxxxx یکدست می‌کنیم
-    const local = digits.replace(/^(\+98|0098|0)?/, "");
+    const local = digits.replace(/^(\+98|0098|98|0)?/, "");
     return { kind: "phone", value: "0" + local };
   }
 

@@ -16,12 +16,17 @@ describe("validateContact", () => {
     expect(isPhone("09123456789")).toBe(true);
     expect(isPhone("+989123456789")).toBe(true);
     expect(isPhone("00989123456789")).toBe(true);
+    expect(isPhone("989123456789")).toBe(true);
   });
 
   it("normalizes phone to 09xxxxxxxxx format", () => {
     const { kind, value } = normalizeContact("+989123456789");
     expect(kind).toBe("phone");
     expect(value).toBe("09123456789");
+
+    const bare98 = normalizeContact("989123456789");
+    expect(bare98.kind).toBe("phone");
+    expect(bare98.value).toBe("09123456789");
   });
 
   it("rejects invalid phone numbers", () => {

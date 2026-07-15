@@ -17,6 +17,7 @@ describe("pageFromPath", () => {
     expect(pageFromPath("/clinic")).toBe("clinic");
     expect(pageFromPath("/restaurant")).toBe("restaurant");
     expect(pageFromPath("/googlesabt")).toBe("googlesabt");
+    expect(pageFromPath("/modares")).toBe("modares");
     expect(pageFromPath("/")).toBe("index");
     expect(pageFromPath("")).toBe("index");
     expect(pageFromPath("seo")).toBe("seo");

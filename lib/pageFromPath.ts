@@ -19,7 +19,7 @@ export function pageFromPath(p: unknown): string | null {
 
   // اولویت ۲: لندینگ‌های شناخته‌شده (رفتار قبلی؛ بدون شکستن منبع‌های موجود)
   // مثال: /seo → seo ، /doctors → doctors ، /clinic → clinic
-  const legacyExact = path.match(/^\/(clinic|doctors|restaurant|googlesabt|seo|bizcard)(?:\/.*)?$/i);
+  const legacyExact = path.match(/^\/(clinic|doctors|restaurant|googlesabt|seo|bizcard|modares)(?:\/.*)?$/i);
   if (legacyExact) {
     return legacyExact[1].toLowerCase();
   }

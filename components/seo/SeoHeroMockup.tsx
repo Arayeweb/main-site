@@ -1,17 +1,15 @@
-const REPORT_ROWS = [
-  { label: "نمایش در نقشه", status: "مناسب", tone: "ok" },
-  { label: "ساعات کاری", status: "نیاز به تکمیل", tone: "partial" },
-  { label: "صفحه خدمات", status: "وجود ندارد", tone: "missing" },
-  { label: "دکمه تماس", status: "مناسب", tone: "ok" },
+const AUDIT_ITEMS = [
+  "وضعیت نمایش صفحات در گوگل",
+  "مشکلات ایندکس و سئوی فنی",
+  "صفحات خدمات و کلمات هدف",
+  "وضعیت Google Maps",
+  "مسیر تماس و ثبت درخواست",
+  "فرصت‌های رشد نسبت به رقبا",
 ] as const;
-
-function StatusBadge({ tone, status }: { tone: "ok" | "partial" | "missing"; status: string }) {
-  return <span className={`seo-audit-badge seo-audit-badge--${tone}`}>{status}</span>;
-}
 
 export default function SeoHeroMockup() {
   return (
-    <div className="seo-hero-mockup" aria-label="نمونه گزارش بررسی حضور در گوگل">
+    <div className="seo-hero-mockup" aria-label="نمونه موارد بررسی اولیه">
       <div className="seo-serp-shell">
         <div className="seo-serp-main">
           <div className="seo-serp-searchbar">
@@ -48,13 +46,14 @@ export default function SeoHeroMockup() {
         </div>
 
         <aside className="seo-audit-panel">
-          <span className="seo-audit-panel-badge">نمونه گزارش</span>
-          <p className="seo-audit-panel-sub">نمونه‌ای از مواردی که بررسی می‌کنیم</p>
+          <span className="seo-audit-panel-badge">بررسی اولیه</span>
+          <p className="seo-audit-panel-sub">
+            نمونه‌ای از مواردی که در بررسی اولیه ارزیابی می‌کنیم
+          </p>
           <ul className="seo-audit-list">
-            {REPORT_ROWS.map((row) => (
-              <li key={row.label}>
-                <span className="seo-audit-label">{row.label}</span>
-                <StatusBadge tone={row.tone} status={row.status} />
+            {AUDIT_ITEMS.map((label) => (
+              <li key={label}>
+                <span className="seo-audit-label">{label}</span>
               </li>
             ))}
           </ul>

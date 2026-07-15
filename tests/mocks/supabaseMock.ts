@@ -87,6 +87,11 @@ class QueryBuilder {
     return this;
   }
 
+  gte(col: string, val: unknown) {
+    this.filters.push({ col, val, op: "gte" });
+    return this;
+  }
+
   in(col: string, vals: unknown[]) {
     this.filters.push({ col, val: vals, op: "in" });
     return this;
@@ -148,6 +153,9 @@ class QueryBuilder {
       }
       if (f.op === "is") {
         return row[f.col] == null;
+      }
+      if (f.op === "gte") {
+        return new Date(String(row[f.col])).getTime() >= new Date(String(f.val)).getTime();
       }
       return row[f.col] === f.val;
     });

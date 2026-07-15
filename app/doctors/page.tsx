@@ -4,29 +4,26 @@ import Footer from "@/components/Footer";
 import DoctorsHero from "@/components/doctors/DoctorsHero";
 import DoctorsSampleReport from "@/components/doctors/DoctorsSampleReport";
 import DoctorsCaseStudy from "@/components/doctors/DoctorsCaseStudy";
-import DoctorsPatientPath from "@/components/doctors/DoctorsPatientPath";
-import DoctorsProblems from "@/components/doctors/DoctorsProblems";
-import DoctorsOutputs from "@/components/doctors/DoctorsOutputs";
-import DoctorsProcess from "@/components/doctors/DoctorsProcess";
-import DoctorsPricingTeaser from "@/components/doctors/DoctorsPricingTeaser";
+import DoctorsAfterReport from "@/components/doctors/DoctorsAfterReport";
+import DoctorsFitCheck from "@/components/doctors/DoctorsFitCheck";
 import DoctorsFaq from "@/components/doctors/DoctorsFaq";
 import DoctorsFinalCta from "@/components/doctors/DoctorsFinalCta";
 import DoctorsExitIntent from "@/components/doctors/DoctorsExitIntent";
 import DoctorsStickyCta from "@/components/doctors/DoctorsStickyCta";
-import DoctorsChatWidget from "@/components/doctors/DoctorsChatWidget";
-import { doctorFaq, doctorPackages, tomanToIrr } from "@/lib/doctorsData";
+import DoctorsPageAnalytics from "@/components/doctors/DoctorsPageAnalytics";
+import { doctorFaq } from "@/lib/doctorsData";
 
 export const metadata: Metadata = {
   title: "بررسی رایگان مسیر جذب بیمار مطب | ویژه پزشکان — آرایه",
   description:
-    "حضور مطب در گوگل، صفحه خدمات و مسیر درخواست نوبت را رایگان بررسی می‌کنیم. سه ایراد مهم و پیشنهاد عملی را در واتساپ دریافت کنید.",
+    "وضعیت دیده‌شدن، اطلاعات مطب، معرفی خدمات و مسیر تماس یا نوبت را رایگان بررسی می‌کنیم. مشکل اصلی و سه اقدام اولویت‌دار را در واتساپ دریافت کنید.",
   alternates: {
     canonical: "/doctors",
   },
   openGraph: {
     title: "بررسی رایگان مسیر جذب بیمار مطب — آرایه",
     description:
-      "برای پزشکان و مطب‌ها: گزارش رایگان وضعیت حضور در گوگل، صفحه خدمات و مسیر نوبت — بدون فشار فروش پکیج.",
+      "برای پزشکان و مطب‌ها: گزارش رایگان مسیر آنلاین جذب بیمار — بدون فشار فروش و بدون نیاز به داشتن سایت.",
     url: "/doctors",
     type: "website",
     locale: "fa_IR",
@@ -34,7 +31,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "بررسی رایگان مسیر جذب بیمار مطب — آرایه",
-    description: "سه ایراد مهم جذب بیمار مطب را تا پایان روز کاری در واتساپ دریافت کنید.",
+    description:
+      "مشکل اصلی مسیر آنلاین مطب و سه اقدام اولویت‌دار — حداکثر تا پایان روز کاری بعد در واتساپ.",
   },
 };
 
@@ -49,14 +47,13 @@ const jsonLd = {
       areaServed: { "@type": "Country", name: "Iran" },
       url: "https://araaye.com/doctors",
       description:
-        "بررسی حضور مطب در گوگل، صفحه خدمات و مسیر درخواست نوبت؛ ارائه گزارش رایگان با پیشنهادهای عملی.",
-      offers: doctorPackages.map((p) => ({
+        "بررسی دیده‌شدن در جستجو، اطلاعات مطب، معرفی خدمات و مسیر تماس یا درخواست نوبت؛ ارائه گزارش رایگان با پیشنهادهای عملی.",
+      offers: {
         "@type": "Offer",
-        name: `پکیج ${p.name}`,
-        price: tomanToIrr(p.price),
+        price: "0",
         priceCurrency: "IRR",
-        description: p.description,
-      })),
+        description: "گزارش رایگان بررسی مسیر جذب بیمار",
+      },
     },
     {
       "@type": "BreadcrumbList",
@@ -83,23 +80,20 @@ export default function DoctorsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar />
+      <DoctorsPageAnalytics />
+      <Navbar ctaHref="/doctors#audit" ctaLabel="دریافت گزارش رایگان" />
       <main className="pb-20 sm:pb-0">
         <DoctorsHero />
         <DoctorsSampleReport />
         <DoctorsCaseStudy />
-        <DoctorsPatientPath />
-        <DoctorsProblems />
-        <DoctorsOutputs />
-        <DoctorsProcess />
-        <DoctorsPricingTeaser />
+        <DoctorsAfterReport />
+        <DoctorsFitCheck />
         <DoctorsFaq />
         <DoctorsFinalCta />
       </main>
       <Footer />
       <DoctorsExitIntent />
       <DoctorsStickyCta />
-      <DoctorsChatWidget />
     </>
   );
 }

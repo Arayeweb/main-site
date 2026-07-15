@@ -21,6 +21,7 @@ export default function PublicOnlyChrome() {
     pathname.startsWith("/seo") ||
     pathname.startsWith("/website") ||
     pathname.startsWith("/doctors") ||
+    pathname.startsWith("/modares") ||
     pathname.startsWith("/demo") ||
     pathname.startsWith("/showcase") ||
     pathname.startsWith("/showdemoto") ||

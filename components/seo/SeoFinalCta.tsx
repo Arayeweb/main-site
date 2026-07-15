@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { openSeoChat } from "@/lib/openSeoChat";
+import { scrollToSeoAuditForm } from "@/lib/seoPlanSelection";
+import { SEO_AUDIT_PREFILL_EVENT } from "@/lib/seoPlanSelection";
 
 export default function SeoFinalCta() {
   const [query, setQuery] = useState("");
@@ -10,17 +11,20 @@ export default function SeoFinalCta() {
     e.preventDefault();
     const value = query.trim();
     if (!value) return;
-    openSeoChat(value, "final_cta");
+    scrollToSeoAuditForm();
+    window.dispatchEvent(
+      new CustomEvent(SEO_AUDIT_PREFILL_EVENT, { detail: { value } })
+    );
   };
 
   return (
     <section id="seo-final-cta" className="seo-final">
       <div className="container-mx container-px">
         <div className="seo-final-cta">
-          <h2>اول ببینیم امروز در گوگل کجا ایستاده‌اید</h2>
+          <h2>اول مشخص کنیم سایت شما امروز کجا ایستاده است</h2>
           <p>
-            نام کسب‌وکار یا آدرس سایت را وارد کنید تا مسیر مناسب برای بهتر دیده‌شدن مشخص
-            شود.
+            نام کسب‌وکار یا آدرس سایت را وارد کنید تا وضعیت فنی، صفحات هدف، حضور محلی و
+            فرصت‌های اصلی رشد بررسی شوند.
           </p>
 
           <form onSubmit={handleSubmit} className="seo-final-search">
@@ -37,11 +41,13 @@ export default function SeoFinalCta() {
               autoComplete="organization"
             />
             <button type="submit" className="seo-final-search-btn">
-              بررسی وضعیت در گوگل
+              دریافت بررسی اولیه
             </button>
           </form>
 
-          <p className="seo-final-search-note">برای شروع، همین یک اطلاعات کافی است.</p>
+          <p className="seo-final-search-note">
+            بدون وعده رتبه غیرواقعی؛ با برنامه و اقدامات مشخص.
+          </p>
         </div>
       </div>
     </section>

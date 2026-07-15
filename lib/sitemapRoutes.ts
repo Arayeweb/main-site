@@ -18,6 +18,7 @@ export const SITEMAP_PATHS = [
   "/fastweb",
   "/website-design",
   "/googlesabt",
+  "/modares",
   "/ai",
   "/ai/pricing",
   "/ai/features",
