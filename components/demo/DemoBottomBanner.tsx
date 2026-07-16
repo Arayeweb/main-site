@@ -32,7 +32,13 @@ export default function DemoBottomBanner({
             سفارش این سایت برای مطب من
           </a>
           <Link
-            href="/doctors#audit"
+            href="/doctors"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-7 py-3.5 text-sm font-bold text-white transition-all hover:bg-white/15 active:scale-[0.98]"
+          >
+            سفارش سایت مطب
+          </Link>
+          <Link
+            href="/doctors/audit"
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-7 py-3.5 text-sm font-bold text-white transition-all hover:bg-white/15 active:scale-[0.98]"
           >
             بررسی رایگان مطب من

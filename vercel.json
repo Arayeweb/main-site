@@ -17,6 +17,24 @@
       "has": [{ "type": "host", "value": "www.arayeweb.com" }],
       "destination": "https://araaye.com/:path*",
       "statusCode": 308
+    },
+    {
+      "source": "/posts/:slug.html",
+      "has": [{ "type": "host", "value": "blog.araaye.com" }],
+      "destination": "https://araaye.com/blog/:slug",
+      "statusCode": 301
+    },
+    {
+      "source": "/posts/:slug",
+      "has": [{ "type": "host", "value": "blog.araaye.com" }],
+      "destination": "https://araaye.com/blog/:slug",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "blog.araaye.com" }],
+      "destination": "https://araaye.com/blog",
+      "statusCode": 301
     }
   ]
 }

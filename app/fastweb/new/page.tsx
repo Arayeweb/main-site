@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import FastWebWizard from "@/components/fastweb/FastWebWizard";
+import FastWebPageAnalytics from "@/components/fastweb/FastWebPageAnalytics";
 
 export const metadata: Metadata = {
   title: "ساخت سایت فوری | آرایه",
@@ -11,6 +12,8 @@ export const metadata: Metadata = {
 
 export default function FastWebNewPage() {
   return (
+    <>
+    <FastWebPageAnalytics />
     <Suspense
       fallback={
         <div
@@ -23,5 +26,6 @@ export default function FastWebNewPage() {
     >
       <FastWebWizard />
     </Suspense>
+    </>
   );
 }

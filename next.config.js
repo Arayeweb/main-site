@@ -54,6 +54,28 @@ const nextConfig = {
       { source: "/doctors.html", destination: "/doctors", permanent: true },
       { source: "/bizcard.html", destination: "/bizcard", permanent: true },
       { source: "/googlesabt.html", destination: "/googlesabt", permanent: true },
+      // Legacy blog URLs → App Router
+      { source: "/blog/posts/:slug", destination: "/blog/:slug", permanent: true },
+      { source: "/blog/posts/:slug.html", destination: "/blog/:slug", permanent: true },
+      // blog.araaye.com → araaye.com/blog
+      {
+        source: "/posts/:slug.html",
+        has: [{ type: "host", value: "blog.araaye.com" }],
+        destination: "https://araaye.com/blog/:slug",
+        permanent: true,
+      },
+      {
+        source: "/posts/:slug",
+        has: [{ type: "host", value: "blog.araaye.com" }],
+        destination: "https://araaye.com/blog/:slug",
+        permanent: true,
+      },
+      {
+        source: "/",
+        has: [{ type: "host", value: "blog.araaye.com" }],
+        destination: "https://araaye.com/blog",
+        permanent: true,
+      },
     ];
   },
   async rewrites() {
@@ -82,9 +104,7 @@ const nextConfig = {
       { source: "/qr", destination: "/qr.html" },
       { source: "/privacy", destination: "/privacy.html" },
       { source: "/tashakor", destination: "/tashakor.html" },
-      // /blog از Next.js (app/blog/page.tsx) سرو می‌شود — rewrite حذف شد
-      // مقالات استاتیک قدیمی هنوز از public/blog/posts سرو می‌شوند
-      { source: "/blog/posts/:slug", destination: "/blog/posts/:slug.html" },
+      // /blog از Next.js (app/blog/page.tsx) سرو می‌شود — مقالات legacy هم در App Router هستند
     ];
   },
 };

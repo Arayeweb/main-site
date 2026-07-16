@@ -23,11 +23,18 @@ export function trackModaresEvent(
   payload: ModaresAnalyticsPayload = {},
 ) {
   const utm = typeof window !== "undefined" ? getUtmParams() : {};
-  pushGtmEvent(event, {
+  const base = {
     page: "modares",
     utm_content: utm.utm_content,
     ...payload,
-  });
+  };
+  pushGtmEvent(event, base);
+  if (event === "teachers_lead_submit") {
+    pushGtmEvent("generate_lead", {
+      ...base,
+      source: "modares_form",
+    });
+  }
 }
 
 export function modaresAnalyticsBase(variant: ModaresVariant): ModaresAnalyticsPayload {

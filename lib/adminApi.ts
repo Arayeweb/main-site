@@ -1023,3 +1023,96 @@ export function importSalesLeads(rows: Record<string, unknown>[]) {
     'H2'
   );
 }
+
+// ── Growth KPI ───────────────────────────────────────────
+
+export type GrowthPeriod = '7d' | '30d';
+
+export interface GrowthOverview {
+  period: GrowthPeriod;
+  northStar: {
+    revenue: number;
+    qualifiedLeads: number;
+    revenueTrend: { date: string; amount: number }[];
+    qualifiedTrend: { date: string; count: number }[];
+  };
+  daily: {
+    revenue: number;
+    qualifiedLeads: number;
+    visitors: number;
+    conversion: number;
+    cac: number;
+    ltv: number;
+    mrr: number;
+    pipeline: number;
+    sales: number;
+  };
+  funnel: { key: string; label: string; count: number; conversionFromPrev: number }[];
+  squads: {
+    acquisition: { visitors: number; cpl: number; qualifiedLeads: number };
+    conversion: { conversionRate: number; bookedCalls: number; sales: number };
+    product: { ttdHours: number | null; bugs: number; activation: number };
+    customerSuccess: { retention: number; referral: number; review: number };
+    experimentation: { hypothesesThisWeek: number; shipped: number; killed: number };
+  };
+  byProduct: {
+    fastweb: { visitors: number; leads: number; ttdHours: number | null; activationRate: number };
+    doctors: { visitors: number; leads: number; conversionRate: number };
+    seo: { visitors: number; leads: number; generateLeadEvents: number };
+    ai: { revenue: number; orders: number };
+  };
+}
+
+export interface GrowthExperiment {
+  id: string;
+  created_at: string;
+  squad: string;
+  idea: string;
+  hypothesis: string;
+  kpi_target: string;
+  impact: number;
+  confidence: number;
+  effort: number;
+  score: number;
+  status: string;
+  bucket: string;
+  sprint_week: string | null;
+  result_notes: string | null;
+  measured_value: string | null;
+}
+
+export function fetchGrowthOverview(period: GrowthPeriod = '7d') {
+  return adminFetch<GrowthOverview>(
+    `/api/admin/growth/overview?period=${period}`,
+    undefined,
+    'H1'
+  );
+}
+
+export function fetchGrowthExperiments(params?: { sprint_week?: string; status?: string }) {
+  const sp = new URLSearchParams();
+  if (params?.sprint_week) sp.set('sprint_week', params.sprint_week);
+  if (params?.status) sp.set('status', params.status);
+  const q = sp.toString();
+  return adminFetch<{ experiments: GrowthExperiment[] }>(
+    `/api/admin/growth/experiments${q ? `?${q}` : ''}`,
+    undefined,
+    'H1'
+  );
+}
+
+export function createGrowthExperiment(body: Record<string, unknown>) {
+  return adminFetch<{ experiment: GrowthExperiment }>(
+    '/api/admin/growth/experiments',
+    { method: 'POST', body: JSON.stringify(body) },
+    'H2'
+  );
+}
+
+export function patchGrowthExperiment(id: string, body: Record<string, unknown>) {
+  return adminFetch<{ experiment: GrowthExperiment }>(
+    '/api/admin/growth/experiments',
+    { method: 'PATCH', body: JSON.stringify({ id, ...body }) },
+    'H2'
+  );
+}

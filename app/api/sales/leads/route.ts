@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSession, type AdminRole } from "@/lib/auth";
+import { crmStatusTimestamps } from "@/lib/leadScoring";
 import { normalizeContact } from "@/lib/validateContact";
 import { serverDebugLog } from "@/lib/debugLog";
 
@@ -237,6 +238,16 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
+
+    if (statusChange) {
+      const { data: existing } = await supabase
+        .from("leads")
+        .select("qualified_at, won_at")
+        .eq("id", id)
+        .maybeSingle();
+      Object.assign(patch, crmStatusTimestamps(statusChange, existing ?? undefined));
+    }
+
     const { data, error } = await supabase
       .from("leads")
       .update(patch)

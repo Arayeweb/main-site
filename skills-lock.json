@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "advanced-seo-optimizer": {
+      "source": "goldenprofile/llm-skills",
+      "sourceType": "github",
+      "skillPath": "advanced-seo-optimizer/SKILL.md",
+      "computedHash": "d72d419d7b84d25883d3fc965b09877212a3b9da3a4f46ad844ad1047f62b266"
+    }
+  }
+}

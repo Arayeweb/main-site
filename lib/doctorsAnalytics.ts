@@ -14,8 +14,10 @@ export type DoctorsAnalyticsPayload = {
 
 export function trackDoctorsEvent(event: string, payload: DoctorsAnalyticsPayload = {}) {
   const utm = typeof window !== "undefined" ? getUtmParams() : {};
+  const page =
+    typeof window !== "undefined" ? window.location.pathname.replace(/^\//, "") || "doctors" : "doctors";
   pushGtmEvent(event, {
-    page: "doctors",
+    page,
     referrer: typeof document !== "undefined" ? document.referrer || undefined : undefined,
     ...utm,
     ...payload,

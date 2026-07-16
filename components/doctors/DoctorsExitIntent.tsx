@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import DoctorsWhatsAppCta from "@/components/doctors/DoctorsWhatsAppCta";
 import { trackDoctorsEvent } from "@/lib/doctorsAnalytics";
-import { DOCTORS_SLA } from "@/lib/doctorsData";
-import { scrollToDoctorsAuditForm } from "@/lib/doctorsScroll";
+import { DOCTORS_LAUNCH_NOTE } from "@/lib/doctorsData";
 import { IconClose } from "@/components/icons";
 
 const SESSION_KEY = "doctors_exit_shown";
@@ -66,20 +66,15 @@ export default function DoctorsExitIntent() {
 
   if (!open) return null;
 
-  const handleGoToForm = () => {
-    trackDoctorsEvent("doctors_final_cta_click", {
-      source: triggerRef.current === "scroll" ? "doctors_scroll_intent" : "doctors_exit_intent",
-    });
-    setOpen(false);
-    scrollToDoctorsAuditForm();
-  };
+  const source =
+    triggerRef.current === "scroll" ? "doctors_scroll_intent" : "doctors_exit_intent";
 
   return (
     <div
       className="fixed inset-0 z-[70] flex items-end justify-center bg-navy-900/60 p-0 backdrop-blur-sm animate-fade-in sm:items-center sm:p-5"
       role="dialog"
       aria-modal="true"
-      aria-label="گزارش رایگان مطب"
+      aria-label="شروع سفارش سایت مطب"
       onClick={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
       }}
@@ -94,19 +89,18 @@ export default function DoctorsExitIntent() {
           <IconClose size={18} />
         </button>
 
-        <h3 className="text-lg font-extrabold text-sky-700">گزارش رایگان مسیر جذب بیمار</h3>
+        <h3 className="text-lg font-extrabold text-sky-700">سایت مطب با تحویل ۲ روزه</h3>
         <p className="mt-2 text-sm leading-relaxed text-navy-500">
-          قبل از رفتن، نام مطب و شماره واتساپ را وارد کنید تا مشکل اصلی و سه اقدام اولویت‌دار را
-          دریافت کنید.
+          قبل از رفتن، در واتساپ تخصص و شهر فعالیتتان را بفرستید تا نمونه و مراحل شروع را دریافت کنید.
         </p>
-        <button
-          type="button"
-          onClick={handleGoToForm}
-          className="mt-5 w-full rounded-xl bg-sky-600 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-sky-700 active:scale-[0.98]"
+        <DoctorsWhatsAppCta
+          source={source}
+          fullWidth
+          className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-sky-600 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-sky-700 active:scale-[0.98]"
         >
-          گزارش رایگان مطبم را بگیرم
-        </button>
-        <p className="mt-4 text-[11px] text-navy-400">{DOCTORS_SLA}</p>
+          شروع سفارش در واتساپ
+        </DoctorsWhatsAppCta>
+        <p className="mt-4 text-[11px] text-navy-400">{DOCTORS_LAUNCH_NOTE}</p>
       </div>
     </div>
   );

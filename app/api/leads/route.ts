@@ -6,6 +6,7 @@ import {
   isTeachersCampaignLead,
   teachersLeadDedupSinceIso,
 } from "@/lib/leadsDedup";
+import { scoreLeadFromPayload } from "@/lib/leadScoring";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,18 +64,36 @@ export async function POST(req: NextRequest) {
   const source = str(body.source) || "unknown";
   const goal = str(body.goal);
   const channel = str(body.channel);
+  const name = str(body.name);
+  const budget = str(body.budget);
+  const plan = str(body.plan);
+  const intent = str(body.intent);
+  const detail = str(body.detail);
+  const { score: lead_score, isAutoQualified: is_auto_qualified } = scoreLeadFromPayload({
+    name,
+    contact: contact.value,
+    budget,
+    plan,
+    source,
+    goal,
+    intent,
+    detail,
+    channel,
+  });
   const row = {
     source,
     page: pageFromPath(body.page),
-    name: str(body.name),
+    name,
     contact: contact.value,
     goal,
-    budget: str(body.budget),
-    plan: str(body.plan),
+    budget,
+    plan,
     channel,
     sitetype: str(body.sitetype),
-    intent: str(body.intent),
-    detail: str(body.detail),
+    intent,
+    detail,
+    lead_score,
+    is_auto_qualified,
     consent: body.consent === false ? false : true,
     utm_source: str(body.utm_source),
     utm_medium: str(body.utm_medium),

@@ -34,7 +34,7 @@ export const blogTopics: BlogTopic[] = [
 export const blogPosts: BlogPost[] = [
   {
     slug: "seo-checklist-business-site",
-    href: "/blog/posts/seo-checklist-business-site",
+    href: "/blog/seo-checklist-business-site",
     title: "چک‌لیست کامل سئوی سایت کسب‌وکار در سال ۱۴۰۵",
     description:
       "از سئوی تکنیکال و سرعت سایت تا محتوای هدفمند و لینک‌سازی داخلی؛ گام‌به‌گام بررسی می‌کنیم چطور سایت‌تان در گوگل بالا بیاید و مشتری جذب کند.",
@@ -128,7 +128,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: "conversion-rate-optimization",
-    href: "/blog/posts/conversion-rate-optimization",
+    href: "/blog/conversion-rate-optimization",
     title: "۷ تکنیک افزایش نرخ تبدیل سایت بدون افزایش هزینه تبلیغات",
     description:
       "چطور با تغییرهای کوچک در صفحه فرود، فرم و دکمه‌های اقدام، بازدیدکننده بیشتری را به مشتری تبدیل کنید.",
@@ -140,7 +140,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: "website-chatbot-customer-support",
-    href: "/blog/posts/website-chatbot-customer-support",
+    href: "/blog/website-chatbot-customer-support",
     title: "چت‌بات هوشمند سایت؛ چطور فروش و رضایت مشتری را همزمان بالا می‌برد",
     description:
       "راهنمای کاربردی راه‌اندازی چت‌بات مبتنی بر دانش کسب‌وکار شما که پاسخگو است و لید جمع می‌کند.",
@@ -152,7 +152,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: "google-my-business-local-seo",
-    href: "/blog/posts/google-my-business-local-seo",
+    href: "/blog/google-my-business-local-seo",
     title: "گوگل مای بیزنس برای کسب‌وکار محلی؛ راهنمای کامل ۱۴۰۵",
     description:
       "چطور پروفایل Google Business Profile را بهینه کنید تا در نقشه گوگل بالا بیایید و مشتری محلی بیشتری جذب کنید.",
@@ -164,7 +164,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: "website-speed-core-web-vitals",
-    href: "/blog/posts/website-speed-core-web-vitals",
+    href: "/blog/website-speed-core-web-vitals",
     title: "سرعت سایت و Core Web Vitals؛ چرا مشتری را از دست می‌دهید",
     description:
       "هر ثانیه تأخیر در بارگذاری، مشتری می‌برد. بیاموزید Core Web Vitals چیست و سایت‌تان را سریع کنید.",
@@ -176,7 +176,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: "online-booking-system-for-clinics",
-    href: "/blog/posts/online-booking-system-for-clinics",
+    href: "/blog/online-booking-system-for-clinics",
     title: "سیستم نوبت‌دهی آنلاین برای کلینیک و مطب؛ چرا و چطور",
     description:
       "چطور نوبت‌دهی آنلاین تماس‌های تلفنی را کم، بیماران را بیشتر و رضایت‌شان را بالا می‌برد.",

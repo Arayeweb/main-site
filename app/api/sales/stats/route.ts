@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("leads")
-      .select("crm_status, owner_id, created_at, next_followup_at, source, channel");
+      .select("crm_status, owner_id, created_at, next_followup_at, source, channel, qualified_at, won_at");
 
     if (error) {
       console.error("[api/sales/stats] GET error:", error.message);
@@ -51,7 +51,11 @@ export async function GET(req: NextRequest) {
 
       const created = new Date(l.created_at as string).getTime();
       if (now - created < weekMs) newThisWeek++;
-      if (status === "won" && now - created < monthMs) wonThisMonth++;
+      const wonAt = l.won_at as string | null;
+      if (status === "won") {
+        const wonTime = wonAt ? new Date(wonAt).getTime() : created;
+        if (now - wonTime < monthMs) wonThisMonth++;
+      }
 
       const fu = l.next_followup_at as string | null;
       if (fu && status !== "won" && status !== "lost" && fu.slice(0, 10) <= today) {

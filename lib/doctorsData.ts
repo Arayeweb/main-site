@@ -1,6 +1,18 @@
-// داده‌های لندینگ پزشکان — گزارش رایگان، مسیر بیمار، FAQ و تشخیص مسیر.
-// قیمت‌ها باید با DOCTOR_PACKAGES در app/api/doctors/checkout/route.ts هماهنگ بماند.
+// داده‌های لندینگ پزشکان — صفحه فروش محصولی، بررسی رایگان (audit)، FAQ و نمونه‌ها.
+// قیمت نمایشی matab روی صفحه ۲۰M است؛ checkout API فعلاً واتساپ-only و deposit قدیمی دارد.
 // در ایران قیمت نمایشی تومان است؛ Structured Data با IRR (= تومان × ۱۰) ثبت می‌شود.
+
+/** قیمت پکیج مطب تک‌پزشک — نمایش روی لندینگ فروش */
+export const DOCTORS_PRODUCT_PRICE_TOMAN = 20_000_000;
+export const DOCTORS_PRODUCT_OLD_PRICE_TOMAN = 30_000_000;
+export const DOCTORS_LAUNCH_NOTE = "برای ۱۰ مشتری اول، قیمت ثابت ۲۰ میلیون تومان";
+
+export const DOCTORS_WA_ORDER_MESSAGE =
+  "سلام، پکیج ۲۰ میلیونی سایت پزشکان را دیدم. تخصص من … و شهر فعالیتم … است. لطفاً نمونه نزدیک به تخصصم و مراحل شروع را بفرستید.";
+
+export function buildDoctorsWaSpecialtyMessage(specialty: string): string {
+  return `سلام، پکیج ۲۰ میلیونی سایت پزشکان را دیدم. تخصص من ${specialty} است. این مدل را برای مطب من می‌خواهم. لطفاً مراحل شروع را بفرستید.`;
+}
 
 export type DoctorPackageKey = "matab" | "clinic" | "center";
 
@@ -22,8 +34,8 @@ export const doctorPackages: DoctorPackage[] = [
     key: "matab",
     name: "مطب",
     tagline: "برای پزشک انفرادی",
-    price: 30_000_000,
-    oldPrice: 30_000_000,
+    price: DOCTORS_PRODUCT_PRICE_TOMAN,
+    oldPrice: DOCTORS_PRODUCT_OLD_PRICE_TOMAN,
     deposit: 2_900_000,
     description: "حضور آنلاین حرفه‌ای برای مطب تک‌پزشک؛ سایت تخصصی + نوبت‌دهی آنلاین.",
     features: [
@@ -164,21 +176,28 @@ export const doctorSampleReport = {
 export interface DoctorCaseStudy {
   specialty: string;
   title: string;
+  city: string;
   siteUrl?: string;
-  initialState: string;
+  problem: string;
+  /** @deprecated use problem */
+  initialState?: string;
   work: string[];
   outcome: string;
+  duration: string;
   quote?: string;
   quoteRole?: string;
   image?: string;
+  mobileImage?: string;
+  desktopImage?: string;
 }
 
 /** یک Case Study واقعی با لینک قابل‌تأیید */
 export const doctorCaseStudy: DoctorCaseStudy = {
   specialty: "بیماری‌های عفونی",
-  title: "دکتر عالیه پوردست — تهران",
+  title: "دکتر عالیه پوردست",
+  city: "تهران",
   siteUrl: "https://aliehpourdast.com",
-  initialState:
+  problem:
     "بیماران برای پیدا کردن تخصص، سابقه و راه تماس باید چند مسیر جدا را طی می‌کردند؛ مسیر از جستجو تا درخواست نوبت کوتاه و شفاف نبود.",
   work: [
     "صفحه معرفی تخصص و رزومه علمی",
@@ -187,11 +206,126 @@ export const doctorCaseStudy: DoctorCaseStudy = {
   ],
   outcome:
     "خروجی قابل‌مشاهده شامل معرفی تخصص و رزومه علمی، اطلاعات یکدست مطب، معرفی خدمات و مسیر مشخص تماس یا درخواست نوبت است.",
+  duration: "حدود ۵ روز کاری پس از دریافت محتوا",
   quote:
     "برای من مهم بود سایت هم تخصص و سابقه علمی‌ام را درست نشان بدهد و هم کارکردن با آن ساده باشد؛ مسائل فنی را تیم مدیریت کرد.",
   quoteRole: "فوق تخصص بیماری‌های عفونی و گرمسیری",
   image: "/showcase-assets/pourdast/portrait.webp",
+  mobileImage: "/showcase-assets/pourdast/portrait.webp",
+  desktopImage: "/showcase-assets/pourdast/portrait.webp",
 };
+
+export type DoctorSampleKind = "demo" | "executed";
+
+export interface DoctorSpecialtySample {
+  key: string;
+  label: string;
+  kind: DoctorSampleKind;
+  demoUrl: string;
+  demoExternal?: boolean;
+  accent: string;
+}
+
+export const doctorSpecialtySamples: DoctorSpecialtySample[] = [
+  {
+    key: "dentist",
+    label: "دندانپزشکی",
+    kind: "demo",
+    demoUrl: "/demo/dentist",
+    accent: "cyan",
+  },
+  {
+    key: "dentist-kordian",
+    label: "دندانپزشکی — نمونه چندزبانه",
+    kind: "demo",
+    demoUrl: "/showdemoto/dr-kordian/en",
+    accent: "cyan",
+  },
+  {
+    key: "ophthalmology",
+    label: "چشم‌پزشکی",
+    kind: "demo",
+    demoUrl: "/showdemoto/salamat-farda-eye",
+    accent: "sky",
+  },
+  {
+    key: "dermatology",
+    label: "پوست و زیبایی",
+    kind: "demo",
+    demoUrl: "/demo/clinic",
+    accent: "violet",
+  },
+  {
+    key: "pediatric",
+    label: "کودکان",
+    kind: "demo",
+    demoUrl: "/showdemoto/dr-ahmadi-pediatric",
+    accent: "teal",
+  },
+  {
+    key: "physiotherapy",
+    label: "فیزیوتراپی",
+    kind: "demo",
+    demoUrl: "/demo/clinic",
+    accent: "brand",
+  },
+  {
+    key: "general",
+    label: "مطب عمومی",
+    kind: "executed",
+    demoUrl: "https://aliehpourdast.com",
+    demoExternal: true,
+    accent: "sky",
+  },
+];
+
+export const doctorProductPackageFeatures = [
+  "طراحی متناسب با هویت پزشک",
+  "حداکثر ۸ صفحه",
+  "معرفی پزشک و خدمات",
+  "سه صفحه مستقل برای خدمات اصلی",
+  "پنل فارسی انتشار مقاله",
+  "دکمه ثابت واتساپ و درخواست نوبت",
+  "اتصال به سامانه نوبت موجود پزشک",
+  "نمایش مسیر در گوگل‌مپ، نشان و بلد",
+  "سئوی فنی اولیه و ساختار قابل ایندکس",
+  "نسخه موبایل",
+  "دامنه و سرور به نام پزشک",
+  "دو مرحله اصلاح",
+  "۳۰ روز پشتیبانی پس از تحویل",
+] as const;
+
+export const doctorSeoDisclaimer =
+  "سئوی اولیه به معنی تضمین رتبه اول گوگل نیست؛ تولید محتوا و رقابت روی عبارت‌های تخصصی، خدمت جداگانه است.";
+
+export const doctorPaymentMilestones = [
+  { label: "شروع پروژه", percent: "۳۰٪" },
+  { label: "پس از تأیید نسخه اولیه", percent: "۴۰٪" },
+  { label: "هنگام تحویل نهایی", percent: "۳۰٪" },
+] as const;
+
+export const doctorDeliveryTimeline = [
+  { label: "نسخه اولیه", value: "۲ روز کاری" },
+  { label: "تحویل نهایی", value: "حدود ۵ تا ۷ روز کاری پس از دریافت محتوا" },
+] as const;
+
+export const doctorProductProcessSteps = [
+  {
+    step: "۱",
+    title: "ارسال اطلاعات مطب",
+    description: "اطلاعات مطب و تصاویر را در فرم کوتاه می‌فرستید.",
+  },
+  {
+    step: "۲",
+    title: "نسخه اولیه",
+    description: "نسخه اولیه طی دو روز کاری آماده می‌شود.",
+  },
+  {
+    step: "۳",
+    title: "انتشار روی دامنه شما",
+    description: "اصلاحات انجام و سایت روی دامنه شما منتشر می‌شود.",
+  },
+];
 
 export const doctorPatientPathBar = {
   steps: ["جستجو", "اعتماد", "تماس یا درخواست نوبت"],
@@ -208,8 +342,9 @@ export const doctorPatientPath = [
   { step: "۳", title: "درخواست نوبت", description: "اگر مسیر تماس واضح باشد، همان‌جا نوبت می‌گیرد یا پیام می‌دهد." },
 ];
 
-/** @deprecated — فقط کامپوننت legacy DoctorsProcess */
-export const doctorProcessSteps = [
+export const doctorProcessSteps = doctorProductProcessSteps;
+
+export const doctorAuditProcessSteps = [
   { step: "۱", title: "بررسی رایگان", description: "وضعیت حضور در گوگل، صفحه خدمات و مسیر نوبت را بررسی می‌کنیم." },
   { step: "۲", title: "گزارش و پیشنهاد", description: "سه ایراد مهم و پیشنهاد عملی می‌فرستیم." },
   { step: "۳", title: "اجرا با محدوده روشن", description: "بعد از توافق روی محدوده کار، اجرا شروع می‌شود." },
@@ -269,6 +404,9 @@ export const doctorAfterReportTrust =
   "اگر مشکل مهمی وجود نداشته باشد، فقط چک‌لیست اصلاحات را دریافت می‌کنید و پیشنهادی برای اجرا ارسال نمی‌شود.";
 
 export const doctorCooperationNote =
+  "سفارش از طریق واتساپ ثبت می‌شود. جزئیات پرداخت و محتوا در شروع پروژه هماهنگ می‌شود.";
+
+export const doctorAuditCooperationNote =
   "گزارش رایگان است. اجرای پیشنهادها فقط در صورت درخواست شما، با محدوده و قیمت جداگانه ارائه می‌شود.";
 
 export const doctorSuitableFor = [
@@ -299,6 +437,33 @@ export interface DoctorFaqItem {
 }
 
 export const doctorFaq: DoctorFaqItem[] = [
+  {
+    q: "دقیقاً چه چیزی تحویل می‌گیرم؟",
+    a: "سایت اختصاصی مطب با حداکثر ۸ صفحه، معرفی پزشک و خدمات، پنل انتشار مقاله، دکمه واتساپ یا درخواست نوبت، اتصال به سامانه نوبت موجود، نقشه، سئوی فنی اولیه، دامنه و سرور به نام شما، دو مرحله اصلاح و ۳۰ روز پشتیبانی.",
+  },
+  {
+    q: "نسخه اول چند روزه آماده می‌شود؟",
+    a: "نسخه اولیه طی ۲ روز کاری پس از دریافت اطلاعات اولیه آماده می‌شود. تحویل نهایی معمولاً ۵ تا ۷ روز کاری پس از دریافت محتوا است.",
+  },
+  {
+    q: "دامنه و سرور به نام من است؟",
+    a: "بله. دامنه و سرور به نام پزشک ثبت می‌شود و مالکیت کامل سایت برای شماست.",
+  },
+  {
+    q: "اتصال به سامانه نوبت موجودم ممکن است؟",
+    a: "بله. اگر سامانه نوبت‌دهی دارید، لینک یا اتصال آن در سایت قرار می‌گیرد.",
+  },
+  {
+    q: "سئوی اولیه شامل چه چیزهایی است؟",
+    a: "ساختار قابل ایندکس، تنظیمات فنی پایه و آماده‌سازی صفحات برای جستجو. تولید محتوا و رقابت روی عبارت‌های تخصصی خدمت جداگانه است و تضمین رتبه اول گوگل نمی‌دهیم.",
+  },
+  {
+    q: "پرداخت چگونه انجام می‌شود؟",
+    a: "پرداخت مرحله‌ای: ۳۰٪ شروع پروژه، ۴۰٪ پس از تأیید نسخه اولیه، ۳۰٪ هنگام تحویل نهایی. جزئیات را در واتساپ هماهنگ می‌کنیم.",
+  },
+];
+
+export const doctorAuditFaq: DoctorFaqItem[] = [
   {
     q: "بررسی رایگان دقیقاً شامل چه چیزهایی است؟",
     a: "وضعیت دیده‌شدن در جستجو، اطلاعات عمومی مطب، معرفی خدمات و مسیر تماس یا درخواست نوبت بررسی می‌شود. در پایان، مشکل اصلی و سه اقدام اولویت‌دار دریافت می‌کنید.",

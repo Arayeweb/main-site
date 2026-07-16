@@ -1,18 +1,29 @@
+import type { DoctorFaqItem } from "@/lib/doctorsData";
 import { doctorCooperationNote, doctorFaq } from "@/lib/doctorsData";
 import SectionHeader from "@/components/home/SectionHeader";
 
-export default function DoctorsFaq() {
+type DoctorsFaqProps = {
+  items?: DoctorFaqItem[];
+  note?: string;
+  title?: string;
+};
+
+export default function DoctorsFaq({
+  items = doctorFaq,
+  note = doctorCooperationNote,
+  title = "پاسخ سؤال‌های رایج پزشکان",
+}: DoctorsFaqProps) {
   return (
     <section id="faq" className="section-py bg-navy-50/40">
       <div className="container-mx container-px">
         <SectionHeader
           badge="سؤالات پرتکرار"
           badgeClassName="bg-sky-50 text-sky-700"
-          title="پاسخ سؤال‌های رایج پزشکان"
+          title={title}
         />
 
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
-          {doctorFaq.map((item) => (
+          {items.map((item) => (
             <details
               key={item.q}
               className="group rounded-2xl border border-navy-100 bg-white shadow-soft transition-colors open:border-sky-200"
@@ -28,9 +39,11 @@ export default function DoctorsFaq() {
           ))}
         </div>
 
-        <p className="mx-auto mt-8 max-w-2xl text-center text-[12px] leading-relaxed text-navy-400">
-          {doctorCooperationNote}
-        </p>
+        {note ? (
+          <p className="mx-auto mt-8 max-w-2xl text-center text-[12px] leading-relaxed text-navy-400">
+            {note}
+          </p>
+        ) : null}
       </div>
     </section>
   );

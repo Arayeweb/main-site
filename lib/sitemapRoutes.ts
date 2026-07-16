@@ -1,6 +1,9 @@
+import type { MetadataRoute } from "next";
 import { canonicalUrl } from "@/lib/siteUrl";
 import { getPublishedIndustryPaths } from "@/lib/seo/programmaticPages";
 import { getIndexablePromptPaths } from "@/lib/prompts/indexable";
+import { getSitemapLastMod } from "@/lib/blog/postUpdatedAt";
+import { LEGACY_MIGRATED_SLUGS } from "@/lib/blog/legacyArticleData";
 
 /** Static marketing paths always in sitemap. */
 const STATIC_SITEMAP_PATHS = [
@@ -10,6 +13,7 @@ const STATIC_SITEMAP_PATHS = [
   "/seo",
   "/free-seo-audit",
   "/doctors",
+  "/doctors/audit",
   "/bizcard",
   "/adready",
   "/fastweb",
@@ -23,6 +27,7 @@ const STATIC_SITEMAP_PATHS = [
   "/ai/learn/chatgpt",
   "/ai/learn/image",
   "/ai/learn/video",
+  "/blog",
   "/blog/doctor-website-seo-mistakes",
   "/blog/clinic-seo-checklist",
   "/blog/local-seo-for-doctors",
@@ -30,6 +35,15 @@ const STATIC_SITEMAP_PATHS = [
   "/blog/jozb-shagerd-khososi",
   "/blog/jozb-shagerd-zaban",
   "/blog/matn-tablig-tadris-khososi",
+  ...LEGACY_MIGRATED_SLUGS.map((slug) => `/blog/${slug}`),
+  "/clinic",
+  "/restaurant",
+  "/software",
+  "/portfolio",
+  "/results",
+  "/hamkari",
+  "/qr",
+  "/shortener",
   "/prompts",
 ] as const;
 
@@ -58,7 +72,7 @@ export function isSitemapExcludedPath(path: string): boolean {
   return SITEMAP_EXCLUDED_PATTERNS.some((re) => re.test(normalized));
 }
 
-export function buildSitemapEntries(): { url: string; lastModified: Date }[] {
+export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const promptPaths = getIndexablePromptPaths().filter((path) => path !== "/prompts");
   const industryPaths = [
     ...getPublishedIndustryPaths("seo"),
@@ -68,8 +82,14 @@ export function buildSitemapEntries(): { url: string; lastModified: Date }[] {
     new Set<string>([...STATIC_SITEMAP_PATHS, ...industryPaths, ...promptPaths]),
   ).filter((path) => !isSitemapExcludedPath(path));
 
-  return paths.map((path) => ({
-    url: canonicalUrl(path),
-    lastModified: new Date(),
-  }));
+  return paths.map((path) => {
+    const entry: MetadataRoute.Sitemap[number] = {
+      url: canonicalUrl(path),
+    };
+    const lastMod = getSitemapLastMod(path);
+    if (lastMod) {
+      entry.lastModified = new Date(lastMod);
+    }
+    return entry;
+  });
 }

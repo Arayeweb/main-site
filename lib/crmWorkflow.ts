@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { crmStatusTimestamps } from '@/lib/leadScoring';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -15,11 +16,17 @@ export async function syncLeadStatus(
   status: string,
   authorRole: string,
   authorUserId: string,
-  activityBody: string
+  activityBody: string,
+  existing?: { qualified_at?: string | null; won_at?: string | null }
 ) {
+  const timestampPatch = crmStatusTimestamps(status, existing);
   const { error } = await supabase
     .from('leads')
-    .update({ crm_status: status, crm_updated_at: new Date().toISOString() })
+    .update({
+      crm_status: status,
+      crm_updated_at: new Date().toISOString(),
+      ...timestampPatch,
+    })
     .eq('id', leadId);
   if (error) {
     console.error('[crmWorkflow] lead status update failed:', error.message);

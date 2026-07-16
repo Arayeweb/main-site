@@ -92,9 +92,35 @@ function permanentApexRedirect(req: NextRequest): NextResponse | null {
   return NextResponse.redirect(url, 308);
 }
 
+function blogSubdomainRedirect(req: NextRequest): NextResponse | null {
+  const host = (req.headers.get("host") ?? "").split(":")[0]?.toLowerCase() ?? "";
+  if (host !== "blog.araaye.com") return null;
+
+  const url = req.nextUrl.clone();
+  url.protocol = "https:";
+  url.hostname = "araaye.com";
+  url.port = "";
+
+  const postMatch = url.pathname.match(/^\/posts\/([^/]+?)(?:\.html)?$/);
+  if (postMatch) {
+    url.pathname = `/blog/${postMatch[1]}`;
+    return NextResponse.redirect(url, 301);
+  }
+
+  if (url.pathname === "/" || url.pathname === "") {
+    url.pathname = "/blog";
+    return NextResponse.redirect(url, 301);
+  }
+
+  return NextResponse.redirect(url, 301);
+}
+
 export async function middleware(req: NextRequest) {
   const apex = permanentApexRedirect(req);
   if (apex) return apex;
+
+  const blogRedirect = blogSubdomainRedirect(req);
+  if (blogRedirect) return blogRedirect;
 
   const { pathname } = req.nextUrl;
 

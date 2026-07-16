@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import FastWebLanding, { fastwebFaq } from "@/components/fastweb/FastWebLanding";
+import FastWebPageAnalytics from "@/components/fastweb/FastWebPageAnalytics";
 import { canonicalUrl } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
@@ -66,6 +67,7 @@ const jsonLd = {
 export default function FastWebPage() {
   return (
     <>
+      <FastWebPageAnalytics />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

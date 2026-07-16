@@ -1,38 +1,36 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import DoctorsHeader from "@/components/doctors/DoctorsHeader";
 import DoctorsHero from "@/components/doctors/DoctorsHero";
-import DoctorsSampleReport from "@/components/doctors/DoctorsSampleReport";
-import DoctorsCaseStudy from "@/components/doctors/DoctorsCaseStudy";
-import DoctorsAfterReport from "@/components/doctors/DoctorsAfterReport";
-import DoctorsFitCheck from "@/components/doctors/DoctorsFitCheck";
-import DoctorsFaq from "@/components/doctors/DoctorsFaq";
-import DoctorsFinalCta from "@/components/doctors/DoctorsFinalCta";
+import DoctorsSalesSections from "@/components/doctors/DoctorsSalesSections";
 import DoctorsExitIntent from "@/components/doctors/DoctorsExitIntent";
 import DoctorsStickyCta from "@/components/doctors/DoctorsStickyCta";
 import DoctorsPageAnalytics from "@/components/doctors/DoctorsPageAnalytics";
-import { doctorFaq } from "@/lib/doctorsData";
+import {
+  DOCTORS_PRODUCT_PRICE_TOMAN,
+  doctorFaq,
+  tomanToIrr,
+} from "@/lib/doctorsData";
 
 export const metadata: Metadata = {
-  title: "بررسی رایگان مسیر جذب بیمار مطب | ویژه پزشکان — آرایه",
+  title: "طراحی سایت مطب پزشکان | ۲۰ میلیون — تحویل ۲ روز — آرایه",
   description:
-    "وضعیت دیده‌شدن، اطلاعات مطب، معرفی خدمات و مسیر تماس یا نوبت را رایگان بررسی می‌کنیم. مشکل اصلی و سه اقدام اولویت‌دار را در واتساپ دریافت کنید.",
+    "سایت اختصاصی مطب با تحویل ۲ روز کاری، پنل مقاله، واتساپ و اتصال نوبت. پکیج ۲۰ میلیون تومان با پرداخت مرحله‌ای. سفارش در واتساپ.",
   alternates: {
     canonical: "/doctors",
   },
   openGraph: {
-    title: "بررسی رایگان مسیر جذب بیمار مطب — آرایه",
+    title: "طراحی سایت مطب پزشکان — ۲۰ میلیون تومان — آرایه",
     description:
-      "برای پزشکان و مطب‌ها: گزارش رایگان مسیر آنلاین جذب بیمار — بدون فشار فروش و بدون نیاز به داشتن سایت.",
+      "سایت اختصاصی مطب؛ نسخه اول در ۲ روز کاری. دمو تخصصی، قیمت شفاف، سفارش در واتساپ.",
     url: "/doctors",
     type: "website",
     locale: "fa_IR",
   },
   twitter: {
     card: "summary_large_image",
-    title: "بررسی رایگان مسیر جذب بیمار مطب — آرایه",
-    description:
-      "مشکل اصلی مسیر آنلاین مطب و سه اقدام اولویت‌دار — حداکثر تا پایان روز کاری بعد در واتساپ.",
+    title: "طراحی سایت مطب پزشکان — آرایه",
+    description: "پکیج ۲۰ میلیون — تحویل ۲ روز — سفارش در واتساپ",
   },
 };
 
@@ -40,19 +38,17 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Service",
-      name: "بررسی رایگان مسیر جذب بیمار مطب",
-      serviceType: "مشاوره و بررسی حضور دیجیتال مطب و کلینیک",
-      provider: { "@type": "Organization", name: "آرایه", url: "https://araaye.com/" },
-      areaServed: { "@type": "Country", name: "Iran" },
-      url: "https://araaye.com/doctors",
+      "@type": "Product",
+      name: "پکیج سایت مطب تک‌پزشک",
       description:
-        "بررسی دیده‌شدن در جستجو، اطلاعات مطب، معرفی خدمات و مسیر تماس یا درخواست نوبت؛ ارائه گزارش رایگان با پیشنهادهای عملی.",
+        "طراحی سایت اختصاصی مطب با صفحات خدمات، پنل مقاله، واتساپ، اتصال نوبت و سئوی فنی اولیه.",
+      brand: { "@type": "Brand", name: "آرایه" },
       offers: {
         "@type": "Offer",
-        price: "0",
+        price: String(tomanToIrr(DOCTORS_PRODUCT_PRICE_TOMAN)),
         priceCurrency: "IRR",
-        description: "گزارش رایگان بررسی مسیر جذب بیمار",
+        availability: "https://schema.org/InStock",
+        url: "https://araaye.com/doctors",
       },
     },
     {
@@ -81,15 +77,10 @@ export default function DoctorsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <DoctorsPageAnalytics />
-      <Navbar ctaHref="/doctors#audit" ctaLabel="دریافت گزارش رایگان" />
+      <DoctorsHeader />
       <main className="pb-20 sm:pb-0">
         <DoctorsHero />
-        <DoctorsSampleReport />
-        <DoctorsCaseStudy />
-        <DoctorsAfterReport />
-        <DoctorsFitCheck />
-        <DoctorsFaq />
-        <DoctorsFinalCta />
+        <DoctorsSalesSections />
       </main>
       <Footer />
       <DoctorsExitIntent />

@@ -1,19 +1,19 @@
-import { doctorProcessSteps } from "@/lib/doctorsData";
+import { doctorProductProcessSteps } from "@/lib/doctorsData";
 import SectionHeader from "@/components/home/SectionHeader";
 
 export default function DoctorsProcess() {
   return (
-    <section id="process" className="section-py">
+    <section id="process" className="section-py scroll-mt-24">
       <div className="container-mx container-px">
         <SectionHeader
-          badge="روش همکاری"
+          badge="فرایند همکاری"
           badgeClassName="bg-sky-50 text-sky-700"
-          title="در سه مرحله، بدون فشار فروش"
-          subtitle="اول مشکل را روشن می‌کنیم؛ بعد پیشنهاد اجرا."
+          title="در سه مرحله تا انتشار سایت"
+          subtitle="از ارسال اطلاعات تا انتشار روی دامنه شما."
         />
 
         <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-3">
-          {doctorProcessSteps.map((item) => (
+          {doctorProductProcessSteps.map((item) => (
             <div
               key={item.step}
               className="rounded-2xl border border-navy-100 bg-white p-6 text-center shadow-soft"

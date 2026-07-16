@@ -1,51 +1,95 @@
-"use client";
+import type { ReactNode } from "react";
+import PourdastClinicHomePreview from "@/components/home/previews/PourdastClinicHomePreview";
+import { BrowserChrome, PhoneFrame } from "@/components/showcase/ShowcaseFrames";
+import {
+  DOCTORS_LAUNCH_NOTE,
+  DOCTORS_PRODUCT_PRICE_TOMAN,
+  formatToman,
+} from "@/lib/doctorsData";
 
-import DoctorsAuditForm from "@/components/doctors/DoctorsAuditForm";
-import { DOCTORS_SLA, doctorPatientPathBar } from "@/lib/doctorsData";
-
-export default function DoctorsHero() {
+function HeroMockup() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-sky-50/80 via-white to-white pb-10 pt-10 sm:pb-14 sm:pt-14">
+    <div className="relative mx-auto max-w-md lg:max-w-none">
+      <div className="hidden sm:block">
+        <BrowserChrome url="aliehpourdast.com">
+          <PourdastClinicHomePreview />
+        </BrowserChrome>
+      </div>
+      <div className="mt-0 sm:absolute sm:-bottom-6 sm:left-0 sm:mt-0 sm:w-[42%]">
+        <PhoneFrame>
+          <div className="aspect-[9/16] overflow-hidden">
+            <PourdastClinicHomePreview />
+          </div>
+        </PhoneFrame>
+      </div>
+      <p className="mt-3 text-center text-xs font-medium text-navy-400 sm:mt-14">
+        نمونه خروجی — سایت مطب
+      </p>
+    </div>
+  );
+}
+
+type DoctorsHeroProps = {
+  badge?: string;
+  title?: string;
+  subtitle?: string;
+  priceNote?: string;
+  mockup?: ReactNode;
+};
+
+export default function DoctorsHero({
+  badge = "طراحی سایت ویژه پزشکان و کلینیک‌ها",
+  title = "سایت اختصاصی مطب شما؛ آماده معرفی خدمات و دریافت درخواست نوبت",
+  subtitle = "نسخه اول در ۲ روز کاری، همراه با صفحات خدمات، پنل انتشار مقاله، اتصال به واتساپ یا سامانه نوبت و زیرساخت فنی سئو. مالکیت دامنه و سایت کاملاً برای شماست.",
+  priceNote,
+  mockup,
+}: DoctorsHeroProps) {
+  return (
+    <section className="relative overflow-hidden border-b border-navy-100/80 bg-gradient-to-b from-sky-50/80 via-white to-white pb-12 pt-8 sm:pb-16 sm:pt-12">
       <div className="pointer-events-none absolute -top-24 right-1/4 h-72 w-72 rounded-full bg-sky-200/30 blur-3xl" />
       <div className="pointer-events-none absolute top-40 -left-20 h-64 w-64 rounded-full bg-cyan-200/25 blur-3xl" />
 
       <div className="container-mx container-px relative">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="badge mb-5 bg-sky-50 text-sky-700 ring-1 ring-sky-100">
-            ویژه پزشکان، مطب‌ها و کلینیک‌ها
-          </span>
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+          <div className="text-right">
+            <span className="badge mb-5 bg-sky-50 text-sky-700 ring-1 ring-sky-100">{badge}</span>
 
-          <h1 className="text-balance text-3xl font-extrabold leading-[1.35] text-navy-900 sm:text-4xl lg:text-[2.75rem]">
-            مسیر آنلاین مطب‌تان کجا بیمار را از دست می‌دهد؟
-          </h1>
+            <h1 className="text-balance text-3xl font-extrabold leading-[1.35] text-navy-900 sm:text-4xl lg:text-[2.65rem]">
+              {title}
+            </h1>
 
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-navy-500 sm:text-lg">
-            نام پزشک یا کلینیک را وارد کنید. وضعیت دیده‌شدن، اطلاعات مطب، معرفی خدمات و مسیر
-            تماس یا نوبت را بررسی می‌کنیم و ۳ اقدام اولویت‌دار را در واتساپ می‌فرستیم.
-          </p>
-        </div>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-navy-500 sm:text-lg">{subtitle}</p>
 
-        <div id="audit" className="mx-auto mt-10 max-w-md scroll-mt-24">
-          <DoctorsAuditForm source="doctors_hero_audit" />
-        </div>
+            <p className="mt-5 text-lg font-extrabold text-sky-700 sm:text-xl">
+              پکیج مطب تک‌پزشک: {formatToman(DOCTORS_PRODUCT_PRICE_TOMAN)} تومان — پرداخت مرحله‌ای
+            </p>
+            {priceNote ? (
+              <p className="mt-2 text-[13px] text-navy-400">{priceNote}</p>
+            ) : (
+              <p className="mt-2 text-[13px] text-navy-400">{DOCTORS_LAUNCH_NOTE}</p>
+            )}
 
-        <div className="mx-auto mt-8 max-w-2xl">
-          <div className="rounded-2xl border border-navy-100 bg-white px-4 py-3 text-center shadow-soft sm:px-6">
-            <div className="flex flex-wrap items-center justify-center gap-2 text-[13px] font-bold text-navy-700">
-              {doctorPatientPathBar.steps.map((step, i) => (
-                <span key={step} className="inline-flex items-center gap-2">
-                  {i > 0 ? (
-                    <span className="text-navy-300" aria-hidden>
-                      ←
-                    </span>
-                  ) : null}
-                  {step}
-                </span>
-              ))}
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <a
+                href="#samples"
+                className="inline-flex items-center justify-center rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-sky-700 active:scale-[0.98]"
+              >
+                نمونه تخصصم را ببینم
+              </a>
+              <a
+                href="#package"
+                className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-6 py-3 text-sm font-bold text-navy-700 transition-all hover:bg-navy-50 active:scale-[0.98]"
+              >
+                جزئیات پکیج
+              </a>
             </div>
-            <p className="mt-2 text-[12px] leading-relaxed text-navy-500">{doctorPatientPathBar.note}</p>
+
+            <p className="mt-6 text-[12px] leading-relaxed text-navy-400">
+              شرکت هوش آرایه پارس — مستقر در پارک علم و فناوری دانشگاه تهران
+            </p>
           </div>
-          <p className="mt-3 text-center text-[11px] text-navy-400">{DOCTORS_SLA}</p>
+
+          <div className="lg:ps-2">{mockup ?? <HeroMockup />}</div>
         </div>
       </div>
     </section>

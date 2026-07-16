@@ -128,6 +128,9 @@ export default function ManagerDashboard() {
           <Link href="/admin/manager/analytics" className="block">
             <StatCard title="لید این هفته" value={analyticsData.this_week.toLocaleString('fa-IR')} subtitle="GTM + UTM" icon={TrendingUp} iconColor="text-green-600" />
           </Link>
+          <Link href="/admin/manager/growth" className="block md:col-span-2">
+            <StatCard title="Growth KPI" value="North Star" subtitle="درآمد + Qualified — داشبورد رشد" icon={LineChart} iconColor="text-rose-600" />
+          </Link>
         </div>
       )}
 

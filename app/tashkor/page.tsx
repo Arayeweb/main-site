@@ -21,7 +21,7 @@ export default function TashkorPage({
 
   return (
     <>
-      <Navbar ctaHref="/doctors#audit" ctaLabel="بررسی رایگان مطب" />
+      <Navbar ctaHref="/doctors/audit" ctaLabel="بررسی رایگان مطب" />
       <main className="min-h-[70vh] bg-gradient-to-b from-sky-50/70 via-white to-white py-16 sm:py-24">
         <div className="container-mx container-px">
           <div className="mx-auto max-w-lg text-center">

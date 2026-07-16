@@ -11,6 +11,7 @@ describe("sitemapRoutes", () => {
     expect(SITEMAP_PATHS).toContain("/");
     expect(SITEMAP_PATHS).toContain("/seo");
     expect(SITEMAP_PATHS).toContain("/doctors");
+    expect(SITEMAP_PATHS).toContain("/doctors/audit");
     expect(SITEMAP_PATHS).toContain("/bizcard");
     expect(SITEMAP_PATHS).toContain("/adready");
     expect(SITEMAP_PATHS).toContain("/googlesabt");
@@ -64,6 +65,7 @@ describe("sitemapRoutes", () => {
     }
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/seo`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/doctors`);
+    expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/doctors/audit`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/bizcard`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/adready`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/googlesabt`);
@@ -71,5 +73,20 @@ describe("sitemapRoutes", () => {
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts/resume`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts/python-debug`);
     expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/prompts/google-review-reply`);
+    expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/blog`);
+    expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/blog/seo-checklist-business-site`);
+    expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/clinic`);
+    expect(entries.map((e) => e.url)).toContain(`${SITE_URL}/portfolio`);
+  });
+
+  it("includes lastmod only for blog paths with known dates", () => {
+    const entries = buildSitemapEntries();
+    const blogPost = entries.find((e) => e.url.endsWith("/blog/clinic-seo-checklist"));
+    const seoPage = entries.find((e) => e.url.endsWith("/seo"));
+    const clinicPage = entries.find((e) => e.url.endsWith("/clinic"));
+
+    expect(blogPost?.lastModified).toEqual(new Date("2026-07-08"));
+    expect(seoPage?.lastModified).toBeUndefined();
+    expect(clinicPage?.lastModified).toBeUndefined();
   });
 });
