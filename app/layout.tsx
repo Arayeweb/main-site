@@ -4,7 +4,7 @@ import Script from "next/script";
 import PublicOnlyChrome from "@/components/PublicOnlyChrome";
 import SitePageviewTracker from "@/components/analytics/SitePageviewTracker";
 import { SITE_URL, canonicalUrl } from "@/lib/siteUrl";
-import { SITE_NAME } from "@/lib/seo/siteIdentity";
+import { SITE_NAME, buildHomeSiteGraphJsonLd } from "@/lib/seo/siteIdentity";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
@@ -84,8 +84,18 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const siteIdentityJsonLd = JSON.stringify(buildHomeSiteGraphJsonLd());
+
   return (
     <html lang="fa" dir="rtl">
+      <head>
+        {/* Page-level openGraph overrides drop layout siteName — pin it in head for every URL. */}
+        <meta property="og:site_name" content={SITE_NAME} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: siteIdentityJsonLd }}
+        />
+      </head>
       <body className="font-sans antialiased bg-white text-navy-900">
         <noscript>
           <iframe

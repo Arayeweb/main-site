@@ -12,7 +12,7 @@ import HomeFaq from "@/components/home/HomeFaq";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import { canonicalUrl } from "@/lib/siteUrl";
-import { buildHomeSiteGraphJsonLd } from "@/lib/seo/siteIdentity";
+import { SITE_NAME } from "@/lib/seo/siteIdentity";
 import { homeFaq } from "@/lib/homeFaq";
 
 const HOME_TITLE = "شرکت آرایه | طراحی سایت، سئو و توسعه نرم‌افزار";
@@ -31,7 +31,6 @@ export const metadata: Metadata = {
     "شرکت نرم‌افزاری آرایه",
     "شرکت طراحی سایت آرایه",
     "Araaye",
-    "araaye.com",
   ],
   alternates: {
     canonical: canonicalUrl("/"),
@@ -42,6 +41,7 @@ export const metadata: Metadata = {
     url: canonicalUrl("/"),
     type: "website",
     locale: "fa_IR",
+    siteName: SITE_NAME,
   },
   twitter: {
     card: "summary_large_image",
@@ -50,20 +50,14 @@ export const metadata: Metadata = {
   },
 };
 
-const siteGraph = buildHomeSiteGraphJsonLd();
-const homeJsonLd = {
-  ...siteGraph,
-  "@graph": [
-    ...siteGraph["@graph"],
-    {
-      "@type": "FAQPage",
-      mainEntity: homeFaq.map((item) => ({
-        "@type": "Question",
-        name: item.q,
-        acceptedAnswer: { "@type": "Answer", text: item.a },
-      })),
-    },
-  ],
+const homeFaqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: homeFaq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
 };
 
 export default function HomePage() {
@@ -71,7 +65,7 @@ export default function HomePage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqJsonLd) }}
       />
       <Navbar ctaLabel="درخواست مشاوره" />
       <main className="pb-20 sm:pb-0">

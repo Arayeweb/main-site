@@ -76,7 +76,7 @@ export default function OGImage() {
             color: "#5FBFA8",
           }}
         >
-          araaye.com
+          آرایه
         </div>
       </div>
     ),

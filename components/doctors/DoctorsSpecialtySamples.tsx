@@ -3,7 +3,7 @@
 import Link from "next/link";
 import SectionHeader from "@/components/home/SectionHeader";
 import DoctorsWhatsAppCta from "@/components/doctors/DoctorsWhatsAppCta";
-import { BrowserChrome, PhoneFrame } from "@/components/showcase/ShowcaseFrames";
+import DoctorDemoPreviewFrames from "@/components/doctors/demo/DoctorDemoPreviewFrames";
 import {
   buildDoctorsWaSpecialtyMessage,
   doctorSpecialtySamples,
@@ -11,35 +11,6 @@ import {
 } from "@/lib/doctorsData";
 import { trackDoctorsEvent } from "@/lib/doctorsAnalytics";
 import { IconArrowLeft } from "@/components/icons";
-
-const accentBg: Record<string, string> = {
-  cyan: "from-cyan-50 to-cyan-100",
-  sky: "from-sky-50 to-sky-100",
-  violet: "from-violet-50 to-violet-100",
-  teal: "from-teal-50 to-teal-100",
-  brand: "from-brand-50 to-brand-100",
-};
-
-function SamplePreview({ sample }: { sample: DoctorSpecialtySample }) {
-  const gradient = accentBg[sample.accent] ?? accentBg.sky;
-
-  return (
-    <div className="grid gap-3 sm:grid-cols-[1fr_1.4fr]">
-      <PhoneFrame>
-        <div className={`flex aspect-[9/14] flex-col justify-end bg-gradient-to-b ${gradient} p-3`}>
-          <p className="text-[10px] font-bold text-navy-500">نمای موبایل</p>
-          <p className="mt-1 text-xs font-extrabold text-navy-900">{sample.label}</p>
-        </div>
-      </PhoneFrame>
-      <BrowserChrome url={`araaye.com/demo/${sample.key}`}>
-        <div className={`flex aspect-[16/10] flex-col justify-end bg-gradient-to-br ${gradient} p-4`}>
-          <p className="text-[11px] font-bold text-navy-500">نمای دسکتاپ</p>
-          <p className="mt-1 text-sm font-extrabold text-navy-900">سایت {sample.label}</p>
-        </div>
-      </BrowserChrome>
-    </div>
-  );
-}
 
 function SpecialtyCard({ sample }: { sample: DoctorSpecialtySample }) {
   const kindLabel = sample.kind === "executed" ? "پروژه اجراشده" : "دموی پیشنهادی";
@@ -63,7 +34,7 @@ function SpecialtyCard({ sample }: { sample: DoctorSpecialtySample }) {
       </div>
 
       <div className="p-4">
-        <SamplePreview sample={sample} />
+        <DoctorDemoPreviewFrames sample={sample} />
       </div>
 
       <div className="mt-auto flex flex-col gap-2 border-t border-navy-50 p-4 sm:flex-row">
@@ -75,6 +46,7 @@ function SpecialtyCard({ sample }: { sample: DoctorSpecialtySample }) {
             trackDoctorsEvent("doctors_sample_demo_click", {
               source: "specialty_samples",
               specialty: sample.key,
+              demo_key: sample.key,
             })
           }
           className="inline-flex items-center justify-center gap-1 rounded-xl border border-navy-200 px-4 py-2.5 text-[13px] font-bold text-navy-700 transition-colors hover:bg-navy-50"

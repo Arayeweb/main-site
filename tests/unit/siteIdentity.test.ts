@@ -2,6 +2,7 @@ import {
   SITE_ALTERNATE_NAMES,
   SITE_NAME,
   buildHomeSiteGraphJsonLd,
+  buildWebPageJsonLd,
   organizationProviderRef,
   websitePartOfRef,
 } from "@/lib/seo/siteIdentity";
@@ -65,6 +66,29 @@ describe("siteIdentity", () => {
       name: "آرایه",
       legalName: COMPANY_LEGAL_NAME,
       url: SITE_URL,
+    });
+  });
+
+  it("buildWebPageJsonLd links inner pages to the canonical WebSite entity", () => {
+    expect(
+      buildWebPageJsonLd({
+        name: "درباره شرکت آرایه",
+        url: `${SITE_URL}/about`,
+        description: "درباره آرایه",
+      }),
+    ).toMatchObject({
+      "@type": "WebPage",
+      name: "درباره شرکت آرایه",
+      url: `${SITE_URL}/about`,
+      description: "درباره آرایه",
+      inLanguage: "fa-IR",
+      isPartOf: {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        name: "آرایه",
+        url: SITE_URL,
+      },
+      about: { "@id": `${SITE_URL}/#organization` },
     });
   });
 });

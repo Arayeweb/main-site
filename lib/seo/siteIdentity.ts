@@ -105,4 +105,26 @@ export function organizationProviderRef() {
   };
 }
 
+/** WebPage node linking inner pages back to the canonical WebSite entity. */
+export function buildWebPageJsonLd({
+  name,
+  url,
+  description,
+}: {
+  name: string;
+  url: string;
+  description?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name,
+    url,
+    ...(description ? { description } : {}),
+    inLanguage: "fa-IR",
+    isPartOf: websitePartOfRef(),
+    about: { "@id": ORGANIZATION_ID },
+  };
+}
+
 export { COMPANY_ADDRESS_FULL, COMPANY_DISPLAY_NAME, COMPANY_LEGAL_NAME };
