@@ -64,7 +64,7 @@ export const industries: IndustryBase[] = [
     slug: "real-estate",
     persianName: "املاک",
     englishName: "real-estate",
-    audienceHint: "جذب لید برای بازدید و مشاوره خرید/فروش/رهن",
+    audienceHint: "جذب مشتری برای بازدید و مشاوره خرید/فروش/رهن",
   },
   {
     slug: "online-shop",

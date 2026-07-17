@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
 
-export default function IndustryStickyCta() {
+export default function IndustryStickyCta({ label = "درخواست مشاوره" }: { label?: string }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -18,11 +18,11 @@ export default function IndustryStickyCta() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-100 bg-white/95 p-3 backdrop-blur-md sm:hidden">
       <a
-        href="#lead-form"
+        href="#consult-form"
         onClick={() => pushGtmEvent("cta_click", { location: "industry_sticky_mobile" })}
-        className="btn-primary w-full text-center"
+        className="inline-flex w-full items-center justify-center rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white"
       >
-        تحلیل رایگان سایت
+        {label}
       </a>
     </div>
   );
