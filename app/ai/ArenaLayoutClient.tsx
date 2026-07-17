@@ -20,11 +20,18 @@ export default function ArenaLayoutClient({
   initialPlan: string;
 }) {
   const pathname = usePathname();
+  const isContentIntent =
+    pathname === "/ai/content" || pathname.startsWith("/ai/content/");
   if (
     pathname.startsWith("/ai/content-sales") ||
     pathname.startsWith("/ai/features") ||
     pathname.startsWith("/ai/better-than-one-ai") ||
-    pathname.startsWith("/ai/compare")
+    pathname.startsWith("/ai/compare") ||
+    pathname.startsWith("/ai/chatgpt") ||
+    pathname.startsWith("/ai/claude") ||
+    pathname.startsWith("/ai/programming") ||
+    pathname.startsWith("/ai/students") ||
+    isContentIntent
   ) {
     return <>{children}</>;
   }

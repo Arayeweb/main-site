@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { INTENT_CARD_LINKS } from "@/lib/aiIntentLandings";
 
 const FAQ = [
   {
@@ -51,8 +52,16 @@ export default function AiLandingSeoContent() {
             کنید.
           </p>
           <p>
-            برای انتخاب بهترین مدل،{" "}
-            <Link href="/ai/compare">مقایسه هوش مصنوعی</Link> را ببینید یا از{" "}
+            لندینگ‌های تخصصی:{" "}
+            {INTENT_CARD_LINKS.map((card, i) => (
+              <span key={card.href}>
+                {i > 0 ? " · " : null}
+                <Link href={card.href}>{card.label}</Link>
+              </span>
+            ))}
+          </p>
+          <p>
+            برای انتخاب مدل، <Link href="/ai/compare">مقایسه هوش مصنوعی</Link> را ببینید یا از{" "}
             <Link href="/ai/pricing">قیمت‌گذاری آرایه AI</Link> پلن مناسب را انتخاب کنید.
           </p>
           <dl className="ar-seo-landing-faq">
@@ -65,6 +74,8 @@ export default function AiLandingSeoContent() {
           </dl>
           <p className="ar-seo-landing-links">
             <Link href="/ai/compare">مقایسه هوش مصنوعی</Link>
+            {" · "}
+            <Link href="/ai/chatgpt">ChatGPT فارسی</Link>
             {" · "}
             <Link href="/ai/features">امکانات آرایه AI</Link>
             {" · "}

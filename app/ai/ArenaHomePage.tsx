@@ -33,6 +33,12 @@ import ModeSelector from "./ModeSelector";
 import HomeCompactDropdown from "./HomeCompactDropdown";
 import { invalidateArenaAuthCache, useArenaAuth } from "./ArenaAuthContext";
 import { ArenaChatSkeleton, ArenaPageSkeleton } from "./ArenaSkeleton";
+import { INTENT_CARD_LINKS } from "@/lib/aiIntentLandings";
+import {
+  getStoredAiLandingType,
+  trackAiFirstMessage,
+  trackAiSignupStart,
+} from "@/lib/aiTracking";
 
 const DirectChatView = dynamic(() => import("./DirectChatView"), {
   loading: () => <ArenaChatSkeleton />,
@@ -231,6 +237,7 @@ export default function ArenaHomePage({
   const [authBusy, setAuthBusy] = useState(false);
   const [authRedirect, setAuthRedirect] = useState<string | null>(null);
   const [composerFlash, setComposerFlash] = useState(false);
+  const firstMessageTracked = useRef(false);
   const [codeMode, setCodeMode] = useState(false);
   const [webMode, setWebMode] = useState(false);
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
@@ -432,6 +439,24 @@ export default function ArenaHomePage({
     return next.id;
   }
 
+  function trackFirstMessageOnce() {
+    if (firstMessageTracked.current) return;
+    firstMessageTracked.current = true;
+    trackAiFirstMessage({
+      landing_type: getStoredAiLandingType() || "ai_home",
+    });
+  }
+
+  function openAuthSheet() {
+    setShowSheet(true);
+    trackAiSignupStart({
+      landing_type: getStoredAiLandingType() || "ai_home",
+    });
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("araaye:ai-auth-open"));
+    }
+  }
+
   function startDirectChat(q: string) {
     const attach = [...attachments];
     const useWeb = deepMode ? webMode : false;
@@ -447,6 +472,7 @@ export default function ArenaHomePage({
     setSendErr("");
     setComposerNotice("");
     setAttachments([]);
+    trackFirstMessageOnce();
     setSession({
       type: "direct",
       title: q,
@@ -463,6 +489,7 @@ export default function ArenaHomePage({
     setPrompt("");
     setSendErr("");
     setAttachments([]);
+    trackFirstMessageOnce();
     setSession({
       type: "compare",
       title: q,
@@ -477,6 +504,7 @@ export default function ArenaHomePage({
     setPrompt("");
     setSendErr("");
     setAttachments([]);
+    trackFirstMessageOnce();
     setSession({
       type: "council",
       title: q,
@@ -489,7 +517,7 @@ export default function ArenaHomePage({
   function promptGuestLogin(q?: string) {
     if (q) setPendingPrompt(q);
     setSendErr("");
-    setShowSheet(true);
+    openAuthSheet();
     setTimeout(() => phoneRef.current?.focus(), 100);
   }
 
@@ -1350,6 +1378,20 @@ export default function ArenaHomePage({
               />
             )}
           </div>
+
+          <section className="ar-home-intent" aria-labelledby="ar-home-intent-title">
+            <h2 id="ar-home-intent-title" className="ar-home-intent-title">
+              آرایه AI برای چه کاری می‌خواهی؟
+            </h2>
+            <div className="ar-home-intent-grid">
+              {INTENT_CARD_LINKS.map((card) => (
+                <Link key={card.href} href={card.href} className="ar-home-intent-card">
+                  <b>{card.label}</b>
+                  <small>{card.desc}</small>
+                </Link>
+              ))}
+            </div>
+          </section>
 
           {children}
         </div>

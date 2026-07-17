@@ -33,5 +33,9 @@ export function generateMetadata({ params }: Props): Metadata {
 export default function CompareSlugPage({ params }: Props) {
   const page = getComparePage(params.slug);
   if (!page) notFound();
-  return <CompareArticle page={page} />;
+  return (
+    <div className="ar-compare-page">
+      <CompareArticle page={page} />
+    </div>
+  );
 }

@@ -40,6 +40,10 @@ export default function ChatGptLearnPage() {
         <li>گفتگو با شخصیت‌های هوشمند — شبیه‌سازی AI به فارسی</li>
         <li>استودیو عکس، ویدیو، صوت و موزیک در یک حساب</li>
       </ul>
+      <p style={{ marginTop: 20, lineHeight: 1.7 }}>
+        برای لندینگ کامل ChatGPT فارسی با پرداخت تومانی، صفحه{" "}
+        <a href="/ai/chatgpt">ChatGPT در آرایه AI</a> را ببینید.
+      </p>
     </FeatureLearnLayout>
   );
 }

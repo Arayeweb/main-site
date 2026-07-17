@@ -20,6 +20,11 @@ describe("sitemapRoutes", () => {
     expect(SITEMAP_PATHS).toContain("/prompts");
     expect(SITEMAP_PATHS).toContain("/ai");
     expect(SITEMAP_PATHS).toContain("/ai/compare");
+    expect(SITEMAP_PATHS).toContain("/ai/chatgpt");
+    expect(SITEMAP_PATHS).toContain("/ai/claude");
+    expect(SITEMAP_PATHS).toContain("/ai/programming");
+    expect(SITEMAP_PATHS).toContain("/ai/students");
+    expect(SITEMAP_PATHS).toContain("/ai/content");
     expect(SITEMAP_PATHS).toContain("/ai/compare/chatgpt-vs-gemini");
     expect(SITEMAP_PATHS).toContain("/ai/compare/best-ai-for-persian");
   });

@@ -1475,6 +1475,54 @@ a.ar-composer-tool-btn {
   margin-top: 6px;
 }
 
+.ar-home-intent {
+  flex-shrink: 0;
+  padding: 8px 16px 20px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+.ar-home-intent-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--ar-text);
+}
+.ar-home-intent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+@media (min-width: 560px) {
+  .ar-home-intent-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.ar-home-intent-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ar-border);
+  background: var(--ar-surface, #fff);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease;
+}
+.ar-home-intent-card:hover {
+  border-color: var(--ar-brand, #3b6cff);
+}
+.ar-home-intent-card b {
+  font-size: 13px;
+}
+.ar-home-intent-card small {
+  font-size: 11px;
+  color: var(--ar-text2);
+  line-height: 1.4;
+}
+
 /* Secondary pages polish */
 .ar-page-secondary {
   padding-top: 28px;
