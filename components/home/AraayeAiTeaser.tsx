@@ -23,7 +23,7 @@ export default function AraayeAiTeaser() {
 
       <div className="relative mx-auto max-w-[1180px] px-5 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold text-teal-300">محصولی از آرایه</p>
+          <p className="text-sm font-semibold text-teal-300">پلتفرم هوش مصنوعی آرایه</p>
           <h2 className="mt-2.5 text-2xl font-extrabold leading-snug tracking-tight text-white sm:text-3xl">
             یک سؤال؛ چند دیدگاه؛
             <span className="block">یک پاسخ بهتر</span>
@@ -41,13 +41,13 @@ export default function AraayeAiTeaser() {
             href="/ai"
             className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-navy-900 transition-colors hover:bg-white/90"
           >
-            شروع با آرایه AI
+            شروع با هوش مصنوعی آرایه
           </a>
           <a
-            href="/ai/features"
+            href="/ai/compare"
             className="inline-flex items-center justify-center rounded-xl border border-white/25 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
           >
-            آشنایی بیشتر
+            مقایسه هوش مصنوعی
           </a>
         </div>
       </div>

@@ -18,6 +18,10 @@ describe("sitemapRoutes", () => {
     expect(SITEMAP_PATHS).toContain("/seo/doctor");
     expect(SITEMAP_PATHS).toContain("/free-seo-audit");
     expect(SITEMAP_PATHS).toContain("/prompts");
+    expect(SITEMAP_PATHS).toContain("/ai");
+    expect(SITEMAP_PATHS).toContain("/ai/compare");
+    expect(SITEMAP_PATHS).toContain("/ai/compare/chatgpt-vs-gemini");
+    expect(SITEMAP_PATHS).toContain("/ai/compare/best-ai-for-persian");
   });
 
   it("includes published programmatic industry URLs", () => {

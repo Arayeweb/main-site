@@ -147,7 +147,7 @@ export const solutions: SolutionItem[] = [
     accent: "from-brand-500 to-brand-700",
   },
   {
-    title: "Araaye AI",
+    title: "هوش مصنوعی آرایه",
     key: "arena",
     url: "/ai",
     description:
@@ -419,6 +419,8 @@ export const footerColumns: FooterColumn[] = [
       { label: "AdReady", url: "/adready" },
       { label: "پزشکان و کلینیک‌ها", url: "/doctors" },
       { label: "هوش مصنوعی آرایه", url: "/ai" },
+      { label: "آرایه AI", url: "/ai" },
+      { label: "مقایسه هوش مصنوعی", url: "/ai/compare" },
     ],
   },
   {
@@ -426,7 +428,7 @@ export const footerColumns: FooterColumn[] = [
     links: [
       { label: "سئو سایت پزشکان", url: "/seo/doctor" },
       { label: "سئو کلینیک", url: "/seo/clinic" },
-      { label: "طراحی سایت پزشک", url: "/website/doctor" },
+      { label: "طراحی سایت پزشک", url: "/doctors" },
       { label: "طراحی سایت کلینیک", url: "/website/clinic" },
     ],
   },

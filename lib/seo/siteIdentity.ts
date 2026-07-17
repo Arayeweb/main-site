@@ -22,11 +22,16 @@ export const SITE_NAME = COMPANY_BRAND_NAME;
 export const SITE_ALTERNATE_NAMES = [
   COMPANY_DISPLAY_NAME,
   "Araaye",
+  "ارایه",
+  "Araaye AI",
 ] as const;
 
 export const ORGANIZATION_ALTERNATE_NAMES = [
   COMPANY_DISPLAY_NAME,
   "Araaye",
+  "ارایه",
+  "Araaye AI",
+  "هوش ارایه پارس",
 ] as const;
 
 export const SITE_NAME_ID = `${SITE_URL}/#website`;

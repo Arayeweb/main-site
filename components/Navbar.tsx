@@ -31,7 +31,7 @@ const solutionLinks = [
 
 const navLinks = [
   { label: "نمونه خروجی‌ها", shortLabel: "نمونه‌ها", href: "/#real-portfolio" },
-  { label: "هوش مصنوعی آرایه", shortLabel: "Araaye AI", href: "/ai", external: true },
+  { label: "هوش مصنوعی آرایه", shortLabel: "آرایه AI", href: "/ai", external: true },
   { label: "درباره آرایه", href: "/about" },
 ] as const;
 

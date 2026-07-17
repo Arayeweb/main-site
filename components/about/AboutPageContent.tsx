@@ -51,7 +51,7 @@ const CAPABILITIES = [
     key: "ai",
     title: "استفاده بهتر از هوش مصنوعی",
     description: "ابزارهایی می‌سازیم که انجام کارهای روزمره را سریع‌تر و ساده‌تر کنند.",
-    product: "Araaye AI",
+    product: "هوش مصنوعی آرایه",
     href: "/ai",
   },
 ] as const;
@@ -60,7 +60,7 @@ const PRODUCT_MAP = [
   { name: "SEO آرایه", role: "دیده‌شدن", href: "/seo" },
   { name: "AdReady", role: "ساخت صفحه کمپین و دریافت لید", href: "/adready" },
   { name: "طراحی سایت", role: "ساخت پایگاه اصلی کسب‌وکار", href: "/website-design" },
-  { name: "Araaye AI", role: "دسترسی ساده‌تر به چند هوش مصنوعی", href: "/ai" },
+  { name: "هوش مصنوعی آرایه", role: "دسترسی ساده‌تر به چند هوش مصنوعی", href: "/ai" },
 ] as const;
 
 const PRINCIPLES = [
@@ -467,6 +467,37 @@ export default function AboutPageContent() {
             <a href="/#real-portfolio" className="btn-secondary">
               مشاهده نمونه خروجی‌ها
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Brand FAQ */}
+      <section className="border-t border-navy-100 bg-white py-16 sm:py-20">
+        <div className="container-mx container-px">
+          <SectionHeader
+            badge="برند"
+            title="آرایه یا ارایه؟"
+            subtitle="نام رسمی برند ما «آرایه» است؛ بعضی کاربران آن را «ارایه» هم می‌نویسند."
+          />
+          <div className="mx-auto max-w-2xl space-y-6 text-right">
+            <div className="rounded-2xl border border-navy-100 bg-navy-50/40 p-5 sm:p-6">
+              <h3 className="text-base font-extrabold text-navy-900">آرایه یا ارایه؟</h3>
+              <p className="mt-2 text-sm leading-relaxed text-navy-500">
+                نام برند ما «آرایه» است، اما بعضی کاربران آن را به‌صورت «ارایه» هم جست‌وجو
+                می‌کنند. هر دو به همین شرکت و به{" "}
+                <Link href="/ai" className="font-bold text-teal-800 hover:text-teal-950">
+                  هوش مصنوعی آرایه
+                </Link>{" "}
+                اشاره دارند. برای مقایسه مدل‌ها هم می‌توانید صفحه{" "}
+                <Link
+                  href="/ai/compare"
+                  className="font-bold text-teal-800 hover:text-teal-950"
+                >
+                  مقایسه هوش مصنوعی
+                </Link>{" "}
+                را ببینید.
+              </p>
+            </div>
           </div>
         </div>
       </section>

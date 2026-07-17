@@ -260,6 +260,13 @@ export default function PricingPage() {
           <p className="ar-pricing-free-hint">
             ثبت‌نام رایگان — {FREE_PLAN_EQUIVALENTS.signupBonus} هدیه برای شروع
           </p>
+          <p style={{ marginTop: 12, fontSize: 14 }}>
+            <Link href="/ai">هوش مصنوعی آرایه</Link>
+            {" · "}
+            <Link href="/ai/compare">مقایسه هوش مصنوعی</Link>
+            {" · "}
+            <Link href="/ai/features">امکانات آرایه AI</Link>
+          </p>
         </div>
       </section>
 

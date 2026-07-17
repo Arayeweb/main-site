@@ -14,6 +14,8 @@ describe("siteIdentity", () => {
     expect(SITE_NAME).toBe("آرایه");
     expect(SITE_ALTERNATE_NAMES[0]).toBe("شرکت آرایه");
     expect(SITE_ALTERNATE_NAMES).toContain("Araaye");
+    expect(SITE_ALTERNATE_NAMES).toContain("ارایه");
+    expect(SITE_ALTERNATE_NAMES).toContain("Araaye AI");
     expect(SITE_ALTERNATE_NAMES).not.toContain("araaye.com");
   });
 
@@ -25,7 +27,7 @@ describe("siteIdentity", () => {
     expect(website).toMatchObject({
       name: "آرایه",
       url: SITE_URL,
-      alternateName: ["شرکت آرایه", "Araaye"],
+      alternateName: ["شرکت آرایه", "Araaye", "ارایه", "Araaye AI"],
     });
     expect(org).toMatchObject({
       name: "آرایه",
@@ -33,7 +35,7 @@ describe("siteIdentity", () => {
       url: SITE_URL,
       email: "support@araaye.com",
       telephone: "+98991300788",
-      alternateName: ["شرکت آرایه", "Araaye"],
+      alternateName: ["شرکت آرایه", "Araaye", "ارایه", "Araaye AI", "هوش ارایه پارس"],
       sameAs: [
         "https://www.linkedin.com/company/araaye",
         "https://instagram.com/araayecom",

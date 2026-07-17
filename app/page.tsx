@@ -15,7 +15,7 @@ import { canonicalUrl } from "@/lib/siteUrl";
 import { SITE_NAME } from "@/lib/seo/siteIdentity";
 import { homeFaq } from "@/lib/homeFaq";
 
-const HOME_TITLE = "شرکت آرایه | طراحی سایت، سئو و توسعه نرم‌افزار";
+const HOME_TITLE = "آرایه | پلتفرم هوش مصنوعی و ساخت سایت";
 const HOME_DESCRIPTION =
   "شرکت آرایه ارائه‌دهنده خدمات طراحی سایت، سئو، توسعه نرم‌افزار اختصاصی و ابزارهای هوش مصنوعی برای رشد کسب‌وکارهاست. برای دریافت مشاوره با آرایه تماس بگیرید.";
 

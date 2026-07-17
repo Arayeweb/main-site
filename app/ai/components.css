@@ -1416,6 +1416,65 @@ a.ar-composer-tool-btn {
   line-height: 1.6;
 }
 
+/* Crawlable SEO block under /ai empty home */
+.ar-seo-landing {
+  flex-shrink: 0;
+  padding: 12px 16px 28px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+.ar-seo-landing-details {
+  border: 1px solid var(--ar-border);
+  border-radius: 14px;
+  background: var(--ar-surface, #fff);
+  overflow: hidden;
+}
+.ar-seo-landing-summary {
+  cursor: pointer;
+  padding: 14px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ar-text);
+  list-style: none;
+}
+.ar-seo-landing-summary::-webkit-details-marker {
+  display: none;
+}
+.ar-seo-landing-body {
+  padding: 0 16px 18px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--ar-text2);
+}
+.ar-seo-landing-body h2 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  color: var(--ar-text);
+}
+.ar-seo-landing-body p {
+  margin: 0 0 12px;
+}
+.ar-seo-landing-faq {
+  margin: 16px 0;
+}
+.ar-seo-landing-faq dt {
+  font-weight: 600;
+  color: var(--ar-text);
+  margin-top: 12px;
+}
+.ar-seo-landing-faq dd {
+  margin: 4px 0 0;
+}
+.ar-seo-landing-links {
+  font-size: 13px;
+}
+.ar-chat-brand-sub--muted {
+  opacity: 0.85;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
 /* Secondary pages polish */
 .ar-page-secondary {
   padding-top: 28px;

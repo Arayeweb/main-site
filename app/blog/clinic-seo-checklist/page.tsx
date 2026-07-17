@@ -213,7 +213,12 @@ export default function ClinicSeoChecklistPage() {
               <div className="mt-4 rounded-2xl border border-navy-100 bg-navy-50/40 p-5">
                 <p className="text-sm leading-relaxed text-navy-600">
                   یک بررسی اولیه از صفحه‌ای که بیشترین ورودی گوگل را دارد انجام دهید، سپس مسیر تبدیل را اصلاح کنید:
-                  CTA، فرم رزرو، اعتمادسازی و بخش‌هایی که با نیت جستجو هم‌خوان نیستند.
+                  CTA، فرم رزرو، اعتمادسازی و بخش‌هایی که با نیت جستجو هم‌خوان نیستند. برای بازنویسی متن‌های
+                  CTA و مقایسه چند نسخه،{" "}
+                  <a href="/ai" className="font-bold text-teal-800 hover:text-teal-950">
+                    هوش مصنوعی آرایه
+                  </a>{" "}
+                  را امتحان کنید.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <a href="/free-seo-audit" className="btn-primary inline-flex items-center px-5 py-2.5">

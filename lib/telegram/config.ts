@@ -36,11 +36,15 @@ export function isZibalConfigured(): boolean {
 }
 
 export function compareWebUrl(): string {
-  return `${SITE_URL}/ai?mode=compare&utm_source=telegram_bot&utm_campaign=compare`;
+  return `${SITE_URL}/ai/compare?utm_source=telegram_bot&utm_campaign=compare`;
 }
 
 export function councilWebUrl(): string {
   return `${SITE_URL}/ai?mode=council&utm_source=telegram_bot&utm_campaign=council`;
+}
+
+export function imageWebUrl(): string {
+  return `${SITE_URL}/ai?mode=image&utm_source=telegram_bot&utm_campaign=image`;
 }
 
 export function webAppUrl(): string {

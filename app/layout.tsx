@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
   title: {
-    default: "شرکت آرایه | طراحی سایت، سئو و توسعه نرم‌افزار",
+    default: "آرایه | پلتفرم هوش مصنوعی و ساخت سایت",
     template: `%s | ${SITE_NAME}`,
   },
   description:
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   // Do NOT set a root canonical here — it would make every page without its own
   // alternates.canonical self-reference the homepage. Each page/layout sets its own.
   openGraph: {
-    title: "شرکت آرایه | طراحی سایت، سئو و توسعه نرم‌افزار",
+    title: "آرایه | پلتفرم هوش مصنوعی و ساخت سایت",
     description:
       "شرکت آرایه ارائه‌دهنده خدمات طراحی سایت، سئو، توسعه نرم‌افزار اختصاصی و ابزارهای هوش مصنوعی برای رشد کسب‌وکارهاست.",
     type: "website",

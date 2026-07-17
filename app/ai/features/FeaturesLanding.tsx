@@ -77,19 +77,19 @@ export default function FeaturesLanding() {
         <section className="feat-hero">
           <div className="feat-container feat-hero-inner">
             <div className="feat-hero-copy">
-              <span className="feat-eyebrow">یک سؤال، چند نگاه</span>
-              <h1>از چند هوش مصنوعی بپرسید؛ پاسخ بهتر را انتخاب کنید.</h1>
+              <span className="feat-eyebrow">امکانات آرایه AI</span>
+              <h1>امکانات هوش مصنوعی آرایه؛ چت، مقایسه، استودیو و نبرد مدل‌ها</h1>
               <p className="feat-lead">
-                سؤال‌تان را یک‌بار بنویسید، پاسخ مدل‌های مختلف را کنار هم ببینید و بدون
-                جابه‌جایی میان چند ابزار به نتیجه برسید.
+                همه ابزارهای آرایه AI در یک حساب: چت فارسی، مقایسه چند مدل، استودیو تصویر و
+                کد، و نبرد مدل‌ها — بدون جابه‌جایی بین چند سایت.
               </p>
               <div className="feat-hero-cta">
                 <Link href="/ai" className="ar-btn ar-btn-primary">
                   رایگان امتحان کنید
                 </Link>
-                <a href="#features" className="ar-btn ar-btn-ghost">
-                  دیدن امکانات
-                </a>
+                <Link href="/ai/compare" className="ar-btn ar-btn-ghost">
+                  مقایسه هوش مصنوعی
+                </Link>
               </div>
               <p className="feat-hero-note">{FREE_CREDIT_LABEL}</p>
             </div>
@@ -204,6 +204,10 @@ export default function FeaturesLanding() {
           <div className="feat-container">
             <div className="feat-section-head">
               <h2>مدل مناسب هر کار را انتخاب کنید.</h2>
+              <p>
+                برای راهنمای کامل انتخاب مدل،{" "}
+                <Link href="/ai/compare">صفحه مقایسه هوش مصنوعی</Link> را ببینید.
+              </p>
             </div>
             <div className="feat-models-grid">
               {FEATURED_COMPARE_MODELS.map((model) => (

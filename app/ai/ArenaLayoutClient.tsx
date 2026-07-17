@@ -23,7 +23,8 @@ export default function ArenaLayoutClient({
   if (
     pathname.startsWith("/ai/content-sales") ||
     pathname.startsWith("/ai/features") ||
-    pathname.startsWith("/ai/better-than-one-ai")
+    pathname.startsWith("/ai/better-than-one-ai") ||
+    pathname.startsWith("/ai/compare")
   ) {
     return <>{children}</>;
   }

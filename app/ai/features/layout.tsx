@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 import "./features.css";
+import { canonicalUrl } from "@/lib/siteUrl";
+
+const FEATURES_TITLE = "امکانات آرایه AI | چت، مقایسه، استودیو و نبرد مدل‌ها";
+const FEATURES_DESCRIPTION =
+  "امکانات هوش مصنوعی آرایه: چت فارسی، مقایسه مدل‌ها، استودیو تصویر و کد، نبرد مدل‌ها — بدون VPN و با پرداخت تومان.";
 
 export const metadata: Metadata = {
-  title: "امکانات آرایه AI | یک سؤال، چند نگاه",
-  description:
-    "از چند هوش مصنوعی بپرسید، پاسخ‌ها را کنار هم ببینید و به نتیجه بهتر برسید. فارسی، بدون VPN، پرداخت تومان.",
-  alternates: { canonical: "/ai/features" },
+  title: { absolute: FEATURES_TITLE },
+  description: FEATURES_DESCRIPTION,
+  alternates: { canonical: canonicalUrl("/ai/features") },
   openGraph: {
-    title: "امکانات آرایه AI — یک سؤال، چند نگاه",
-    description:
-      "مقایسه پاسخ GPT، Claude و Gemini در یک پنل فارسی. برای تولید محتوا، کدنویسی و کار روزمره.",
-    url: "/ai/features",
+    title: FEATURES_TITLE,
+    description: FEATURES_DESCRIPTION,
+    url: canonicalUrl("/ai/features"),
+    siteName: "آرایه",
     locale: "fa_IR",
   },
 };

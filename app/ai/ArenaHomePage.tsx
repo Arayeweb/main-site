@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -173,7 +173,11 @@ const AUTH_ERRORS: Record<string, string> = {
   default: "خطایی پیش آمد. دوباره تلاش کن.",
 };
 
-export default function ArenaHomePage() {
+export default function ArenaHomePage({
+  children,
+}: {
+  children?: ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const {
@@ -1245,17 +1249,22 @@ export default function ArenaHomePage() {
           >
             <IconMenu size={18} />
           </button>
-          <span className="ar-home-header-brand">آرایه AI</span>
+          <span className="ar-home-header-brand">هوش مصنوعی آرایه</span>
           {creditChip}
         </header>
         <div className="ar-home-stack ar-home-stack--empty">
           <div className="ar-home-center ar-home-marketing">
-            <p className="ar-chat-brand-eyebrow">آرایه AI</p>
+            <p className="ar-chat-brand-eyebrow">هوش مصنوعی آرایه</p>
             <h1 className="ar-home-prompt">
-              یک سؤال؛ چند <span className="ar-home-prompt-accent">AI</span>؛ یک پاسخ بهتر
+              هوش مصنوعی آرایه؛ یک سؤال، چند{" "}
+              <span className="ar-home-prompt-accent">AI</span>، یک پاسخ بهتر
             </h1>
             <p className="ar-chat-brand-sub">
               چند مدل همزمان پاسخ می‌دهند؛ آرایه کمک می‌کند جواب بهتر را سریع‌تر پیدا کنی.
+            </p>
+            <p className="ar-chat-brand-sub ar-chat-brand-sub--muted">
+              اگر «هوش مصنوعی ارایه» یا «Araaye AI» را جست‌وجو کرده‌ای، این همان پلتفرم آرایه
+              است.
             </p>
             {authBoot === "guest" && (
               <p className="ar-home-trial-note">۱۰ پیام رایگان برای شروع</p>
@@ -1341,6 +1350,8 @@ export default function ArenaHomePage() {
               />
             )}
           </div>
+
+          {children}
         </div>
       </>
     );
