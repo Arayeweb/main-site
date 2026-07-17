@@ -66,6 +66,7 @@ export const CRM_SOURCE_LABELS: Record<string, string> = {
   doctors_chatbot: 'پزشکان — چت‌بات',
   doctors_hero: 'پزشکان — فرم هیرو',
   doctors_multistep: 'پزشکان — فرم پکیج',
+  doctors_direct_sale: 'پزشکان — فروش مستقیم',
   doctors_exit_intent: 'پزشکان — exit intent',
   doctors_scroll_intent: 'پزشکان — اسکرول موبایل',
   doctors_checkout: 'پزشکان — شروع پرداخت',

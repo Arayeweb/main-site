@@ -1,12 +1,18 @@
 import type { DoctorFaqItem } from "@/lib/doctorsData";
 import { doctorFaq } from "@/lib/doctorsData";
-import DoctorsAuditTeaser from "@/components/doctors/DoctorsAuditTeaser";
 import DoctorsCaseStudy from "@/components/doctors/DoctorsCaseStudy";
+import DoctorsComparison from "@/components/doctors/DoctorsComparison";
 import DoctorsFaq from "@/components/doctors/DoctorsFaq";
-import DoctorsFinalCta from "@/components/doctors/DoctorsFinalCta";
-import DoctorsPackageDetails from "@/components/doctors/DoctorsPackageDetails";
-import DoctorsPricing from "@/components/doctors/DoctorsPricing";
+import DoctorsLossAversion from "@/components/doctors/DoctorsLossAversion";
+import DoctorsOfferStack from "@/components/doctors/DoctorsOfferStack";
+import DoctorsPatientJourney from "@/components/doctors/DoctorsPatientJourney";
 import DoctorsProcess from "@/components/doctors/DoctorsProcess";
+import DoctorsReviews from "@/components/doctors/DoctorsReviews";
+import DoctorsRiskReduction from "@/components/doctors/DoctorsRiskReduction";
+import DoctorsRoiCalculator from "@/components/doctors/DoctorsRoiCalculator";
+import DoctorsSalesForm from "@/components/doctors/DoctorsSalesForm";
+import DoctorsSeoContent from "@/components/doctors/DoctorsSeoContent";
+import DoctorsSpecialtyNeeds from "@/components/doctors/DoctorsSpecialtyNeeds";
 import DoctorsSpecialtySamples from "@/components/doctors/DoctorsSpecialtySamples";
 
 type DoctorsSalesSectionsProps = {
@@ -24,14 +30,20 @@ export default function DoctorsSalesSections({
 }: DoctorsSalesSectionsProps) {
   return (
     <>
-      <DoctorsSpecialtySamples filterKeys={specialtyFilterKeys} />
-      <DoctorsPackageDetails />
+      <DoctorsLossAversion />
       {showCaseStudy ? <DoctorsCaseStudy /> : null}
-      <DoctorsPricing />
+      <DoctorsReviews />
+      <DoctorsSpecialtySamples filterKeys={specialtyFilterKeys} />
+      <DoctorsPatientJourney />
+      <DoctorsSpecialtyNeeds />
+      <DoctorsOfferStack />
+      <DoctorsComparison />
+      <DoctorsRoiCalculator />
+      <DoctorsRiskReduction />
       <DoctorsProcess />
-      <DoctorsAuditTeaser />
-      <DoctorsFaq items={faqItems} title={faqTitle} />
-      <DoctorsFinalCta />
+      <DoctorsSalesForm />
+      <DoctorsFaq items={faqItems} title={faqTitle ?? "پاسخ اعتراض‌ها و سؤال‌های رایج"} />
+      <DoctorsSeoContent />
     </>
   );
 }

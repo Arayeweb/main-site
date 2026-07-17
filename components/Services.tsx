@@ -20,7 +20,7 @@ export default function Services() {
           <a href="/seo/doctor" className="hover:text-teal-700">
             سئو سایت پزشکان
           </a>
-          <a href="/website/doctor" className="hover:text-teal-700">
+          <a href="/doctors" className="hover:text-teal-700">
             طراحی سایت پزشک
           </a>
           <a href="/seo/clinic" className="hover:text-teal-700">

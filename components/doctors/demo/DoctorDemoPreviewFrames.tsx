@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import PourdastClinicHomePreview from "@/components/home/previews/PourdastClinicHomePreview";
-import { BrowserChrome, PhoneFrame } from "@/components/showcase/ShowcaseFrames";
+import { BrowserChrome } from "@/components/showcase/ShowcaseFrames";
 import type { DoctorSpecialtySample } from "@/lib/doctorsData";
 import { getDoctorDemo } from "@/lib/doctorsDemoData";
 import DoctorDemoLandingPreview from "./DoctorDemoLandingPreview";
@@ -36,12 +36,6 @@ export default function DoctorDemoPreviewFrames({ sample }: { sample: DoctorSpec
   const demo = getDoctorDemo(sample.key);
   const previewUrl = demo?.previewUrl ?? sample.demoUrl.replace(/^https?:\/\//, "");
 
-  const mobilePreview = demo ? (
-    <DoctorDemoLandingPreview content={demo} compact />
-  ) : (
-    <PourdastClinicHomePreview />
-  );
-
   const desktopPreview = demo ? (
     <DoctorDemoLandingPreview content={demo} />
   ) : (
@@ -49,15 +43,8 @@ export default function DoctorDemoPreviewFrames({ sample }: { sample: DoctorSpec
   );
 
   return (
-    <div className="grid gap-3 sm:grid-cols-[1fr_1.4fr]">
-      <PreviewLink href={sample.demoUrl} external={sample.demoExternal}>
-        <PhoneFrame>
-          <div className="aspect-[9/14] overflow-hidden">{mobilePreview}</div>
-        </PhoneFrame>
-      </PreviewLink>
-      <PreviewLink href={sample.demoUrl} external={sample.demoExternal}>
-        <BrowserChrome url={previewUrl}>{desktopPreview}</BrowserChrome>
-      </PreviewLink>
-    </div>
+    <PreviewLink href={sample.demoUrl} external={sample.demoExternal}>
+      <BrowserChrome url={previewUrl}>{desktopPreview}</BrowserChrome>
+    </PreviewLink>
   );
 }

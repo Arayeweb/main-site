@@ -52,6 +52,7 @@ const nextConfig = {
       { source: "/index.html", destination: "/", permanent: true },
       { source: "/seo.html", destination: "/seo", permanent: true },
       { source: "/doctors.html", destination: "/doctors", permanent: true },
+      { source: "/website/doctor", destination: "/doctors", permanent: true },
       { source: "/bizcard.html", destination: "/bizcard", permanent: true },
       { source: "/googlesabt.html", destination: "/googlesabt", permanent: true },
       // Legacy blog URLs → App Router

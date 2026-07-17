@@ -27,7 +27,7 @@ export default function DoctorsWhatsAppCta({
       target="_blank"
       rel="noopener noreferrer"
       onClick={() =>
-        trackDoctorsEvent("doctors_wa_click", {
+        trackDoctorsEvent("doctors_whatsapp_click", {
           source,
           ...(specialty ? { specialty } : {}),
         })

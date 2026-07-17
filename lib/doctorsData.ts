@@ -1,18 +1,57 @@
-// داده‌های لندینگ پزشکان — صفحه فروش محصولی، بررسی رایگان (audit)، FAQ و نمونه‌ها.
-// قیمت نمایشی matab روی صفحه ۲۰M است؛ checkout API فعلاً واتساپ-only و deposit قدیمی دارد.
-// در ایران قیمت نمایشی تومان است؛ Structured Data با IRR (= تومان × ۱۰) ثبت می‌شود.
+// داده‌های لندینگ فروش مستقیم طراحی سایت پزشکی — Direct Response.
+// قیمت نمایشی تومان؛ Structured Data با IRR (= تومان × ۱۰).
 
-/** قیمت پکیج مطب تک‌پزشک — نمایش روی لندینگ فروش */
+/** قیمت پکیج مطب تک‌پزشک */
 export const DOCTORS_PRODUCT_PRICE_TOMAN = 20_000_000;
+/** پیش‌پرداخت شروع = ۳۰٪ */
+export const DOCTORS_DEPOSIT_TOMAN = 6_000_000;
+/** @deprecated قیمت قدیمی */
 export const DOCTORS_PRODUCT_OLD_PRICE_TOMAN = 30_000_000;
-export const DOCTORS_LAUNCH_NOTE = "برای ۱۰ مشتری اول، قیمت ثابت ۲۰ میلیون تومان";
+
+/**
+ * فوریت قابل‌مدیریت — فقط با مقدار واقعی پر شود.
+ * اگر null باشد، نوار فوریت مربوطه رندر نمی‌شود. عدد ساختگی نگذارید.
+ */
+export const doctorsUrgencyConfig: {
+  /** تاریخ پایان قیمت فعلی — ISO date مثل 2026-08-15 */
+  priceValidUntil: string | null;
+  /** ظرفیت باقی‌مانده اجرای جدید در ماه جاری */
+  remainingSlotsThisMonth: number | null;
+} = {
+  priceValidUntil: null,
+  remainingSlotsThisMonth: null,
+};
 
 export const DOCTORS_WA_ORDER_MESSAGE =
-  "سلام، پکیج ۲۰ میلیونی سایت پزشکان را دیدم. تخصص من … و شهر فعالیتم … است. لطفاً نمونه نزدیک به تخصصم و مراحل شروع را بفرستید.";
+  "سلام، پکیج ۲۰ میلیونی طراحی سایت پزشکی را دیدم. تخصص من … و شهر فعالیتم … است. می‌خواهم با پیش‌پرداخت ۶ میلیون شروع کنم. لطفاً نمونه و مراحل را بفرستید.";
 
 export function buildDoctorsWaSpecialtyMessage(specialty: string): string {
-  return `سلام، پکیج ۲۰ میلیونی سایت پزشکان را دیدم. تخصص من ${specialty} است. این مدل را برای مطب من می‌خواهم. لطفاً مراحل شروع را بفرستید.`;
+  return `سلام، پکیج ۲۰ میلیونی طراحی سایت پزشکی را دیدم. تخصص من ${specialty} است. این مدل را برای مطب من می‌خواهم. لطفاً نمونه و شروع با ۶ میلیون را هماهنگ کنید.`;
 }
+
+export function buildDoctorsWaQuoteMessage(opts: {
+  specialty: string;
+  city?: string;
+  businessType?: string;
+  addons?: string[];
+  name?: string;
+}): string {
+  const lines = [
+    "سلام، از صفحه طراحی سایت پزشکی آرایه پیام می‌دهم.",
+    opts.name?.trim() ? `نام: ${opts.name.trim()}` : null,
+    `تخصص: ${opts.specialty}`,
+    opts.city?.trim() ? `شهر: ${opts.city.trim()}` : null,
+    opts.businessType ? `نوع مجموعه: ${opts.businessType}` : null,
+    opts.addons?.length ? `امکانات: ${opts.addons.join("، ")}` : null,
+    "لطفاً نمونه مرتبط، زمان‌بندی و مراحل شروع را بفرستید.",
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+
+export const DOCTORS_SALES_SUCCESS_MESSAGE =
+  "درخواست شما ثبت شد. نمونه مرتبط، زمان‌بندی و مراحل شروع را همین الان می‌توانید ببینید و در واتساپ ادامه دهید.";
+
+export const DOCTORS_SPECIALTY_EVENT = "doctors:specialty-select";
 
 export type DoctorPackageKey = "matab" | "clinic" | "center";
 
@@ -20,7 +59,6 @@ export interface DoctorPackage {
   key: DoctorPackageKey;
   name: string;
   tagline: string;
-  /** مبلغ تومان — برای نمایش و checkout */
   price: number;
   oldPrice: number;
   deposit: number;
@@ -36,15 +74,15 @@ export const doctorPackages: DoctorPackage[] = [
     tagline: "برای پزشک انفرادی",
     price: DOCTORS_PRODUCT_PRICE_TOMAN,
     oldPrice: DOCTORS_PRODUCT_OLD_PRICE_TOMAN,
-    deposit: 2_900_000,
-    description: "حضور آنلاین حرفه‌ای برای مطب تک‌پزشک؛ سایت تخصصی + نوبت‌دهی آنلاین.",
+    deposit: DOCTORS_DEPOSIT_TOMAN,
+    description: "سایت اختصاصی مطب تک‌پزشک برای جذب بیمار و درخواست نوبت.",
     features: [
-      "سایت تخصصی + صفحه تخصص و رزومه علمی",
-      "نوبت‌دهی آنلاین با یادآوری پیامکی",
-      "دامنه اختصاصی به نام شما + سرور یک‌ساله",
-      "سئوی پایه (جستجوی نام و تخصص در گوگل)",
-      "اتصال درگاه پرداخت و پیش‌پرداخت ویزیت",
-      "پشتیبانی و نگهداری ۳ ماهه",
+      "سایت تخصصی + صفحات خدمت",
+      "مسیر تماس، واتساپ و نوبت",
+      "دامنه و سرور به نام پزشک",
+      "سئوی فنی اولیه",
+      "نسخه اولیه در ۲ روز کاری",
+      "۳۰ روز پشتیبانی اولیه",
     ],
   },
   {
@@ -54,15 +92,15 @@ export const doctorPackages: DoctorPackage[] = [
     price: 45_000_000,
     oldPrice: 55_000_000,
     deposit: 4_900_000,
-    description: "سایت کامل چندپزشکه با چت‌بات پاسخگوی بیماران و سئوی تخصصی.",
+    description: "سایت کامل چندپزشکه — پکیج جدا از مطب تک‌پزشک.",
     popular: true,
     features: [
       "همه امکانات پکیج مطب",
-      "چندپزشکه با تقویم نوبت مجزا برای هر پزشک",
-      "چت‌بات پاسخگوی بیماران ۲۴ ساعته (هزینه، آدرس، بیمه)",
-      "سئوی تخصصی پزشکی + بلاگ سلامت",
-      "پنل مدیریت یکپارچه نوبت‌ها و پیام‌ها",
-      "پشتیبانی و نگهداری ۶ ماهه",
+      "چندپزشکه با تقویم نوبت مجزا",
+      "چت‌بات پاسخگوی بیماران",
+      "سئوی تخصصی + بلاگ",
+      "پنل مدیریت یکپارچه",
+      "پشتیبانی ۶ ماهه",
     ],
   },
   {
@@ -72,19 +110,18 @@ export const doctorPackages: DoctorPackage[] = [
     price: 59_000_000,
     oldPrice: 74_000_000,
     deposit: 9_900_000,
-    description: "راهکار کامل برای درمانگاه و مرکز درمانی؛ یکپارچه‌سازی و مدیر پروژه اختصاصی.",
+    description: "راهکار کامل برای درمانگاه و مرکز درمانی.",
     features: [
       "همه امکانات پکیج کلینیک",
-      "اتصال به سیستم‌های داخلی (نرم‌افزار مطب / HIS)",
-      "پنل اختصاصی بیمار و پرونده نوبت‌ها",
-      "مدیر پروژه اختصاصی + آموزش پرسنل",
-      "گزارش ماهانه نوبت‌ها و تماس‌ها",
-      "پشتیبانی و نگهداری ۱۲ ماهه",
+      "اتصال به سیستم‌های داخلی",
+      "پنل بیمار",
+      "مدیر پروژه اختصاصی",
+      "گزارش ماهانه",
+      "پشتیبانی ۱۲ ماهه",
     ],
   },
 ];
 
-/** مبلغ ریالی برای Schema.org (۱ تومان = ۱۰ ریال) */
 export function tomanToIrr(toman: number): number {
   return toman * 10;
 }
@@ -129,7 +166,6 @@ export interface DoctorPriorityAction {
   effort: DoctorActionEffort;
 }
 
-/** نمونه گزارش قابل‌نمایش در بخش نمونه */
 export const doctorSampleReport = {
   clinicName: "نمونه: مطب تخصصی پوست — تهران",
   axes: [
@@ -191,7 +227,6 @@ export interface DoctorCaseStudy {
   desktopImage?: string;
 }
 
-/** یک Case Study واقعی با لینک قابل‌تأیید */
 export const doctorCaseStudy: DoctorCaseStudy = {
   specialty: "بیماری‌های عفونی",
   title: "دکتر عالیه پوردست",
@@ -211,9 +246,80 @@ export const doctorCaseStudy: DoctorCaseStudy = {
     "برای من مهم بود سایت هم تخصص و سابقه علمی‌ام را درست نشان بدهد و هم کارکردن با آن ساده باشد؛ مسائل فنی را تیم مدیریت کرد.",
   quoteRole: "فوق تخصص بیماری‌های عفونی و گرمسیری",
   image: "/showcase-assets/pourdast/portrait.webp",
-  mobileImage: "/showcase-assets/pourdast/portrait.webp",
-  desktopImage: "/showcase-assets/pourdast/portrait.webp",
+  mobileImage: "/showcase-assets/pourdast/mobile.png",
+  desktopImage: "/showcase-assets/pourdast/desktop.png",
 };
+
+/** پروژه‌های واقعی — با اضافه کردن آیتم جدید بدون تغییر صفحه نمایش داده می‌شوند */
+export type DoctorPortfolioProject = {
+  id: string;
+  name: string;
+  specialty: string;
+  city: string;
+  siteUrl: string;
+  desktopImage?: string;
+  mobileImage?: string;
+  portraitImage?: string;
+  problem: string;
+  work: string[];
+  duration: string;
+  quote?: string;
+  quoteRole?: string;
+  verified: boolean;
+};
+
+export const doctorPortfolioProjects: DoctorPortfolioProject[] = [
+  {
+    id: "pourdast",
+    name: doctorCaseStudy.title,
+    specialty: doctorCaseStudy.specialty,
+    city: doctorCaseStudy.city,
+    siteUrl: doctorCaseStudy.siteUrl!,
+    desktopImage: doctorCaseStudy.desktopImage,
+    mobileImage: doctorCaseStudy.mobileImage,
+    portraitImage: doctorCaseStudy.image,
+    problem: doctorCaseStudy.problem,
+    work: doctorCaseStudy.work,
+    duration: doctorCaseStudy.duration,
+    quote: doctorCaseStudy.quote,
+    quoteRole: doctorCaseStudy.quoteRole,
+    verified: true,
+  },
+];
+
+export function getVerifiedDoctorProjects() {
+  return doctorPortfolioProjects.filter((p) => p.verified);
+}
+
+export type DoctorReview = {
+  id: string;
+  name: string;
+  image?: string;
+  specialty: string;
+  city: string;
+  quote: string;
+  siteUrl?: string;
+  verified: boolean;
+};
+
+/** فقط Reviewهای واقعی و verified نمایش داده می‌شوند */
+export const doctorReviews: DoctorReview[] = [
+  {
+    id: "pourdast",
+    name: "دکتر عالیه پوردست",
+    image: "/showcase-assets/pourdast/portrait.webp",
+    specialty: "بیماری‌های عفونی",
+    city: "تهران",
+    quote:
+      "برای من مهم بود سایت هم تخصص و سابقه علمی‌ام را درست نشان بدهد و هم کارکردن با آن ساده باشد؛ مسائل فنی را تیم مدیریت کرد.",
+    siteUrl: "https://aliehpourdast.com",
+    verified: true,
+  },
+];
+
+export function getVerifiedDoctorReviews() {
+  return doctorReviews.filter((r) => r.verified && r.quote.trim().length > 0);
+}
 
 export type DoctorSampleKind = "demo" | "executed";
 
@@ -224,6 +330,7 @@ export interface DoctorSpecialtySample {
   demoUrl: string;
   demoExternal?: boolean;
   accent: string;
+  buyReason?: string;
 }
 
 export const doctorSpecialtySamples: DoctorSpecialtySample[] = [
@@ -233,13 +340,15 @@ export const doctorSpecialtySamples: DoctorSpecialtySample[] = [
     kind: "demo",
     demoUrl: "/doctors/demo/dentist",
     accent: "cyan",
+    buyReason: "نمایش خدمات، نمونه درمان و درخواست مشاوره",
   },
   {
-    key: "dentist-kordian",
-    label: "دندانپزشکی — نمونه چندزبانه",
+    key: "dermatology",
+    label: "پوست و زیبایی",
     kind: "demo",
-    demoUrl: "/doctors/demo/dentist-kordian",
-    accent: "cyan",
+    demoUrl: "/doctors/demo/dermatology",
+    accent: "slate",
+    buyReason: "گالری، صفحات خدمات و جذب مشاوره زیبایی",
   },
   {
     key: "ophthalmology",
@@ -247,13 +356,7 @@ export const doctorSpecialtySamples: DoctorSpecialtySample[] = [
     kind: "demo",
     demoUrl: "/doctors/demo/ophthalmology",
     accent: "sky",
-  },
-  {
-    key: "dermatology",
-    label: "پوست و زیبایی",
-    kind: "demo",
-    demoUrl: "/doctors/demo/dermatology",
-    accent: "violet",
+    buyReason: "معرفی جراحی‌ها، اعتبار علمی و مسیر معاینه",
   },
   {
     key: "pediatric",
@@ -261,6 +364,7 @@ export const doctorSpecialtySamples: DoctorSpecialtySample[] = [
     kind: "demo",
     demoUrl: "/doctors/demo/pediatric",
     accent: "teal",
+    buyReason: "اعتماد والدین، معرفی خدمات و نوبت ساده",
   },
   {
     key: "physiotherapy",
@@ -268,74 +372,279 @@ export const doctorSpecialtySamples: DoctorSpecialtySample[] = [
     kind: "demo",
     demoUrl: "/doctors/demo/physiotherapy",
     accent: "brand",
+    buyReason: "معرفی روش‌های درمان و درخواست ارزیابی",
   },
   {
     key: "general",
-    label: "مطب عمومی",
+    label: "دکتر عالیه پوردست",
     kind: "executed",
     demoUrl: "https://aliehpourdast.com",
     demoExternal: true,
     accent: "sky",
+    buyReason: "معرفی تخصص، پاسخ به نگرانی بیمار و مسیر نوبت",
   },
 ];
 
-export const doctorProductPackageFeatures = [
-  "طراحی متناسب با هویت پزشک",
-  "حداکثر ۸ صفحه",
-  "معرفی پزشک و خدمات",
-  "سه صفحه مستقل برای خدمات اصلی",
-  "پنل فارسی انتشار مقاله",
-  "دکمه ثابت واتساپ و درخواست نوبت",
-  "اتصال به سامانه نوبت موجود پزشک",
-  "نمایش مسیر در گوگل‌مپ، نشان و بلد",
-  "سئوی فنی اولیه و ساختار قابل ایندکس",
-  "نسخه موبایل",
-  "دامنه و سرور به نام پزشک",
+export type DoctorSpecialtyOption = {
+  key: string;
+  label: string;
+  sampleKey: string;
+  buyReason: string;
+};
+
+export const doctorSpecialtyOptions: DoctorSpecialtyOption[] = [
+  {
+    key: "dentist",
+    label: "دندانپزشکی",
+    sampleKey: "dentist",
+    buyReason: "نمایش خدمات، نمونه درمان و درخواست مشاوره",
+  },
+  {
+    key: "women",
+    label: "زنان",
+    sampleKey: "general",
+    buyReason: "معرفی تخصص، پاسخ به نگرانی‌های بیمار و نوبت سریع",
+  },
+  {
+    key: "dermatology",
+    label: "پوست و زیبایی",
+    sampleKey: "dermatology",
+    buyReason: "گالری، صفحات خدمات و جذب مشاوره زیبایی",
+  },
+  {
+    key: "ophthalmology",
+    label: "چشم‌پزشکی",
+    sampleKey: "ophthalmology",
+    buyReason: "معرفی جراحی‌ها، اعتبار علمی و مسیر معاینه",
+  },
+  {
+    key: "pediatric",
+    label: "کودکان",
+    sampleKey: "pediatric",
+    buyReason: "اعتماد والدین، معرفی خدمات و نوبت ساده",
+  },
+  {
+    key: "physiotherapy",
+    label: "فیزیوتراپی",
+    sampleKey: "physiotherapy",
+    buyReason: "معرفی روش‌های درمان و درخواست ارزیابی",
+  },
+  {
+    key: "other",
+    label: "سایر تخصص‌ها",
+    sampleKey: "general",
+    buyReason: "هویت اختصاصی پزشک، صفحات خدمت و مسیر درخواست نوبت",
+  },
+];
+
+export const doctorOfferStack = [
+  "سایت اختصاصی و متناسب با برند پزشک",
+  "سه لندینگ مستقل برای خدمات اصلی",
+  "مسیر مستقیم تماس، واتساپ و درخواست نوبت",
+  "اتصال به سامانه نوبت‌دهی فعلی",
+  "رزومه، سوابق علمی و عناصر اعتمادسازی",
+  "پنل انتشار مقاله برای رشد در گوگل",
+  "زیرساخت فنی و صفحات آماده سئو",
+  "نقشه و اطلاعات کامل مطب",
+  "طراحی کامل موبایل",
+  "مالکیت کامل دامنه و سایت",
   "دو مرحله اصلاح",
-  "۳۰ روز پشتیبانی پس از تحویل",
+  "۳۰ روز پشتیبانی و رفع ایراد",
+] as const;
+
+export const doctorProductPackageFeatures = doctorOfferStack;
+
+export const doctorProductPackageExcluded = [
+  "اجرای ماهانه سئو",
+  "تولید مستمر مقاله",
+  "عکاسی و فیلم‌برداری",
+  "ساخت سامانه نوبت‌دهی اختصاصی",
+  "پرونده الکترونیک بیمار",
+  "امکانات نرم‌افزاری سفارشی",
 ] as const;
 
 export const doctorSeoDisclaimer =
   "سئوی اولیه به معنی تضمین رتبه اول گوگل نیست؛ تولید محتوا و رقابت روی عبارت‌های تخصصی، خدمت جداگانه است.";
 
 export const doctorPaymentMilestones = [
-  { label: "شروع پروژه", percent: "۳۰٪" },
-  { label: "پس از تأیید نسخه اولیه", percent: "۴۰٪" },
-  { label: "هنگام تحویل نهایی", percent: "۳۰٪" },
+  {
+    label: "شروع پروژه",
+    percent: "۳۰٪",
+    amountLabel: "۶ میلیون تومان",
+    note: "پیش‌پرداخت شروع — بدون پرداخت کامل",
+  },
+  {
+    label: "پس از تأیید نسخه اولیه",
+    percent: "۴۰٪",
+    amountLabel: "۸ میلیون تومان",
+    note: "فقط بعد از دیدن و تأیید نسخه اول",
+  },
+  {
+    label: "هنگام تحویل نهایی",
+    percent: "۳۰٪",
+    amountLabel: "۶ میلیون تومان",
+    note: "انتشار روی دامنه پزشک",
+  },
 ] as const;
 
 export const doctorDeliveryTimeline = [
-  { label: "نسخه اولیه", value: "۲ روز کاری" },
-  { label: "تحویل نهایی", value: "حدود ۵ تا ۷ روز کاری پس از دریافت محتوا" },
+  { label: "نسخه اولیه", value: "۲ روز کاری پس از دریافت اطلاعات" },
+  { label: "تحویل نهایی", value: "حدود ۵ تا ۷ روز کاری" },
 ] as const;
+
+export const doctorRiskGuarantees = [
+  "نسخه اولیه در زمان توافق‌شده",
+  "مالکیت کامل دامنه و سایت",
+  "رفع ایرادات فنی تا ۳۰ روز",
+] as const;
+
+export const doctorLossAversion = {
+  title: "وقتی بیمار شما را در گوگل پیدا نکند، پزشک بعدی را انتخاب می‌کند",
+  problems: [
+    "بیمار نام یا خدمت شما را جستجو می‌کند، ولی صفحه حرفه‌ای و کاملی پیدا نمی‌کند.",
+    "برای فهمیدن خدمات، سابقه، آدرس و نوبت باید بین اینستاگرام و سامانه‌های مختلف بچرخد.",
+    "تماس خارج از ساعت پاسخ داده نمی‌شود و درخواست بیمار از دست می‌رود.",
+  ],
+  punchline: "هر مسیر نامشخص، یعنی یک درخواست نوبت کمتر.",
+};
 
 export const doctorProductProcessSteps = [
   {
     step: "۱",
     title: "ارسال اطلاعات مطب",
-    description: "اطلاعات مطب و تصاویر را در فرم کوتاه می‌فرستید.",
+    description: "اطلاعات مطب، خدمات و تصاویر را می‌فرستید.",
   },
   {
     step: "۲",
-    title: "نسخه اولیه",
+    title: "آماده‌سازی نسخه اولیه",
     description: "نسخه اولیه طی دو روز کاری آماده می‌شود.",
   },
   {
     step: "۳",
-    title: "انتشار روی دامنه شما",
-    description: "اصلاحات انجام و سایت روی دامنه شما منتشر می‌شود.",
+    title: "تأیید و اصلاح",
+    description: "نسخه را می‌بینید، تأیید می‌کنید و تا دو مرحله اصلاح انجام می‌شود.",
+  },
+  {
+    step: "۴",
+    title: "انتشار روی دامنه پزشک",
+    description: "سایت روی دامنه و سرور به نام شما منتشر می‌شود.",
   },
 ];
 
 export const doctorPatientPathBar = {
-  steps: ["جستجو", "اعتماد", "تماس یا درخواست نوبت"],
-  note: "گزارش مشخص می‌کند مشکل اصلی در کدام مرحله است.",
+  steps: ["جستجو در گوگل", "بررسی تخصص و اعتبار", "درخواست نوبت"],
+  note: "سایت مسیر فروش مطب است: از جستجو تا تماس، واتساپ یا درخواست نوبت.",
 };
 
-/** کمینه سرمایه‌گذاری — فقط برای checkout و کامپوننت‌های legacy */
+export const doctorSpecialtyNeedCards = [
+  {
+    key: "visual",
+    title: "تخصص‌های بصری",
+    specialties: "دندانپزشکی، پوست، زیبایی",
+    focus: "گالری، تصاویر قبل و بعد، معرفی خدمات و درخواست مشاوره — تبدیل بازدید به مشاوره.",
+  },
+  {
+    key: "scientific",
+    title: "تخصص‌های علمی",
+    specialties: "داخلی، عفونی، زنان، چشم و مشابه",
+    focus: "رزومه علمی، سوابق، مقالات تأییدشده، FAQ و نوبت — ساخت اعتماد قبل از تماس.",
+  },
+] as const;
+
+export const doctorComparisonRows = [
+  { criterion: "هویت اختصاصی پزشک", araaye: "بله", template: "قالبی و تکراری", booking: "خیر" },
+  { criterion: "مالکیت کامل", araaye: "دامنه و سایت به نام پزشک", template: "معمولاً محدود", booking: "متعلق به پلتفرم" },
+  { criterion: "صفحات مستقل خدمات", araaye: "سه لندینگ خدمت", template: "محدود یا یک صفحه", booking: "معمولاً ندارد" },
+  { criterion: "قابلیت رشد در گوگل", araaye: "ساختار قابل ایندکس + پنل مقاله", template: "ضعیف", booking: "محدود به پلتفرم" },
+  { criterion: "مسیر تبدیل و CTA", araaye: "تماس، واتساپ، نوبت", template: "ناقص", booking: "فقط نوبت داخلی" },
+  { criterion: "امکان توسعه", araaye: "بله", template: "کم", booking: "محدود" },
+  { criterion: "پشتیبانی مشخص", araaye: "۳۰ روز + قرارداد", template: "مبهم", booking: "پشتیبانی پلتفرم" },
+  { criterion: "زمان‌بندی و قرارداد", araaye: "۲ تا ۷ روز کاری", template: "نامشخص", booking: "آنی ولی وابسته" },
+  { criterion: "قیمت شفاف", araaye: "۲۰ میلیون ثابت", template: "ارزان اول، هزینه بعد", booking: "اشتراک ماهانه" },
+] as const;
+
+export const doctorComparisonFooter =
+  "اگر فقط یک صفحه معرفی ارزان می‌خواهید، آرایه انتخاب مناسبی نیست. اگر می‌خواهید سایت به دارایی رسمی و قابل توسعه مطب تبدیل شود، این پکیج برای شماست.";
+
+export const doctorTrustBarItems = [
+  "جذب بیمار از گوگل",
+  "افزایش درخواست نوبت",
+  "تبدیل بازدیدکننده به مراجعه‌کننده",
+  "ساخت مسیر فروش مطب",
+] as const;
+
+export const doctorHeroTrustChips = [
+  "بدون پرداخت کامل در شروع",
+  "دامنه و سایت به نام پزشک",
+  "نسخه اولیه در ۲ روز",
+] as const;
+
+export type DoctorFormAddon = {
+  key: string;
+  label: string;
+  /** اگر true داخل پکیج ۲۰M است؛ وگرنه «نیازمند برآورد» */
+  inPackage: boolean;
+};
+
+export const doctorFormAddons: DoctorFormAddon[] = [
+  { key: "booking_connect", label: "اتصال نوبت‌دهی", inPackage: true },
+  { key: "content", label: "تولید محتوا", inPackage: false },
+  { key: "monthly_seo", label: "سئوی ماهانه", inPackage: false },
+  { key: "multilingual", label: "چندزبانه", inPackage: false },
+  { key: "photography", label: "عکاسی", inPackage: false },
+  { key: "custom", label: "امکانات اختصاصی", inPackage: false },
+];
+
+export const doctorSeoContentBlocks = [
+  {
+    title: "قیمت طراحی سایت پزشکی چقدر است؟",
+    body: "پکیج مطب تک‌پزشک آرایه قیمت ثابت ۲۰ میلیون تومان دارد: ۳۰٪ شروع (۶ میلیون)، ۴۰٪ بعد از تأیید نسخه اولیه، ۳۰٪ هنگام تحویل. کلینیک چندپزشکه پکیج جداگانه دارد و امکانات اضافه مثل سئوی ماهانه، تولید محتوا یا عکاسی نیازمند برآورد جدا هستند.",
+  },
+  {
+    title: "نمونه سایت پزشکی واقعی چیست؟",
+    body: "نمونه اجراشده قابل‌مشاهده، سایت دکتر عالیه پوردست است. علاوه بر آن، دموهای تخصصی دندانپزشکی، پوست و زیبایی، چشم، کودکان و فیزیوتراپی مسیر معرفی خدمت تا درخواست نوبت را نشان می‌دهند.",
+  },
+  {
+    title: "امکانات سایت پزشکان در این پکیج",
+    body: "هویت اختصاصی، معرفی پزشک و رزومه، سه لندینگ خدمت، مسیر تماس و واتساپ و نوبت، اتصال به سامانه نوبت موجود، پنل مقاله، نقشه مطب، موبایل کامل، سئوی فنی اولیه، دامنه و سرور به نام پزشک، دو مرحله اصلاح و ۳۰ روز رفع ایراد.",
+  },
+  {
+    title: "طراحی سایت نوبت‌دهی پزشکی یعنی چه؟",
+    body: "در این پکیج سامانه نوبت‌دهی اختصاصی ساخته نمی‌شود؛ اگر سامانه دارید، به آن وصل می‌شویم تا بیمار از صفحه خدمت به درخواست نوبت برسد. ساخت نرم‌افزار نوبت جداگانه خارج از پکیج است.",
+  },
+  {
+    title: "طراحی سایت مطب در مقابل طراحی سایت کلینیک",
+    body: "مطب تک‌پزشک با پکیج ۲۰ میلیونی پوشش داده می‌شود. کلینیک چندپزشکه نیاز به ساختار چندپزشک، تقویم مجزا و مدیریت پیچیده‌تر دارد و در صفحه طراحی سایت کلینیک قیمت‌گذاری می‌شود.",
+  },
+  {
+    title: "طراحی سایت برای تخصص‌های مختلف",
+    body: "تخصص‌های بصری (دندان، پوست، زیبایی) روی گالری و مشاوره تمرکز دارند؛ تخصص‌های علمی (زنان، چشم، عفونی و مشابه) روی رزومه، FAQ و نوبت. سایت قالب تکراری پزشکی نیست؛ متناسب با مسیر تصمیم بیمار همان تخصص طراحی می‌شود.",
+  },
+  {
+    title: "سایت پزشکی وردپرسی یا اختصاصی؟",
+    body: "خروجی آرایه سایت اختصاصی با مالکیت دامنه و سرور به نام پزشک است و برای رشد در گوگل و توسعه بعدی انعطاف بیشتری از قالب آماده دارد. انتخاب نهایی بر اساس نیاز مطب و محدوده پروژه هماهنگ می‌شود.",
+  },
+  {
+    title: "مراحل سفارش و مدت تحویل",
+    body: "ارسال اطلاعات مطب، نسخه اولیه در ۲ روز کاری، تأیید و اصلاح، سپس انتشار روی دامنه پزشک. تحویل نهایی معمولاً حدود ۵ تا ۷ روز کاری است.",
+  },
+  {
+    title: "سئو سایت پزشکی از کجا شروع می‌شود؟",
+    body: "سئوی فنی اولیه و ساختار قابل ایندکس داخل پکیج است. تولید مستمر مقاله و سئوی ماهانه خدمت جداست و تضمین رتبه اول گوگل داده نمی‌شود؛ هدف، آماده‌کردن مسیر جذب بیمار از جستجو تا نوبت است.",
+  },
+  {
+    title: "سایت پزشکی یا اینستاگرام؟",
+    body: "اینستاگرام برای نمایش و ارتباط مفید است، اما مقصد قابل ایندکس در گوگل، صفحات خدمت مستقل و مالکیت دارایی دیجیتال نیست. سایت مسیر رسمی مطب را می‌سازد و می‌تواند به اینستاگرام و واتساپ هم وصل شود.",
+  },
+  {
+    title: "سایت اختصاصی یا سامانه‌های عمومی نوبت‌دهی",
+    body: "سامانه عمومی بیشتر برای نوبت است؛ سایت اختصاصی هویت پزشک، صفحات خدمت، رشد گوگل و مالکیت دامنه را می‌دهد و در عین حال می‌تواند به همان سامانه نوبت وصل شود.",
+  },
+] as const;
+
 export const doctorStartingPriceToman = doctorPackages[0].price;
 
-/** @deprecated — فقط کامپوننت legacy DoctorsPatientPath */
+/** @deprecated */
 export const doctorPatientPath = [
   { step: "۱", title: "جستجو", description: "بیمار تخصص یا نام شما را در گوگل جستجو می‌کند." },
   { step: "۲", title: "اعتماد", description: "صفحه خدمات، اطلاعات مطب و نظرات را سریع بررسی می‌کند." },
@@ -350,7 +659,7 @@ export const doctorAuditProcessSteps = [
   { step: "۳", title: "اجرا با محدوده روشن", description: "بعد از توافق روی محدوده کار، اجرا شروع می‌شود." },
 ];
 
-/** @deprecated — فقط کامپوننت legacy */
+/** @deprecated */
 export const doctorProblems = [
   { title: "در گوگل پیدا نمی‌شوید", description: "نام و تخصص در نتایج محلی نیست یا اطلاعات ناقص است." },
   { title: "سایت فقط معرفی است", description: "صفحه خدمات و مسیر درخواست نوبت برای بیمار روشن نیست." },
@@ -358,7 +667,7 @@ export const doctorProblems = [
   { title: "منشی زیر بار سؤالات تکراری است", description: "هزینه، آدرس، بیمه و ساعات مدام تلفنی تکرار می‌شود." },
 ];
 
-/** @deprecated — فقط کامپوننت legacy DoctorsOutputs */
+/** @deprecated */
 export const doctorOutputs = [
   { title: "سایت مطب", description: "معرفی تخصص، خدمات و مسیر درخواست نوبت", href: "/demo" },
   { title: "نمونه واقعی", description: "سایت دکتر عالیه پوردست", href: "https://aliehpourdast.com", external: true },
@@ -377,26 +686,22 @@ export const doctorDiagnosticPaths: DoctorDiagnosticPath[] = [
   {
     key: "foundation",
     title: "مقصد قابل‌اعتماد ندارید",
-    description:
-      "اگر سایت یا صفحه مناسبی برای معرفی خدمات ندارید، ساخت زیرساخت اولیه پیشنهاد می‌شود.",
+    description: "اگر سایت یا صفحه مناسبی برای معرفی خدمات ندارید، ساخت زیرساخت اولیه پیشنهاد می‌شود.",
   },
   {
     key: "visibility",
     title: "سایت دارید اما دیده نمی‌شوید",
-    description:
-      "اگر زیرساخت وجود دارد ولی در جستجو ورودی نمی‌گیرد، مسیر SEO و دیده‌شدن بررسی می‌شود.",
+    description: "اگر زیرساخت وجود دارد ولی در جستجو ورودی نمی‌گیرد، مسیر SEO و دیده‌شدن بررسی می‌شود.",
   },
   {
     key: "conversion",
     title: "بازدید دارید اما درخواست نوبت کم است",
-    description:
-      "در این حالت اولویت با اصلاح صفحات خدمات، CTA و مسیر تماس یا نوبت است.",
+    description: "اولویت با اصلاح صفحات خدمات، CTA و مسیر تماس یا نوبت است.",
   },
   {
     key: "custom",
     title: "کلینیک چندپزشکه یا نیاز پیچیده دارید",
-    description:
-      "برای چند پزشک، چند شعبه یا اتصال به سیستم‌های دیگر، محدوده اختصاصی تعریف می‌شود.",
+    description: "برای چند پزشک، چند شعبه یا اتصال به سیستم‌های دیگر، محدوده اختصاصی تعریف می‌شود.",
   },
 ];
 
@@ -404,26 +709,25 @@ export const doctorAfterReportTrust =
   "اگر مشکل مهمی وجود نداشته باشد، فقط چک‌لیست اصلاحات را دریافت می‌کنید و پیشنهادی برای اجرا ارسال نمی‌شود.";
 
 export const doctorCooperationNote =
-  "سفارش از طریق واتساپ ثبت می‌شود. جزئیات پرداخت و محتوا در شروع پروژه هماهنگ می‌شود.";
+  "شروع با پیش‌پرداخت ۶ میلیون؛ ادامه پرداخت بعد از تأیید نسخه اولیه. جزئیات در واتساپ یا فرم هماهنگ می‌شود.";
 
 export const doctorAuditCooperationNote =
   "گزارش رایگان است. اجرای پیشنهادها فقط در صورت درخواست شما، با محدوده و قیمت جداگانه ارائه می‌شود.";
 
 export const doctorSuitableFor = [
-  "پزشک یا مدیری که نمی‌داند مشکل اصلی سایت، دیده‌شدن یا مسیر نوبت است.",
-  "مطبی که قصد دارد طی ماه‌های آینده حضور آنلاین خود را اصلاح کند.",
-  "پزشک یا کلینیکی که سایت ندارد یا از نتیجه سایت فعلی راضی نیست.",
+  "پزشکی که می‌خواهد از گوگل بیمار جذب کند و درخواست نوبت بگیرد.",
+  "مطبی که سایت ندارد یا سایت فعلی مسیر فروش ندارد.",
+  "پزشکی که می‌خواهد با پیش‌پرداخت مشخص و نسخه اولیه سریع شروع کند.",
 ];
 
 export const doctorNotSuitableFor = [
-  "افرادی که فقط دنبال یک عدد یا گزارش فنی سئو هستند.",
+  "کسانی که فقط یک صفحه معرفی خیلی ارزان می‌خواهند.",
   "کسب‌وکارهای خارج از حوزه پزشکی.",
-  "افرادی که در حال حاضر قصد بررسی یا اصلاح حضور آنلاین خود را ندارند.",
+  "کسانی که فعلاً قصد اقدام و شروع پروژه ندارند.",
 ];
 
 export type DoctorNeedKey = "booking" | "site" | "chatbot" | "patients";
 
-/** برای فرم پکیج (checkout) — در لندینگ اصلی استفاده نمی‌شود */
 export const doctorNeeds: { key: DoctorNeedKey; label: string }[] = [
   { key: "booking", label: "نوبت‌دهی آنلاین" },
   { key: "site", label: "سایت و معرفی تخصص" },
@@ -439,34 +743,54 @@ export interface DoctorFaqItem {
 export const doctorFaq: DoctorFaqItem[] = [
   {
     q: "دقیقاً چه چیزی تحویل می‌گیرم؟",
-    a: "سایت اختصاصی مطب با حداکثر ۸ صفحه، معرفی پزشک و خدمات، پنل انتشار مقاله، دکمه واتساپ یا درخواست نوبت، اتصال به سامانه نوبت موجود، نقشه، سئوی فنی اولیه، دامنه و سرور به نام شما، دو مرحله اصلاح و ۳۰ روز پشتیبانی.",
+    a: "سایت اختصاصی مطب با حداکثر ۸ صفحه، معرفی پزشک و رزومه، سه صفحه خدمت، پنل مقاله، مسیر تماس/واتساپ/نوبت، اتصال به سامانه نوبت موجود، نقشه، سئوی فنی اولیه، دامنه و سرور به نام شما، دو مرحله اصلاح و ۳۰ روز رفع ایراد.",
   },
   {
-    q: "نسخه اول چند روزه آماده می‌شود؟",
-    a: "نسخه اولیه طی ۲ روز کاری پس از دریافت اطلاعات اولیه آماده می‌شود. تحویل نهایی معمولاً ۵ تا ۷ روز کاری پس از دریافت محتوا است.",
+    q: "نسخه اولیه و تحویل نهایی چند روز طول می‌کشد؟",
+    a: "نسخه اولیه طی ۲ روز کاری پس از دریافت اطلاعات آماده می‌شود. تحویل نهایی معمولاً حدود ۵ تا ۷ روز کاری است.",
   },
   {
-    q: "دامنه و سرور به نام من است؟",
-    a: "بله. دامنه و سرور به نام پزشک ثبت می‌شود و مالکیت کامل سایت برای شماست.",
+    q: "با چه مبلغی می‌توانم شروع کنم؟",
+    a: "شروع پروژه با ۳۰٪ یعنی ۶ میلیون تومان است. ۴۰٪ بعدی فقط بعد از دیدن و تأیید نسخه اولیه، و ۳۰٪ هنگام تحویل نهایی پرداخت می‌شود.",
   },
   {
-    q: "اتصال به سامانه نوبت موجودم ممکن است؟",
-    a: "بله. اگر سامانه نوبت‌دهی دارید، لینک یا اتصال آن در سایت قرار می‌گیرد.",
+    q: "دامنه و سایت به نام چه کسی است؟",
+    a: "دامنه و سرور به نام پزشک ثبت می‌شود و مالکیت کامل سایت برای شماست.",
   },
   {
-    q: "سئوی اولیه شامل چه چیزهایی است؟",
-    a: "ساختار قابل ایندکس، تنظیمات فنی پایه و آماده‌سازی صفحات برای جستجو. تولید محتوا و رقابت روی عبارت‌های تخصصی خدمت جداگانه است و تضمین رتبه اول گوگل نمی‌دهیم.",
+    q: "آیا سیستم نوبت‌دهی داخل پکیج است؟",
+    a: "ساخت سامانه نوبت‌دهی اختصاصی داخل پکیج نیست. اگر سامانه دارید، لینک یا اتصال آن در سایت قرار می‌گیرد.",
+  },
+  {
+    q: "تفاوت اتصال نوبت‌دهی با ساخت سامانه اختصاصی چیست؟",
+    a: "اتصال یعنی لینک یا یکپارچه‌سازی با سامانه‌ای که از قبل دارید. ساخت سامانه اختصاصی نرم‌افزار جداگانه است و خارج از این پکیج برآورد می‌شود.",
+  },
+  {
+    q: "سئوی اولیه شامل چه مواردی است؟",
+    a: "ساختار قابل ایندکس، تنظیمات فنی پایه و آماده‌سازی صفحات برای جستجو. تضمین رتبه اول گوگل نمی‌دهیم.",
+  },
+  {
+    q: "تولید محتوا و سئوی ماهانه داخل قیمت است؟",
+    a: "خیر. تولید مستمر مقاله و اجرای ماهانه سئو خارج از پکیج و نیازمند برآورد جدا هستند.",
   },
   {
     q: "پرداخت چگونه انجام می‌شود؟",
-    a: "پرداخت مرحله‌ای: ۳۰٪ شروع پروژه، ۴۰٪ پس از تأیید نسخه اولیه، ۳۰٪ هنگام تحویل نهایی. جزئیات را در واتساپ هماهنگ می‌کنیم.",
+    a: "۳۰٪ شروع (۶ میلیون)، ۴۰٪ بعد از تأیید نسخه اولیه، ۳۰٪ هنگام تحویل نهایی.",
+  },
+  {
+    q: "بعد از تحویل چه پشتیبانی‌ای داریم؟",
+    a: "۳۰ روز رفع ایراد و پشتیبانی اولیه پس از تحویل در پکیج است.",
+  },
+  {
+    q: "آیا سایت کلینیک چندپزشکه هم با همین قیمت است؟",
+    a: "خیر. این قیمت مخصوص مطب تک‌پزشک است. برای کلینیک چندپزشکه پکیج جداگانه در صفحه طراحی سایت کلینیک ارائه می‌شود.",
   },
 ];
 
 export const doctorAuditFaq: DoctorFaqItem[] = [
   {
     q: "بررسی رایگان دقیقاً شامل چه چیزهایی است؟",
-    a: "وضعیت دیده‌شدن در جستجو، اطلاعات عمومی مطب، معرفی خدمات و مسیر تماس یا درخواست نوبت بررسی می‌شود. در پایان، مشکل اصلی و سه اقدام اولویت‌دار دریافت می‌کنید.",
+    a: "وضعیت دیده‌شدن در جستجو، اطلاعات عمومی مطب، معرفی خدمات و مسیر تماس یا درخواست نوبت بررسی می‌شود.",
   },
   {
     q: "آیا باید از قبل سایت داشته باشم؟",
@@ -482,11 +806,11 @@ export const doctorAuditFaq: DoctorFaqItem[] = [
   },
   {
     q: "آیا اجرای پیشنهادها اجباری است؟",
-    a: "خیر. گزارش رایگان و بدون تعهد است و می‌توانید پیشنهادها را خودتان یا با تیم دیگری اجرا کنید.",
+    a: "خیر. گزارش رایگان و بدون تعهد است.",
   },
   {
     q: "برای بررسی چه اطلاعاتی لازم است؟",
-    a: "نام پزشک یا کلینیک و یکی از مسیرهای فعلی مانند سایت، اینستاگرام یا پروفایل پزشکی کافی است. فقط اطلاعات عمومی بررسی می‌شود.",
+    a: "نام پزشک یا کلینیک و یکی از مسیرهای فعلی مانند سایت، اینستاگرام یا پروفایل پزشکی کافی است.",
   },
 ];
 
@@ -494,7 +818,6 @@ export function formatToman(n: number): string {
   return n.toLocaleString("en-US").replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
 }
 
-/** ساخت رشته detail برای API لید */
 export function buildDoctorsLeadDetail(
   identity: string,
   currentPresence?: DoctorPresenceKey | "",

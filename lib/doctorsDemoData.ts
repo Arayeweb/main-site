@@ -1,8 +1,8 @@
 // داده لندینگ یک‌صفحه‌ای دموی تخصص‌های پزشکان — فقط hero و trust bullets.
 
 import { demoSites } from "@/lib/demoData";
-import { pedBrand } from "@/lib/showdemoto/pediatric/config";
-import { sfBrand } from "@/lib/showdemoto/salamat-farda/config";
+import { pedBrand, pedImages } from "@/lib/showdemoto/pediatric/config";
+import { sfBrand, sfImages } from "@/lib/showdemoto/salamat-farda/config";
 
 export type DoctorDemoKey =
   | "dentist"
@@ -12,7 +12,7 @@ export type DoctorDemoKey =
   | "pediatric"
   | "physiotherapy";
 
-export type DoctorDemoAccent = "cyan" | "sky" | "violet" | "teal" | "brand";
+export type DoctorDemoAccent = "cyan" | "sky" | "teal" | "brand" | "slate";
 
 export interface DoctorDemoAccentClasses {
   bg: string;
@@ -25,6 +25,7 @@ export interface DoctorDemoAccentClasses {
   gradientVia: string;
   heroPanel: string;
   iconBg: string;
+  ring: string;
 }
 
 export interface DoctorDemoLandingContent {
@@ -39,63 +40,55 @@ export interface DoctorDemoLandingContent {
   heroTitleAccent: string;
   heroSubtitle: string;
   heroCta: string;
+  heroImage: string;
+  heroImageAlt: string;
   trustBullets: string[];
   previewUrl: string;
-  specialtyIcon: string;
 }
 
 export const doctorDemoAccentConfig: Record<DoctorDemoAccent, DoctorDemoAccentClasses> = {
   cyan: {
-    bg: "bg-cyan-600",
-    hoverBg: "hover:bg-cyan-700",
-    text: "text-cyan-600",
+    bg: "bg-cyan-700",
+    hoverBg: "hover:bg-cyan-800",
+    text: "text-cyan-700",
     badgeBg: "bg-cyan-50",
-    badgeText: "text-cyan-700",
+    badgeText: "text-cyan-800",
     softBg: "bg-cyan-50",
     gradientFrom: "from-cyan-50/80",
     gradientVia: "via-white",
     heroPanel: "from-cyan-100 to-cyan-50",
     iconBg: "bg-cyan-100 text-cyan-700",
+    ring: "ring-cyan-200/60",
   },
   sky: {
-    bg: "bg-sky-600",
-    hoverBg: "hover:bg-sky-700",
-    text: "text-sky-600",
+    bg: "bg-sky-700",
+    hoverBg: "hover:bg-sky-800",
+    text: "text-sky-700",
     badgeBg: "bg-sky-50",
-    badgeText: "text-sky-700",
+    badgeText: "text-sky-800",
     softBg: "bg-sky-50",
     gradientFrom: "from-sky-50/80",
     gradientVia: "via-white",
     heroPanel: "from-sky-100 to-sky-50",
     iconBg: "bg-sky-100 text-sky-700",
-  },
-  violet: {
-    bg: "bg-violet-600",
-    hoverBg: "hover:bg-violet-700",
-    text: "text-violet-600",
-    badgeBg: "bg-violet-50",
-    badgeText: "text-violet-700",
-    softBg: "bg-violet-50",
-    gradientFrom: "from-violet-50/80",
-    gradientVia: "via-white",
-    heroPanel: "from-violet-100 to-violet-50",
-    iconBg: "bg-violet-100 text-violet-700",
+    ring: "ring-sky-200/60",
   },
   teal: {
-    bg: "bg-teal-600",
-    hoverBg: "hover:bg-teal-700",
-    text: "text-teal-600",
+    bg: "bg-teal-700",
+    hoverBg: "hover:bg-teal-800",
+    text: "text-teal-700",
     badgeBg: "bg-teal-50",
-    badgeText: "text-teal-700",
+    badgeText: "text-teal-800",
     softBg: "bg-teal-50",
     gradientFrom: "from-teal-50/80",
     gradientVia: "via-white",
     heroPanel: "from-teal-100 to-teal-50",
     iconBg: "bg-teal-100 text-teal-700",
+    ring: "ring-teal-200/60",
   },
   brand: {
-    bg: "bg-brand-600",
-    hoverBg: "hover:bg-brand-700",
+    bg: "bg-navy-900",
+    hoverBg: "hover:bg-navy-800",
     text: "text-brand-600",
     badgeBg: "bg-brand-50",
     badgeText: "text-brand-700",
@@ -104,6 +97,20 @@ export const doctorDemoAccentConfig: Record<DoctorDemoAccent, DoctorDemoAccentCl
     gradientVia: "via-white",
     heroPanel: "from-brand-100 to-brand-50",
     iconBg: "bg-brand-100 text-brand-700",
+    ring: "ring-brand-200/60",
+  },
+  slate: {
+    bg: "bg-navy-900",
+    hoverBg: "hover:bg-navy-800",
+    text: "text-navy-700",
+    badgeBg: "bg-navy-50",
+    badgeText: "text-navy-700",
+    softBg: "bg-navy-50",
+    gradientFrom: "from-navy-50/80",
+    gradientVia: "via-white",
+    heroPanel: "from-navy-100 to-navy-50",
+    iconBg: "bg-navy-100 text-navy-700",
+    ring: "ring-navy-200/60",
   },
 };
 
@@ -122,9 +129,11 @@ export const doctorDemoLandings: Record<DoctorDemoKey, DoctorDemoLandingContent>
     heroTitleAccent: dentist.heroTitleAccent,
     heroSubtitle: dentist.heroSubtitle,
     heroCta: dentist.heroCtaPrimary,
+    heroImage:
+      "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1600&q=85",
+    heroImageAlt: "فضای کلینیک دندان‌پزشکی با تجهیزات مدرن",
     trustBullets: dentist.credentials.slice(0, 3),
     previewUrl: "araaye.com/doctors/demo/dentist",
-    specialtyIcon: "🦷",
   },
   "dentist-kordian": {
     key: "dentist-kordian",
@@ -139,13 +148,15 @@ export const doctorDemoLandings: Record<DoctorDemoKey, DoctorDemoLandingContent>
     heroSubtitle:
       "سایت چندزبانه برای معرفی خدمات، مسیر نوبت و ارتباط شفاف با بیماران خارج از کشور.",
     heroCta: "رزرو مشاوره آنلاین",
+    heroImage:
+      "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1600&q=85",
+    heroImageAlt: "کلینیک دندان‌پزشکی آماده پذیرش بیماران بین‌المللی",
     trustBullets: [
       "محتوای فارسی، انگلیسی و روسی",
       "مسیر نوبت و تماس برای بیماران خارجی",
       "معرفی خدمات با زبان ساده و حرفه‌ای",
     ],
     previewUrl: "araaye.com/doctors/demo/dentist-kordian",
-    specialtyIcon: "🌐",
   },
   ophthalmology: {
     key: "ophthalmology",
@@ -159,13 +170,14 @@ export const doctorDemoLandings: Record<DoctorDemoKey, DoctorDemoLandingContent>
     heroTitleAccent: "مسیر درمان شفاف‌تر",
     heroSubtitle: sfBrand.tagline,
     heroCta: "درخواست مشاوره",
+    heroImage: sfImages.hero,
+    heroImageAlt: sfImages.heroAlt,
     trustBullets: [
       "معرفی خدمات تخصصی با عنوان‌های قابل جستجو",
       "گالری قبل و بعد و مسیر تماس یکدست",
       "اطلاعات مطب و ساعات کاری شفاف",
     ],
     previewUrl: "araaye.com/doctors/demo/ophthalmology",
-    specialtyIcon: "👁️",
   },
   dermatology: {
     key: "dermatology",
@@ -173,20 +185,22 @@ export const doctorDemoLandings: Record<DoctorDemoKey, DoctorDemoLandingContent>
     doctorName: "دکتر مریم نورایی",
     doctorTitle: "متخصص پوست، مو و زیبایی",
     city: "تهران، فرمانیه",
-    accent: "violet",
+    accent: "slate",
     heroBadge: "درمان تخصصی پوست و زیبایی",
     heroTitle: "پوست سالم،",
     heroTitleAccent: "اعتماد بیشتر",
     heroSubtitle:
       "معرفی خدمات درمانی و زیبایی با مسیر مشاوره و نوبت آنلاین — برای بیمارانی که قبل از مراجعه اطلاعات می‌خواهند.",
     heroCta: "رزرو مشاوره",
+    heroImage:
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1600&q=85",
+    heroImageAlt: "فضای آرام کلینیک پوست و زیبایی",
     trustBullets: [
       "صفحات مجزا برای خدمات اصلی",
       "معرفی پزشک و سوابق تخصصی",
       "دکمه ثابت واتساپ و درخواست نوبت",
     ],
     previewUrl: "araaye.com/doctors/demo/dermatology",
-    specialtyIcon: "✨",
   },
   pediatric: {
     key: "pediatric",
@@ -200,13 +214,14 @@ export const doctorDemoLandings: Record<DoctorDemoKey, DoctorDemoLandingContent>
     heroTitleAccent: "اولویت ماست",
     heroSubtitle: pedBrand.tagline,
     heroCta: "رزرو نوبت آنلاین",
+    heroImage: pedImages.hero,
+    heroImageAlt: pedImages.heroAlt,
     trustBullets: [
       "معرفی گروه‌های سنی و خدمات مطب",
       "محیط آرام و اطلاعات شفاف برای والدین",
       "مسیر تماس و نوبت‌دهی ساده",
     ],
     previewUrl: "araaye.com/doctors/demo/pediatric",
-    specialtyIcon: "🧸",
   },
   physiotherapy: {
     key: "physiotherapy",
@@ -221,13 +236,15 @@ export const doctorDemoLandings: Record<DoctorDemoKey, DoctorDemoLandingContent>
     heroSubtitle:
       "معرفی خدمات فیزیوتراپی، مسیر ارزیابی اولیه و درخواست نوبت — برای بیمارانی که قبل از مراجعه می‌خواهند بدانند چه انتظاری دارند.",
     heroCta: "درخواست ارزیابی",
+    heroImage:
+      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1600&q=85",
+    heroImageAlt: "جلسه فیزیوتراپی تخصصی در کلینیک",
     trustBullets: [
       "معرفی روش‌های درمان و شرایط مراجعه",
       "اطلاعات آدرس، ساعات و بیمه",
       "فرم درخواست نوبت یا تماس سریع",
     ],
     previewUrl: "araaye.com/doctors/demo/physiotherapy",
-    specialtyIcon: "💪",
   },
 };
 

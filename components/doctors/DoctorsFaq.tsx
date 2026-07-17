@@ -18,7 +18,7 @@ export default function DoctorsFaq({
       <div className="container-mx container-px">
         <SectionHeader
           badge="سؤالات پرتکرار"
-          badgeClassName="bg-sky-50 text-sky-700"
+          badgeClassName="bg-cyan-50 text-cyan-800"
           title={title}
         />
 

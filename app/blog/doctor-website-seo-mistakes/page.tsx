@@ -228,7 +228,7 @@ export default function DoctorWebsiteSeoMistakesPage() {
                     سئو سایت پزشکان
                   </a>
                   <a
-                    href="/website/doctor"
+                    href="/doctors"
                     className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-5 py-2.5 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
                   >
                     طراحی سایت پزشک

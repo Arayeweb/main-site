@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import DoctorsHeader from "@/components/doctors/DoctorsHeader";
 import DoctorsHero from "@/components/doctors/DoctorsHero";
+import DoctorsTrustBar from "@/components/doctors/DoctorsTrustBar";
+import DoctorsUrgencyBar from "@/components/doctors/DoctorsUrgencyBar";
 import DoctorsSalesSections from "@/components/doctors/DoctorsSalesSections";
 import DoctorsExitIntent from "@/components/doctors/DoctorsExitIntent";
 import DoctorsStickyCta from "@/components/doctors/DoctorsStickyCta";
@@ -13,24 +15,26 @@ import {
 } from "@/lib/doctorsData";
 
 export const metadata: Metadata = {
-  title: "طراحی سایت مطب پزشکان | ۲۰ میلیون — تحویل ۲ روز — آرایه",
+  title: {
+    absolute: "طراحی سایت پزشکی | نمونه‌کار + قیمت ۲۰ میلیون | آرایه",
+  },
   description:
-    "سایت اختصاصی مطب با تحویل ۲ روز کاری، پنل مقاله، واتساپ و اتصال نوبت. پکیج ۲۰ میلیون تومان با پرداخت مرحله‌ای. سفارش در واتساپ.",
+    "طراحی سایت اختصاصی پزشکان و مطب با صفحات خدمات، اتصال نوبت‌دهی، پنل مقاله و سئوی فنی. قیمت ثابت ۲۰ میلیون، شروع با ۶ میلیون و نسخه اولیه در ۲ روز کاری.",
   alternates: {
-    canonical: "/doctors",
+    canonical: "https://araaye.com/doctors",
   },
   openGraph: {
-    title: "طراحی سایت مطب پزشکان — ۲۰ میلیون تومان — آرایه",
+    title: "طراحی سایت پزشکی | نمونه‌کار + قیمت ۲۰ میلیون | آرایه",
     description:
-      "سایت اختصاصی مطب؛ نسخه اول در ۲ روز کاری. دمو تخصصی، قیمت شفاف، سفارش در واتساپ.",
-    url: "/doctors",
+      "جذب بیمار از گوگل تا درخواست نوبت. قیمت ثابت ۲۰ میلیون، شروع با ۶ میلیون، نسخه اولیه در ۲ روز.",
+    url: "https://araaye.com/doctors",
     type: "website",
     locale: "fa_IR",
   },
   twitter: {
     card: "summary_large_image",
-    title: "طراحی سایت مطب پزشکان — آرایه",
-    description: "پکیج ۲۰ میلیون — تحویل ۲ روز — سفارش در واتساپ",
+    title: "طراحی سایت پزشکی | نمونه‌کار + قیمت ۲۰ میلیون | آرایه",
+    description: "شروع با ۶ میلیون — نسخه اولیه در ۲ روز — مالکیت کامل پزشک.",
   },
 };
 
@@ -38,11 +42,17 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Product",
-      name: "پکیج سایت مطب تک‌پزشک",
+      "@type": "Service",
+      name: "طراحی سایت پزشکی",
       description:
-        "طراحی سایت اختصاصی مطب با صفحات خدمات، پنل مقاله، واتساپ، اتصال نوبت و سئوی فنی اولیه.",
-      brand: { "@type": "Brand", name: "آرایه" },
+        "طراحی سایت اختصاصی مطب تک‌پزشک برای جذب بیمار از گوگل و تبدیل بازدید به درخواست نوبت.",
+      provider: {
+        "@type": "Organization",
+        name: "آرایه",
+        url: "https://araaye.com",
+      },
+      areaServed: "IR",
+      url: "https://araaye.com/doctors",
       offers: {
         "@type": "Offer",
         price: String(tomanToIrr(DOCTORS_PRODUCT_PRICE_TOMAN)),
@@ -55,7 +65,12 @@ const jsonLd = {
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "آرایه", item: "https://araaye.com/" },
-        { "@type": "ListItem", position: 2, name: "پزشکان و مطب‌ها", item: "https://araaye.com/doctors" },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "طراحی سایت پزشکی",
+          item: "https://araaye.com/doctors",
+        },
       ],
     },
     {
@@ -78,8 +93,10 @@ export default function DoctorsPage() {
       />
       <DoctorsPageAnalytics />
       <DoctorsHeader />
-      <main className="pb-20 sm:pb-0">
+      <main className="pb-24 sm:pb-0">
         <DoctorsHero />
+        <DoctorsUrgencyBar />
+        <DoctorsTrustBar />
         <DoctorsSalesSections />
       </main>
       <Footer />

@@ -10,13 +10,14 @@ import { buildSitemapEntries, isSitemapExcludedPath } from "@/lib/sitemapRoutes"
 import { PRODUCTION_SITE_URL, SITE_URL, canonicalUrl } from "@/lib/siteUrl";
 
 describe("programmaticPages", () => {
-  it("publishes exactly 6 website and 5 seo industry pages per spec", () => {
+  it("publishes exactly 5 website and 5 seo industry pages per spec", () => {
     expect(getPublishedIndustryPages("website").map((p) => p.slug).sort()).toEqual(
-      ["beauty-clinic", "clinic", "dentist", "doctor", "lawyer", "restaurant"].sort(),
+      ["beauty-clinic", "clinic", "dentist", "lawyer", "restaurant"].sort(),
     );
     expect(getPublishedIndustryPages("seo").map((p) => p.slug).sort()).toEqual(
       ["beauty-clinic", "clinic", "dentist", "doctor", "lawyer"].sort(),
     );
+    expect(isPublishedIndustryPage("website", "doctor")).toBe(false);
   });
 
   it("marks draft industries as noindex candidates", () => {
@@ -72,7 +73,7 @@ describe("canonical domain safety", () => {
       "/seo/doctor",
       "/seo/dentist",
       "/website-design",
-      "/website/doctor",
+      "/doctors",
       "/website/lawyer",
       "/fastweb",
       "/modares",

@@ -33,11 +33,13 @@ export function scoreLeadFromPayload(input: LeadScoreInput): {
   if (source.startsWith("fastweb")) score += 50;
   if (
     source.includes("doctors_audit") ||
+    source.includes("doctors_direct_sale") ||
     source.includes("seo_audit") ||
     source.includes("free_seo_audit")
   ) {
     score += 35;
   }
+  if ((input.goal || "").toLowerCase() === "medical_website_quote") score += 20;
   if (input.goal?.trim() && input.intent?.trim()) score += 15;
   if (input.detail && input.detail.length > 80) score += 10;
 

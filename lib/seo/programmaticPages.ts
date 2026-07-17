@@ -19,7 +19,7 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
   {
     slug: "doctor",
     productType: "website",
-    status: "published",
+    status: "draft",
     primaryKeyword: "طراحی سایت پزشک",
     secondaryKeywords: [
       "طراحی سایت پزشکی",
@@ -39,7 +39,7 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
       "وب‌سایت کلینیک",
       "سایت نوبت‌دهی کلینیک",
     ],
-    relatedSlugs: ["doctor", "dentist", "beauty-clinic"],
+    relatedSlugs: ["dentist", "beauty-clinic", "lawyer"],
   },
   {
     slug: "beauty-clinic",
@@ -52,7 +52,7 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
       "سایت کلینیک زیبایی",
       "نمونه سایت کلینیک زیبایی",
     ],
-    relatedSlugs: ["clinic", "dentist", "doctor"],
+    relatedSlugs: ["clinic", "dentist", "lawyer"],
   },
   {
     slug: "dentist",
@@ -65,7 +65,7 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
       "سایت دندانپزشکی",
       "سایت نوبت‌دهی دندانپزشک",
     ],
-    relatedSlugs: ["clinic", "doctor", "beauty-clinic"],
+    relatedSlugs: ["clinic", "beauty-clinic", "lawyer"],
   },
   {
     slug: "lawyer",
@@ -78,7 +78,7 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
       "طراحی سایت وکیل خانواده",
       "نمونه طراحی سایت وکیل",
     ],
-    relatedSlugs: ["restaurant", "doctor", "clinic"],
+    relatedSlugs: ["restaurant", "clinic", "beauty-clinic"],
   },
   {
     slug: "restaurant",
