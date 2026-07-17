@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { IconCheck } from "@/components/icons";
+
+const COVER_SRC = "/assets/blog/local-seo-for-doctors.jpg";
+const COVER_URL = `https://araaye.com${COVER_SRC}`;
 
 export const metadata: Metadata = {
   title: { absolute: "لوکال سئو برای پزشکان؛ چطور در جستجوهای محلی بهتر دیده شویم؟" },
@@ -17,11 +21,13 @@ export const metadata: Metadata = {
     url: "https://araaye.com/blog/local-seo-for-doctors",
     type: "article",
     locale: "fa_IR",
+    images: [{ url: COVER_URL }],
   },
   twitter: {
     card: "summary_large_image",
     title: "لوکال سئو برای پزشکان؛ چطور در جستجوهای محلی بهتر دیده شویم؟",
     description: "چک‌لیست عملی لوکال سئو برای پزشکان.",
+    images: [COVER_URL],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -61,7 +67,7 @@ const jsonLd = {
         "@type": "WebPage",
         "@id": "https://araaye.com/blog/local-seo-for-doctors",
       },
-      image: "https://araaye.com/assets/og-cover.svg",
+      image: COVER_URL,
     },
     {
       "@type": "BreadcrumbList",
@@ -120,6 +126,17 @@ export default function LocalSeoForDoctorsPage() {
                 خیلی از بیماران دنبال «نزدیک من» یا «در این محله» هستند. اگر اطلاعات مطب شما دقیق نباشد یا
                 سیگنال‌های محلی در سایت و پروفایل‌ها کامل نباشد، حتی با محتوای خوب هم ممکن است دیده نشوید.
               </p>
+            </div>
+
+            <div className="relative mt-6 aspect-[1280/560] overflow-hidden rounded-2xl bg-navy-50">
+              <Image
+                src={COVER_SRC}
+                alt="لوکال سئو برای پزشکان"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 760px"
+                priority
+              />
             </div>
 
             <section className="mt-8">

@@ -42,10 +42,10 @@ function PostCover({ post, className }: { post: BlogPost; className?: string }) 
         width={640}
         height={360}
         loading="lazy"
-        className="h-full w-full object-cover opacity-90"
+        className="h-full w-full object-cover"
         aria-hidden="true"
       />
-      <span className="absolute bottom-4 right-4 rounded-lg bg-white/15 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+      <span className="absolute top-3 right-3 rounded-lg bg-brand-700/95 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
         {post.category}
       </span>
     </div>
@@ -117,29 +117,31 @@ export default function BlogIndexContent() {
 
   return (
     <>
-      <section className="relative overflow-hidden border-b border-navy-100 bg-gradient-to-b from-navy-50/80 via-white to-white pt-10 pb-12 sm:pt-14 sm:pb-16">
+      <section className="relative overflow-hidden bg-navy-900 text-white">
         <div
-          className="pointer-events-none absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-brand-200/25 blur-3xl"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_120%_at_85%_-10%,theme(colors.navy.600)_0%,theme(colors.navy.800)_45%,theme(colors.navy.900)_100%)]"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute top-32 -right-16 h-56 w-56 rounded-full bg-navy-200/30 blur-3xl"
+          className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:100%_34px] [mask-image:linear-gradient(to_bottom,transparent,#000_30%,#000_70%,transparent)]"
           aria-hidden="true"
         />
 
-        <div className="container-mx container-px relative max-w-3xl text-center">
-          <p className="text-sm font-semibold text-brand-700">بلاگ آرایه</p>
-          <h1 className="mt-3 text-balance text-3xl font-extrabold leading-[1.3] tracking-tight text-navy-900 sm:text-4xl lg:text-[2.75rem]">
-            راهنمای عملی رشد آنلاین کسب‌وکار شما
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-500 sm:text-lg">
-            هر هفته یاد می‌گیرید چطور سایت‌تان دیده شود، اعتماد بسازد و مشتری بیاورد: از سئو و طراحی
-            تبدیل‌محور تا چت‌بات هوشمند و اتوماسیون فروش.
-          </p>
+        <div className="container-mx container-px relative py-10 sm:py-14">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-bold tracking-wide text-brand-300">بلاگ آرایه</p>
+            <h1 className="mt-3 text-balance text-3xl font-extrabold leading-[1.35] tracking-tight sm:text-4xl lg:text-[2.6rem]">
+              راهنمای عملی رشد آنلاین کسب‌وکار شما
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
+              هر هفته یاد می‌گیرید چطور سایت‌تان دیده شود، اعتماد بسازد و مشتری بیاورد: از سئو و
+              طراحی تبدیل‌محور تا چت‌بات هوشمند و اتوماسیون فروش.
+            </p>
+          </div>
         </div>
       </section>
 
-      <section className="border-b border-navy-50 bg-white py-5" aria-label="موضوعات">
+      <section className="border-b border-navy-100 bg-white py-4 sm:py-5" aria-label="موضوعات">
         <div className="container-mx container-px">
           <div className="flex flex-wrap items-center justify-center gap-2">
             {blogTopics.map((topic) => {
@@ -170,7 +172,7 @@ export default function BlogIndexContent() {
         </div>
       </section>
 
-      <section className="bg-white py-10 sm:py-14" id="posts">
+      <section className="bg-white py-8 sm:py-12" id="posts">
         <div className="container-mx container-px space-y-8">
           {featured && <FeaturedCard post={featured} />}
 

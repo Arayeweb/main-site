@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { IconCheck } from "@/components/icons";
+
+const COVER_SRC = "/assets/blog/clinic-seo-checklist.jpg";
+const COVER_URL = `https://araaye.com${COVER_SRC}`;
 
 export const metadata: Metadata = {
   title: {
@@ -19,11 +23,13 @@ export const metadata: Metadata = {
     url: "https://araaye.com/blog/clinic-seo-checklist",
     type: "article",
     locale: "fa_IR",
+    images: [{ url: COVER_URL }],
   },
   twitter: {
     card: "summary_large_image",
     title: "چک‌لیست سئو کلینیک؛ از سرچ گوگل تا رزرو وقت",
     description: "چک‌لیست عملی برای سئو کلینیک‌ها.",
+    images: [COVER_URL],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -64,7 +70,7 @@ const jsonLd = {
         "@type": "WebPage",
         "@id": "https://araaye.com/blog/clinic-seo-checklist",
       },
-      image: "https://araaye.com/assets/og-cover.svg",
+      image: COVER_URL,
     },
     {
       "@type": "BreadcrumbList",
@@ -124,6 +130,17 @@ export default function ClinicSeoChecklistPage() {
                 رزرو کند، به چه بخش‌هایی دسترسی دارد و چرا این کلینیک قابل اعتماد است. اگر این مسیر واضح نباشد، ترافیک
                 می‌آید ولی رزرو کم می‌شود.
               </p>
+            </div>
+
+            <div className="relative mt-6 aspect-[1280/560] overflow-hidden rounded-2xl bg-navy-50">
+              <Image
+                src={COVER_SRC}
+                alt="چک‌لیست سئو کلینیک"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 760px"
+                priority
+              />
             </div>
 
             <section className="mt-8">

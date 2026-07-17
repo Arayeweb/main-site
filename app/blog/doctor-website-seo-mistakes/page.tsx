@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { IconCheck } from "@/components/icons";
+
+const COVER_SRC = "/assets/blog/doctor-website-seo-mistakes.jpg";
+const COVER_URL = `https://araaye.com${COVER_SRC}`;
 
 export const metadata: Metadata = {
   title: {
@@ -19,12 +23,14 @@ export const metadata: Metadata = {
     url: "https://araaye.com/blog/doctor-website-seo-mistakes",
     type: "article",
     locale: "fa_IR",
+    images: [{ url: COVER_URL }],
   },
   twitter: {
     card: "summary_large_image",
     title: "۷ اشتباه رایج سئو سایت پزشکان که باعث از دست رفتن بیمار می‌شود",
     description:
       "۷ اشتباه رایج در سئو و ساختار سایت پزشکان که باعث می‌شود بیمار از مسیر گوگل خارج شود.",
+    images: [COVER_URL],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -65,7 +71,7 @@ const jsonLd = {
         "@type": "WebPage",
         "@id": "https://araaye.com/blog/doctor-website-seo-mistakes",
       },
-      image: "https://araaye.com/assets/og-cover.svg",
+      image: COVER_URL,
     },
     {
       "@type": "BreadcrumbList",
@@ -130,6 +136,17 @@ export default function DoctorWebsiteSeoMistakesPage() {
                 نوبت بگیرد. اگر سایت فقط «معرفی» باشد یا مسیر تماس/رزرو مبهم شود، کاربر قبل از اقدام خارج می‌شود،
                 حتی اگر رتبه هم داشته باشید.
               </p>
+            </div>
+
+            <div className="relative mt-6 aspect-[1280/560] overflow-hidden rounded-2xl bg-navy-50">
+              <Image
+                src={COVER_SRC}
+                alt="۷ اشتباه رایج سئو سایت پزشکان"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 760px"
+                priority
+              />
             </div>
 
             <section className="mt-8">

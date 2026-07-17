@@ -9,7 +9,7 @@ export const LEGACY_MIGRATED_ARTICLES: Record<string, LegacyMigratedArticle> = {
     "h1": "چک‌لیست کامل سئوی سایت کسب‌وکار در سال ۱۴۰۵",
     "intro": "رتبه گرفتن در گوگل تصادفی نیست؛ نتیجهٔ رعایت چند اصل پایه و اجرای مداوم آن‌هاست. این چک‌لیست عملی را گام‌به‌گام روی سایت‌تان پیاده کنید تا هم گوگل و هم مشتری، سایت شما را بهتر پیدا کنند.",
     "datePublished": "2026-06-15",
-    "coverSrc": "/assets/blog/seo-checklist.svg",
+    "coverSrc": "/assets/blog/seo-checklist-business-site.jpg",
     "relatedLinks": [
       {
         "href": "/blog/conversion-rate-optimization",

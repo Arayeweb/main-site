@@ -42,7 +42,7 @@ export const blogPosts: BlogPost[] = [
     topic: "سئو",
     dateLabel: "۲۵ خرداد ۱۴۰۵",
     readTime: "۱۲ دقیقه مطالعه",
-    coverSrc: "/assets/blog/seo-checklist.svg",
+    coverSrc: "/assets/blog/seo-checklist-business-site.jpg",
     featured: true,
   },
   {
@@ -55,7 +55,7 @@ export const blogPosts: BlogPost[] = [
     topic: "سئو",
     dateLabel: "۱۷ تیر ۱۴۰۵",
     readTime: "۱۰ دقیقه",
-    coverSrc: "/assets/blog/seo-checklist.svg",
+    coverSrc: "/assets/blog/doctor-website-seo-mistakes.jpg",
   },
   {
     slug: "clinic-seo-checklist",
@@ -67,7 +67,7 @@ export const blogPosts: BlogPost[] = [
     topic: "سئو",
     dateLabel: "۱۷ تیر ۱۴۰۵",
     readTime: "۹ دقیقه",
-    coverSrc: "/assets/blog/online-booking.svg",
+    coverSrc: "/assets/blog/clinic-seo-checklist.jpg",
   },
   {
     slug: "local-seo-for-doctors",
@@ -79,7 +79,7 @@ export const blogPosts: BlogPost[] = [
     topic: "سئو",
     dateLabel: "۱۷ تیر ۱۴۰۵",
     readTime: "۸ دقیقه",
-    coverSrc: "/assets/blog/google-my-business.svg",
+    coverSrc: "/assets/blog/local-seo-for-doctors.jpg",
   },
   {
     slug: "clinic-website-features",
