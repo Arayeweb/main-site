@@ -435,7 +435,7 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "ارتباط",
     links: [
-      { label: "شماره تماس: ۰۹۹۹۱۳۰۰۷۸۸", url: "tel:+98991300788" },
+      { label: "شماره تماس: ۰۹۹۹۱۳۰۰۷۸۸", url: "tel:+989991300788" },
       { label: "ایمیل: support@araaye.com", url: "mailto:support@araaye.com" },
       { label: "اینستاگرام", url: "https://instagram.com/araayecom" },
       { label: "لینکدین", url: "https://www.linkedin.com/company/araaye" },

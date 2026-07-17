@@ -160,7 +160,7 @@ export default function DoctorsSpecialtySamples({ filterKeys }: DoctorsSpecialty
           </div>
         </div>
 
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           {sample && selectedOption ? (
             <SampleCard
               sample={sample}

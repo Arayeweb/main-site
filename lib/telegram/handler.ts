@@ -3,7 +3,7 @@
 // =========================================================
 
 import { normalizeContact } from "@/lib/validateContact";
-import { sendMessage, answerCallbackQuery, setMyCommands, sendTypingAction, editMessageText } from "./api";
+import { sendMessage, answerCallbackQuery, setMyCommands, sendTypingAction, sendUploadPhotoAction, sendPhoto, editMessageText } from "./api";
 import { COPY, orderConfirm, maskPhone, pricingMessage } from "./copy";
 import { trackEvent } from "./events";
 import { checkRequiredMembership } from "./membership";
@@ -18,6 +18,7 @@ import {
   orderConfirmKeyboard,
   paymentUrlKeyboard,
   mediaWebCtaKeyboard,
+  imageWebCtaKeyboard,
 } from "./keyboards";
 import {
   createPartialEditor,
@@ -33,7 +34,7 @@ import {
   incrementWebClicks,
   updateUserPhone,
 } from "./users";
-import { getFreeQuotaStatus, consumeFreeQuota } from "./quota";
+import { getFreeQuotaStatus, consumeFreeQuota, getFreeImageStatus, consumeFreeImage } from "./quota";
 import {
   setState,
   getStateData,
@@ -65,6 +66,11 @@ import { getTelegramConfig, compareWebUrl, councilWebUrl } from "./config";
 import { parseStartPayload } from "./types";
 import type { TelegramUserRow } from "./types";
 import { getModel } from "@/lib/aiModels";
+import {
+  runTelegramImageGen,
+  runTelegramFreeImageGen,
+  telegramImageCreditCost,
+} from "./imageGen";
 
 export interface TelegramUpdate {
   update_id: number;
@@ -103,6 +109,14 @@ function modelStateData(modelId: string): Record<string, unknown> {
     selectedModelId: modelId,
     mode: "quick_chat",
     selectedModel: modelId,
+    selectedAt: new Date().toISOString(),
+  };
+}
+
+function imageStateData(): Record<string, unknown> {
+  return {
+    mode: "image",
+    selectedModelId: null,
     selectedAt: new Date().toISOString(),
   };
 }
@@ -182,6 +196,21 @@ async function showModelPicker(
   await sendOrEditMenuMessage(chatId, messageId, modelPickerMessage(), modelPickerKeyboard());
 }
 
+async function showImageMode(
+  chatId: number,
+  userId: string,
+  messageId?: number
+) {
+  const cost = telegramImageCreditCost();
+  await setState(userId, "chat", imageStateData());
+  await sendOrEditMenuMessage(
+    chatId,
+    messageId,
+    COPY.imageModePrompt(cost),
+    imageWebCtaKeyboard()
+  );
+}
+
 async function sendWelcome(chatId: number, _user: TelegramUserRow) {
   await sendMessage(chatId, COPY.welcome, { reply_markup: mainMenuKeyboard() });
 }
@@ -244,6 +273,14 @@ export async function handleCommand(
     case "/chat":
     case "cmd_chat":
       await showModelPicker(chatId, user.id, messageId);
+      break;
+    case "/image":
+    case "cmd_image":
+      await trackEvent("image_mode_opened", {
+        telegramUserId: user.id,
+        telegramId,
+      });
+      await showImageMode(chatId, user.id, messageId);
       break;
     case "/compare":
     case "compare":
@@ -457,7 +494,7 @@ export async function handlePhoneInput(
   });
 
   const stateData = await getStateData(user.id);
-  const packageId = (stateData.pendingPackageId as string) || "base";
+  const packageId = (stateData.pendingPackageId as string) || "starter";
   const pkg = getTelegramPackage(packageId);
   if (!pkg) {
     await sendMessage(chatId, COPY.paymentLinkError);
@@ -486,6 +523,145 @@ export async function handlePhoneInput(
   await sendMessage(chatId, orderConfirm(pkg, maskPhone(phone)), {
     reply_markup: orderConfirmKeyboard(orderId),
   });
+}
+
+export async function handleImageTextMessage(
+  chatId: number,
+  telegramId: number,
+  user: TelegramUserRow,
+  text: string
+) {
+  const { maxFreeMessageChars } = getTelegramConfig();
+  const creditCost = telegramImageCreditCost();
+
+  if (user.state === "confirm_order") {
+    await sendMessage(chatId, "لطفاً خرید را تأیید کن یا به منو برگرد.");
+    return;
+  }
+
+  if (text.length > maxFreeMessageChars) {
+    await sendMessage(chatId, COPY.textTooLong, { reply_markup: imageWebCtaKeyboard() });
+    return;
+  }
+
+  if (await isChatRunning(user.id)) {
+    await sendMessage(chatId, COPY.parallelRun);
+    return;
+  }
+
+  await setChatRunning(user.id, true);
+  let loadingMessageId: number | null = null;
+
+  try {
+    void sendUploadPhotoAction(chatId);
+    loadingMessageId = await sendLoadingMessage(chatId, "⏳ دارم تصویر می‌سازم...");
+
+    const freeImage = await getFreeImageStatus(user.id);
+    const useFreeImage = freeImage.canUse;
+    let usedFreeImage = false;
+    let result:
+      | Awaited<ReturnType<typeof runTelegramImageGen>>
+      | Awaited<ReturnType<typeof runTelegramFreeImageGen>>;
+
+    if (useFreeImage) {
+      result = await runTelegramFreeImageGen({
+        telegramUserId: user.id,
+        prompt: text,
+      });
+      if (result.ok) {
+        const consumed = await consumeFreeImage(user.id);
+        if (!consumed) {
+          await deliverBotResponse(
+            chatId,
+            loadingMessageId,
+            COPY.imageFreeUsed(creditCost),
+            { reply_markup: limitReachedKeyboard() }
+          );
+          return;
+        }
+        usedFreeImage = true;
+      }
+    } else {
+      if (!user.araaye_user_id) {
+        await deliverBotResponse(
+          chatId,
+          loadingMessageId,
+          COPY.imageFreeUsed(creditCost),
+          { reply_markup: limitReachedKeyboard() }
+        );
+        await trackEvent("image_no_credits", {
+          telegramUserId: user.id,
+          telegramId,
+        });
+        return;
+      }
+
+      const credits = await getAraayeCredits(user.araaye_user_id);
+      if (credits < creditCost) {
+        await deliverBotResponse(
+          chatId,
+          loadingMessageId,
+          COPY.imageFreeUsed(creditCost),
+          { reply_markup: limitReachedKeyboard() }
+        );
+        await trackEvent("image_no_credits", {
+          telegramUserId: user.id,
+          telegramId,
+          metadata: { credits, required: creditCost },
+        });
+        return;
+      }
+
+      result = await runTelegramImageGen({
+        araayeUserId: user.araaye_user_id,
+        prompt: text,
+      });
+    }
+
+    if (!result.ok) {
+      await deliverBotResponse(
+        chatId,
+        loadingMessageId,
+        COPY.imageFailed,
+        { reply_markup: imageWebCtaKeyboard() }
+      );
+      await trackEvent("image_failed", {
+        telegramUserId: user.id,
+        telegramId,
+        metadata: { error: result.error },
+      });
+      return;
+    }
+
+    await saveTelegramMessage({
+      telegramUserId: user.id,
+      direction: "in",
+      text,
+    });
+    await saveTelegramMessage({
+      telegramUserId: user.id,
+      direction: "out",
+      text: COPY.imageSuccess,
+      aiRunId: result.jobId,
+    });
+
+    if (loadingMessageId) {
+      await editMessageText(chatId, loadingMessageId, COPY.imageSuccess);
+    }
+    await sendPhoto(chatId, result.imageUrl, text.slice(0, 200));
+
+    await trackEvent(usedFreeImage ? "free_image_sent" : "image_sent", {
+      telegramUserId: user.id,
+      telegramId,
+      metadata: {
+        job_id: result.jobId,
+        free: usedFreeImage,
+        credits_remaining: "creditsRemaining" in result ? result.creditsRemaining : undefined,
+      },
+    });
+  } finally {
+    await setChatRunning(user.id, false);
+  }
 }
 
 export async function handleTextMessage(
@@ -527,6 +703,13 @@ export async function handleTextMessage(
 
   const stateData = await getStateData(user.id);
   marks.session_load_ms = Date.now() - startedAt;
+  const mode = stateData.mode as string | undefined;
+
+  if (mode === "image") {
+    await handleImageTextMessage(chatId, telegramId, user, text);
+    return;
+  }
+
   const selectedModelId = stateData.selectedModelId as string | undefined;
 
   // مسیر واحد: تا وقتی مدلی انتخاب نشده، همیشه انتخابگر مدل نشان داده می‌شود
@@ -783,6 +966,13 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
   if (!user) return;
 
   if (msg.photo || msg.document || msg.voice || msg.video) {
+    const stateData = await getStateData(user.id);
+    if (stateData.mode === "image") {
+      await sendMessage(chatId, COPY.imageTextOnly, {
+        reply_markup: imageWebCtaKeyboard(),
+      });
+      return;
+    }
     await sendMessage(chatId, COPY.mediaUnsupported, {
       reply_markup: mediaWebCtaKeyboard(),
     });

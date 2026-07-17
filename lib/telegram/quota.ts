@@ -67,3 +67,41 @@ export async function consumeFreeQuota(telegramUserId: string): Promise<boolean>
   }
   return Boolean((data as { ok?: boolean })?.ok);
 }
+
+export type FreeImageStatus = {
+  canUse: boolean;
+};
+
+export async function getFreeImageStatus(telegramUserId: string): Promise<FreeImageStatus> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("telegram_users")
+    .select("free_image_used")
+    .eq("id", telegramUserId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return { canUse: false };
+  }
+  return { canUse: !Boolean(data.free_image_used) };
+}
+
+export async function consumeFreeImage(telegramUserId: string): Promise<boolean> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("telegram_users")
+    .update({
+      free_image_used: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", telegramUserId)
+    .eq("free_image_used", false)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    console.error("[telegram/quota] consume free image failed:", error?.message);
+    return false;
+  }
+  return true;
+}

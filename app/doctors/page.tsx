@@ -7,6 +7,7 @@ import DoctorsUrgencyBar from "@/components/doctors/DoctorsUrgencyBar";
 import DoctorsSalesSections from "@/components/doctors/DoctorsSalesSections";
 import DoctorsExitIntent from "@/components/doctors/DoctorsExitIntent";
 import DoctorsStickyCta from "@/components/doctors/DoctorsStickyCta";
+import DoctorsChatWidget from "@/components/doctors/DoctorsChatWidget";
 import DoctorsPageAnalytics from "@/components/doctors/DoctorsPageAnalytics";
 import {
   DOCTORS_PRODUCT_PRICE_TOMAN,
@@ -102,6 +103,7 @@ export default function DoctorsPage() {
       <Footer />
       <DoctorsExitIntent />
       <DoctorsStickyCta />
+      <DoctorsChatWidget />
     </>
   );
 }

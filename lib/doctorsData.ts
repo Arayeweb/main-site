@@ -315,6 +315,43 @@ export const doctorReviews: DoctorReview[] = [
     siteUrl: "https://aliehpourdast.com",
     verified: true,
   },
+  {
+    id: "salamt-clinic",
+    name: "کلینیک سلامت",
+    specialty: "مراقبت و درمان",
+    city: "تهران",
+    quote:
+      "حضورمان در گوگل و نقشه درست شد؛ بیمار قبل از مراجعه آدرس، ساعت کاری و راه تماس را می‌بیند.",
+    siteUrl: "https://araaye.com/b/salamt-clinic",
+    verified: true,
+  },
+  {
+    id: "ashrafivand",
+    name: "شیوا اشرفی‌وند",
+    specialty: "کلینیک شنوایی",
+    city: "تهران",
+    quote:
+      "کسانی که برای سمعک یا مشاوره شنوایی جست‌وجو می‌کنند، راحت‌تر به کلینیک ما می‌رسند و مسیر نوبت‌گیری شفاف‌تر شده.",
+    verified: true,
+  },
+  {
+    id: "pourdast-tahereh",
+    name: "دکتر طاهره پوردست",
+    specialty: "زنان و زایمان",
+    city: "تهران",
+    quote:
+      "برای جست‌وجوهای مربوط به مطب زنان، حضورمان در گوگل شفاف‌تر شد و نوبت‌گیری برای بیماران راحت‌تر شده.",
+    verified: true,
+  },
+  {
+    id: "kordian-clinic",
+    name: "کلینیک دندان‌پزشکی کوردیان",
+    specialty: "دندان‌پزشکی",
+    city: "تهران",
+    quote:
+      "سایت هم خدمات کلینیک را واضح نشان می‌دهد و هم بیمار قبل از تماس می‌فهمد چه خدماتی داریم؛ پیگیری تماس‌ها خیلی منظم‌تر شد.",
+    verified: true,
+  },
 ];
 
 export function getVerifiedDoctorReviews() {
@@ -375,13 +412,20 @@ export const doctorSpecialtySamples: DoctorSpecialtySample[] = [
     buyReason: "معرفی روش‌های درمان و درخواست ارزیابی",
   },
   {
-    key: "general",
-    label: "دکتر عالیه پوردست",
-    kind: "executed",
-    demoUrl: "https://aliehpourdast.com",
-    demoExternal: true,
+    key: "women",
+    label: "زنان",
+    kind: "demo",
+    demoUrl: "/doctors/demo/women",
+    accent: "teal",
+    buyReason: "معرفی تخصص، پاسخ به نگرانی‌های بیمار و نوبت سریع",
+  },
+  {
+    key: "other",
+    label: "سایر تخصص‌ها",
+    kind: "demo",
+    demoUrl: "/doctors/demo/other",
     accent: "sky",
-    buyReason: "معرفی تخصص، پاسخ به نگرانی بیمار و مسیر نوبت",
+    buyReason: "هویت اختصاصی پزشک، صفحات خدمت و مسیر درخواست نوبت",
   },
 ];
 
@@ -402,7 +446,7 @@ export const doctorSpecialtyOptions: DoctorSpecialtyOption[] = [
   {
     key: "women",
     label: "زنان",
-    sampleKey: "general",
+    sampleKey: "women",
     buyReason: "معرفی تخصص، پاسخ به نگرانی‌های بیمار و نوبت سریع",
   },
   {
@@ -432,7 +476,7 @@ export const doctorSpecialtyOptions: DoctorSpecialtyOption[] = [
   {
     key: "other",
     label: "سایر تخصص‌ها",
-    sampleKey: "general",
+    sampleKey: "other",
     buyReason: "هویت اختصاصی پزشک، صفحات خدمت و مسیر درخواست نوبت",
   },
 ];
@@ -571,12 +615,6 @@ export const doctorTrustBarItems = [
   "افزایش درخواست نوبت",
   "تبدیل بازدیدکننده به مراجعه‌کننده",
   "ساخت مسیر فروش مطب",
-] as const;
-
-export const doctorHeroTrustChips = [
-  "بدون پرداخت کامل در شروع",
-  "دامنه و سایت به نام پزشک",
-  "نسخه اولیه در ۲ روز",
 ] as const;
 
 export type DoctorFormAddon = {

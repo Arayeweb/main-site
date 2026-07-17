@@ -2,7 +2,7 @@
 // Inline and reply keyboards
 // =========================================================
 
-import { getTelegramConfig, compareWebUrl, councilWebUrl, webAppUrl } from "./config";
+import { getTelegramConfig, compareWebUrl, councilWebUrl, webAppUrl, imageWebUrl } from "./config";
 import type { InlineKeyboard, ReplyKeyboard } from "./api";
 import { TELEGRAM_PACKAGE_LIST } from "./packages";
 import { TELEGRAM_CHAT_MODELS } from "./chatModels";
@@ -48,6 +48,7 @@ export function mainMenuKeyboard(): InlineKeyboard {
   return {
     inline_keyboard: [
       [{ text: "چت سریع", callback_data: "cmd_chat" }],
+      [{ text: "ساخت تصویر", callback_data: "cmd_image" }],
       [{ text: "مقایسه چند مدل", url: compareWebUrl() }],
       [{ text: "همفکری چند مدل", url: councilWebUrl() }],
       [{ text: "خرید اعتبار", callback_data: "cmd_pricing" }],
@@ -109,5 +110,14 @@ export function paymentUrlKeyboard(url: string): InlineKeyboard {
 export function mediaWebCtaKeyboard(): InlineKeyboard {
   return {
     inline_keyboard: [[{ text: "ورود به نسخه وب", url: webAppUrl() }]],
+  };
+}
+
+export function imageWebCtaKeyboard(): InlineKeyboard {
+  return {
+    inline_keyboard: [
+      [{ text: "استودیو تصویر در وب", url: imageWebUrl() }],
+      [{ text: "خرید اعتبار", callback_data: "cmd_pricing" }],
+    ],
   };
 }

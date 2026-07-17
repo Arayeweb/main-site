@@ -12,6 +12,8 @@ const sendMessage = vi.fn().mockResolvedValue({ ok: true, result: { message_id: 
 const editMessageText = vi.fn().mockResolvedValue({ ok: true });
 const editMessageReplyMarkup = vi.fn().mockResolvedValue({ ok: true });
 const sendTypingAction = vi.fn().mockResolvedValue({ ok: true });
+const sendUploadPhotoAction = vi.fn().mockResolvedValue({ ok: true });
+const sendPhoto = vi.fn().mockResolvedValue({ ok: true });
 const getChatMember = vi.fn().mockResolvedValue({ ok: true, joined: true });
 const answerCallbackQuery = vi.fn().mockResolvedValue({ ok: true });
 
@@ -20,6 +22,8 @@ vi.mock("@/lib/telegram/api", () => ({
   editMessageText: (...args: unknown[]) => editMessageText(...args),
   editMessageReplyMarkup: (...args: unknown[]) => editMessageReplyMarkup(...args),
   sendTypingAction: (...args: unknown[]) => sendTypingAction(...args),
+  sendUploadPhotoAction: (...args: unknown[]) => sendUploadPhotoAction(...args),
+  sendPhoto: (...args: unknown[]) => sendPhoto(...args),
   getChatMember: (...args: unknown[]) => getChatMember(...args),
   answerCallbackQuery: (...args: unknown[]) => answerCallbackQuery(...args),
   setMyCommands: vi.fn().mockResolvedValue({ ok: true }),
@@ -27,6 +31,15 @@ vi.mock("@/lib/telegram/api", () => ({
 }));
 
 const mockStreamChat = vi.fn();
+const mockRunTelegramImageGen = vi.fn();
+const mockRunTelegramFreeImageGen = vi.fn();
+
+vi.mock("@/lib/telegram/imageGen", () => ({
+  runTelegramImageGen: (...args: unknown[]) => mockRunTelegramImageGen(...args),
+  runTelegramFreeImageGen: (...args: unknown[]) => mockRunTelegramFreeImageGen(...args),
+  telegramImageCreditCost: () => 20,
+  TELEGRAM_IMAGE_MODEL: "image-lite",
+}));
 
 vi.mock("@/lib/ai/providers/openrouter", () => ({
   openRouterProvider: {
@@ -99,11 +112,24 @@ describe("telegram acquisition — unit", () => {
     editMessageText.mockClear();
     editMessageReplyMarkup.mockClear();
     sendTypingAction.mockClear();
+    sendUploadPhotoAction.mockClear();
+    sendPhoto.mockClear();
     getChatMember.mockReset().mockResolvedValue({ ok: true, joined: true });
     sendMessage.mockResolvedValue({ ok: true, result: { message_id: 9001 } });
     editMessageText.mockResolvedValue({ ok: true });
     editMessageReplyMarkup.mockResolvedValue({ ok: true });
     mockStreamChat.mockReset().mockImplementation(() => successStream());
+    mockRunTelegramImageGen.mockReset().mockResolvedValue({
+      ok: true,
+      imageUrl: "https://example.com/image.png",
+      jobId: "job-img-1",
+      creditsRemaining: 40,
+    });
+    mockRunTelegramFreeImageGen.mockReset().mockResolvedValue({
+      ok: true,
+      imageUrl: "https://example.com/free-image.png",
+      jobId: "job-free-1",
+    });
     process.env.TELEGRAM_REQUIRED_CHANNEL_ID = "";
     process.env.TELEGRAM_REQUIRED_SALES_CHANNEL_ID = "";
     process.env.TELEGRAM_FREE_DAILY_LIMIT = "3";
@@ -160,11 +186,12 @@ describe("telegram acquisition — unit", () => {
     expect(mockStreamChat).not.toHaveBeenCalled();
   });
 
-  it("6. pricing packages render", () => {
+  it("6. pricing packages render (unified with web)", () => {
     const msg = pricingMessage();
     expect(msg).toContain("بسته شروع");
     expect(msg).toContain("۹۹");
-    expect(getTelegramPackage("base")?.credits).toBe(400);
+    expect(getTelegramPackage("plus")?.credits).toBe(260);
+    expect(getTelegramPackage("base")?.credits).toBe(260);
     expect(Object.keys(TELEGRAM_PACKAGES).length).toBe(4);
   });
 
@@ -417,5 +444,115 @@ describe("telegram acquisition — unit", () => {
     const user = tgDb.db.tables.telegram_users[0] as never;
     await handleTextMessage(100, 36, user, "سوال fallback");
     expect(sendMessage).toHaveBeenCalledWith(100, "پاسخ تست", expect.anything());
+  });
+
+  it("25. /image enters image mode", async () => {
+    seedTelegramUser(tgDb.db, { telegram_id: 40 });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleCommand(100, 40, user, "/image");
+    const updated = tgDb.db.tables.telegram_users[0];
+    expect((updated.state_data as Record<string, unknown>).mode).toBe("image");
+    const text = sendMessage.mock.calls.map((c) => c[1]).join(" ");
+    expect(text).toContain("ساخت تصویر");
+    expect(text).toContain("رایگان");
+  });
+
+  it("26. first image is free without credits", async () => {
+    seedTelegramUser(tgDb.db, {
+      telegram_id: 41,
+      state: "chat",
+      mode: "image",
+      free_image_used: false,
+    });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleTextMessage(100, 41, user, "یک گربه نارنجی");
+    expect(mockRunTelegramFreeImageGen).toHaveBeenCalledWith({
+      telegramUserId: user.id,
+      prompt: "یک گربه نارنجی",
+    });
+    expect(mockRunTelegramImageGen).not.toHaveBeenCalled();
+    expect(sendPhoto).toHaveBeenCalledWith(
+      100,
+      "https://example.com/free-image.png",
+      "یک گربه نارنجی"
+    );
+    expect(tgDb.db.tables.telegram_users[0].free_image_used).toBe(true);
+  });
+
+  it("27. image prompt with credits sends photo after free used", async () => {
+    tgDb.db.tables.ai_users.push({
+      id: "ai-img",
+      phone: "09124444444",
+      credits: 50,
+      plan: "free",
+      password_hash: "x",
+    });
+    seedTelegramUser(tgDb.db, {
+      telegram_id: 41,
+      state: "chat",
+      mode: "image",
+      araaye_user_id: "ai-img",
+      free_image_used: true,
+    });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleTextMessage(100, 41, user, "یک گربه نارنجی");
+    expect(mockRunTelegramImageGen).toHaveBeenCalledWith({
+      araayeUserId: "ai-img",
+      prompt: "یک گربه نارنجی",
+    });
+    expect(sendPhoto).toHaveBeenCalledWith(
+      100,
+      "https://example.com/image.png",
+      "یک گربه نارنجی"
+    );
+    expect(mockStreamChat).not.toHaveBeenCalled();
+  });
+
+  it("28. image prompt without credits after free used does not generate", async () => {
+    tgDb.db.tables.ai_users.push({
+      id: "ai-poor",
+      phone: "09125555555",
+      credits: 5,
+      plan: "free",
+      password_hash: "x",
+    });
+    seedTelegramUser(tgDb.db, {
+      telegram_id: 42,
+      state: "chat",
+      mode: "image",
+      araaye_user_id: "ai-poor",
+      free_image_used: true,
+    });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleTextMessage(100, 42, user, "یک درخت");
+    expect(mockRunTelegramImageGen).not.toHaveBeenCalled();
+    expect(mockRunTelegramFreeImageGen).not.toHaveBeenCalled();
+    expect(sendPhoto).not.toHaveBeenCalled();
+    const text = [...sendMessage.mock.calls, ...editMessageText.mock.calls]
+      .map((c) => c[2] ?? c[1])
+      .join(" ");
+    expect(text).toContain("رایگان");
+  });
+
+  it("29. image path does not consume free chat quota", async () => {
+    tgDb.db.tables.ai_users.push({
+      id: "ai-img2",
+      phone: "09126666666",
+      credits: 50,
+      plan: "free",
+      password_hash: "x",
+    });
+    seedTelegramUser(tgDb.db, {
+      telegram_id: 43,
+      state: "chat",
+      mode: "image",
+      araaye_user_id: "ai-img2",
+      free_image_used: true,
+      free_daily_used: 0,
+    });
+    const user = tgDb.db.tables.telegram_users[0] as never;
+    await handleTextMessage(100, 43, user, "یک کوه");
+    expect(tgDb.db.tables.telegram_users[0].free_daily_used).toBe(0);
+    expect(mockRunTelegramImageGen).toHaveBeenCalled();
   });
 });

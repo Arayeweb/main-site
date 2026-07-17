@@ -10,7 +10,7 @@ export const COMPANY_LEGAL_NAME = "شرکت هوش آرایه پارس";
 export const COMPANY_EMAIL = "support@araaye.com";
 
 export const COMPANY_PHONE_DISPLAY = "۰۹۹۹۱۳۰۰۷۸۸";
-export const COMPANY_PHONE_E164 = "+98991300788";
+export const COMPANY_PHONE_E164 = "+989991300788";
 export const COMPANY_PHONE_TEL = `tel:${COMPANY_PHONE_E164}`;
 
 export const COMPANY_STREET_ADDRESS =

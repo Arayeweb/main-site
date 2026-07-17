@@ -20,7 +20,12 @@ export type TelegramEventName =
   | "payment_success"
   | "payment_failed"
   | "support_clicked"
-  | "clear_clicked";
+  | "clear_clicked"
+  | "image_mode_opened"
+  | "image_no_credits"
+  | "image_failed"
+  | "image_sent"
+  | "free_image_sent";
 
 export async function trackEvent(
   event: TelegramEventName,

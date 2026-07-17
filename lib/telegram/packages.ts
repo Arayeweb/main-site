@@ -1,6 +1,8 @@
 // =========================================================
-// Telegram credit packages — launch pricing (separate from web)
+// Telegram credit packages — unified with web AI_PACKAGES
 // =========================================================
+
+import { PACKAGE_LIST, formatPriceToman } from "@/lib/aiPackages";
 
 export interface TelegramPackage {
   id: string;
@@ -9,39 +11,33 @@ export interface TelegramPackage {
   credits: number;
 }
 
-export const TELEGRAM_PACKAGES: Record<string, TelegramPackage> = {
-  start: {
-    id: "start",
-    name: "شروع",
-    priceToman: 99_000,
-    credits: 100,
-  },
-  base: {
-    id: "base",
-    name: "پایه",
-    priceToman: 299_000,
-    credits: 400,
-  },
-  pro: {
-    id: "pro",
-    name: "حرفه‌ای",
-    priceToman: 699_000,
-    credits: 1000,
-  },
-  special: {
-    id: "special",
-    name: "ویژه",
-    priceToman: 1_490_000,
-    credits: 2500,
-  },
+/** Legacy package IDs from pre-unification telegram orders */
+const LEGACY_PACKAGE_ALIASES: Record<string, string> = {
+  start: "starter",
+  base: "plus",
+  special: "max",
 };
 
-export const TELEGRAM_PACKAGE_LIST = Object.values(TELEGRAM_PACKAGES);
+export const TELEGRAM_PACKAGE_LIST: TelegramPackage[] = PACKAGE_LIST.map((p) => ({
+  id: p.id,
+  name: p.nameFa ?? p.name,
+  priceToman: p.priceToman,
+  credits: p.credits,
+}));
+
+export const TELEGRAM_PACKAGES: Record<string, TelegramPackage> = Object.fromEntries(
+  TELEGRAM_PACKAGE_LIST.map((p) => [p.id, p])
+);
+
+export function resolveTelegramPackageId(id: string): string {
+  return LEGACY_PACKAGE_ALIASES[id] ?? id;
+}
 
 export function getTelegramPackage(id: string): TelegramPackage | null {
-  return TELEGRAM_PACKAGES[id] || null;
+  const resolved = resolveTelegramPackageId(id);
+  return TELEGRAM_PACKAGES[resolved] || null;
 }
 
 export function formatToman(n: number): string {
-  return n.toLocaleString("fa-IR");
+  return formatPriceToman(n);
 }

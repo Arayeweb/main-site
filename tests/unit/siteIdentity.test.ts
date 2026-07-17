@@ -34,7 +34,7 @@ describe("siteIdentity", () => {
       legalName: COMPANY_LEGAL_NAME,
       url: SITE_URL,
       email: "support@araaye.com",
-      telephone: "+98991300788",
+      telephone: "+989991300788",
       alternateName: ["شرکت آرایه", "Araaye", "ارایه", "Araaye AI", "هوش ارایه پارس"],
       sameAs: [
         "https://www.linkedin.com/company/araaye",

@@ -5,6 +5,7 @@ import DoctorsHero from "@/components/doctors/DoctorsHero";
 import DoctorsSalesSections from "@/components/doctors/DoctorsSalesSections";
 import DoctorsExitIntent from "@/components/doctors/DoctorsExitIntent";
 import DoctorsStickyCta from "@/components/doctors/DoctorsStickyCta";
+import DoctorsChatWidget from "@/components/doctors/DoctorsChatWidget";
 import DoctorsPageAnalytics from "@/components/doctors/DoctorsPageAnalytics";
 import { doctorFaq } from "@/lib/doctorsData";
 
@@ -37,13 +38,12 @@ export default function DoctorsDentistPage() {
       <DoctorsHeader backHref="/doctors" backLabel="همه تخصص‌ها" />
       <main className="pb-20 sm:pb-0">
         <DoctorsHero
-          badge="طراحی سایت دندانپزشکی برای جذب بیمار و مشاوره"
+          eyebrow="طراحی سایت دندانپزشکی"
           title="بیمار خدمت دندان را در گوگل می‌جوید؛ سایت باید او را به درخواست مشاوره برساند"
           subtitle="سایت اختصاصی با صفحات درمان، نمونه کار و مسیر نوبت یا واتساپ. نسخه اولیه در ۲ روز کاری؛ قیمت ثابت ۲۰ میلیون و شروع با ۶ میلیون."
         />
         <DoctorsSalesSections
           specialtyFilterKeys={dentistFilterKeys}
-          showCaseStudy={false}
           faqTitle="سؤالات رایج دندان‌پزشکان"
           faqItems={doctorFaq}
         />
@@ -51,6 +51,7 @@ export default function DoctorsDentistPage() {
       <Footer />
       <DoctorsExitIntent />
       <DoctorsStickyCta />
+      <DoctorsChatWidget />
     </>
   );
 }

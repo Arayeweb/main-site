@@ -45,8 +45,11 @@ function isNotModified(res: TelegramApiResult): boolean {
   return Boolean(res.description && res.description.includes("not modified"));
 }
 
-export async function sendLoadingMessage(chatId: number): Promise<number | null> {
-  const res = (await sendMessage(chatId, LOADING_MESSAGE)) as TelegramApiResult;
+export async function sendLoadingMessage(
+  chatId: number,
+  text = LOADING_MESSAGE
+): Promise<number | null> {
+  const res = (await sendMessage(chatId, text)) as TelegramApiResult;
   return res.ok ? (res.result?.message_id ?? null) : null;
 }
 

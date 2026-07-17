@@ -16,8 +16,8 @@ export default function DoctorsReviews() {
         <SectionHeader
           badge="نظر پزشکان"
           badgeClassName="bg-emerald-50 text-emerald-700"
-          title="رضایت تأییدشده — فقط پروژه‌های واقعی"
-          subtitle="بدون Review جعلی. فقط نظر پزشکانی که سایت اجراشده دارند."
+          title="نظر پزشکانی که سایت‌شان زنده است"
+          subtitle="فقط از پزشکانی که سایت‌شان الان آنلاین است."
         />
 
         <div className="mx-auto grid max-w-4xl gap-6">

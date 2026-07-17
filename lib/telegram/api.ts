@@ -105,6 +105,31 @@ export async function sendTypingAction(chatId: number) {
   });
 }
 
+export async function sendUploadPhotoAction(chatId: number) {
+  return callTelegram("sendChatAction", {
+    chat_id: chatId,
+    action: "upload_photo",
+  });
+}
+
+export async function sendPhoto(
+  chatId: number,
+  photoUrl: string,
+  caption?: string,
+  extra: { reply_markup?: InlineKeyboard } = {}
+) {
+  const body: Record<string, unknown> = {
+    chat_id: chatId,
+    photo: photoUrl,
+    ...extra,
+  };
+  if (caption) {
+    body.caption = escapeHtml(caption);
+    body.parse_mode = "HTML";
+  }
+  return callTelegram("sendPhoto", body);
+}
+
 export async function answerCallbackQuery(
   callbackQueryId: string,
   text?: string
@@ -151,6 +176,7 @@ export async function setMyCommands() {
     commands: [
       { command: "start", description: "شروع" },
       { command: "chat", description: "چت سریع" },
+      { command: "image", description: "ساخت تصویر" },
       { command: "compare", description: "مقایسه چند مدل" },
       { command: "council", description: "همفکری چند مدل" },
       { command: "pricing", description: "خرید اعتبار" },

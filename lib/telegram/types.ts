@@ -16,6 +16,7 @@ export interface TelegramUserRow {
   joined_sales_channel: boolean;
   free_daily_used: number;
   free_daily_reset_at: string | null;
+  free_image_used: boolean;
   total_messages: number;
   total_web_clicks: number;
   total_payments: number;

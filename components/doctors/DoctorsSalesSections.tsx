@@ -1,6 +1,5 @@
 import type { DoctorFaqItem } from "@/lib/doctorsData";
 import { doctorFaq } from "@/lib/doctorsData";
-import DoctorsCaseStudy from "@/components/doctors/DoctorsCaseStudy";
 import DoctorsComparison from "@/components/doctors/DoctorsComparison";
 import DoctorsFaq from "@/components/doctors/DoctorsFaq";
 import DoctorsLossAversion from "@/components/doctors/DoctorsLossAversion";
@@ -17,21 +16,18 @@ import DoctorsSpecialtySamples from "@/components/doctors/DoctorsSpecialtySample
 
 type DoctorsSalesSectionsProps = {
   specialtyFilterKeys?: string[];
-  showCaseStudy?: boolean;
   faqItems?: DoctorFaqItem[];
   faqTitle?: string;
 };
 
 export default function DoctorsSalesSections({
   specialtyFilterKeys,
-  showCaseStudy = true,
   faqItems = doctorFaq,
   faqTitle,
 }: DoctorsSalesSectionsProps) {
   return (
     <>
       <DoctorsLossAversion />
-      {showCaseStudy ? <DoctorsCaseStudy /> : null}
       <DoctorsReviews />
       <DoctorsSpecialtySamples filterKeys={specialtyFilterKeys} />
       <DoctorsPatientJourney />

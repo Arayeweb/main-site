@@ -82,8 +82,8 @@ export default function DoctorsSalesForm() {
     doctorSpecialtySamples.find(
       (s) =>
         s.key ===
-        (doctorSpecialtyOptions.find((o) => o.key === specialtyKey)?.sampleKey ?? "general")
-    ) ?? doctorSpecialtySamples.find((s) => s.kind === "executed");
+        (doctorSpecialtyOptions.find((o) => o.key === specialtyKey)?.sampleKey ?? "dentist")
+    ) ?? doctorSpecialtySamples[0];
 
   const addonLabels = doctorFormAddons
     .filter((a) => addons.includes(a.key))

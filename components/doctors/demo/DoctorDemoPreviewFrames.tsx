@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import PourdastClinicHomePreview from "@/components/home/previews/PourdastClinicHomePreview";
 import { BrowserChrome } from "@/components/showcase/ShowcaseFrames";
 import type { DoctorSpecialtySample } from "@/lib/doctorsData";
 import { getDoctorDemo } from "@/lib/doctorsDemoData";
@@ -32,6 +31,14 @@ function PreviewLink({
   );
 }
 
+function EmptyDemoPreview({ label }: { label: string }) {
+  return (
+    <div className="flex aspect-[16/12] items-center justify-center bg-gradient-to-br from-navy-50 to-white px-6 text-center">
+      <p className="text-sm font-bold text-navy-500">پیش‌نمایش دموی {label}</p>
+    </div>
+  );
+}
+
 export default function DoctorDemoPreviewFrames({ sample }: { sample: DoctorSpecialtySample }) {
   const demo = getDoctorDemo(sample.key);
   const previewUrl = demo?.previewUrl ?? sample.demoUrl.replace(/^https?:\/\//, "");
@@ -39,7 +46,7 @@ export default function DoctorDemoPreviewFrames({ sample }: { sample: DoctorSpec
   const desktopPreview = demo ? (
     <DoctorDemoLandingPreview content={demo} />
   ) : (
-    <PourdastClinicHomePreview />
+    <EmptyDemoPreview label={sample.label} />
   );
 
   return (

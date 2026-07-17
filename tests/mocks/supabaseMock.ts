@@ -200,6 +200,11 @@ class QueryBuilder {
   }
 
   async maybeSingle() {
+    if (this.op === "update") {
+      const result = await this.execute();
+      const rows = Array.isArray(result.data) ? result.data : [];
+      return { data: rows[0] ?? null, error: null };
+    }
     const data = await this.runSelect();
     return { data: data[0] ?? null, error: null };
   }
@@ -211,6 +216,15 @@ class QueryBuilder {
         return { data: null, error: { message: "not found" } };
       }
       return { data: inserted[0], error: null };
+    }
+
+    if (this.op === "update") {
+      const result = await this.execute();
+      const rows = Array.isArray(result.data) ? result.data : [];
+      if (rows.length !== 1) {
+        return { data: null, error: { message: "not found" } };
+      }
+      return { data: rows[0], error: null };
     }
 
     const data = await this.runSelect();

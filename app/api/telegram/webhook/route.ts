@@ -5,6 +5,7 @@ import { getTelegramConfig } from "@/lib/telegram/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 function clientIp(req: NextRequest): string {
   const xff = req.headers.get("x-forwarded-for");

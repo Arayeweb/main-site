@@ -103,23 +103,28 @@ export function seedTelegramUser(
     telegram_id: number;
     joined?: boolean;
     free_daily_used?: number;
+    free_image_used?: boolean;
     araaye_user_id?: string | null;
     state?: string;
     phone?: string;
     total_messages?: number;
     created_at?: string;
     selectedModelId?: string;
+    mode?: string;
   }
 ) {
   type TelegramChatTurn = { role: "user" | "assistant"; content: string };
-  const stateData: Record<string, unknown> = opts.selectedModelId
-    ? {
-        selectedModelId: opts.selectedModelId,
-        mode: "quick_chat",
-        selectedModel: opts.selectedModelId,
-        selectedAt: new Date().toISOString(),
-      }
-    : {};
+  const stateData: Record<string, unknown> = {};
+  if (opts.mode) stateData.mode = opts.mode;
+  if (opts.selectedModelId) {
+    stateData.selectedModelId = opts.selectedModelId;
+    stateData.mode = opts.mode ?? "quick_chat";
+    stateData.selectedModel = opts.selectedModelId;
+    stateData.selectedAt = new Date().toISOString();
+  } else if (opts.mode === "image") {
+    stateData.selectedModelId = null;
+    stateData.selectedAt = new Date().toISOString();
+  }
   const row = {
     id: opts.id || `tg-${opts.telegram_id}`,
     telegram_id: opts.telegram_id,
@@ -131,6 +136,7 @@ export function seedTelegramUser(
     joined_required_channel: opts.joined ?? true,
     joined_sales_channel: opts.joined ?? true,
     free_daily_used: opts.free_daily_used ?? 0,
+    free_image_used: opts.free_image_used ?? false,
     free_daily_reset_at: new Date(Date.now() + 86400000).toISOString(),
     total_messages: opts.total_messages ?? 0,
     total_web_clicks: 0,
