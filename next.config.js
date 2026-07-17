@@ -83,7 +83,7 @@ const nextConfig = {
     return [
       // Homepage is now served by Next.js app/page.tsx
       // /about from Next.js (app/about/page.tsx) — rewrite حذف شد
-      { source: "/clinic", destination: "/clinic.html" },
+      // /clinic از Next.js (app/clinic/page.tsx) سرو می‌شود — rewrite حذف شد
       // /doctors از Next.js (app/doctors/page.tsx) سرو می‌شود — rewrite حذف شد
       { source: "/restaurant", destination: "/restaurant.html" },
       { source: "/support", destination: "/support.html" },
