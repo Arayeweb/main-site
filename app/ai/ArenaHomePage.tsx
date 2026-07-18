@@ -1312,6 +1312,23 @@ export default function ArenaHomePage({
             )}
           </div>
 
+          {/* Mobile ChatGPT order: actions above docked composer. Desktop reorders via CSS. */}
+          <section className="ar-home-actions" aria-label="پیشنهادها">
+            {HOME_SUGGESTIONS.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className="ar-home-action"
+                onClick={() => applyHomeSuggestion(item)}
+              >
+                <span className="ar-home-action-icon" aria-hidden>
+                  <item.Icon size={18} />
+                </span>
+                <span className="ar-home-action-label">{item.title}</span>
+              </button>
+            ))}
+          </section>
+
           <div className="ar-home-composer ar-home-composer--empty">
             {(mode === "side_by_side" || mode === "battle") && (
               <div className="ar-home-modelbar ar-home-modelbar--inline">
@@ -1353,22 +1370,6 @@ export default function ArenaHomePage({
               />
             )}
           </div>
-
-          <section className="ar-home-actions" aria-label="پیشنهادها">
-            {HOME_SUGGESTIONS.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                className="ar-home-action"
-                onClick={() => applyHomeSuggestion(item)}
-              >
-                <span className="ar-home-action-icon" aria-hidden>
-                  <item.Icon size={16} />
-                </span>
-                <span className="ar-home-action-label">{item.title}</span>
-              </button>
-            ))}
-          </section>
 
           {children}
         </div>
