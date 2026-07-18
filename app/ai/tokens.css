@@ -1,8 +1,10 @@
 /* Arena design tokens — single source of truth
-   Premium light SaaS palette (no cream/yellow). */
+   Premium light SaaS palette (no cream/yellow).
+   Include portaled overlays (body) so --ar-* vars resolve outside .ar-root. */
 .ar-root,
 .ar-mselect-sheet-backdrop,
-.ar-sheet-backdrop {
+.ar-sheet-backdrop,
+.ar-mselect-pop--floating {
   --ar-bg: #F6F7F9;
   --ar-bg2: #F1F3F6;
   --ar-card: #FFFFFF;
@@ -39,7 +41,8 @@
 }
 
 .ar-mselect-sheet-backdrop,
-.ar-sheet-backdrop {
+.ar-sheet-backdrop,
+.ar-mselect-pop--floating {
   direction: rtl;
   font-family: "Vazirmatn", -apple-system, "Segoe UI", Tahoma, sans-serif;
   color: var(--ar-text);
