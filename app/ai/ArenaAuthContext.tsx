@@ -22,6 +22,7 @@ type ArenaAuthState = {
   authed: boolean | null;
   credits: number | null;
   plan: string;
+  phoneMasked: string | null;
   hasContentBundle: boolean;
   guestBattlesRemaining: number | null;
   guestDirectRemaining: number | null;
@@ -29,6 +30,8 @@ type ArenaAuthState = {
   refresh: () => void;
   setCredits: (n: number) => void;
   prependHistory: (item: HistoryItem) => void;
+  renameHistoryItem: (id: string, title: string) => void;
+  removeHistoryItem: (id: string) => void;
 };
 
 const ArenaAuthContext = createContext<ArenaAuthState | null>(null);
@@ -114,6 +117,7 @@ export function ArenaAuthProvider({
   const [authed, setAuthed] = useState<boolean | null>(initialAuthed);
   const [credits, setCredits] = useState<number | null>(null);
   const [plan, setPlan] = useState(initialPlan);
+  const [phoneMasked, setPhoneMasked] = useState<string | null>(null);
   const [hasContentBundle, setHasContentBundle] = useState(false);
   const [guestBattlesRemaining, setGuestBattlesRemaining] = useState<number | null>(null);
   const [guestDirectRemaining, setGuestDirectRemaining] = useState<number | null>(null);
@@ -135,11 +139,17 @@ export function ArenaAuthProvider({
       setHasContentBundle(!!d.hasContentSalesBundle);
 
       if (d.authed && d.user) {
-        const user = d.user as { id?: string; credits?: number; plan?: string };
+        const user = d.user as {
+          id?: string;
+          credits?: number;
+          plan?: string;
+          phoneMasked?: string;
+        };
         const userId = user.id ?? null;
         userIdRef.current = userId;
         if (typeof user.credits === "number") setCredits(user.credits);
         if (user.plan) setPlan(user.plan);
+        setPhoneMasked(typeof user.phoneMasked === "string" ? user.phoneMasked : null);
 
         // Show this user's cached sidebar list immediately after re-login.
         setHistoryItems(readHistoryCache(userId));
@@ -161,6 +171,7 @@ export function ArenaAuthProvider({
       userIdRef.current = null;
       setCredits(null);
       setPlan("free");
+      setPhoneMasked(null);
       setHasContentBundle(false);
       setHistoryItems(readHistoryCache(null));
       if (typeof d.guestBattlesRemaining === "number") {
@@ -230,11 +241,30 @@ export function ArenaAuthProvider({
     });
   }, []);
 
+  const renameHistoryItem = useCallback((id: string, title: string) => {
+    const nextTitle = title.trim().slice(0, 80);
+    if (!nextTitle) return;
+    setHistoryItems((prev) => {
+      const next = prev.map((it) => (it.id === id ? { ...it, title: nextTitle } : it));
+      writeHistoryCache(next, userIdRef.current);
+      return next;
+    });
+  }, []);
+
+  const removeHistoryItem = useCallback((id: string) => {
+    setHistoryItems((prev) => {
+      const next = prev.filter((it) => it.id !== id);
+      writeHistoryCache(next, userIdRef.current);
+      return next;
+    });
+  }, []);
+
   const value = useMemo(
     () => ({
       authed,
       credits,
       plan,
+      phoneMasked,
       hasContentBundle,
       guestBattlesRemaining,
       guestDirectRemaining,
@@ -242,17 +272,22 @@ export function ArenaAuthProvider({
       refresh: () => loadHistory({ force: true }),
       setCredits,
       prependHistory,
+      renameHistoryItem,
+      removeHistoryItem,
     }),
     [
       authed,
       credits,
       plan,
+      phoneMasked,
       hasContentBundle,
       guestBattlesRemaining,
       guestDirectRemaining,
       historyItems,
       loadHistory,
       prependHistory,
+      renameHistoryItem,
+      removeHistoryItem,
     ]
   );
 

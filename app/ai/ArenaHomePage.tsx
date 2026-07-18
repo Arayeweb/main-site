@@ -1322,7 +1322,7 @@ export default function ArenaHomePage({
                 onClick={() => applyHomeSuggestion(item)}
               >
                 <span className="ar-home-action-icon" aria-hidden>
-                  <item.Icon size={18} />
+                  <item.Icon size={16} strokeWidth={1.7} />
                 </span>
                 <span className="ar-home-action-label">{item.title}</span>
               </button>

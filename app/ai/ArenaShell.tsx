@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   IconChat,
+  IconChevronDown,
   IconColumns,
   IconDiamond,
+  IconDots,
   IconGift,
   IconGlobe,
   IconImage,
@@ -17,6 +19,8 @@ import {
   IconMenu,
   IconPhone,
   IconNewChat,
+  IconPanel,
+  IconSearch,
   IconSpark,
   IconSwords,
   IconMusic,
@@ -34,6 +38,10 @@ import { useArenaAuth } from "./ArenaAuthContext";
 import { invalidateArenaAuthCache } from "./ArenaAuthContext";
 import { historyTierLabel, type HistoryItem } from "@/lib/aiHistory";
 import { requestAnalyzeText, requestNewChat } from "@/lib/aiNewChat";
+
+const SIDEBAR_COLLAPSED_KEY = "ar_sidebar_collapsed";
+const HISTORY_HIDDEN_KEY = "ar_history_hidden";
+const HISTORY_TITLES_KEY = "ar_history_titles";
 
 function tierIcon(tier: string) {
   if (tier === "image_gen") return IconImage;
@@ -73,11 +81,51 @@ function groupLabel(iso: string): string {
   if (diffDays <= 0) return "امروز";
   if (diffDays === 1) return "دیروز";
   if (diffDays < 7) return "۷ روز گذشته";
-  return "قبل‌تر";
+  return "قدیمی‌تر";
 }
 
 function isAiHomePath(pathname: string) {
   return pathname === "/ai" || pathname === "/ai/";
+}
+
+function readJsonRecord(key: string): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function readHiddenIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(HISTORY_HIDDEN_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw) as string[];
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeHiddenIds(ids: Set<string>) {
+  try {
+    localStorage.setItem(HISTORY_HIDDEN_KEY, JSON.stringify([...ids]));
+  } catch {
+    /* quota */
+  }
+}
+
+function writeTitleOverrides(map: Record<string, string>) {
+  try {
+    localStorage.setItem(HISTORY_TITLES_KEY, JSON.stringify(map));
+  } catch {
+    /* quota */
+  }
 }
 
 export default function ArenaShell({
@@ -90,8 +138,17 @@ export default function ArenaShell({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { authed, credits, historyItems: items, hasContentBundle } = useArenaAuth();
+  const {
+    authed,
+    credits,
+    historyItems: items,
+    hasContentBundle,
+    phoneMasked,
+    renameHistoryItem,
+    removeHistoryItem,
+  } = useArenaAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sideCollapsed, setSideCollapsed] = useState(false);
   const [referralOpen, setReferralOpen] = useState(false);
   const [referral, setReferral] = useState<{
     code: string;
@@ -100,26 +157,62 @@ export default function ArenaShell({
     creditsEarned: number;
   } | null>(null);
   const [copiedRef, setCopiedRef] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const settingsRef = useRef<HTMLDivElement>(null);
+  const [moreToolsOpen, setMoreToolsOpen] = useState(false);
+  const [chatSearchOpen, setChatSearchOpen] = useState(false);
+  const [chatQuery, setChatQuery] = useState("");
+  const [menuChatId, setMenuChatId] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [titleOverrides, setTitleOverrides] = useState<Record<string, string>>({});
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
+  const profileRef = useRef<HTMLDivElement>(null);
+  const chatMenuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
 
   const homeMode = isAiHomePath(pathname) ? searchParams.get("mode") : null;
 
   const closeDrawer = () => setDrawerOpen(false);
 
   useEffect(() => {
+    try {
+      setSideCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1");
+    } catch {
+      /* ignore */
+    }
+    setTitleOverrides(readJsonRecord(HISTORY_TITLES_KEY));
+    setHiddenIds(readHiddenIds());
+  }, []);
+
+  useEffect(() => {
     setDrawerOpen(false);
+    setProfileOpen(false);
     setSettingsOpen(false);
+    setMenuChatId(null);
   }, [pathname, searchParams]);
 
   useEffect(() => {
-    if (!settingsOpen) return;
+    if (!profileOpen) return;
     function onDoc(e: MouseEvent) {
-      if (!settingsRef.current?.contains(e.target as Node)) setSettingsOpen(false);
+      if (!profileRef.current?.contains(e.target as Node)) {
+        setProfileOpen(false);
+        setSettingsOpen(false);
+      }
     }
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
-  }, [settingsOpen]);
+  }, [profileOpen]);
+
+  useEffect(() => {
+    if (!menuChatId) return;
+    function onDoc(e: MouseEvent) {
+      if (!chatMenuRef.current?.contains(e.target as Node)) setMenuChatId(null);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [menuChatId]);
 
   useEffect(() => {
     const openDrawer = () => setDrawerOpen(true);
@@ -136,7 +229,25 @@ export default function ArenaShell({
     };
   }, [drawerOpen]);
 
+  useEffect(() => {
+    if (chatSearchOpen) searchInputRef.current?.focus();
+  }, [chatSearchOpen]);
+
+  useEffect(() => {
+    if (renamingId) renameInputRef.current?.focus();
+  }, [renamingId]);
+
+  function setCollapsed(next: boolean) {
+    setSideCollapsed(next);
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }
+
   async function openReferral() {
+    setProfileOpen(false);
     setSettingsOpen(false);
     closeDrawer();
     setReferralOpen(true);
@@ -170,6 +281,7 @@ export default function ArenaShell({
 
   async function handleLogout() {
     closeDrawer();
+    setProfileOpen(false);
     await fetch("/api/ai/auth", { method: "DELETE", credentials: "same-origin" });
     invalidateArenaAuthCache();
     window.location.href = "/ai";
@@ -191,6 +303,43 @@ export default function ArenaShell({
     requestAnalyzeText({ pathname, navigate: (p) => router.push(p) });
   }
 
+  function chatTitle(it: HistoryItem) {
+    return titleOverrides[it.id] || it.title || "گفتگو";
+  }
+
+  function startRename(it: HistoryItem) {
+    setMenuChatId(null);
+    setRenamingId(it.id);
+    setRenameValue(chatTitle(it));
+  }
+
+  function commitRename() {
+    if (!renamingId) return;
+    const next = renameValue.trim().slice(0, 80);
+    if (next) {
+      renameHistoryItem(renamingId, next);
+      const map = { ...titleOverrides, [renamingId]: next };
+      setTitleOverrides(map);
+      writeTitleOverrides(map);
+    }
+    setRenamingId(null);
+    setRenameValue("");
+  }
+
+  function deleteChat(it: HistoryItem) {
+    setMenuChatId(null);
+    if (!window.confirm("این گفتگو از لیست حذف شود؟")) return;
+    removeHistoryItem(it.id);
+    const next = new Set(hiddenIds);
+    next.add(it.id);
+    setHiddenIds(next);
+    writeHiddenIds(next);
+    if (renamingId === it.id) {
+      setRenamingId(null);
+      setRenameValue("");
+    }
+  }
+
   const activeRunItem = items.find(
     (it) =>
       it.source === "run" &&
@@ -202,18 +351,26 @@ export default function ArenaShell({
     (isAiHomePath(pathname) && (!homeMode || homeMode === "direct")) ||
     activeRunItem?.tier === "direct";
   const isPricingActive = pathname.startsWith("/ai/pricing");
-  const isSettingsActive =
-    settingsOpen ||
-    pathname.startsWith("/ai/support") ||
-    pathname.startsWith("/ai/features");
+
+  const visibleItems = useMemo(() => {
+    const q = chatQuery.trim().toLowerCase();
+    return items.filter((it) => {
+      if (hiddenIds.has(it.id)) return false;
+      if (!q) return true;
+      return chatTitle(it).toLowerCase().includes(q);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chatTitle depends on titleOverrides
+  }, [items, hiddenIds, chatQuery, titleOverrides]);
 
   const groups: { label: string; items: HistoryItem[] }[] = [];
-  for (const it of items) {
+  for (const it of visibleItems) {
     const label = groupLabel(it.createdAt);
     const g = groups.find((x) => x.label === label);
     if (g) g.items.push(it);
     else groups.push({ label, items: [it] });
   }
+
+  const profileLabel = phoneMasked || "حساب من";
 
   const sidebarInner = (
     <div className="ar-side-panel">
@@ -224,25 +381,31 @@ export default function ArenaShell({
           </Link>
           <button
             type="button"
-            className="ar-side-close"
+            className="ar-side-close ar-side-close--drawer"
             onClick={closeDrawer}
             aria-label="بستن منو"
           >
             <IconX size={15} />
           </button>
+          <button
+            type="button"
+            className="ar-side-collapse"
+            onClick={() => setCollapsed(true)}
+            aria-label="جمع‌کردن سایدبار"
+          >
+            <IconPanel size={15} />
+          </button>
         </div>
 
         <button type="button" className="ar-newchat" onClick={startNewChat}>
           <IconNewChat size={15} />
-          گفتگوی جدید
+          گفت‌وگوی جدید
         </button>
 
         {!authed && authed !== null && (
           <p className="ar-side-hint">برای ذخیره گفتگوها وارد شوید.</p>
         )}
-      </div>
 
-      <div className="ar-side-scroll">
         <div className="ar-side-tools">
           <div className="ar-side-group-label">اصلی</div>
           <nav className="ar-side-nav" aria-label="اصلی">
@@ -254,25 +417,7 @@ export default function ArenaShell({
               <IconChat size={14} />
               <span className="ar-side-nav-item-text">چت AI</span>
             </Link>
-          </nav>
-
-          <div className="ar-side-group-label">ابزارها</div>
-          <nav className="ar-side-nav" aria-label="ابزارها">
-            {hasContentBundle && (
-              <Link
-                href="/ai/content-sales/app"
-                className={`ar-side-nav-item${pathname.startsWith("/ai/content-sales/app") ? " active" : ""}`}
-                onClick={closeDrawer}
-              >
-                <IconLayout size={14} />
-                <span className="ar-side-nav-item-text">تولید محتوا</span>
-              </Link>
-            )}
-            <button
-              type="button"
-              className="ar-side-nav-item"
-              onClick={goAnalyzeText}
-            >
+            <button type="button" className="ar-side-nav-item" onClick={goAnalyzeText}>
               <IconPen size={14} />
               <span className="ar-side-nav-item-text">تحلیل متن</span>
             </button>
@@ -284,26 +429,55 @@ export default function ArenaShell({
               <IconImage size={14} />
               <span className="ar-side-nav-item-text">ساخت عکس</span>
             </Link>
-            <span
-              className="ar-side-nav-item ar-side-nav-item--disabled"
-              aria-disabled="true"
+            <button
+              type="button"
+              className={`ar-side-nav-item ar-side-nav-item--toggle${moreToolsOpen ? " open" : ""}`}
+              onClick={() => setMoreToolsOpen((v) => !v)}
+              aria-expanded={moreToolsOpen}
             >
-              <IconVideo size={14} />
-              <span className="ar-side-nav-item-text">ساخت ویدیو</span>
-              <span className="ar-side-soon">به‌زودی</span>
-            </span>
-            <Link
-              href="/ai/music"
-              className={`ar-side-nav-item${pathname.startsWith("/ai/music") ? " active" : ""}`}
-              onClick={closeDrawer}
-            >
-              <IconMusic size={14} />
-              <span className="ar-side-nav-item-text">موزیک</span>
-            </Link>
+              <IconSpark size={14} />
+              <span className="ar-side-nav-item-text">ابزارهای بیشتر</span>
+              <IconChevronDown size={12} className="ar-side-caret" />
+            </button>
+            {moreToolsOpen && (
+              <div className="ar-side-subnav">
+                {hasContentBundle && (
+                  <Link
+                    href="/ai/content-sales/app"
+                    className={`ar-side-nav-item${pathname.startsWith("/ai/content-sales/app") ? " active" : ""}`}
+                    onClick={closeDrawer}
+                  >
+                    <IconLayout size={14} />
+                    <span className="ar-side-nav-item-text">تولید محتوا</span>
+                  </Link>
+                )}
+                <Link
+                  href="/ai/music"
+                  className={`ar-side-nav-item${pathname.startsWith("/ai/music") ? " active" : ""}`}
+                  onClick={closeDrawer}
+                >
+                  <IconMusic size={14} />
+                  <span className="ar-side-nav-item-text">موزیک</span>
+                </Link>
+                <Link
+                  href="/ai/audio"
+                  className={`ar-side-nav-item${pathname.startsWith("/ai/audio") ? " active" : ""}`}
+                  onClick={closeDrawer}
+                >
+                  <IconMic size={14} />
+                  <span className="ar-side-nav-item-text">صوت</span>
+                </Link>
+                <span className="ar-side-nav-item ar-side-nav-item--soon" aria-disabled="true">
+                  <IconVideo size={14} />
+                  <span className="ar-side-nav-item-text">ساخت ویدیو</span>
+                  <span className="ar-side-soon">به‌زودی</span>
+                </span>
+              </div>
+            )}
           </nav>
 
-          <div className="ar-side-group-label">آزمایشی</div>
-          <nav className="ar-side-nav" aria-label="آزمایشی">
+          <div className="ar-side-group-label">کشف بیشتر</div>
+          <nav className="ar-side-nav" aria-label="کشف بیشتر">
             <Link
               href="/ai/personas"
               className={`ar-side-nav-item${pathname.startsWith("/ai/personas") ? " active" : ""}`}
@@ -322,11 +496,47 @@ export default function ArenaShell({
             </Link>
           </nav>
         </div>
+      </div>
+
+      <div className="ar-side-scroll">
+        <div className="ar-side-chats-head">
+          <span className="ar-side-chats-title">گفت‌وگوها</span>
+          <button
+            type="button"
+            className={`ar-side-icon-btn${chatSearchOpen ? " active" : ""}`}
+            onClick={() => {
+              setChatSearchOpen((v) => {
+                if (v) setChatQuery("");
+                return !v;
+              });
+            }}
+            aria-label="جست‌وجوی چت"
+            aria-pressed={chatSearchOpen}
+          >
+            <IconSearch size={14} />
+          </button>
+        </div>
+
+        {chatSearchOpen && (
+          <div className="ar-side-search">
+            <input
+              ref={searchInputRef}
+              type="search"
+              className="ar-side-search-input"
+              placeholder="جست‌وجو در گفتگوها…"
+              value={chatQuery}
+              onChange={(e) => setChatQuery(e.target.value)}
+              aria-label="جست‌وجو در گفتگوها"
+            />
+          </div>
+        )}
 
         {authed && groups.length === 0 && (
-          <div className="ar-side-empty">هنوز گفتگویی نداری.</div>
+          <div className="ar-side-empty">
+            {chatQuery.trim() ? "نتیجه‌ای پیدا نشد." : "هنوز گفتگویی نداری."}
+          </div>
         )}
-        {groups.length > 0 && <div className="ar-side-group-label">چت‌ها</div>}
+
         {groups.map((g) => (
           <div key={g.label} className="ar-side-group">
             <div className="ar-side-group-label">{g.label}</div>
@@ -343,17 +553,86 @@ export default function ArenaShell({
                 ((it.tier === "audio_gen" || it.tier === "transcribe") &&
                   pathname.startsWith(`/ai/audio/${it.id}`));
               const modeLabel = historyTierLabel(it.tier, it.source);
+              const title = chatTitle(it);
+              const isRenaming = renamingId === it.id;
+              const menuOpen = menuChatId === it.id;
+
               return (
-                <Link
+                <div
                   key={`${it.source ?? "legacy"}:${it.id}`}
-                  href={href}
-                  className={`ar-side-item${active ? " active" : ""}`}
-                  onClick={closeDrawer}
-                  title={modeLabel}
+                  className={`ar-side-item-wrap${active ? " active" : ""}${menuOpen ? " menu-open" : ""}`}
+                  ref={menuOpen ? chatMenuRef : undefined}
                 >
-                  <Icon size={14} />
-                  <span className="ar-side-item-text">{it.title}</span>
-                </Link>
+                  {isRenaming ? (
+                    <form
+                      className="ar-side-rename"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        commitRename();
+                      }}
+                    >
+                      <input
+                        ref={renameInputRef}
+                        className="ar-side-rename-input"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onBlur={commitRename}
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape") {
+                            setRenamingId(null);
+                            setRenameValue("");
+                          }
+                        }}
+                        maxLength={80}
+                        aria-label="نام جدید گفتگو"
+                      />
+                    </form>
+                  ) : (
+                    <>
+                      <Link
+                        href={href}
+                        className={`ar-side-item${active ? " active" : ""}`}
+                        onClick={closeDrawer}
+                        title={modeLabel}
+                      >
+                        <Icon size={14} />
+                        <span className="ar-side-item-text">{title}</span>
+                      </Link>
+                      <button
+                        type="button"
+                        className="ar-side-item-menu-btn"
+                        aria-label="عملیات گفتگو"
+                        aria-expanded={menuOpen}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setMenuChatId(menuOpen ? null : it.id);
+                        }}
+                      >
+                        <IconDots size={14} />
+                      </button>
+                      {menuOpen && (
+                        <div className="ar-side-item-menu" role="menu">
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => startRename(it)}
+                          >
+                            تغییر نام
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className="danger"
+                            onClick={() => deleteChat(it)}
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -362,124 +641,161 @@ export default function ArenaShell({
 
       <div className="ar-side-foot">
         {credits !== null && (
-          <Link href="/ai/pricing" className="ar-side-credits" onClick={closeDrawer}>
-            <IconDiamond size={13} />
-            <b>{credits.toLocaleString("fa-IR")}</b> کردیت
-            <span className="buy">خرید</span>
-          </Link>
+          <div className="ar-side-credits">
+            <span className="ar-side-credits-left">
+              <IconDiamond size={13} />
+              <b>{credits.toLocaleString("fa-IR")}</b>
+              <span>اعتبار</span>
+            </span>
+            <Link
+              href="/ai/pricing"
+              className="ar-side-credits-buy"
+              onClick={closeDrawer}
+            >
+              خرید
+            </Link>
+          </div>
         )}
-        <nav className="ar-side-nav ar-side-nav--account" aria-label="حساب">
-          <Link
-            href="/ai/pricing"
-            className={`ar-side-nav-item${isPricingActive ? " active" : ""}`}
-            onClick={closeDrawer}
-          >
-            <IconDiamond size={14} />
-            <span className="ar-side-nav-item-text">اشتراک</span>
-          </Link>
-          <div className="ar-side-settings" ref={settingsRef}>
+
+        {authed ? (
+          <div className="ar-side-profile" ref={profileRef}>
             <button
               type="button"
-              className={`ar-side-nav-item${isSettingsActive ? " active" : ""}`}
-              onClick={() => setSettingsOpen((v) => !v)}
-              aria-expanded={settingsOpen}
+              className={`ar-side-profile-btn${profileOpen ? " open" : ""}`}
+              onClick={() => {
+                setProfileOpen((v) => !v);
+                setSettingsOpen(false);
+              }}
+              aria-expanded={profileOpen}
               aria-haspopup="menu"
             >
-              <IconSettings size={14} />
-              <span className="ar-side-nav-item-text">تنظیمات</span>
-              <span className="caret">▾</span>
+              <span className="ar-side-profile-name">{profileLabel}</span>
+              <IconChevronDown size={13} className="ar-side-caret" />
             </button>
-            {settingsOpen && (
-              <div className="ar-side-settings-pop" role="menu">
-                {authed && (
-                  <button
-                    type="button"
-                    className="ar-side-nav-item"
-                    role="menuitem"
-                    onClick={openReferral}
-                  >
-                    <IconGift size={14} />
-                    <span className="ar-side-nav-item-text">کد معرفی من</span>
-                  </button>
+            {profileOpen && (
+              <div className="ar-side-profile-pop" role="menu">
+                <Link
+                  href="/ai/pricing"
+                  className={`ar-side-nav-item${isPricingActive ? " active" : ""}`}
+                  role="menuitem"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    closeDrawer();
+                  }}
+                >
+                  <IconDiamond size={14} />
+                  <span className="ar-side-nav-item-text">اشتراک</span>
+                </Link>
+                <button
+                  type="button"
+                  className={`ar-side-nav-item${settingsOpen ? " active" : ""}`}
+                  role="menuitem"
+                  aria-expanded={settingsOpen}
+                  onClick={() => setSettingsOpen((v) => !v)}
+                >
+                  <IconSettings size={14} />
+                  <span className="ar-side-nav-item-text">تنظیمات</span>
+                  <IconChevronDown size={12} className="ar-side-caret" />
+                </button>
+                {settingsOpen && (
+                  <div className="ar-side-settings-sub">
+                    <button
+                      type="button"
+                      className="ar-side-nav-item"
+                      role="menuitem"
+                      onClick={openReferral}
+                    >
+                      <IconGift size={14} />
+                      <span className="ar-side-nav-item-text">کد معرفی من</span>
+                    </button>
+                    <Link
+                      href="/ai/support"
+                      className={`ar-side-nav-item${pathname.startsWith("/ai/support") ? " active" : ""}`}
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        closeDrawer();
+                      }}
+                    >
+                      <IconPhone size={14} />
+                      <span className="ar-side-nav-item-text">پشتیبانی</span>
+                    </Link>
+                    <Link
+                      href="/ai/features"
+                      className={`ar-side-nav-item${pathname.startsWith("/ai/features") ? " active" : ""}`}
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        closeDrawer();
+                      }}
+                    >
+                      <IconGlobe size={14} />
+                      <span className="ar-side-nav-item-text">امکانات</span>
+                    </Link>
+                    <Link
+                      href="/prompts"
+                      className="ar-side-nav-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        closeDrawer();
+                      }}
+                    >
+                      <IconGlobe size={14} />
+                      <span className="ar-side-nav-item-text">پرامپت‌های آماده</span>
+                    </Link>
+                    <Link
+                      href="/about"
+                      className="ar-side-nav-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        closeDrawer();
+                      }}
+                    >
+                      <IconGlobe size={14} />
+                      <span className="ar-side-nav-item-text">درباره آرایه</span>
+                    </Link>
+                  </div>
                 )}
-                <Link
-                  href="/ai/support"
-                  className={`ar-side-nav-item${pathname.startsWith("/ai/support") ? " active" : ""}`}
+                <button
+                  type="button"
+                  className="ar-side-nav-item ar-side-nav-item--danger"
                   role="menuitem"
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    closeDrawer();
-                  }}
+                  onClick={handleLogout}
                 >
-                  <IconPhone size={14} />
-                  <span className="ar-side-nav-item-text">پشتیبانی</span>
-                </Link>
-                <Link
-                  href="/ai/features"
-                  className={`ar-side-nav-item${pathname.startsWith("/ai/features") ? " active" : ""}`}
-                  role="menuitem"
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    closeDrawer();
-                  }}
-                >
-                  <IconGlobe size={14} />
-                  <span className="ar-side-nav-item-text">امکانات</span>
-                </Link>
-                <Link
-                  href="/prompts"
-                  className="ar-side-nav-item"
-                  role="menuitem"
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    closeDrawer();
-                  }}
-                >
-                  <IconGlobe size={14} />
-                  <span className="ar-side-nav-item-text">پرامپت‌های آماده</span>
-                </Link>
-                <Link
-                  href="/about"
-                  className="ar-side-nav-item"
-                  role="menuitem"
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    closeDrawer();
-                  }}
-                >
-                  <IconGlobe size={14} />
-                  <span className="ar-side-nav-item-text">درباره آرایه</span>
-                </Link>
+                  <IconLogout size={14} />
+                  <span className="ar-side-nav-item-text">خروج از حساب</span>
+                </button>
               </div>
             )}
           </div>
-        </nav>
-        <button type="button" className="ar-side-newchat" onClick={startNewChat}>
-          <IconNewChat size={14} />
-          گفتگوی جدید
-        </button>
-        {authed ? (
-          <button type="button" className="ar-side-auth" onClick={handleLogout}>
-            <IconLogout size={14} />
-            خروج از حساب
-          </button>
         ) : authed === false ? (
           <button type="button" className="ar-side-auth primary" onClick={handleLogin}>
             ورود / ثبت‌نام
           </button>
         ) : (
-          <span className="ar-side-auth" aria-hidden="true" />
+          <span className="ar-side-auth-placeholder" aria-hidden="true" />
         )}
       </div>
     </div>
   );
 
   return (
-    <div className="ar-shell">
+    <div className={`ar-shell${sideCollapsed ? " ar-shell--side-collapsed" : ""}`}>
       <a href="#ar-main-content" className="ar-skip-link">
         رفتن به محتوای اصلی
       </a>
       <aside className="ar-sidebar">{sidebarInner}</aside>
+
+      <button
+        type="button"
+        className="ar-side-reopen"
+        onClick={() => setCollapsed(false)}
+        aria-label="باز کردن سایدبار"
+      >
+        <IconPanel size={16} />
+      </button>
 
       <header className="ar-mobilebar">
         <button

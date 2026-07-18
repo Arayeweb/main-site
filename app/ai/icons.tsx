@@ -411,6 +411,32 @@ export function IconGift({ size = 16, className, strokeWidth = 1.6 }: IconProps)
   );
 }
 
+export function IconSearch({ size = 16, className, strokeWidth = 1.6 }: IconProps) {
+  return (
+    <svg {...base(size, className)} strokeWidth={strokeWidth}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M16.5 16.5L20 20" />
+    </svg>
+  );
+}
+
+export function IconPanel({ size = 16, className, strokeWidth = 1.6 }: IconProps) {
+  return (
+    <svg {...base(size, className)} strokeWidth={strokeWidth}>
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <path d="M10 4v16" />
+    </svg>
+  );
+}
+
+export function IconChevronDown({ size = 14, className, strokeWidth = 1.75 }: IconProps) {
+  return (
+    <svg {...base(size, className)} strokeWidth={strokeWidth}>
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 /* ---------- AI model brand marks (clean, distinct, monochrome) ---------- */
 function BrandOpenAI({ size = 20 }: IconProps) {
   return (
