@@ -10,7 +10,13 @@ type RunRow = {
   reserved_credits: number;
   charged_credits: number;
   refunded_credits: number;
-  metadata: { models?: string[]; prompt?: string; share_slug?: string; is_public?: boolean } | null;
+  metadata: {
+    models?: string[];
+    prompt?: string;
+    share_slug?: string;
+    is_public?: boolean;
+    persona_key?: string;
+  } | null;
   created_at: string;
   completed_at: string | null;
 };

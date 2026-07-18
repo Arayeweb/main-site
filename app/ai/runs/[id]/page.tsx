@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AI_COOKIE, verifyAIToken } from "@/lib/aiAuth";
+import { getPersona } from "@/lib/aiPersonas";
 import { loadRunById, serializeRun } from "@/lib/ai/runs/loadRun";
 import { loadConversationThreadByRunId } from "@/lib/ai/runs/conversationContext";
 import { threadToHydration } from "@/lib/ai/runs/types";
@@ -17,6 +18,12 @@ export default async function RunPage({ params }: { params: { id: string } }) {
   const bundle = await loadRunById(params.id);
   if (!bundle || bundle.run.user_id !== session.userId) {
     redirect("/ai");
+  }
+
+  const personaKey = bundle.run.metadata?.persona_key;
+  if (typeof personaKey === "string" && getPersona(personaKey)) {
+    const conversationId = bundle.run.conversation_id ?? bundle.run.id;
+    redirect(`/ai/personas/${personaKey}?thread=${conversationId}`);
   }
 
   const threadData = await loadConversationThreadByRunId(params.id, session.userId);

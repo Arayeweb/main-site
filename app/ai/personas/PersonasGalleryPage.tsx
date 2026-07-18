@@ -15,6 +15,7 @@ export default function PersonasGalleryPage() {
         <p className="ar-personas-lede">
           برای یادگیری، ایده‌گیری، تصمیم‌سازی و سرگرمی — نه ادعای واقعی بودن شخصیت‌ها
         </p>
+        <p className="ar-persona-disclaimer ar-persona-disclaimer--banner">{PERSONA_DISCLAIMER_FA}</p>
       </header>
 
       <ul className="ar-personas-grid">
@@ -28,7 +29,6 @@ export default function PersonasGalleryPage() {
                 <h2>{p.nameFa}</h2>
                 <p>{p.taglineFa}</p>
                 <span className="ar-persona-card-cta">{p.ctaFa}</span>
-                <span className="ar-persona-card-legal">{PERSONA_DISCLAIMER_FA}</span>
               </div>
             </Link>
           </li>

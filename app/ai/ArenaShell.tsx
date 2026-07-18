@@ -68,7 +68,8 @@ function historyHref(
   if (tier === "audio_gen" || tier === "transcribe") return `/ai/audio/${id}`;
   if (tier === "music_gen") return `/ai/music/${id}`;
   if (tier === "code_studio") return `/ai/code/${id}`;
-  if (tier === "persona" && personaKey) return `/ai/personas/${personaKey}?thread=${id}`;
+  // personaKey wins even when tier was stored as "direct" (runs pipeline)
+  if (personaKey) return `/ai/personas/${personaKey}?thread=${id}`;
   if (source === "run") return `/ai/runs/${latestRunId ?? id}`;
   return `/ai/battle/${id}`;
 }

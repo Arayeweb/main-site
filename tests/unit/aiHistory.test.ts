@@ -56,6 +56,22 @@ describe("buildRunHistoryItems", () => {
 
     expect(items).toEqual([]);
   });
+
+  it("marks runs with persona_key as persona tier", () => {
+    const items = buildRunHistoryItems([
+      {
+        id: "run-p",
+        mode: "direct",
+        metadata: { prompt: "سلام", persona_key: "elon-musk" },
+        created_at: "2026-07-06T10:00:00.000Z",
+        conversation_id: "conv-p",
+      },
+    ]);
+
+    expect(items).toHaveLength(1);
+    expect(items[0].tier).toBe("persona");
+    expect(items[0].personaKey).toBe("elon-musk");
+  });
 });
 
 describe("mergeHistoryItems", () => {

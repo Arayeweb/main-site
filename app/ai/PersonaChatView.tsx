@@ -85,7 +85,7 @@ export default function PersonaChatView({
   const [streaming, setStreaming] = useState(false);
   const [chatModel, setChatModel] = useState(modelId);
   const [err, setErr] = useState<
-    "" | "credits_out" | "ai_error" | "network_error" | "server_error" | "unauthorized" | "guest_persona_limit"
+    "" | "credits_out" | "ai_error" | "network_error" | "server_error" | "unauthorized"
   >("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
@@ -131,7 +131,7 @@ export default function PersonaChatView({
       );
     } else {
       setTurns((t) => [
-        ...t.filter((x) => x.id !== GREETING_ID || t.some((y) => y.prompt)),
+        ...t.filter((x) => x.id !== GREETING_ID),
         {
           id: tmpId,
           prompt: q,
@@ -321,17 +321,13 @@ export default function PersonaChatView({
 
   function useSample(text: string) {
     if (streaming) return;
-    if (guestMode) {
-      promptPersonaLogin();
-      return;
-    }
     setInput(text);
     taRef.current?.focus();
   }
 
   const lastTurnId = turns[turns.length - 1]?.id;
   const activeInfo = getModel(chatModel);
-  const realTurns = turns.filter((t) => t.id !== GREETING_ID || !t.prompt);
+  const hasUserTurns = turns.some((t) => t.id !== GREETING_ID && !!t.prompt);
 
   return (
     <div className="ar-persona-chat">
@@ -349,7 +345,7 @@ export default function PersonaChatView({
 
       <p className="ar-persona-disclaimer">{PERSONA_DISCLAIMER_FA}</p>
 
-      {realTurns.length === 0 && (
+      {!hasUserTurns && (
         <div className="ar-persona-samples">
           {persona.samplePrompts.map((s) => (
             <button key={s} type="button" className="ar-persona-sample-chip" onClick={() => useSample(s)}>
@@ -502,15 +498,6 @@ export default function PersonaChatView({
           {err === "unauthorized" && (
             <div className="ar-chat-err">
               برای گفتگو{" "}
-              <button type="button" className="ar-link-btn" onClick={promptPersonaLogin}>
-                وارد حساب
-              </button>{" "}
-              شو.
-            </div>
-          )}
-          {err === "guest_persona_limit" && (
-            <div className="ar-chat-err">
-              برای ادامه گفتگو{" "}
               <button type="button" className="ar-link-btn" onClick={promptPersonaLogin}>
                 وارد حساب
               </button>{" "}

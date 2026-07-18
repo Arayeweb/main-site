@@ -60,6 +60,7 @@ export function runModeToHistoryTier(mode: string): string {
 }
 
 export function historyTierLabel(tier: string, source?: "run" | "legacy"): string {
+  if (tier === "persona") return "شخصیت";
   if (source === "run") {
     if (tier === "direct") return "چت";
     if (tier === "side_by_side") return "مقایسه";
@@ -104,12 +105,13 @@ export function buildRunHistoryItems(
     );
     const first = msgs[0];
     const latest = msgs[msgs.length - 1];
+    const personaKey = first.metadata?.persona_key ?? null;
     items.push({
       id: rootId,
       latestRunId: latest.id,
       title: String(first.metadata?.prompt ?? "").slice(0, 80) || "گفتگو",
-      tier: runModeToHistoryTier(first.mode),
-      personaKey: first.metadata?.persona_key ?? null,
+      tier: personaKey ? "persona" : runModeToHistoryTier(first.mode),
+      personaKey,
       createdAt: latest.created_at,
       source: "run" as const,
     });
