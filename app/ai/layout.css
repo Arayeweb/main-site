@@ -1352,8 +1352,55 @@
 }
 
 .ar-home-stack--empty {
-  gap: 12px;
-  padding-top: 8px;
+  gap: 18px;
+  padding-top: 12px;
+  justify-content: flex-start;
+  position: relative;
+}
+
+.ar-home-stack--empty::before {
+  content: "";
+  position: absolute;
+  inset: 12% 12% auto;
+  height: min(42vh, 360px);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--ar-accent-soft) 55%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ar-home-stack--empty > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 901px) {
+  .ar-home-stack--empty {
+    padding-top: 16px;
+  }
+
+  .ar-home-stack--empty .ar-home-mode-row {
+    margin-bottom: 4vh;
+  }
+
+  .ar-home-stack--empty .ar-home-center,
+  .ar-home-stack--empty .ar-home-composer--empty,
+  .ar-home-stack--empty .ar-home-actions {
+    margin-top: 0;
+  }
+
+  /* Push the prompt+composer+actions block toward vertical center */
+  .ar-home-stack--empty .ar-home-center {
+    margin-top: auto;
+  }
+
+  .ar-home-stack--empty .ar-home-actions {
+    margin-bottom: auto;
+  }
 }
 
 .ar-home-flex-spacer {
@@ -1361,6 +1408,57 @@
   min-height: 12px;
   width: 100%;
   pointer-events: none;
+}
+
+/* ChatGPT-style action list under composer */
+.ar-home-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  width: 100%;
+  max-width: 420px;
+  margin: 4px auto 0;
+  padding: 0 20px;
+}
+
+.ar-home-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  font-family: inherit;
+  color: var(--ar-text);
+  cursor: pointer;
+  text-align: right;
+  transition: background 0.13s ease;
+}
+
+.ar-home-action:hover {
+  background: color-mix(in srgb, var(--ar-bg2) 80%, transparent);
+}
+
+.ar-home-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  color: var(--ar-text2);
+}
+
+.ar-home-action-label {
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ar-text);
 }
 
 .ar-home-suggest {
@@ -1578,56 +1676,57 @@
   padding: 4px 11px;
 }
 
-/* ---------- Mode selector — compact equal-width segmented control ---------- */
+/* ---------- Mode selector — ChatGPT-style pill toggle ---------- */
 .ar-home-mode-row {
   flex-shrink: 0;
+  display: flex;
+  justify-content: center;
   width: 100%;
   max-width: 720px;
-  margin: 18px auto 0;
-  padding: 0 20px;
+  margin: 0 auto;
+  padding: 4px 20px 0;
 }
 .ar-mode-selector {
-  width: 100%;
+  width: auto;
 }
 .ar-mode-segmented {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  background: var(--ar-bg2);
-  border: 1px solid var(--ar-border);
-  border-radius: 14px;
-  padding: 4px;
+  display: inline-grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 2px;
+  background: color-mix(in srgb, var(--ar-bg2) 88%, var(--ar-text) 4%);
+  border: none;
+  border-radius: 999px;
+  padding: 3px;
 }
 .ar-mode-seg {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  border: 1px solid transparent;
+  gap: 5px;
+  border: none;
   background: transparent;
-  border-radius: 10px;
-  height: 54px;
-  padding: 0 8px;
+  border-radius: 999px;
+  height: 34px;
+  padding: 0 14px;
   font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  color: var(--ar-text);
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  color: var(--ar-text2);
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
   min-width: 0;
+  white-space: nowrap;
 }
 .ar-mode-seg:hover {
   color: var(--ar-text);
-  background: color-mix(in srgb, var(--ar-card) 70%, transparent);
 }
 .ar-mode-seg.active {
-  background: var(--ar-accent);
-  border-color: var(--ar-accent);
-  color: var(--ar-on-ink);
-  box-shadow: 0 2px 8px rgba(99, 91, 255, 0.2);
+  background: var(--ar-card);
+  color: var(--ar-text);
+  box-shadow: 0 1px 3px rgba(17, 19, 24, 0.1), 0 0 0 1px rgba(17, 19, 24, 0.04);
 }
 .ar-mode-seg.locked:not(.active) {
-  color: var(--ar-text2);
+  color: var(--ar-text3);
 }
 .ar-mode-seg-label {
   overflow: hidden;
@@ -1820,20 +1919,14 @@
 }
 @media (max-width: 900px) {
   .ar-home-mode-row {
-    padding: 0 14px;
-    margin: 16px auto 0;
-  }
-  .ar-mode-segmented {
-    gap: 3px;
-    padding: 3px;
-    border-radius: 12px;
+    padding: 8px 14px 0;
+    margin: 0 auto;
   }
   .ar-mode-seg {
     font-size: 12.5px;
-    height: 52px;
-    gap: 5px;
-    padding: 0 4px;
-    border-radius: 9px;
+    height: 32px;
+    gap: 4px;
+    padding: 0 11px;
   }
 }
 
@@ -2078,16 +2171,29 @@
 }
 
 .ar-home-center .ar-home-prompt {
-  font-size: clamp(1.45rem, 3.6vw, 2rem);
+  font-size: clamp(1.55rem, 3.8vw, 2.15rem);
   font-weight: 600;
-  line-height: 1.32;
+  line-height: 1.3;
   margin: 0 0 8px;
   letter-spacing: -0.03em;
   max-width: 520px;
 }
 
+.ar-home-prompt--user {
+  margin-bottom: 0 !important;
+  max-width: 480px;
+}
+
 .ar-home-prompt-accent {
   color: var(--ar-accent-ink);
+}
+
+.ar-home-stack--user .ar-home-center {
+  padding-bottom: 4px;
+}
+
+.ar-home-stack--guest .ar-chat-brand-sub {
+  margin-bottom: 12px;
 }
 
 .ar-composer-foot--simple {
@@ -2133,7 +2239,8 @@
 
 .ar-composer--compact-home .ar-composer-box {
   min-height: 0;
-  border-radius: 18px;
+  border-radius: 28px;
+  box-shadow: 0 2px 12px rgba(17, 19, 24, 0.06), 0 0 0 1px color-mix(in srgb, var(--ar-border) 80%, transparent);
 }
 
 .ar-composer--compact-home textarea {
@@ -2294,8 +2401,8 @@
     align-items: center;
     padding: 8px 12px;
     gap: 10px;
-    min-height: 64px;
-    height: 64px;
+    min-height: 56px;
+    height: 56px;
     box-sizing: border-box;
   }
 
@@ -2306,21 +2413,61 @@
   }
 
   .ar-home-header--empty .ar-home-menu {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
-  }
-
-  .ar-home-marketing {
-    display: none;
   }
 
   .ar-home-stack--empty {
     justify-content: flex-start;
     padding: 0 0 max(10px, env(safe-area-inset-bottom, 0px));
-    gap: 0;
+    gap: 14px;
     overflow-x: clip;
     overflow-y: auto;
+  }
+
+  .ar-home-stack--empty::before {
+    inset: 4% 6% auto;
+    height: min(36vh, 280px);
+  }
+
+  .ar-home-center {
+    padding: 8px 16px 0;
+  }
+
+  .ar-home-center .ar-home-prompt {
+    font-size: clamp(1.25rem, 5.5vw, 1.55rem);
+    margin-bottom: 6px;
+  }
+
+  .ar-chat-brand-eyebrow {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .ar-chat-brand-sub {
+    font-size: 12.5px;
+    margin-bottom: 10px;
+  }
+
+  .ar-hero-badges {
+    margin-bottom: 0;
+  }
+
+  .ar-home-actions {
+    max-width: 100%;
+    padding: 0 14px 8px;
+    gap: 0;
+  }
+
+  .ar-home-action {
+    min-height: 42px;
+    padding: 9px 10px;
+    gap: 10px;
+  }
+
+  .ar-home-action-label {
+    font-size: 14px;
   }
 
   .ar-home-suggest {
@@ -2333,19 +2480,15 @@
   }
 
   .ar-home-mode-row {
-    padding: 0 14px;
-    margin: 16px auto 0;
+    padding: 6px 14px 0;
+    margin: 0 auto;
   }
 
   .ar-home-composer--empty {
     flex-shrink: 0;
-    padding: 6px 14px max(8px, env(safe-area-inset-bottom, 0px));
-    margin-top: auto;
-    background: linear-gradient(
-      to top,
-      var(--ar-bg) 70%,
-      color-mix(in srgb, var(--ar-bg) 70%, transparent)
-    );
+    padding: 0 14px;
+    margin-top: 0;
+    background: transparent;
   }
 
   .ar-home-composer--empty .ar-home-modelbar--inline {
@@ -2353,7 +2496,7 @@
   }
 
   .ar-composer--compact-home .ar-composer-box {
-    border-radius: 18px;
+    border-radius: 24px;
     min-height: 0;
   }
 
@@ -2382,44 +2525,40 @@
 }
 
 @media (max-width: 900px) {
-  /* Legacy mobile tweaks for non-workspace pages */
-  .ar-home-center:not(.ar-home-marketing) {
-    align-items: stretch;
-    text-align: right;
-    padding: 0 14px 2px;
+  /* Empty-home mobile — keep ChatGPT-like centered composition */
+  .ar-home-stack--empty .ar-home-center {
+    align-items: center;
+    text-align: center;
+    padding: 8px 16px 0;
   }
 
-  .ar-chat-brand-eyebrow {
-    display: none;
+  .ar-home-stack--empty .ar-chat-brand-eyebrow {
+    display: block;
   }
 
-  .ar-home-center .ar-home-prompt {
-    font-size: 1.18rem;
-    line-height: 1.45;
-    margin-bottom: 4px;
+  .ar-home-stack--empty .ar-home-center .ar-home-prompt {
+    font-size: clamp(1.25rem, 5.5vw, 1.55rem);
+    line-height: 1.35;
+    margin-bottom: 6px;
     max-width: 100%;
   }
 
-  .ar-chat-brand-sub {
+  .ar-home-stack--empty .ar-chat-brand-sub {
     max-width: 100%;
     font-size: 12.5px;
-    line-height: 1.7;
-    margin-bottom: 4px;
+    line-height: 1.65;
+    margin-bottom: 10px;
   }
 
-  .ar-hero-badges {
+  .ar-home-stack--empty .ar-hero-badges {
     gap: 5px;
-    justify-content: flex-start;
-    margin-bottom: 2px;
+    justify-content: center;
+    margin-bottom: 0;
   }
 
-  .ar-hero-badge {
-    font-size: 10px;
-    padding: 3px 8px;
-  }
-
-  .ar-home-trial-note {
-    margin-bottom: 6px;
+  .ar-home-stack--empty .ar-hero-badge {
+    font-size: 10.5px;
+    padding: 3px 9px;
   }
 
   .ar-model-bar-scroll {

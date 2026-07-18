@@ -177,6 +177,15 @@ export function IconChat({ size = 18, className, strokeWidth = 1.6 }: IconProps)
   );
 }
 
+/** Lightning bolt — حالت سریع */
+export function IconBolt({ size = 18, className, strokeWidth = 1.6 }: IconProps) {
+  return (
+    <svg {...base(size, className)} strokeWidth={strokeWidth}>
+      <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+    </svg>
+  );
+}
+
 /** Chat bubble with plus — «گفتگوی جدید» */
 export function IconNewChat({ size = 18, className, strokeWidth = 1.6 }: IconProps) {
   return (

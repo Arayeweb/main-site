@@ -14,7 +14,7 @@ import {
   IconGlobe,
   IconCode,
   IconColumns,
-  IconChat,
+  IconBolt,
   IconLayout,
   IconNewChat,
   IconPaperclip,
@@ -102,7 +102,7 @@ type ActiveSession =
     };
 
 const MODE_META: Record<Mode, { label: string; desc: string; Icon: typeof IconSwords }> = {
-  direct: { label: "سریع", desc: "یک مدل، پاسخ فوری", Icon: IconChat },
+  direct: { label: "سریع", desc: "یک مدل، پاسخ فوری", Icon: IconBolt },
   side_by_side: { label: "مقایسه", desc: "چند مدل، پاسخ کنار هم", Icon: IconColumns },
   battle: { label: "همفکری", desc: "چند AI، نقد و جمع‌بندی بهتر", Icon: IconSpark },
 };
@@ -1250,13 +1250,14 @@ export default function ArenaHomePage({
   }
 
   function renderEmptyHome() {
+    const isGuest = authBoot === "guest";
     const creditChip =
       credits !== null ? (
         <Link href="/ai/pricing" className="ar-home-header-credit" title="کردیت — خرید">
           <IconDiamond size={12} />
           <b>{credits.toLocaleString("fa-IR")}</b>
         </Link>
-      ) : authBoot === "guest" && guestDirectRemaining !== null ? (
+      ) : isGuest && guestDirectRemaining !== null ? (
         <span className="ar-home-header-credit ar-home-header-credit--guest">
           <IconDiamond size={12} />
           <b>{guestDirectRemaining.toLocaleString("fa-IR")}</b>
@@ -1276,33 +1277,10 @@ export default function ArenaHomePage({
           >
             <IconMenu size={18} />
           </button>
-          <span className="ar-home-header-brand">هوش مصنوعی آرایه</span>
+          <span className="ar-home-header-brand">آرایه AI</span>
           {creditChip}
         </header>
-        <div className="ar-home-stack ar-home-stack--empty">
-          <div className="ar-home-center ar-home-marketing">
-            <p className="ar-chat-brand-eyebrow">هوش مصنوعی آرایه</p>
-            <h1 className="ar-home-prompt">
-              هوش مصنوعی آرایه؛ یک سؤال، چند{" "}
-              <span className="ar-home-prompt-accent">AI</span>، یک پاسخ بهتر
-            </h1>
-            <p className="ar-chat-brand-sub">
-              چند مدل همزمان پاسخ می‌دهند؛ آرایه کمک می‌کند جواب بهتر را سریع‌تر پیدا کنی.
-            </p>
-            <p className="ar-chat-brand-sub ar-chat-brand-sub--muted">
-              اگر «هوش مصنوعی ارایه» یا «Araaye AI» را جست‌وجو کرده‌ای، این همان پلتفرم آرایه
-              است.
-            </p>
-            {authBoot === "guest" && (
-              <p className="ar-home-trial-note">۱۰ پیام رایگان برای شروع</p>
-            )}
-            <div className="ar-hero-badges">
-              <span className="ar-hero-badge">فارسی</span>
-              <span className="ar-hero-badge">بدون VPN</span>
-              <span className="ar-hero-badge">پرداخت تومانی</span>
-            </div>
-          </div>
-
+        <div className={`ar-home-stack ar-home-stack--empty${isGuest ? " ar-home-stack--guest" : " ar-home-stack--user"}`}>
           <div className="ar-home-mode-row">
             <ModeSelector
               value={mode}
@@ -1312,29 +1290,27 @@ export default function ArenaHomePage({
             />
           </div>
 
-          <section className="ar-home-suggest" aria-label="پیشنهادها">
-            <h2 className="ar-home-suggest-title">چه کاری می‌خوای انجام بدی؟</h2>
-            <div className="ar-suggest-grid ar-suggest-grid--home">
-              {HOME_SUGGESTIONS.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  className="ar-suggest-card"
-                  onClick={() => applyHomeSuggestion(item)}
-                >
-                  <span className="ar-suggest-icon" aria-hidden>
-                    <item.Icon size={16} />
-                  </span>
-                  <span className="ar-suggest-copy">
-                    <b>{item.title}</b>
-                    <small>{item.subtitle}</small>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <div className="ar-home-flex-spacer" aria-hidden />
+          <div className="ar-home-center">
+            {isGuest ? (
+              <>
+                <p className="ar-chat-brand-eyebrow">آرایه AI</p>
+                <h1 className="ar-home-prompt">
+                  یک سؤال؛ چند{" "}
+                  <span className="ar-home-prompt-accent">AI</span>؛ یک پاسخ بهتر
+                </h1>
+                <p className="ar-chat-brand-sub">
+                  چند مدل همزمان پاسخ می‌دهند؛ آرایه کمک می‌کند جواب بهتر را سریع‌تر پیدا کنی.
+                </p>
+                <div className="ar-hero-badges">
+                  <span className="ar-hero-badge">فارسی</span>
+                  <span className="ar-hero-badge">بدون VPN</span>
+                  <span className="ar-hero-badge">پرداخت تومانی</span>
+                </div>
+              </>
+            ) : (
+              <h1 className="ar-home-prompt ar-home-prompt--user">امروز چی تو فکرته؟</h1>
+            )}
+          </div>
 
           <div className="ar-home-composer ar-home-composer--empty">
             {(mode === "side_by_side" || mode === "battle") && (
@@ -1377,6 +1353,22 @@ export default function ArenaHomePage({
               />
             )}
           </div>
+
+          <section className="ar-home-actions" aria-label="پیشنهادها">
+            {HOME_SUGGESTIONS.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className="ar-home-action"
+                onClick={() => applyHomeSuggestion(item)}
+              >
+                <span className="ar-home-action-icon" aria-hidden>
+                  <item.Icon size={16} />
+                </span>
+                <span className="ar-home-action-label">{item.title}</span>
+              </button>
+            ))}
+          </section>
 
           {children}
         </div>
