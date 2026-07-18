@@ -33,7 +33,6 @@ import ModeSelector from "./ModeSelector";
 import HomeCompactDropdown from "./HomeCompactDropdown";
 import { invalidateArenaAuthCache, useArenaAuth } from "./ArenaAuthContext";
 import { ArenaChatSkeleton, ArenaPageSkeleton } from "./ArenaSkeleton";
-import { INTENT_CARD_LINKS } from "@/lib/aiIntentLandings";
 import {
   getStoredAiLandingType,
   trackAiFirstMessage,
@@ -1378,20 +1377,6 @@ export default function ArenaHomePage({
               />
             )}
           </div>
-
-          <section className="ar-home-intent" aria-labelledby="ar-home-intent-title">
-            <h2 id="ar-home-intent-title" className="ar-home-intent-title">
-              آرایه AI برای چه کاری می‌خواهی؟
-            </h2>
-            <div className="ar-home-intent-grid">
-              {INTENT_CARD_LINKS.map((card) => (
-                <Link key={card.href} href={card.href} className="ar-home-intent-card">
-                  <b>{card.label}</b>
-                  <small>{card.desc}</small>
-                </Link>
-              ))}
-            </div>
-          </section>
 
           {children}
         </div>

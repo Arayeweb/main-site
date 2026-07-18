@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import ArenaHomePage from "./ArenaHomePage";
-import AiLandingSeoContent from "@/components/ai/AiLandingSeoContent";
 import { canonicalUrl } from "@/lib/siteUrl";
 
 const AI_TITLE = "هوش مصنوعی آرایه | مقایسه ChatGPT، Claude و Gemini";
@@ -21,9 +20,5 @@ export const metadata: Metadata = {
 };
 
 export default function AIPage() {
-  return (
-    <ArenaHomePage>
-      <AiLandingSeoContent />
-    </ArenaHomePage>
-  );
+  return <ArenaHomePage />;
 }
