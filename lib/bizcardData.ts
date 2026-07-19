@@ -102,10 +102,3 @@ export const bizcardFaq = [
     a: "رستوران، پزشک، آرایشگاه، مغازه، تعمیرگاه، آموزشگاه — هر کسب‌وکاری که مشتری باید راه تماس و آدرس را سریع پیدا کند.",
   },
 ];
-
-export const bizcardFomoItems = [
-  { name: "سارا ک.", biz: "آرایشگاه — تهران", av: "س", gradient: "from-violet-500 to-violet-700" },
-  { name: "محمد ر.", biz: "رستوران — اصفهان", av: "م", gradient: "from-brand-500 to-brand-700" },
-  { name: "زهرا م.", biz: "مطب پزشکی — شیراز", av: "ز", gradient: "from-emerald-500 to-emerald-700" },
-  { name: "علی ح.", biz: "تعمیرگاه — مشهد", av: "ع", gradient: "from-orange-500 to-orange-600" },
-];

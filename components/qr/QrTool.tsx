@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QR_COLORS } from "@/lib/qrData";
-import { drawColoredQr, loadQrcode } from "@/lib/qrcodeClient";
+import { buildQrDataUrl } from "@/lib/qrcodeClient";
 
 export default function QrTool({
   prefillText,
@@ -11,51 +11,44 @@ export default function QrTool({
 } = {}) {
   const [text, setText] = useState(prefillText ?? "");
   const [color, setColor] = useState<string>(QR_COLORS[0]);
-  const [downloadUrl, setDownloadUrl] = useState("");
-  const [emptyMsg, setEmptyMsg] = useState("QR کد اینجا نمایش داده می‌شه");
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [status, setStatus] = useState<"empty" | "ready" | "error">("empty");
+  const [errorMsg, setErrorMsg] = useState("");
+  const requestId = useRef(0);
 
   useEffect(() => {
     if (prefillText) setText(prefillText);
   }, [prefillText]);
 
-  const render = useCallback(async () => {
-    const wrap = wrapRef.current;
-    if (!wrap) return;
+  useEffect(() => {
     const value = text.trim();
     if (!value) {
-      wrap.innerHTML = "";
-      setDownloadUrl("");
-      setEmptyMsg("QR کد اینجا نمایش داده می‌شه");
+      setPreviewUrl("");
+      setStatus("empty");
+      setErrorMsg("");
       return;
     }
-    try {
-      const qrcode = await loadQrcode();
-      const qr = qrcode(0, "M");
-      qr.addData(value);
-      qr.make();
-      const canvas = drawColoredQr(qr, color);
-      wrap.innerHTML = "";
-      wrap.appendChild(canvas);
-      setDownloadUrl(canvas.toDataURL("image/png"));
-      setEmptyMsg("");
-    } catch {
-      wrap.innerHTML = "";
-      setDownloadUrl("");
-      setEmptyMsg("متن خیلی طولانی است — کوتاه‌ترش کنید");
-    }
-  }, [text, color]);
 
-  useEffect(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      void render();
+    const id = ++requestId.current;
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const url = await buildQrDataUrl(value, color);
+          if (id !== requestId.current) return;
+          setPreviewUrl(url);
+          setStatus("ready");
+          setErrorMsg("");
+        } catch {
+          if (id !== requestId.current) return;
+          setPreviewUrl("");
+          setStatus("error");
+          setErrorMsg("ساخت QR ممکن نشد — متن را کوتاه‌تر کنید یا دوباره تلاش کنید");
+        }
+      })();
     }, 200);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [render]);
+
+    return () => clearTimeout(timer);
+  }, [text, color]);
 
   return (
     <section id="tool" className="pb-12 sm:pb-16">
@@ -93,19 +86,29 @@ export default function QrTool({
           </div>
 
           <div className="flex flex-col items-center gap-3">
-            <div
-              ref={wrapRef}
-              className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-2xl border border-navy-100 bg-white p-2"
-            >
-              {emptyMsg ? (
-                <p className="px-3 text-center text-xs text-navy-400">{emptyMsg}</p>
-              ) : null}
+            <div className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-2xl border border-navy-100 bg-white p-2">
+              {status === "ready" && previewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previewUrl}
+                  alt="پیش‌نمایش QR کد"
+                  width={180}
+                  height={180}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <p className="px-3 text-center text-xs text-navy-400">
+                  {status === "error"
+                    ? errorMsg
+                    : "QR کد اینجا نمایش داده می‌شه"}
+                </p>
+              )}
             </div>
             <a
-              href={downloadUrl || undefined}
+              href={previewUrl || undefined}
               download="araaye-qr.png"
               className={`w-full rounded-xl px-4 py-3 text-center text-sm font-bold transition ${
-                downloadUrl
+                previewUrl
                   ? "bg-brand-600 text-white shadow-soft hover:bg-brand-700"
                   : "pointer-events-none bg-navy-200 text-navy-500"
               }`}

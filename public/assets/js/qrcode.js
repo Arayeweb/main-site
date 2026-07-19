@@ -2286,12 +2286,9 @@ var qrcode = function() {
 
 }();
 
-(function (factory) {
-  if (typeof define === 'function' && define.amd) {
-      define([], factory);
-  } else if (typeof exports === 'object') {
-      module.exports = factory();
-  }
-}(function () {
-    return qrcode;
-}));
+// Browser global is already assigned via `var qrcode` above.
+// Avoid broken UMD that checks `exports` then writes `module.exports`
+// (throws ReferenceError in some browser environments → Sentry).
+if (typeof module === "object" && module.exports) {
+  module.exports = qrcode;
+}

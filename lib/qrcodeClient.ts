@@ -10,30 +10,69 @@ export type QrCodeInstance = {
 
 type QrCodeFactory = (typeNumber: number, errorCorrectionLevel: string) => QrCodeInstance;
 
+declare global {
+  interface Window {
+    qrcode?: QrCodeFactory;
+  }
+}
+
 let loadPromise: Promise<QrCodeFactory> | null = null;
+
+function getFactory(): QrCodeFactory | null {
+  return typeof window.qrcode === "function" ? window.qrcode : null;
+}
 
 export function loadQrcode(): Promise<QrCodeFactory> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("qrcode only available in browser"));
   }
 
-  const existing = (window as unknown as { qrcode?: QrCodeFactory }).qrcode;
-  if (typeof existing === "function") {
-    return Promise.resolve(existing);
-  }
+  const existing = getFactory();
+  if (existing) return Promise.resolve(existing);
 
   if (loadPromise) return loadPromise;
 
   loadPromise = new Promise((resolve, reject) => {
+    const finishOk = () => {
+      const factory = getFactory();
+      if (factory) {
+        resolve(factory);
+        return;
+      }
+      loadPromise = null;
+      reject(new Error("qrcode failed to load"));
+    };
+
+    const finishErr = (err: Error) => {
+      loadPromise = null;
+      reject(err);
+    };
+
+    const prev = document.querySelector<HTMLScriptElement>('script[data-araaye-qrcode="1"]');
+    if (prev) {
+      // Script already injected; wait briefly for global
+      const start = Date.now();
+      const poll = () => {
+        if (getFactory()) {
+          finishOk();
+          return;
+        }
+        if (Date.now() - start > 5000) {
+          finishErr(new Error("qrcode script timeout"));
+          return;
+        }
+        requestAnimationFrame(poll);
+      };
+      poll();
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = "/assets/js/qrcode.js";
     script.async = true;
-    script.onload = () => {
-      const factory = (window as unknown as { qrcode?: QrCodeFactory }).qrcode;
-      if (typeof factory === "function") resolve(factory);
-      else reject(new Error("qrcode failed to load"));
-    };
-    script.onerror = () => reject(new Error("qrcode script error"));
+    script.dataset.araayeQrcode = "1";
+    script.onload = () => finishOk();
+    script.onerror = () => finishErr(new Error("qrcode script error"));
     document.head.appendChild(script);
   });
 
@@ -64,4 +103,12 @@ export function drawColoredQr(
     }
   }
   return canvas;
+}
+
+export async function buildQrDataUrl(text: string, color: string): Promise<string> {
+  const qrcode = await loadQrcode();
+  const qr = qrcode(0, "M");
+  qr.addData(text);
+  qr.make();
+  return drawColoredQr(qr, color).toDataURL("image/png");
 }

@@ -8,7 +8,6 @@ import BizcardFeatures from "@/components/bizcard/BizcardFeatures";
 import BizcardTestimonials from "@/components/bizcard/BizcardTestimonials";
 import BizcardFaq from "@/components/bizcard/BizcardFaq";
 import BizcardFinalCta from "@/components/bizcard/BizcardFinalCta";
-import BizcardFomoToast from "@/components/bizcard/BizcardFomoToast";
 import BizcardStickyCta from "@/components/bizcard/BizcardStickyCta";
 import ToolHubLinks from "@/components/tools/ToolHubLinks";
 import ToolHubIndex from "@/components/tools/ToolHubIndex";
@@ -65,7 +64,6 @@ export default function BizcardPage() {
       </main>
       <Footer />
       <BizcardStickyCta />
-      <BizcardFomoToast />
     </>
   );
 }
