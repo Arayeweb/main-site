@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 import "./ai.css";
 import ArenaLayoutClient from "./ArenaLayoutClient";
 import ArenaRscChrome from "./ArenaRscChrome";
+import PWABootSplash from "./PWABootSplash";
+import PWARegister from "./PWARegister";
+import PWASplashMarkup from "./PWASplashMarkup";
 import AiCampaignTracking from "@/components/ai/AiCampaignTracking";
 import AiPostHogProvider from "@/components/analytics/AiPostHogProvider";
 import { AI_COOKIE, verifyAIToken } from "@/lib/aiAuth";
@@ -30,9 +33,10 @@ export const metadata: Metadata = {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/assets/logo-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/assets/ai-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/assets/ai-icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: "/assets/apple-touch-icon.png",
+    apple: "/assets/ai-icon-192.png",
   },
 };
 
@@ -49,6 +53,15 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
   return (
     <AiPostHogProvider>
       <div className="ar-root">
+        <PWASplashMarkup />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{if(sessionStorage.getItem('ar-pwa-splash-done')==='1'){document.documentElement.dataset.arSplashDone='1';}}catch(e){}})();",
+          }}
+        />
+        <PWABootSplash />
+        <PWARegister />
         <ArenaRscChrome />
         <AiCampaignTracking />
         <ArenaLayoutClient

@@ -3,29 +3,63 @@
   "short_name": "آرایه AI",
   "description": "GPT، Claude، Gemini، Grok و DeepSeek در یک جا — با پرداخت تومان و بدون VPN.",
   "id": "/ai",
-  "start_url": "/ai",
+  "start_url": "/ai?utm_source=pwa",
   "scope": "/ai",
   "display": "standalone",
+  "display_override": ["standalone", "browser"],
+  "orientation": "portrait-primary",
   "dir": "rtl",
   "lang": "fa",
-  "background_color": "#F7F5EF",
-  "theme_color": "#F7F5EF",
+  "background_color": "#F6F7F9",
+  "theme_color": "#F6F7F9",
+  "categories": ["productivity", "utilities"],
   "icons": [
     {
-      "src": "/assets/logo-icon-192.png",
+      "src": "/assets/ai-icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/assets/logo-icon-192.png",
-      "sizes": "192x192",
+      "src": "/assets/ai-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/ai-icon-maskable-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
       "src": "/assets/logo-icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "چت AI",
+      "short_name": "چت",
+      "description": "شروع گفتگو با آرایه AI",
+      "url": "/ai?utm_source=pwa_shortcut&utm_content=chat",
+      "icons": [{ "src": "/assets/ai-icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "تولید تصویر",
+      "short_name": "تصویر",
+      "description": "استودیو تصویر آرایه AI",
+      "url": "/ai/image?utm_source=pwa_shortcut&utm_content=image",
+      "icons": [{ "src": "/assets/ai-icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "تولید ویدئو",
+      "short_name": "ویدئو",
+      "description": "استودیو ویدئو آرایه AI",
+      "url": "/ai/video?utm_source=pwa_shortcut&utm_content=video",
+      "icons": [{ "src": "/assets/ai-icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

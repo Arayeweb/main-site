@@ -1305,6 +1305,96 @@ a.ar-composer-tool-btn {
   white-space: nowrap;
 }
 
+/* PWA boot splash — only visible in installed / standalone mode */
+.ar-pwa-splash {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, #eef0ff 0%, transparent 55%),
+    linear-gradient(180deg, #f6f7f9 0%, #eef1f6 100%);
+  color: var(--ar-text);
+  opacity: 1;
+  transition: opacity 0.28s ease;
+  pointer-events: all;
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  .ar-pwa-splash {
+    display: flex;
+  }
+}
+
+html[data-ar-splash-done] .ar-pwa-splash {
+  display: none !important;
+}
+
+.ar-pwa-splash--out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ar-pwa-splash-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+}
+
+.ar-pwa-splash-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  object-fit: contain;
+  animation: ar-pwa-splash-pop 0.55s ease both;
+}
+
+.ar-pwa-splash-brand {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ar-ink);
+}
+
+.ar-pwa-splash-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ar-text2);
+}
+
+.ar-pwa-splash-spinner {
+  width: 28px;
+  height: 28px;
+  margin-top: 4px;
+  border-radius: 50%;
+  border: 2.5px solid var(--ar-border);
+  border-top-color: var(--ar-accent);
+  animation: ar-pwa-splash-spin 0.7s linear infinite;
+}
+
+@keyframes ar-pwa-splash-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ar-pwa-splash-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 /* PWA + Telegram banners */
 .ar-pwa-banner,
 .ar-telegram-banner {

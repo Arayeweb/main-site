@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F6F7F9" />
+    <title>آفلاین — آرایه AI</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: Vazirmatn, -apple-system, "Segoe UI", Tahoma, sans-serif;
+        background:
+          radial-gradient(ellipse 80% 50% at 50% 0%, #eef0ff 0%, transparent 55%),
+          linear-gradient(180deg, #f6f7f9 0%, #eef1f6 100%);
+        color: #111318;
+        text-align: center;
+      }
+      main {
+        max-width: 360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      img {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+      }
+      h1 {
+        margin: 8px 0 0;
+        font-size: 22px;
+        font-weight: 800;
+      }
+      p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.7;
+        color: #667085;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 12px;
+      }
+      a,
+      button {
+        appearance: none;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      button {
+        background: #635bff;
+        color: #fff;
+      }
+      a {
+        background: #fff;
+        color: #111318;
+        border: 1px solid #e3e7ee;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/assets/ai-icon-192.png" alt="" width="72" height="72" />
+      <h1>آرایه AI</h1>
+      <p>الان آفلاین هستید. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.</p>
+      <div class="actions">
+        <button type="button" onclick="location.reload()">تلاش دوباره</button>
+        <a href="/ai">بازگشت به آرایه AI</a>
+      </div>
+    </main>
+  </body>
+</html>
