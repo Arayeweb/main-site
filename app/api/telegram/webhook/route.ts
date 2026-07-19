@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { handleTelegramUpdate, type TelegramUpdate } from "@/lib/telegram/handler";
 import { checkWebhookRateLimit } from "@/lib/telegram/rateLimit";
 import { getTelegramConfig } from "@/lib/telegram/config";
-import { tgDebugLog } from "@/lib/telegram/debugLog";
+import { tgDebugLog } from "@/lib/debugLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

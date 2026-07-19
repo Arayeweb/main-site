@@ -71,7 +71,7 @@ import {
   runTelegramFreeImageGen,
   telegramImageCreditCost,
 } from "./imageGen";
-import { tgDebugLog } from "./debugLog";
+import { tgDebugLog } from "@/lib/debugLog";
 
 export interface TelegramUpdate {
   update_id: number;

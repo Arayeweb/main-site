@@ -5,7 +5,7 @@
 import { getTelegramConfig } from "./config";
 import { getChatMember } from "./api";
 import { setMembershipFlags } from "./users";
-import { tgDebugLog } from "./debugLog";
+import { tgDebugLog } from "@/lib/debugLog";
 
 export type MembershipResult =
   | { ok: true; joinedMain: boolean; joinedSales: boolean; allJoined: boolean }
