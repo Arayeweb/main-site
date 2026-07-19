@@ -10,7 +10,11 @@ import BizcardFaq from "@/components/bizcard/BizcardFaq";
 import BizcardFinalCta from "@/components/bizcard/BizcardFinalCta";
 import BizcardFomoToast from "@/components/bizcard/BizcardFomoToast";
 import BizcardStickyCta from "@/components/bizcard/BizcardStickyCta";
+import ToolHubLinks from "@/components/tools/ToolHubLinks";
+import ToolHubIndex from "@/components/tools/ToolHubIndex";
 import { bizcardFaq } from "@/lib/bizcardData";
+import { getPublishedToolPages } from "@/lib/tools/toolRegistry";
+import { buildToolHubJsonLd } from "@/lib/tools/toolSeo";
 
 export const metadata: Metadata = {
   title: "کارت ویزیت دیجیتال رایگان | لینک اختصاصی + QR کد — آرایه",
@@ -26,28 +30,17 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebPage",
-      name: "کارت ویزیت دیجیتال رایگان",
-      description: "ساخت کارت ویزیت دیجیتال رایگان با لینک اختصاصی و QR کد",
-      url: "https://araaye.com/bizcard",
-      provider: { "@type": "Organization", name: "آرایه", url: "https://araaye.com" },
-    },
-    {
-      "@type": "FAQPage",
-      mainEntity: bizcardFaq.map((item) => ({
-        "@type": "Question",
-        name: item.q,
-        acceptedAnswer: { "@type": "Answer", text: item.a },
-      })),
-    },
-  ],
-};
-
 export default function BizcardPage() {
+  const children = getPublishedToolPages("bizcard");
+  const jsonLd = buildToolHubJsonLd({
+    hub: "bizcard",
+    name: "کارت ویزیت دیجیتال رایگان آرایه",
+    description:
+      "ساخت کارت ویزیت دیجیتال رایگان با لینک اختصاصی، QR کد، نقشه و شبکه‌های اجتماعی.",
+    faqs: bizcardFaq,
+    children,
+  });
+
   return (
     <>
       <script
@@ -61,8 +54,14 @@ export default function BizcardPage() {
         <BizcardSteps />
         <BizcardFeatures />
         <BizcardTestimonials />
+        <ToolHubIndex
+          hub="bizcard"
+          title="برای چه کسب‌وکارهایی؟"
+          subtitle="کارت ویزیت دیجیتال مخصوص رستوران، پزشک، وکیل، آرایشگاه و بیشتر"
+        />
         <BizcardFaq />
         <BizcardFinalCta />
+        <ToolHubLinks current="/bizcard" />
       </main>
       <Footer />
       <BizcardStickyCta />

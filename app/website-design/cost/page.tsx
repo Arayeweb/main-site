@@ -99,6 +99,7 @@ const internalLinks = [
   { href: "/fastweb", label: "سایت فوری FastWeb" },
   { href: "/doctors", label: "طراحی سایت پزشکان" },
   { href: "/website/clinic", label: "طراحی سایت کلینیک" },
+  { href: "/website-design/restaurant", label: "طراحی سایت رستوران" },
   { href: "/blog/website-design-order-checklist", label: "چک‌لیست سفارش طراحی سایت" },
   { href: "/blog/instagram-page-to-website", label: "تبدیل پیج اینستاگرام به سایت" },
 ];

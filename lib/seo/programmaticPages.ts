@@ -81,10 +81,11 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
     ],
     relatedSlugs: ["restaurant", "clinic", "beauty-clinic"],
   },
+  // Sales landing lives at /website-design/restaurant; /website/restaurant redirects there.
   {
     slug: "restaurant",
     productType: "website",
-    status: "published",
+    status: "draft",
     primaryKeyword: "طراحی سایت رستوران",
     secondaryKeywords: [
       "طراحی سایت رستوران و فست‌فود",

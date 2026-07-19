@@ -22,7 +22,6 @@ describe("programmaticPages", () => {
         "lawyer",
         "photographer",
         "private-tutor",
-        "restaurant",
         "service-company",
       ].sort(),
     );
@@ -34,6 +33,7 @@ describe("programmaticPages", () => {
 
   it("marks draft industries as noindex candidates", () => {
     expect(isPublishedIndustryPage("website", "cafe")).toBe(false);
+    expect(isPublishedIndustryPage("website", "restaurant")).toBe(false);
     expect(isPublishedIndustryPage("seo", "restaurant")).toBe(false);
     expect(isPublishedIndustryPage("website", "dentist")).toBe(true);
     expect(isPublishedIndustryPage("seo", "lawyer")).toBe(true);

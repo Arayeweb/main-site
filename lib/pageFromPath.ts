@@ -17,6 +17,11 @@ export function pageFromPath(p: unknown): string | null {
     return `${industry[1].toLowerCase()}/${industry[2].toLowerCase()}`;
   }
 
+  // لندینگ فروش رستوران زیر hub طراحی‌سایت
+  if (/^\/website-design\/restaurant(?:\/.*)?$/i.test(path)) {
+    return "restaurant";
+  }
+
   // اولویت ۲: لندینگ‌های شناخته‌شده (رفتار قبلی؛ بدون شکستن منبع‌های موجود)
   // مثال: /seo → seo ، /doctors → doctors ، /clinic → clinic
   const legacyExact = path.match(/^\/(clinic|doctors|restaurant|googlesabt|seo|bizcard|modares)(?:\/.*)?$/i);

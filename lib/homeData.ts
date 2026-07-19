@@ -169,11 +169,11 @@ export const solutions: SolutionItem[] = [
   {
     title: "Araaye BizCard",
     key: "bizcard",
-    url: "#cta",
+    url: "/bizcard",
     description:
       "کارت ویزیت دیجیتال و لینک همه‌کاره برای معرفی حرفه‌ای، تماس سریع و دسترسی راحت‌تر.",
     icon: "scanLine",
-    cta: "مشاوره رایگان",
+    cta: "ساخت کارت رایگان",
     accent: "from-navy-700 to-brand-700",
   },
 ];
@@ -418,10 +418,18 @@ export const footerColumns: FooterColumn[] = [
       { label: "طراحی سایت", url: "/website-design" },
       { label: "آرایه SEO", url: "/seo" },
       { label: "AdReady", url: "/adready" },
+      { label: "ثبت گوگل مپ", url: "/googlesabt" },
       { label: "پزشکان و کلینیک‌ها", url: "/doctors" },
       { label: "هوش مصنوعی آرایه", url: "/ai" },
-      { label: "آرایه AI", url: "/ai" },
       { label: "مقایسه هوش مصنوعی", url: "/ai/compare" },
+    ],
+  },
+  {
+    title: "ابزارهای رایگان",
+    links: [
+      { label: "کارت ویزیت دیجیتال", url: "/bizcard" },
+      { label: "کوتاه‌کننده لینک", url: "/shortener" },
+      { label: "ساخت QR کد", url: "/qr" },
     ],
   },
   {
@@ -431,6 +439,7 @@ export const footerColumns: FooterColumn[] = [
       { label: "سئو کلینیک", url: "/seo/clinic" },
       { label: "طراحی سایت پزشک", url: "/doctors" },
       { label: "طراحی سایت کلینیک", url: "/website/clinic" },
+      { label: "طراحی سایت رستوران", url: "/website-design/restaurant" },
     ],
   },
   {

@@ -10,13 +10,13 @@ export default function GooglesabtHero() {
           ثبت گوگل مپ + لینک همه‌کاره
         </span>
         <h1 className="mx-auto max-w-3xl text-3xl font-extrabold leading-tight text-navy-900 sm:text-4xl lg:text-[2.75rem]">
-          کسب‌وکارت را روی{" "}
-          <span className="text-[#4285F4]">گوگل، نشان و بلد</span>{" "}
-          ثبت کن — مشتری‌های نزدیکت پیدات کنن
+          ثبت کسب‌وکار در{" "}
+          <span className="text-[#4285F4]">گوگل مپ</span>
+          {" "}از ۵۹۰ هزار تومان
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-500 sm:text-base">
-          با ثبت یکروزه روی نقشه‌ها، همین فردا مشتری‌های نزدیکت{" "}
-          <strong className="font-bold text-navy-700">تو را پیدا می‌کنند، نه رقیبت را.</strong>{" "}
+          ثبت در گوگل، نشان، بلد و اسنپ — تا مشتری‌های نزدیک{" "}
+          <strong className="font-bold text-navy-700">تو را پیدا کنند، نه رقیبت را.</strong>{" "}
           از پکیج محبوب، لینک BizCard با همه مسیریاب‌ها روی یک آدرس تحویل می‌گیرید.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-[12px] text-navy-500">

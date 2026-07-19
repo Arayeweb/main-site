@@ -6,6 +6,7 @@ import OutputSamples from "@/components/home/OutputSamples";
 import CollaborationProcess from "@/components/home/CollaborationProcess";
 import DoctorsSpecialtySection from "@/components/home/DoctorsSpecialtySection";
 import AraayeAiTeaser from "@/components/home/AraayeAiTeaser";
+import HomeToolsSection from "@/components/home/HomeToolsSection";
 import HomeBrandServices from "@/components/home/HomeBrandServices";
 import HomeCompanyIdentity from "@/components/home/HomeCompanyIdentity";
 import HomeFaq from "@/components/home/HomeFaq";
@@ -76,6 +77,7 @@ export default function HomePage() {
         <CollaborationProcess />
         <DoctorsSpecialtySection />
         <AraayeAiTeaser />
+        <HomeToolsSection />
         <HomeFaq />
         <HomeCompanyIdentity />
         <CTA />

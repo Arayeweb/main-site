@@ -35,6 +35,8 @@ describe("sitemapRoutes", () => {
     expect(SITEMAP_PATHS).toContain("/website/dentist");
     expect(SITEMAP_PATHS).toContain("/website/beauty-clinic");
     expect(SITEMAP_PATHS).toContain("/blog/jozb-shagerd-khososi");
+    expect(SITEMAP_PATHS).toContain("/website-design/restaurant");
+    expect(SITEMAP_PATHS).not.toContain("/restaurant");
   });
 
   it("does not list draft industry routes", () => {

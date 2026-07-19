@@ -920,6 +920,14 @@ export const seoFooterColumns: SeoFooterColumn[] = [
     links: [{ label: "ثبت و تکمیل حضور در گوگل", url: "/googlesabt" }],
   },
   {
+    title: "ابزارهای رایگان",
+    links: [
+      { label: "کارت ویزیت دیجیتال", url: "/bizcard" },
+      { label: "کوتاه‌کننده لینک", url: "/shortener" },
+      { label: "ساخت QR کد", url: "/qr" },
+    ],
+  },
+  {
     title: "راهکار پزشکان",
     links: [{ label: "سئو و وب پزشکان", url: "/doctors" }],
   },

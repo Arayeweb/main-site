@@ -27,6 +27,29 @@ const solutionLinks = [
     description: "صفحه فروش سریع برای کمپین تبلیغاتی",
     href: "/adready",
   },
+  {
+    label: "ثبت گوگل مپ",
+    description: "ثبت کسب‌وکار در گوگل، نشان، بلد و اسنپ",
+    href: "/googlesabt",
+  },
+] as const;
+
+const toolLinks = [
+  {
+    label: "کارت ویزیت دیجیتال",
+    description: "لینک اختصاصی، QR کد و تماس در یک صفحه",
+    href: "/bizcard",
+  },
+  {
+    label: "کوتاه‌کننده لینک",
+    description: "لینک کوتاه رایگان با آدرس دلخواه",
+    href: "/shortener",
+  },
+  {
+    label: "ساخت QR کد",
+    description: "QR رایگان از لینک، متن و بیشتر",
+    href: "/qr",
+  },
 ] as const;
 
 const navLinks = [
@@ -64,6 +87,24 @@ function isNavLinkActive(pathname: string, href: string) {
   return false;
 }
 
+function isSolutionsActive(pathname: string) {
+  return (
+    pathname.startsWith("/website-design") ||
+    pathname.startsWith("/fastweb") ||
+    pathname.startsWith("/seo") ||
+    pathname.startsWith("/adready") ||
+    pathname.startsWith("/googlesabt")
+  );
+}
+
+function isToolsActive(pathname: string) {
+  return (
+    pathname.startsWith("/bizcard") ||
+    pathname.startsWith("/shortener") ||
+    pathname.startsWith("/qr")
+  );
+}
+
 function NavLinkLabel({ link }: { link: (typeof navLinks)[number] }) {
   if ("shortLabel" in link && link.shortLabel) {
     return (
@@ -74,6 +115,38 @@ function NavLinkLabel({ link }: { link: (typeof navLinks)[number] }) {
     );
   }
   return <>{link.label}</>;
+}
+
+type DropdownItem = { label: string; description: string; href: string };
+
+function DropdownMenu({
+  items,
+  onClose,
+}: {
+  items: readonly DropdownItem[];
+  onClose: () => void;
+}) {
+  return (
+    <div
+      role="menu"
+      className="absolute right-0 top-[calc(100%+0.35rem)] z-50 w-72 rounded-2xl border border-navy-100 bg-white p-2 shadow-xl"
+    >
+      {items.map((item) => (
+        <a
+          key={item.href}
+          role="menuitem"
+          href={item.href}
+          onClick={onClose}
+          className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-navy-50"
+        >
+          <span className="block text-[13px] font-bold text-navy-900">{item.label}</span>
+          <span className="mt-0.5 block text-[12px] leading-relaxed text-navy-500">
+            {item.description}
+          </span>
+        </a>
+      ))}
+    </div>
+  );
 }
 
 export default function Navbar({
@@ -87,8 +160,11 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [mobileSolutionsOpen, setMobileSolutionsOpen] = useState(false);
+  const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const solutionsRef = useRef<HTMLLIElement>(null);
+  const toolsRef = useRef<HTMLLIElement>(null);
   const onDarkHero = tone === "dark-hero" && !scrolled;
   const opensChat = ctaHref === CHAT_CTA_HREF;
 
@@ -107,14 +183,20 @@ export default function Navbar({
   }, [open]);
 
   useEffect(() => {
-    if (!solutionsOpen) return;
+    if (!solutionsOpen && !toolsOpen) return;
     const onPointerDown = (event: MouseEvent) => {
       if (!solutionsRef.current?.contains(event.target as Node)) {
         setSolutionsOpen(false);
       }
+      if (!toolsRef.current?.contains(event.target as Node)) {
+        setToolsOpen(false);
+      }
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSolutionsOpen(false);
+      if (event.key === "Escape") {
+        setSolutionsOpen(false);
+        setToolsOpen(false);
+      }
     };
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
@@ -122,7 +204,7 @@ export default function Navbar({
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [solutionsOpen]);
+  }, [solutionsOpen, toolsOpen]);
 
   function handleCtaClick(event: React.MouseEvent<HTMLAnchorElement>) {
     if (onCtaClick) {
@@ -142,6 +224,8 @@ export default function Navbar({
     : "hidden sm:inline-flex items-center justify-center gap-2 rounded-lg bg-navy-900 px-4 py-2 text-[13px] font-bold text-white transition-all duration-200 hover:bg-navy-800 active:scale-[0.98]";
 
   const showBar = scrolled || solid;
+  const solutionsActive = isSolutionsActive(pathname);
+  const toolsActive = isToolsActive(pathname);
 
   return (
     <>
@@ -163,39 +247,42 @@ export default function Navbar({
             <li ref={solutionsRef} className="relative">
               <button
                 type="button"
-                className={`inline-flex items-center gap-1 ${linkClass(onDarkHero)}`}
+                className={`inline-flex items-center gap-1 ${linkClass(onDarkHero, solutionsActive)}`}
                 aria-expanded={solutionsOpen}
                 aria-haspopup="menu"
-                onClick={() => setSolutionsOpen((value) => !value)}
+                onClick={() => {
+                  setSolutionsOpen((value) => !value);
+                  setToolsOpen(false);
+                }}
               >
                 راهکارها
                 <span aria-hidden="true" className="text-[11px] opacity-70">
                   ▾
                 </span>
               </button>
-
               {solutionsOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 top-[calc(100%+0.35rem)] z-50 w-72 rounded-2xl border border-navy-100 bg-white p-2 shadow-xl"
-                >
-                  {solutionLinks.map((item) => (
-                    <a
-                      key={item.href}
-                      role="menuitem"
-                      href={item.href}
-                      onClick={() => setSolutionsOpen(false)}
-                      className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-navy-50"
-                    >
-                      <span className="block text-[13px] font-bold text-navy-900">
-                        {item.label}
-                      </span>
-                      <span className="mt-0.5 block text-[12px] leading-relaxed text-navy-500">
-                        {item.description}
-                      </span>
-                    </a>
-                  ))}
-                </div>
+                <DropdownMenu items={solutionLinks} onClose={() => setSolutionsOpen(false)} />
+              )}
+            </li>
+
+            <li ref={toolsRef} className="relative">
+              <button
+                type="button"
+                className={`inline-flex items-center gap-1 ${linkClass(onDarkHero, toolsActive)}`}
+                aria-expanded={toolsOpen}
+                aria-haspopup="menu"
+                onClick={() => {
+                  setToolsOpen((value) => !value);
+                  setSolutionsOpen(false);
+                }}
+              >
+                ابزارها
+                <span aria-hidden="true" className="text-[11px] opacity-70">
+                  ▾
+                </span>
+              </button>
+              {toolsOpen && (
+                <DropdownMenu items={toolLinks} onClose={() => setToolsOpen(false)} />
               )}
             </li>
 
@@ -280,6 +367,47 @@ export default function Navbar({
                 {mobileSolutionsOpen && (
                   <ul className="mt-1 space-y-1 border-r-2 border-navy-100 pr-3 mr-3">
                     {solutionLinks.map((item) => (
+                      <li key={item.href}>
+                        <a
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className="block rounded-xl px-4 py-3 hover:bg-navy-50"
+                        >
+                          <span className="block text-sm font-semibold text-navy-800">
+                            {item.label}
+                          </span>
+                          <span className="mt-0.5 block text-xs leading-relaxed text-navy-500">
+                            {item.description}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+
+              <li>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-base font-medium text-navy-700 hover:bg-navy-50"
+                  aria-expanded={mobileToolsOpen}
+                  onClick={() => setMobileToolsOpen((value) => !value)}
+                >
+                  <span>
+                    ابزارها{" "}
+                    <span aria-hidden="true" className="text-sm text-navy-400">
+                      ▾
+                    </span>
+                  </span>
+                  <IconArrowLeft
+                    size={16}
+                    className={`text-navy-300 transition-transform ${mobileToolsOpen ? "-rotate-90" : ""}`}
+                  />
+                </button>
+
+                {mobileToolsOpen && (
+                  <ul className="mt-1 space-y-1 border-r-2 border-navy-100 pr-3 mr-3">
+                    {toolLinks.map((item) => (
                       <li key={item.href}>
                         <a
                           href={item.href}

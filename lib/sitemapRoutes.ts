@@ -5,6 +5,7 @@ import { getPublishedIndustryPaths } from "@/lib/seo/programmaticPages";
 import { getIndexablePromptPaths } from "@/lib/prompts/indexable";
 import { getSitemapLastMod } from "@/lib/blog/postUpdatedAt";
 import { LEGACY_MIGRATED_SLUGS } from "@/lib/blog/legacyArticleData";
+import { getPublishedToolPaths } from "@/lib/tools/toolRegistry";
 
 /** Static marketing paths always in sitemap. */
 const STATIC_SITEMAP_PATHS = [
@@ -20,6 +21,7 @@ const STATIC_SITEMAP_PATHS = [
   "/fastweb",
   "/website-design",
   "/website-design/cost",
+  "/website-design/restaurant",
   "/googlesabt",
   "/modares",
   "/ai",
@@ -56,7 +58,6 @@ const STATIC_SITEMAP_PATHS = [
   "/blog/matn-tablig-tadris-khososi",
   ...LEGACY_MIGRATED_SLUGS.map((slug) => `/blog/${slug}`),
   "/clinic",
-  "/restaurant",
   "/software",
   "/portfolio",
   "/results",
@@ -99,8 +100,9 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
     ...getPublishedIndustryPaths("website"),
     ...getPublishedFastWebIndustryPaths(),
   ];
+  const toolPaths = getPublishedToolPaths();
   const paths = Array.from(
-    new Set<string>([...STATIC_SITEMAP_PATHS, ...industryPaths, ...promptPaths]),
+    new Set<string>([...STATIC_SITEMAP_PATHS, ...industryPaths, ...promptPaths, ...toolPaths]),
   ).filter((path) => !isSitemapExcludedPath(path));
 
   return paths.map((path) => {

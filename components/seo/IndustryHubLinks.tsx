@@ -14,8 +14,13 @@ function persianLabel(slug: string): string {
   return industries.find((i) => i.slug === slug)?.persianName ?? slug;
 }
 
+/** Sales landings that replace programmatic /website/{slug} cards on the hub. */
+const WEBSITE_SALES_OVERRIDES = new Set(["restaurant"]);
+
 export default function IndustryHubLinks({ productType, title, subtitle }: IndustryHubLinksProps) {
-  const pages = getPublishedIndustryPages(productType);
+  const pages = getPublishedIndustryPages(productType).filter(
+    (page) => !(productType === "website" && WEBSITE_SALES_OVERRIDES.has(page.slug)),
+  );
   const hubPath = productType === "seo" ? "/seo" : "/website-design";
   const hubLabel = productType === "seo" ? "خدمات سئو سایت" : "طراحی سایت حرفه‌ای";
 
@@ -32,6 +37,17 @@ export default function IndustryHubLinks({ productType, title, subtitle }: Indus
               <p className="text-sm font-extrabold text-navy-900">طراحی سایت پزشکی</p>
               <p className="mt-2 text-[13px] leading-relaxed text-navy-500">
                 پزشکان — طراحی سایت پزشک
+              </p>
+            </Link>
+          )}
+          {productType === "website" && (
+            <Link
+              href="/website-design/restaurant"
+              className="card !p-5 transition hover:border-teal-200 hover:shadow-card"
+            >
+              <p className="text-sm font-extrabold text-navy-900">طراحی سایت رستوران</p>
+              <p className="mt-2 text-[13px] leading-relaxed text-navy-500">
+                رستوران و کافه — منوی دیجیتال و سفارش آنلاین
               </p>
             </Link>
           )}

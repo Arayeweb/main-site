@@ -56,8 +56,8 @@ const INDUSTRY_BLOG_LINKS: Partial<
     label: "چک‌لیست سفارش طراحی سایت",
   },
   restaurant: {
-    href: "/blog/website-design-order-checklist",
-    label: "قبل از سفارش سایت رستوران",
+    href: "/website-design/restaurant",
+    label: "سفارش سایت رستوران و منوی دیجیتال",
   },
 };
 

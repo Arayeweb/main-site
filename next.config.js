@@ -53,8 +53,13 @@ const nextConfig = {
       { source: "/seo.html", destination: "/seo", permanent: true },
       { source: "/doctors.html", destination: "/doctors", permanent: true },
       { source: "/website/doctor", destination: "/doctors", permanent: true },
+      { source: "/website/restaurant", destination: "/website-design/restaurant", permanent: true },
+      { source: "/restaurant", destination: "/website-design/restaurant", permanent: true },
+      { source: "/restaurant.html", destination: "/website-design/restaurant", permanent: true },
       { source: "/bizcard.html", destination: "/bizcard", permanent: true },
       { source: "/googlesabt.html", destination: "/googlesabt", permanent: true },
+      { source: "/shortener.html", destination: "/shortener", permanent: true },
+      { source: "/qr.html", destination: "/qr", permanent: true },
       // Legacy blog URLs → App Router
       { source: "/blog/posts/:slug", destination: "/blog/:slug", permanent: true },
       { source: "/blog/posts/:slug.html", destination: "/blog/:slug", permanent: true },
@@ -86,7 +91,7 @@ const nextConfig = {
       // /about from Next.js (app/about/page.tsx) — rewrite حذف شد
       // /clinic از Next.js (app/clinic/page.tsx) سرو می‌شود — rewrite حذف شد
       // /doctors از Next.js (app/doctors/page.tsx) سرو می‌شود — rewrite حذف شد
-      { source: "/restaurant", destination: "/restaurant.html" },
+      // /restaurant از Next.js (app/website-design/restaurant) سرو می‌شود — rewrite حذف شد
       { source: "/support", destination: "/support.html" },
       // /admin handled by Next.js app router (app/admin/*) — legacy admin.html removed
       { source: "/sales", destination: "/sales.html" },
@@ -101,8 +106,7 @@ const nextConfig = {
       // /seo از Next.js (app/seo/page.tsx) سرو می‌شود — rewrite حذف شد
       // /bizcard از Next.js (app/bizcard/page.tsx) سرو می‌شود — rewrite حذف شد
       { source: "/bizcard-gen", destination: "/bizcard-gen.html" },
-      { source: "/shortener", destination: "/shortener.html" },
-      { source: "/qr", destination: "/qr.html" },
+      // /shortener و /qr از Next.js (app/shortener, app/qr) سرو می‌شوند — rewrite حذف شد
       { source: "/privacy", destination: "/privacy.html" },
       { source: "/tashakor", destination: "/tashakor.html" },
       // /blog از Next.js (app/blog/page.tsx) سرو می‌شود — مقالات legacy هم در App Router هستند
