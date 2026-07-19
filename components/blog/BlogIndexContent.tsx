@@ -129,8 +129,7 @@ export default function BlogIndexContent() {
 
         <div className="container-mx container-px relative py-10 sm:py-14">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-bold tracking-wide text-brand-300">بلاگ آرایه</p>
-            <h1 className="mt-3 text-balance text-3xl font-extrabold leading-[1.35] tracking-tight sm:text-4xl lg:text-[2.6rem]">
+            <h1 className="text-balance text-3xl font-extrabold leading-[1.35] tracking-tight sm:text-4xl lg:text-[2.6rem]">
               راهنمای عملی رشد آنلاین کسب‌وکار شما
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">

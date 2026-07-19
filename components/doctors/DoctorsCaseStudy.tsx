@@ -6,16 +6,13 @@ import { BrowserChrome, PhoneFrame } from "@/components/showcase/ShowcaseFrames"
 import { IconArrowLeft, IconCheck } from "@/components/icons";
 import { getVerifiedDoctorProjects } from "@/lib/doctorsData";
 import { trackDoctorExampleClick } from "@/lib/doctorsAnalytics";
-import TaherehPourdastHomePreview from "@/components/home/previews/TaherehPourdastHomePreview";
 
 function ProjectPreview({
-  id,
   name,
   siteUrl,
   desktopImage,
   mobileImage,
 }: {
-  id: string;
   name: string;
   siteUrl: string;
   desktopImage?: string;
@@ -53,14 +50,6 @@ function ProjectPreview({
           </div>
         ) : null}
       </div>
-    );
-  }
-
-  if (id === "pourdast-tahereh") {
-    return (
-      <BrowserChrome url={host}>
-        <TaherehPourdastHomePreview />
-      </BrowserChrome>
     );
   }
 
@@ -104,7 +93,6 @@ export default function DoctorsCaseStudy() {
 
               <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-2">
                 <ProjectPreview
-                  id={c.id}
                   name={c.name}
                   siteUrl={c.siteUrl}
                   desktopImage={c.desktopImage}

@@ -1,10 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrowserChrome } from "@/components/showcase/ShowcaseFrames";
 import type { DoctorSpecialtySample } from "@/lib/doctorsData";
+import { doctorPortfolioProjects } from "@/lib/doctorsData";
 import { getDoctorDemo } from "@/lib/doctorsDemoData";
 import DoctorDemoLandingPreview from "./DoctorDemoLandingPreview";
-import TaherehPourdastHomePreview from "@/components/home/previews/TaherehPourdastHomePreview";
 import PourdastClinicHomePreview from "@/components/home/previews/PourdastClinicHomePreview";
 
 function PreviewLink({
@@ -41,24 +42,50 @@ function EmptyDemoPreview({ label }: { label: string }) {
   );
 }
 
-function LiveSamplePreview({ sampleKey }: { sampleKey: string }) {
-  if (sampleKey === "women") return <TaherehPourdastHomePreview />;
-  if (sampleKey === "general" || sampleKey === "pourdast") return <PourdastClinicHomePreview />;
+function ExecutedProjectPreview({
+  sampleKey,
+  name,
+}: {
+  sampleKey: string;
+  name: string;
+}) {
+  const projectId = sampleKey === "women" ? "pourdast-tahereh" : sampleKey;
+  const project = doctorPortfolioProjects.find((p) => p.id === projectId);
+
+  if (project?.desktopImage) {
+    return (
+      <div className="relative aspect-[16/10] overflow-hidden">
+        <Image
+          src={project.desktopImage}
+          alt={`نمای دسکتاپ سایت ${name}`}
+          fill
+          className="object-cover object-top"
+          sizes="(max-width: 768px) 100vw, 480px"
+        />
+      </div>
+    );
+  }
+
+  if (sampleKey === "general" || sampleKey === "pourdast") {
+    return <PourdastClinicHomePreview />;
+  }
+
   return null;
 }
 
 export default function DoctorDemoPreviewFrames({ sample }: { sample: DoctorSpecialtySample }) {
-  const livePreview = sample.kind === "executed" ? (
-    <LiveSamplePreview sampleKey={sample.key} />
-  ) : null;
-  const hasLivePreview = sample.kind === "executed" && (sample.key === "women" || sample.key === "general" || sample.key === "pourdast");
+  const projectId = sample.key === "women" ? "pourdast-tahereh" : sample.key;
+  const project = sample.kind === "executed" ? doctorPortfolioProjects.find((p) => p.id === projectId) : null;
+  const hasScreenshot = Boolean(project?.desktopImage);
+  const hasLivePreview =
+    sample.kind === "executed" && (hasScreenshot || sample.key === "general" || sample.key === "pourdast");
   const demo = hasLivePreview ? null : getDoctorDemo(sample.key);
   const previewUrl = sample.demoExternal
     ? sample.demoUrl.replace(/^https?:\/\//, "")
     : (demo?.previewUrl ?? sample.demoUrl.replace(/^https?:\/\//, ""));
 
-  const desktopPreview = hasLivePreview && livePreview ? (
-    livePreview
+  const desktopPreview = hasLivePreview ? (
+    <ExecutedProjectPreview sampleKey={sample.key} name={project?.name ?? sample.label} />
   ) : demo ? (
     <DoctorDemoLandingPreview content={demo} />
   ) : (

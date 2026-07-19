@@ -291,6 +291,8 @@ export const doctorPortfolioProjects: DoctorPortfolioProject[] = [
     specialty: "زنان و زایمان",
     city: "شیراز",
     siteUrl: "https://dr-pourdast.vercel.app",
+    desktopImage: "/showcase-assets/pourdast-tahereh/desktop.png",
+    mobileImage: "/showcase-assets/pourdast-tahereh/mobile.png",
     problem:
       "بیماران برای پیدا کردن تخصص، فلوشیپ لاپاراسکوپی و مسیر نوبت باید چند کانال جدا را طی می‌کردند؛ معرفی علمی و اقدام در یک مقصد نبود.",
     work: [
