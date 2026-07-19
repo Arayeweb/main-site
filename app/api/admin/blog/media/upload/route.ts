@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
-  const safeName = file.name.replace(/[^a-zA-Z0-9._\u0600-\u06FF-]/g, '-').slice(0, 80);
-  const storageKey = `${session.userId}/${Date.now()}-${safeName || 'image'}.${ext}`;
+  const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._\u0600-\u06FF-]/g, '-').slice(0, 80);
+  const storageKey = `${session.userId}/${Date.now()}-${baseName || 'image'}.${ext}`;
 
   try {
     const supabase = getSupabaseAdmin();

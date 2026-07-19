@@ -130,8 +130,15 @@ export async function uploadCmsMedia(file: File) {
     });
     const json = await res.json();
     if (!res.ok || !json.ok) return { ok: false as const, error: json.error ?? 'upload_failed' };
-    return { ok: true as const, data: json.media };
+    return { ok: true as const, data: json.media as { id: string; url: string; file_name: string; alt_text: string } };
   } catch {
     return { ok: false as const, error: 'network_error' };
   }
+}
+
+export function updateCmsMedia(id: string, patch: { alt_text?: string; caption?: string }) {
+  return cmsFetch<{ media: { id: string; url: string; file_name: string; alt_text: string } }>(
+    '/api/admin/blog/media',
+    { method: 'PATCH', body: JSON.stringify({ id, ...patch }) }
+  );
 }

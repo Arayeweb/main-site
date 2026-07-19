@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -12,10 +12,12 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, ImageIcon } from 'lucide-react';
 import { INLINE_AI_ACTIONS, type CmsInlineAiAction } from '@/lib/cms/ai/types';
 import { CMS_DEFAULT_MODEL } from '@/lib/cms/ai/cmsModelOptions';
 import { InlineAiReview } from '@/components/admin/blog/InlineAiReview';
+import { CmsMediaPicker, type CmsMediaItem } from '@/components/admin/blog/CmsMediaPicker';
+import { uploadCmsMedia } from '@/lib/cmsAdminApi';
 import { trackCmsEvent } from '@/lib/cms/analytics';
 
 export type BlogAiContext = {
@@ -59,6 +61,9 @@ export function BlogTiptapEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [pending, setPending] = useState<PendingReview | null>(null);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const editorRef = useRef<ReturnType<typeof useEditor>>(null);
 
   useEffect(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem(MODEL_STORAGE_KEY) : null;
@@ -75,6 +80,31 @@ export function BlogTiptapEditor({
     setModel(id);
     localStorage.setItem(MODEL_STORAGE_KEY, id);
   }
+
+  const insertImage = useCallback((item: { url: string; alt_text?: string }) => {
+    const ed = editorRef.current;
+    if (!ed) return;
+    ed.chain().focus().setImage({ src: item.url, alt: item.alt_text || '' }).run();
+  }, []);
+
+  const uploadAndInsertImage = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith('image/')) {
+        setError('فقط تصویر مجاز است');
+        return;
+      }
+      setImageUploading(true);
+      setError('');
+      const res = await uploadCmsMedia(file);
+      setImageUploading(false);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      insertImage({ url: res.data.url, alt_text: res.data.alt_text || file.name.replace(/\.[^.]+$/, '') });
+    },
+    [insertImage]
+  );
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -93,14 +123,36 @@ export function BlogTiptapEditor({
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-slate max-w-none min-h-[360px] p-4 focus:outline-none text-right',
+        class: 'prose prose-slate max-w-none min-h-[360px] p-4 focus:outline-none text-right [&_img]:rounded-lg [&_img]:max-w-full [&_img]:h-auto',
         dir: 'rtl',
+      },
+      handleDrop: (_view, event) => {
+        const file = event.dataTransfer?.files?.[0];
+        if (file?.type.startsWith('image/')) {
+          event.preventDefault();
+          void uploadAndInsertImage(file);
+          return true;
+        }
+        return false;
+      },
+      handlePaste: (_view, event) => {
+        const file = Array.from(event.clipboardData?.files ?? []).find((f) => f.type.startsWith('image/'));
+        if (file) {
+          event.preventDefault();
+          void uploadAndInsertImage(file);
+          return true;
+        }
+        return false;
       },
     },
     onUpdate: ({ editor: ed }) => {
       onChange(ed.getJSON() as Record<string, unknown>);
     },
   });
+
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   useEffect(() => {
     if (!editor) return;
@@ -213,6 +265,10 @@ export function BlogTiptapEditor({
     setPending(null);
   }
 
+  function handleMediaSelect(item: CmsMediaItem) {
+    insertImage(item);
+  }
+
   function rejectReview() {
     if (pending) {
       trackCmsEvent('cms_ai_action_rejected', {
@@ -233,6 +289,18 @@ export function BlogTiptapEditor({
           <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}>I</ToolbarBtn>
           <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })}>H2</ToolbarBtn>
           <ToolbarBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}>•</ToolbarBtn>
+          <ToolbarBtn
+            onClick={() => setMediaPickerOpen(true)}
+            active={editor.isActive('image')}
+            title="درج تصویر"
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+          </ToolbarBtn>
+          {imageUploading && (
+            <span className="text-[10px] text-slate-500 flex items-center gap-1">
+              <Loader2 className="w-3 h-3 animate-spin" /> آپلود…
+            </span>
+          )}
         </div>
 
         <div className="h-4 w-px bg-slate-200 mx-1" />
@@ -300,9 +368,16 @@ export function BlogTiptapEditor({
 
       <div className="px-4 py-2 text-xs text-slate-400 border-t border-slate-100 flex justify-between">
         <span>{editor.storage.characterCount?.characters?.() ?? 0} کاراکتر</span>
-        <span className="text-slate-300">متن را انتخاب کن → AI inline</span>
+        <span className="text-slate-300">تصویر: دکمه یا drag & drop</span>
         <span>{editor.storage.characterCount?.words?.() ?? 0} کلمه</span>
       </div>
+
+      <CmsMediaPicker
+        open={mediaPickerOpen}
+        onClose={() => setMediaPickerOpen(false)}
+        onSelect={handleMediaSelect}
+        title="درج تصویر در متن"
+      />
     </div>
   );
 }
@@ -311,14 +386,17 @@ function ToolbarBtn({
   children,
   onClick,
   active,
+  title,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   active?: boolean;
+  title?: string;
 }) {
   return (
     <button
       type="button"
+      title={title}
       onClick={onClick}
       className={`px-2 py-1 text-sm rounded-md border ${
         active ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, Eye, Save, Send, CheckCircle, Calendar, Globe } from 'lucide-react';
 import { BlogTiptapEditor } from '@/components/admin/blog/BlogTiptapEditor';
+import { BlogFeaturedImageField } from '@/components/admin/blog/BlogFeaturedImageField';
 import { BlogSeoGuardPanel } from '@/components/admin/blog/BlogSeoGuardPanel';
 import { AdminLoadingState } from '@/hooks/useAdminFetch';
 import {
@@ -39,8 +40,11 @@ type ArticleState = {
   robots_index: boolean;
   category_id: string | null;
   author_id: string | null;
+  featured_image_id: string | null;
   scheduled_at: string | null;
 };
+
+type FeaturedImagePreview = { id: string; url: string; alt_text: string } | null;
 
 export function BlogArticleEditorPage({ articleId }: { articleId: string }) {
   const router = useRouter();
@@ -51,6 +55,7 @@ export function BlogArticleEditorPage({ articleId }: { articleId: string }) {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [authors, setAuthors] = useState<{ id: string; display_name: string }[]>([]);
   const [actionMsg, setActionMsg] = useState('');
+  const [featuredImage, setFeaturedImage] = useState<FeaturedImagePreview>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const articleRef = useRef<ArticleState | null>(null);
 
@@ -62,9 +67,16 @@ export function BlogArticleEditorPage({ articleId }: { articleId: string }) {
       fetchCmsAuthors(),
     ]);
     if (artRes.ok) {
-      const a = artRes.data.article as ArticleState;
+      const a = artRes.data.article as ArticleState & { featured_image?: FeaturedImagePreview };
       setArticle(a);
       articleRef.current = a;
+      if (a.featured_image) {
+        setFeaturedImage(a.featured_image);
+      } else if (a.featured_image_id) {
+        setFeaturedImage({ id: a.featured_image_id, url: '', alt_text: '' });
+      } else {
+        setFeaturedImage(null);
+      }
     }
     if (catRes.ok) setCategories(catRes.data.categories);
     if (authRes.ok) setAuthors(authRes.data.authors);
@@ -88,6 +100,7 @@ export function BlogArticleEditorPage({ articleId }: { articleId: string }) {
       robots_index: snapshot.robots_index,
       category_id: snapshot.category_id,
       author_id: snapshot.author_id,
+      featured_image_id: snapshot.featured_image_id,
       version: snapshot.version,
     });
     if (res.ok) {
@@ -116,6 +129,12 @@ export function BlogArticleEditorPage({ articleId }: { articleId: string }) {
       next.slug = toPersianSafeSlug(String(value));
     }
     scheduleAutosave(next);
+  }
+
+  function updateFeaturedImage(imageId: string | null, preview: FeaturedImagePreview) {
+    if (!article) return;
+    setFeaturedImage(preview);
+    scheduleAutosave({ ...article, featured_image_id: imageId });
   }
 
   async function handlePreview() {
@@ -231,6 +250,7 @@ export function BlogArticleEditorPage({ articleId }: { articleId: string }) {
 
           {tab === 'publish' && (
             <div className="space-y-3 text-sm">
+              <BlogFeaturedImageField image={featuredImage} onChange={updateFeaturedImage} />
               <Field label="اسلاگ">
                 <input
                   value={article.slug}

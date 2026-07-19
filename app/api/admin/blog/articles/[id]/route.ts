@@ -39,7 +39,18 @@ export async function GET(req: NextRequest, { params }: Ctx) {
       .maybeSingle();
     if (error) return dbError(error.message);
     if (!data) return cmsNotFound();
-    return NextResponse.json({ ok: true, article: data });
+
+    let article = data as Record<string, unknown>;
+    if (data.featured_image_id) {
+      const { data: img } = await supabase
+        .from('cms_media_assets')
+        .select('id, url, alt_text, file_name')
+        .eq('id', data.featured_image_id)
+        .maybeSingle();
+      if (img) article = { ...article, featured_image: img };
+    }
+
+    return NextResponse.json({ ok: true, article });
   } catch (e) {
     return dbError(String(e));
   }
