@@ -16,6 +16,7 @@ export const managerSidebarItems: SidebarItem[] = [
   { label: 'فاکتورها', href: '/admin/manager/invoices', iconName: 'CreditCard' },
   { label: 'کمپین‌ها', href: '/admin/manager/campaigns', iconName: 'Megaphone' },
   { label: 'آمار و بازاریابی', href: '/admin/manager/analytics', iconName: 'LineChart' },
+  { label: 'بلاگ', href: '/admin/manager/blog', iconName: 'FileText' },
   { label: 'Growth KPI', href: '/admin/manager/growth', iconName: 'Target' },
   { label: 'منابع لید', href: '/admin/manager/lead-sources', iconName: 'Link2' },
   { label: 'درخواست تغییرات', href: '/admin/manager/change-requests', iconName: 'GitPullRequest' },
