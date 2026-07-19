@@ -6,6 +6,7 @@ import AiPostHogIdentify from "@/components/analytics/AiPostHogIdentify";
 import { ArenaAuthProvider } from "./ArenaAuthContext";
 import ArenaAuthSheet from "./ArenaAuthSheet";
 import ArenaShell from "./ArenaShell";
+import PWAInstallProvider from "./PWAInstallProvider";
 
 /** قاب مشترک /ai — بدون شل برای لندینگ‌های فروش */
 export default function ArenaLayoutClient({
@@ -43,9 +44,11 @@ export default function ArenaLayoutClient({
     >
       <AiPostHogIdentify />
       <ArenaAuthSheet />
-      <Suspense fallback={<div className="ar-shell"><main className="ar-main">{children}</main></div>}>
-        <ArenaShell>{children}</ArenaShell>
-      </Suspense>
+      <PWAInstallProvider>
+        <Suspense fallback={<div className="ar-shell"><main className="ar-main">{children}</main></div>}>
+          <ArenaShell>{children}</ArenaShell>
+        </Suspense>
+      </PWAInstallProvider>
     </ArenaAuthProvider>
   );
 }

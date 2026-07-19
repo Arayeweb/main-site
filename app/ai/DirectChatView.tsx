@@ -27,6 +27,7 @@ import {
 import { buildRunMessages } from "@/lib/ai/client/buildMessages";
 import type { RunSSEEvent } from "@/lib/ai/streaming/sse";
 import { canUseModel } from "@/lib/aiCredits";
+import { notifyPwaMilestone } from "@/lib/ai/pwaInstall";
 
 export type ChatTurn = {
   id: string;
@@ -177,6 +178,13 @@ export default function DirectChatView({
     const useWeb = opts?.web ?? webMode;
     const apiPrompt = wrapPromptWithModes(q, { codeMode: useCode });
     if (!apiPrompt.trim() && attach.length === 0) return;
+
+    if (
+      !opts?.replaceTurnId &&
+      turns.some((t) => !t.streaming && Boolean(t.response || t.imageUrl))
+    ) {
+      notifyPwaMilestone("second_prompt");
+    }
     const hasImageAttachment = attach.some((a) => a.mime.startsWith("image/"));
     const runModel = hasImageAttachment ? ensureVisionModel() : chatModel;
     if (hasImageAttachment && !runModel) {
@@ -459,6 +467,10 @@ export default function DirectChatView({
       )
     );
 
+    if (responseA.trim()) {
+      notifyPwaMilestone("first_answer");
+    }
+
     if (isNewThread && !guestMode) {
       setThreadId(tid);
       window.dispatchEvent(
@@ -517,6 +529,7 @@ export default function DirectChatView({
       await navigator.clipboard.writeText(text);
       setCopiedId(id);
       setTimeout(() => setCopiedId((c) => (c === id ? null : c)), 1800);
+      if (text.trim()) notifyPwaMilestone("result_copied");
     } catch {
       /* ignore */
     }

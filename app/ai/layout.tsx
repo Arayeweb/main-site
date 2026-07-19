@@ -6,6 +6,7 @@ import ArenaRscChrome from "./ArenaRscChrome";
 import PWABootSplash from "./PWABootSplash";
 import PWARegister from "./PWARegister";
 import PWASplashMarkup from "./PWASplashMarkup";
+import PWAZoomLock from "./PWAZoomLock";
 import AiCampaignTracking from "@/components/ai/AiCampaignTracking";
 import AiPostHogProvider from "@/components/analytics/AiPostHogProvider";
 import { AI_COOKIE, verifyAIToken } from "@/lib/aiAuth";
@@ -44,6 +45,7 @@ export const viewport: Viewport = {
   themeColor: "#F6F7F9",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
@@ -56,12 +58,12 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
         <PWASplashMarkup />
         <script
           dangerouslySetInnerHTML={{
-            __html:
-              "(function(){try{if(sessionStorage.getItem('ar-pwa-splash-done')==='1'){document.documentElement.dataset.arSplashDone='1';}}catch(e){}})();",
+            __html: `(function(){try{if(sessionStorage.getItem('ar-pwa-splash-done')==='1'){document.documentElement.dataset.arSplashDone='1';}var s=window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||(!!navigator.standalone);if(!s)return;document.documentElement.dataset.arPwa='1';var m=document.querySelector('meta[name="viewport"]');if(m){m.setAttribute('content','width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover');}}catch(e){}})();`,
           }}
         />
         <PWABootSplash />
         <PWARegister />
+        <PWAZoomLock />
         <ArenaRscChrome />
         <AiCampaignTracking />
         <ArenaLayoutClient

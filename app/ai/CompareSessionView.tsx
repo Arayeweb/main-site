@@ -23,6 +23,7 @@ import { buildMultiModelRunMessages } from "@/lib/ai/client/buildMessages";
 import type { RunSSEEvent } from "@/lib/ai/streaming/sse";
 import type { StaticRunHydration } from "@/lib/ai/runs/types";
 import ArenaComposer from "./ArenaComposer";
+import { notifyPwaMilestone } from "@/lib/ai/pwaInstall";
 
 type PublicModel = { id: string; name: string; poweredBy?: string; brand: string };
 
@@ -255,6 +256,7 @@ export default function CompareSessionView({
       setModelIds([]);
       setRunId(null);
       notifyHistory(finalConv, finalRunId, userPrompt);
+      notifyPwaMilestone("compare_completed");
     } else if (result.status === "cancelled") {
       setErr("cancelled");
     }

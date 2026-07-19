@@ -38,6 +38,24 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Installed PWA: app-like fixed scale (no pinch / double-tap zoom) */
+html[data-ar-pwa="1"],
+html[data-ar-pwa="1"] body {
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  .ar-root {
+    touch-action: manipulation;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
 .ar-root *,
 .ar-root *::before,
 .ar-root *::after {

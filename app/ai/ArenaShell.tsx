@@ -31,13 +31,15 @@ import {
   IconTrophy,
   IconPen,
   IconCode,
+  IconDownload,
 } from "./icons";
-import PWAInstallBanner from "./PWAInstallBanner";
 import TelegramBanner from "./TelegramBanner";
 import { useArenaAuth } from "./ArenaAuthContext";
 import { invalidateArenaAuthCache } from "./ArenaAuthContext";
 import { historyTierLabel, type HistoryItem } from "@/lib/aiHistory";
 import { requestAnalyzeText, requestNewChat } from "@/lib/aiNewChat";
+import { usePwaInstall } from "./PWAInstallProvider";
+import { trackPwaEvent } from "@/lib/ai/pwaInstall";
 
 const SIDEBAR_COLLAPSED_KEY = "ar_sidebar_collapsed";
 const HISTORY_HIDDEN_KEY = "ar_history_hidden";
@@ -172,6 +174,7 @@ export default function ArenaShell({
   const chatMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const { eligible: pwaEligible, openInstall } = usePwaInstall();
 
   const homeMode = isAiHomePath(pathname) ? searchParams.get("mode") : null;
 
@@ -495,6 +498,20 @@ export default function ArenaShell({
               <IconTrophy size={14} />
               <span className="ar-side-nav-item-text">لیدربورد مدل‌ها</span>
             </Link>
+            {pwaEligible && (
+              <button
+                type="button"
+                className="ar-side-nav-item"
+                onClick={() => {
+                  trackPwaEvent("pwa_install_cta_clicked", { entry: "sidebar" });
+                  openInstall("sidebar");
+                  closeDrawer();
+                }}
+              >
+                <IconDownload size={14} />
+                <span className="ar-side-nav-item-text">نصب آرایه روی دستگاه</span>
+              </button>
+            )}
           </nav>
         </div>
       </div>
@@ -888,7 +905,6 @@ export default function ArenaShell({
       )}
 
       <div className="ar-main" id="ar-main-content">
-        <PWAInstallBanner />
         <TelegramBanner />
         {children}
       </div>
