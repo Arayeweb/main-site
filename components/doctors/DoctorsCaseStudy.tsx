@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import SectionHeader from "@/components/home/SectionHeader";
-import { BrowserChrome, PhoneFrame } from "@/components/showcase/ShowcaseFrames";
+import { BrowserChrome } from "@/components/showcase/ShowcaseFrames";
 import { IconArrowLeft, IconCheck } from "@/components/icons";
 import { getVerifiedDoctorProjects } from "@/lib/doctorsData";
 import { trackDoctorExampleClick } from "@/lib/doctorsAnalytics";
@@ -11,45 +11,26 @@ function ProjectPreview({
   name,
   siteUrl,
   desktopImage,
-  mobileImage,
 }: {
   name: string;
   siteUrl: string;
   desktopImage?: string;
-  mobileImage?: string;
 }) {
   const host = siteUrl.replace(/^https?:\/\//, "");
 
   if (desktopImage) {
     return (
-      <div className="space-y-4">
-        <BrowserChrome url={host}>
-          <div className="relative aspect-[16/10] overflow-hidden">
-            <Image
-              src={desktopImage}
-              alt={`نمای دسکتاپ سایت ${name}`}
-              fill
-              className="object-cover object-top"
-              sizes="(max-width: 768px) 100vw, 480px"
-            />
-          </div>
-        </BrowserChrome>
-        {mobileImage ? (
-          <div className="mx-auto w-[160px] sm:w-[180px]">
-            <PhoneFrame>
-              <div className="relative aspect-[9/19] overflow-hidden">
-                <Image
-                  src={mobileImage}
-                  alt={`نمای موبایل سایت ${name}`}
-                  fill
-                  className="object-cover object-top"
-                  sizes="180px"
-                />
-              </div>
-            </PhoneFrame>
-          </div>
-        ) : null}
-      </div>
+      <BrowserChrome url={host}>
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <Image
+            src={desktopImage}
+            alt={`نمای دسکتاپ سایت ${name}`}
+            fill
+            className="object-cover object-top"
+            sizes="(max-width: 768px) 100vw, 480px"
+          />
+        </div>
+      </BrowserChrome>
     );
   }
 
@@ -96,7 +77,6 @@ export default function DoctorsCaseStudy() {
                   name={c.name}
                   siteUrl={c.siteUrl}
                   desktopImage={c.desktopImage}
-                  mobileImage={c.mobileImage}
                 />
 
                 <div className="space-y-6">
