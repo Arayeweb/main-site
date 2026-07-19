@@ -1,10 +1,11 @@
-'use client';
-
-import { use } from 'react';
 import { InvoicePrintView } from '@/components/admin/invoices/InvoicePrintView';
 
-export default function SalesProposalPrintPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default async function SalesProposalPrintPage({
+  params,
+}: {
+  params: { id: string } | Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   return (
     <InvoicePrintView
       id={id}
