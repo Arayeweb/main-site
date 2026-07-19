@@ -165,7 +165,7 @@ export const clinicPackages = [
 export const clinicTrustLogos = [
   "Ashrafi studio",
   "امروز",
-  "دکتر پوردست",
+  "عالیه پوردست",
   "Deepin",
   "اپشن ساز",
 ] as const;

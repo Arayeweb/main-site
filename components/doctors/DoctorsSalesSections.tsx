@@ -13,6 +13,7 @@ import DoctorsSalesForm from "@/components/doctors/DoctorsSalesForm";
 import DoctorsSeoContent from "@/components/doctors/DoctorsSeoContent";
 import DoctorsSpecialtyNeeds from "@/components/doctors/DoctorsSpecialtyNeeds";
 import DoctorsSpecialtySamples from "@/components/doctors/DoctorsSpecialtySamples";
+import DoctorsCaseStudy from "@/components/doctors/DoctorsCaseStudy";
 
 type DoctorsSalesSectionsProps = {
   specialtyFilterKeys?: string[];
@@ -29,6 +30,7 @@ export default function DoctorsSalesSections({
     <>
       <DoctorsLossAversion />
       <DoctorsReviews />
+      <DoctorsCaseStudy />
       <DoctorsSpecialtySamples filterKeys={specialtyFilterKeys} />
       <DoctorsPatientJourney />
       <DoctorsSpecialtyNeeds />

@@ -5,7 +5,7 @@ import {
   DOCTORS_PRODUCT_PRICE_TOMAN,
   formatToman,
 } from "@/lib/doctorsData";
-import { trackDoctorsEvent } from "@/lib/doctorsAnalytics";
+import { trackDoctorExampleClick, trackDoctorsEvent } from "@/lib/doctorsAnalytics";
 
 type DoctorsHeroProps = {
   eyebrow?: string;
@@ -19,7 +19,7 @@ export default function DoctorsHero({
   eyebrow,
   badge,
   title = "بیمار در گوگل دنبال خدمات شماست؛ سایت باید او را به نوبت برساند",
-  subtitle = `سایت اختصاصی مطب با نمایش تخصص، اعتبار و مسیر تماس یا نوبت. نسخه اولیه در ۲ روز کاری — قیمت ثابت ${formatToman(DOCTORS_PRODUCT_PRICE_TOMAN)} تومان، شروع با ${formatToman(DOCTORS_DEPOSIT_TOMAN)} تومان.`,
+  subtitle = `سایت اختصاصی مطب با نمایش تخصص، اعتبار و مسیر تماس یا نوبت. نسخه اولیه در ۲ روز کاری — قیمت ${formatToman(DOCTORS_PRODUCT_PRICE_TOMAN)} تومان، شروع با ${formatToman(DOCTORS_DEPOSIT_TOMAN)} تومان.`,
 }: DoctorsHeroProps) {
   const productLine = eyebrow ?? badge ?? "طراحی سایت پزشکی";
 
@@ -57,7 +57,7 @@ export default function DoctorsHero({
             </a>
             <a
               href="#samples"
-              onClick={() => trackDoctorsEvent("doctors_demo_click", { source: "hero_secondary" })}
+              onClick={() => trackDoctorExampleClick("demo", { source: "hero_secondary" })}
               className="inline-flex h-14 items-center justify-center rounded-xl border border-navy-200 bg-white px-7 text-sm font-bold text-navy-800 transition hover:border-navy-300 hover:bg-navy-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-400 active:scale-[0.98]"
             >
               نمونه تخصصم را ببینم

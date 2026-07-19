@@ -7,6 +7,8 @@ export type BlogTopic =
   | "راهکار صنفی"
   | "جذب شاگرد";
 
+export type BlogClusterTag = "doctors" | "ai";
+
 export type BlogPost = {
   slug: string;
   href: string;
@@ -19,6 +21,7 @@ export type BlogPost = {
   coverSrc?: string;
   featured?: boolean;
   ctaLabel?: string;
+  cluster?: BlogClusterTag;
 };
 
 export const blogTopics: BlogTopic[] = [
@@ -56,6 +59,7 @@ export const blogPosts: BlogPost[] = [
     dateLabel: "۱۷ تیر ۱۴۰۵",
     readTime: "۱۰ دقیقه",
     coverSrc: "/assets/blog/doctor-website-seo-mistakes.jpg",
+    cluster: "doctors",
   },
   {
     slug: "clinic-seo-checklist",
@@ -68,6 +72,7 @@ export const blogPosts: BlogPost[] = [
     dateLabel: "۱۷ تیر ۱۴۰۵",
     readTime: "۹ دقیقه",
     coverSrc: "/assets/blog/clinic-seo-checklist.jpg",
+    cluster: "doctors",
   },
   {
     slug: "local-seo-for-doctors",
@@ -80,6 +85,7 @@ export const blogPosts: BlogPost[] = [
     dateLabel: "۱۷ تیر ۱۴۰۵",
     readTime: "۸ دقیقه",
     coverSrc: "/assets/blog/local-seo-for-doctors.jpg",
+    cluster: "doctors",
   },
   {
     slug: "clinic-website-features",
@@ -91,6 +97,31 @@ export const blogPosts: BlogPost[] = [
     topic: "طراحی سایت",
     dateLabel: "۱۷ تیر ۱۴۰۵",
     readTime: "۹ دقیقه",
+    coverSrc: "/assets/blog/conversion-rate.svg",
+    cluster: "doctors",
+  },
+  {
+    slug: "website-design-order-checklist",
+    href: "/blog/website-design-order-checklist",
+    title: "چک‌لیست سفارش طراحی سایت؛ قبل از قرارداد چه چیزهایی بدانیم؟",
+    description:
+      "چک‌لیست عملی قبل از قرارداد طراحی سایت: تعیین هدف، صفحات، محتوا و سوالات مهم برای برآورد دقیق.",
+    category: "طراحی سایت",
+    topic: "طراحی سایت",
+    dateLabel: "۲۸ تیر ۱۴۰۵",
+    readTime: "۸ دقیقه",
+    coverSrc: "/assets/blog/conversion-rate.svg",
+  },
+  {
+    slug: "instagram-page-to-website",
+    href: "/blog/instagram-page-to-website",
+    title: "چطور پیج اینستاگرام را به سایت تبدیل کنیم؟",
+    description:
+      "راهنمای عملی تبدیل پیج اینستاگرام به سایت: چه محتوایی منتقل شود و از کجا شروع کنیم.",
+    category: "طراحی سایت",
+    topic: "طراحی سایت",
+    dateLabel: "۲۸ تیر ۱۴۰۵",
+    readTime: "۷ دقیقه",
     coverSrc: "/assets/blog/conversion-rate.svg",
   },
   {
@@ -149,6 +180,7 @@ export const blogPosts: BlogPost[] = [
     dateLabel: "۱۰ خرداد ۱۴۰۵",
     readTime: "۸ دقیقه",
     coverSrc: "/assets/blog/chatbot.svg",
+    cluster: "ai",
   },
   {
     slug: "google-my-business-local-seo",
@@ -161,6 +193,7 @@ export const blogPosts: BlogPost[] = [
     dateLabel: "۳۱ خرداد ۱۴۰۵",
     readTime: "۱۰ دقیقه",
     coverSrc: "/assets/blog/google-my-business.svg",
+    cluster: "doctors",
   },
   {
     slug: "website-speed-core-web-vitals",
@@ -177,14 +210,15 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "online-booking-system-for-clinics",
     href: "/blog/online-booking-system-for-clinics",
-    title: "سیستم نوبت‌دهی آنلاین برای کلینیک و مطب؛ چرا و چطور",
+    title: "نوبت‌دهی آنلاین مطب و کلینیک؛ انواع مدل‌ها و انتخاب درست",
     description:
-      "چطور نوبت‌دهی آنلاین تماس‌های تلفنی را کم، بیماران را بیشتر و رضایت‌شان را بالا می‌برد.",
+      "انواع نوبت‌دهی برای مطب و کلینیک: فرم درخواست، اتصال به سامانه موجود و سامانه اختصاصی — با توضیح شفاف محدوده پکیج آرایه.",
     category: "راهکار صنفی",
     topic: "راهکار صنفی",
-    dateLabel: "۱۴ تیر ۱۴۰۵",
-    readTime: "۹ دقیقه",
+    dateLabel: "۲۸ تیر ۱۴۰۵",
+    readTime: "۱۱ دقیقه",
     coverSrc: "/assets/blog/online-booking.svg",
+    cluster: "doctors",
   },
   {
     slug: "clinic-solution",

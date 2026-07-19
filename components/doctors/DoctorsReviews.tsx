@@ -3,7 +3,7 @@
 import Image from "next/image";
 import SectionHeader from "@/components/home/SectionHeader";
 import { getVerifiedDoctorReviews } from "@/lib/doctorsData";
-import { trackDoctorsEvent } from "@/lib/doctorsAnalytics";
+import { trackDoctorExampleClick } from "@/lib/doctorsAnalytics";
 import { IconArrowLeft } from "@/components/icons";
 
 export default function DoctorsReviews() {
@@ -63,7 +63,7 @@ export default function DoctorsReviews() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() =>
-                    trackDoctorsEvent("doctors_live_sample_click", { source: "review", review: r.id })
+                    trackDoctorExampleClick("executed", { source: "review", review: r.id })
                   }
                   className="mt-6 inline-flex items-center gap-1.5 text-sm font-extrabold text-cyan-800 underline-offset-2 hover:underline"
                 >

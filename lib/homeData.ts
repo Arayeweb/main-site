@@ -64,7 +64,7 @@ export const industries: IndustryItem[] = [
       "چت‌بات پاسخ به سؤالات پرتکرار",
       "CRM پیگیری بیمار و مراجع",
     ],
-    relatedProject: "دکتر پوردست",
+    relatedProject: "عالیه پوردست",
   },
   {
     icon: "building",
@@ -323,7 +323,8 @@ export interface ClientLogo {
 export const clientLogos: ClientLogo[] = [
   { name: "کلینیک سلامت" },
   { name: "امروز", url: "https://emroz.top" },
-  { name: "دکتر پوردست" },
+  { name: "عالیه پوردست", url: "https://aliehpourdast.com" },
+  { name: "طاهره پوردست", url: "https://dr-pourdast.vercel.app" },
   { name: "امداد آهن" },
 ];
 
@@ -379,14 +380,14 @@ export const portfolioProjects: PortfolioProject[] = [
     external: false,
   },
   {
-    name: "دکتر پوردست",
+    name: "عالیه پوردست",
     key: "pordast",
-    url: null,
+    url: "https://aliehpourdast.com",
     category: "حضور دیجیتال پزشکی",
     description:
       "طراحی مسیر معرفی حرفه‌ای، ارتباط راحت‌تر با بیمار و ساختار اعتمادساز برای خدمات پزشکی.",
     tags: ["Healthcare", "Website"],
-    external: false,
+    external: true,
   },
 ];
 

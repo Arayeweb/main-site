@@ -23,3 +23,13 @@ export function trackDoctorsEvent(event: string, payload: DoctorsAnalyticsPayloa
     ...payload,
   });
 }
+
+/** Fires backlog `doctor_example_click` (+ legacy demo/live event names for continuity). */
+export function trackDoctorExampleClick(
+  kind: "demo" | "executed",
+  payload: DoctorsAnalyticsPayload = {},
+) {
+  const legacy = kind === "executed" ? "doctors_live_sample_click" : "doctors_demo_click";
+  trackDoctorsEvent(legacy, payload);
+  trackDoctorsEvent("doctors_example_click", { ...payload, kind });
+}

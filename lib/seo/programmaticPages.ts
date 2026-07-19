@@ -1,5 +1,6 @@
 import type { IndustrySlug } from "./industries";
 import type { ServiceType } from "./pageContent";
+import { NEW_WEBSITE_PROGRAMMATIC_PAGES } from "./newWebsiteIndustryContent";
 
 export type PageStatus = "published" | "draft";
 
@@ -98,6 +99,7 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
   { slug: "cafe", productType: "website", status: "draft", primaryKeyword: "طراحی سایت کافه", secondaryKeywords: [], relatedSlugs: ["restaurant"] },
   { slug: "real-estate", productType: "website", status: "draft", primaryKeyword: "طراحی سایت املاک", secondaryKeywords: [], relatedSlugs: ["lawyer"] },
   { slug: "online-shop", productType: "website", status: "draft", primaryKeyword: "طراحی سایت فروشگاه", secondaryKeywords: [], relatedSlugs: ["restaurant"] },
+  ...(NEW_WEBSITE_PROGRAMMATIC_PAGES as ProgrammaticIndustryPage[]),
 
   // ── SEO (published) ──
   {
@@ -166,6 +168,12 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
   { slug: "cafe", productType: "seo", status: "draft", primaryKeyword: "سئو کافه", secondaryKeywords: [], relatedSlugs: ["restaurant"] },
   { slug: "real-estate", productType: "seo", status: "draft", primaryKeyword: "سئو املاک", secondaryKeywords: [], relatedSlugs: ["lawyer"] },
   { slug: "online-shop", productType: "seo", status: "draft", primaryKeyword: "سئو فروشگاه", secondaryKeywords: [], relatedSlugs: ["restaurant"] },
+  { slug: "private-tutor", productType: "seo", status: "draft", primaryKeyword: "سئو سایت مدرس خصوصی", secondaryKeywords: [], relatedSlugs: [] },
+  { slug: "consultant", productType: "seo", status: "draft", primaryKeyword: "سئو سایت مشاور", secondaryKeywords: [], relatedSlugs: [] },
+  { slug: "architect", productType: "seo", status: "draft", primaryKeyword: "سئو سایت معماری", secondaryKeywords: [], relatedSlugs: [] },
+  { slug: "photographer", productType: "seo", status: "draft", primaryKeyword: "سئو سایت عکاسی", secondaryKeywords: [], relatedSlugs: [] },
+  { slug: "service-company", productType: "seo", status: "draft", primaryKeyword: "سئو سایت شرکت خدماتی", secondaryKeywords: [], relatedSlugs: [] },
+  { slug: "instagram-business", productType: "seo", status: "draft", primaryKeyword: "سئو سایت اینستاگرامی", secondaryKeywords: [], relatedSlugs: [] },
 ] as const;
 
 export function getProgrammaticPage(

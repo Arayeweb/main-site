@@ -174,11 +174,14 @@ export default function WebsiteDesignHero() {
           </p>
 
           <h1 className="mt-[20px] max-w-[950px] text-balance text-[clamp(2rem,4.2vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-navy-900">
-            <span className="block">سایتی که به مشتری نشان دهد</span>
-            <span className="block">چرا باید شما را انتخاب کند</span>
+            طراحی سایت حرفه‌ای برای جذب مشتری و رشد کسب‌وکار
           </h1>
 
-          <p className="mt-8 max-w-[780px] text-[15px] leading-[1.9] text-navy-500 sm:text-base">
+          <p className="mt-5 max-w-[780px] text-lg font-bold leading-snug text-navy-700 sm:text-xl">
+            سایتی که به مشتری نشان دهد چرا باید شما را انتخاب کند
+          </p>
+
+          <p className="mt-6 max-w-[780px] text-[15px] leading-[1.9] text-navy-500 sm:text-base">
             خدمات، نمونه‌کارها و تفاوت کسب‌وکار شما را طوری کنار هم می‌چینیم که مشتری با
             اطمینان تصمیم بگیرد؛ برای مشاوره، رزرو، سفارش یا شروع همکاری.
           </p>

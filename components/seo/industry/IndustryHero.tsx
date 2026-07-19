@@ -4,7 +4,7 @@ import IndustryConsultForm from "@/components/seo/IndustryConsultForm";
 
 const PRICE_TEASER: Record<IndustryLandingPageContent["serviceType"], { text: string; href: string }> = {
   seo: { text: "پکیج سئو از ۸.۹ میلیون تومان در ماه", href: "/seo#packages" },
-  website: { text: "طراحی اختصاصی از ۲۵ میلیون تومان", href: "/website-design" },
+  website: { text: "مقایسه قیمت طراحی سایت", href: "/website-design/cost" },
 };
 
 export default function IndustryHero({ page }: { page: IndustryLandingPageContent }) {
@@ -15,6 +15,8 @@ export default function IndustryHero({ page }: { page: IndustryLandingPageConten
       ? `سئو تخصصی برای ${page.persianIndustryName}`
       : `طراحی سایت برای ${page.persianIndustryName}`;
   const price = PRICE_TEASER[page.serviceType];
+  const secondaryCtaHref = page.serviceType === "website" ? "/website-design/cost" : price.href;
+  const primaryCtaHref = page.hero.primaryCtaHref ?? "#consult-form";
 
   return (
     <section className="relative overflow-hidden border-b border-navy-100/80 bg-gradient-to-b from-sky-50/80 via-white to-white pb-12 pt-28 sm:pb-16 sm:pt-32">
@@ -60,13 +62,13 @@ export default function IndustryHero({ page }: { page: IndustryLandingPageConten
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
-                href="#consult-form"
+                href={primaryCtaHref}
                 className="inline-flex items-center justify-center rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-sky-700 active:scale-[0.98]"
               >
                 {page.hero.primaryCtaLabel}
               </a>
               <a
-                href={price.href}
+                href={secondaryCtaHref}
                 className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-6 py-3 text-sm font-bold text-navy-700 transition-all hover:bg-navy-50 active:scale-[0.98]"
               >
                 {page.hero.secondaryCtaLabel}

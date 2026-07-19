@@ -71,6 +71,7 @@ import {
   runTelegramFreeImageGen,
   telegramImageCreditCost,
 } from "./imageGen";
+import { tgDebugLog } from "./debugLog";
 
 export interface TelegramUpdate {
   update_id: number;
@@ -221,22 +222,40 @@ export async function handleStart(
   profile: TelegramUser,
   startText: string
 ) {
+  const startedAt = Date.now();
+  const marks: Record<string, number> = {};
+
+  let t = Date.now();
   await ensureCommands();
+  marks.ensure_commands_ms = Date.now() - t;
+
   const payload = parseStartPayload(startText);
+  t = Date.now();
   const user = await upsertTelegramUser(telegramId, profile, payload);
+  marks.upsert_ms = Date.now() - t;
   if (!user) {
     await sendMessage(chatId, COPY.aiSlow);
     return;
   }
 
+  t = Date.now();
   await trackEvent("bot_started", {
     telegramUserId: user.id,
     telegramId,
     metadata: { ...payload, command: "/start" },
   });
+  marks.track_started_ms = Date.now() - t;
 
+  t = Date.now();
   const membership = await checkRequiredMembership(telegramId, user.id);
+  marks.membership_ms = Date.now() - t;
   if (!membership.ok) {
+    // #region agent log
+    tgDebugLog("E", "handler.ts:handleStart", "start membership api_error", {
+      ...marks,
+      total_before_reply_ms: Date.now() - startedAt,
+    });
+    // #endregion
     await sendMessage(chatId, COPY.membershipRetry, {
       reply_markup: forcedJoinKeyboard(),
     });
@@ -247,17 +266,39 @@ export async function handleStart(
       telegramUserId: user.id,
       telegramId,
     });
+    // #region agent log
+    tgDebugLog("E", "handler.ts:handleStart", "start forced_join_shown", {
+      ...marks,
+      total_before_reply_ms: Date.now() - startedAt,
+    });
+    // #endregion
     await sendMessage(chatId, COPY.forcedJoin, {
       reply_markup: forcedJoinKeyboard(),
     });
     return;
   }
 
+  t = Date.now();
   await trackEvent("forced_join_completed", {
     telegramUserId: user.id,
     telegramId,
   });
+  marks.track_join_ms = Date.now() - t;
+
+  marks.total_before_welcome_ms = Date.now() - startedAt;
+  // #region agent log
+  tgDebugLog("E", "handler.ts:handleStart", "start before welcome", marks);
+  // #endregion
+
+  t = Date.now();
   await sendWelcome(chatId, user);
+  // #region agent log
+  tgDebugLog("E", "handler.ts:handleStart", "start welcome sent", {
+    ...marks,
+    welcome_send_ms: Date.now() - t,
+    total_ms: Date.now() - startedAt,
+  });
+  // #endregion
 }
 
 export async function handleCommand(
@@ -694,7 +735,18 @@ export async function handleTextMessage(
     return;
   }
 
-  if (!(await requireMembership(chatId, telegramId, user))) return;
+  {
+    const memStart = Date.now();
+    const ok = await requireMembership(chatId, telegramId, user);
+    // #region agent log
+    tgDebugLog("A", "handler.ts:handleTextMessage", "pre-chat membership", {
+      membership_ms: Date.now() - memStart,
+      ok,
+      since_start_ms: Date.now() - startedAt,
+    });
+    // #endregion
+    if (!ok) return;
+  }
 
   if (text.length > maxFreeMessageChars) {
     await sendMessage(chatId, COPY.textTooLong, { reply_markup: mediaWebCtaKeyboard() });
@@ -943,13 +995,20 @@ export async function handleTextMessage(
 }
 
 export async function handleTelegramUpdate(update: TelegramUpdate) {
+  const updateStarted = Date.now();
   if (update.callback_query) {
     const cq = update.callback_query;
     const chatId = cq.message?.chat.id;
     const telegramId = cq.from.id;
     if (!chatId || !cq.data) return;
 
+    const t = Date.now();
     const user = await upsertTelegramUser(telegramId, cq.from);
+    // #region agent log
+    tgDebugLog("B", "handler.ts:handleTelegramUpdate", "callback upsert", {
+      upsert_ms: Date.now() - t,
+    });
+    // #endregion
     if (!user) return;
     await handleCallback(chatId, telegramId, user, cq.data, cq.id, cq.message?.message_id);
     return;
@@ -962,7 +1021,16 @@ export async function handleTelegramUpdate(update: TelegramUpdate) {
   const telegramId = msg.from?.id || chatId;
   const profile = msg.from || { id: telegramId };
 
+  const t = Date.now();
   const user = await upsertTelegramUser(telegramId, profile);
+  // #region agent log
+  tgDebugLog("B", "handler.ts:handleTelegramUpdate", "message upsert", {
+    upsert_ms: Date.now() - t,
+    has_text: Boolean(msg.text),
+    is_start: Boolean(msg.text?.trim().startsWith("/start")),
+    since_update_ms: Date.now() - updateStarted,
+  });
+  // #endregion
   if (!user) return;
 
   if (msg.photo || msg.document || msg.voice || msg.video) {

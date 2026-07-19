@@ -10,9 +10,21 @@ import { buildSitemapEntries, isSitemapExcludedPath } from "@/lib/sitemapRoutes"
 import { PRODUCTION_SITE_URL, SITE_URL, canonicalUrl } from "@/lib/siteUrl";
 
 describe("programmaticPages", () => {
-  it("publishes exactly 5 website and 5 seo industry pages per spec", () => {
+  it("publishes website + seo industry pages per current registry", () => {
     expect(getPublishedIndustryPages("website").map((p) => p.slug).sort()).toEqual(
-      ["beauty-clinic", "clinic", "dentist", "lawyer", "restaurant"].sort(),
+      [
+        "architect",
+        "beauty-clinic",
+        "clinic",
+        "consultant",
+        "dentist",
+        "instagram-business",
+        "lawyer",
+        "photographer",
+        "private-tutor",
+        "restaurant",
+        "service-company",
+      ].sort(),
     );
     expect(getPublishedIndustryPages("seo").map((p) => p.slug).sort()).toEqual(
       ["beauty-clinic", "clinic", "dentist", "doctor", "lawyer"].sort(),

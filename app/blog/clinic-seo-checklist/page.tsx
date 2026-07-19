@@ -80,6 +80,12 @@ const jsonLd = {
         {
           "@type": "ListItem",
           position: 3,
+          name: "پزشکان",
+          item: "https://araaye.com/blog/doctors",
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
           name: "چک‌لیست سئو کلینیک",
           item: "https://araaye.com/blog/clinic-seo-checklist",
         },
@@ -116,6 +122,10 @@ export default function ClinicSeoChecklistPage() {
               <span className="px-2">/</span>
               <a href="/blog" className="hover:text-navy-900">
                 بلاگ
+              </a>
+              <span className="px-2">/</span>
+              <a href="/blog/doctors" className="hover:text-navy-900">
+                پزشکان
               </a>
               <span className="px-2">/</span>
               <span>چک‌لیست سئو کلینیک</span>
@@ -246,6 +256,12 @@ export default function ClinicSeoChecklistPage() {
                     className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-5 py-2.5 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
                   >
                     سئو کلینیک
+                  </a>
+                  <a
+                    href="/blog/doctors"
+                    className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-5 py-2.5 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
+                  >
+                    مرکز مقالات پزشکان
                   </a>
                   <a
                     href="/website/clinic"

@@ -10,7 +10,7 @@ import {
   doctorSpecialtySamples,
   type DoctorSpecialtySample,
 } from "@/lib/doctorsData";
-import { trackDoctorsEvent } from "@/lib/doctorsAnalytics";
+import { trackDoctorExampleClick, trackDoctorsEvent } from "@/lib/doctorsAnalytics";
 
 function SampleCard({
   sample,
@@ -51,10 +51,10 @@ function SampleCard({
           target={sample.demoExternal ? "_blank" : undefined}
           rel={sample.demoExternal ? "noopener noreferrer" : undefined}
           onClick={() =>
-            trackDoctorsEvent(
-              sample.kind === "executed" ? "doctors_live_sample_click" : "doctors_demo_click",
-              { source: "specialty_samples", specialty: sample.key }
-            )
+            trackDoctorExampleClick(sample.kind === "executed" ? "executed" : "demo", {
+              source: "specialty_samples",
+              specialty: sample.key,
+            })
           }
           className="inline-flex flex-1 items-center justify-center rounded-xl border border-navy-200 px-4 py-2.5 text-[13px] font-bold text-navy-700 hover:bg-navy-50"
         >

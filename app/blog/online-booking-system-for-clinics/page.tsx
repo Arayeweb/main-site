@@ -1,13 +1,10 @@
-import {
-  LegacyMigratedBlogArticlePage,
-  legacyMigratedArticleMetadata,
-} from "@/lib/blog/legacyMigratedArticles";
-import { LEGACY_MIGRATED_ARTICLES } from "@/lib/blog/legacyArticleData";
+import SeoBlogArticlePage, {
+  seoBlogArticleMetadata,
+} from "@/components/blog/SeoBlogArticlePage";
+import { ONLINE_BOOKING_ARTICLE } from "@/lib/blog/articles/onlineBookingArticle";
 
-const ARTICLE = LEGACY_MIGRATED_ARTICLES["online-booking-system-for-clinics"];
-
-export const metadata = legacyMigratedArticleMetadata(ARTICLE);
+export const metadata = seoBlogArticleMetadata(ONLINE_BOOKING_ARTICLE);
 
 export default function OnlineBookingSystemForClinicsPage() {
-  return <LegacyMigratedBlogArticlePage article={ARTICLE} />;
+  return <SeoBlogArticlePage article={ONLINE_BOOKING_ARTICLE} />;
 }

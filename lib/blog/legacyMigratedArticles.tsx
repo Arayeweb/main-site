@@ -4,6 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { canonicalUrl } from "@/lib/siteUrl";
+import { getBlogCluster } from "@/lib/blog/clusters";
 
 export type LegacyMigratedArticle = {
   slug: string;
@@ -12,7 +13,18 @@ export type LegacyMigratedArticle = {
   h1: string;
   intro: string;
   datePublished: string;
+  dateModified?: string;
   coverSrc?: string;
+  coverAlt?: string;
+  authorName?: string;
+  reviewerName?: string;
+  readTime?: string;
+  category?: string;
+  clusterHub?: "doctors" | "ai";
+  faq?: { question: string; answer: string }[];
+  sources?: { label: string; href?: string }[];
+  tableOfContents?: { id: string; label: string }[];
+  primaryCTA?: { title: string; description: string; href: string; label: string };
   relatedLinks?: { href: string; label: string }[];
   bodyHtml: string;
 };
@@ -43,6 +55,26 @@ export function legacyMigratedArticleMetadata(article: LegacyMigratedArticle): M
   };
 }
 
+function legacyBreadcrumbItems(article: LegacyMigratedArticle, url: string) {
+  const items: { "@type": "ListItem"; position: number; name: string; item: string }[] = [
+    { "@type": "ListItem", position: 1, name: "آرایه", item: canonicalUrl("/") },
+    { "@type": "ListItem", position: 2, name: "بلاگ", item: canonicalUrl("/blog") },
+  ];
+  if (article.clusterHub) {
+    const hub = getBlogCluster(article.clusterHub);
+    items.push({
+      "@type": "ListItem",
+      position: 3,
+      name: article.clusterHub === "doctors" ? "پزشکان" : "هوش مصنوعی",
+      item: canonicalUrl(hub.path),
+    });
+    items.push({ "@type": "ListItem", position: 4, name: article.h1, item: url });
+  } else {
+    items.push({ "@type": "ListItem", position: 3, name: article.h1, item: url });
+  }
+  return items;
+}
+
 export function legacyMigratedArticleJsonLd(article: LegacyMigratedArticle) {
   const url = canonicalUrl(`/blog/${article.slug}`);
   const image = article.coverSrc
@@ -58,8 +90,10 @@ export function legacyMigratedArticleJsonLd(article: LegacyMigratedArticle) {
         description: article.description,
         inLanguage: "fa-IR",
         datePublished: article.datePublished,
-        dateModified: article.datePublished,
-        author: { "@type": "Organization", name: "آرایه" },
+        dateModified: article.dateModified ?? article.datePublished,
+        author: article.authorName
+          ? { "@type": "Person", name: article.authorName }
+          : { "@type": "Organization", name: "آرایه" },
         publisher: {
           "@type": "Organization",
           name: "آرایه",
@@ -70,11 +104,7 @@ export function legacyMigratedArticleJsonLd(article: LegacyMigratedArticle) {
       },
       {
         "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "آرایه", item: canonicalUrl("/") },
-          { "@type": "ListItem", position: 2, name: "بلاگ", item: canonicalUrl("/blog") },
-          { "@type": "ListItem", position: 3, name: article.h1, item: url },
-        ],
+        itemListElement: legacyBreadcrumbItems(article, url),
       },
     ],
   };
@@ -82,6 +112,7 @@ export function legacyMigratedArticleJsonLd(article: LegacyMigratedArticle) {
 
 export function LegacyMigratedBlogArticlePage({ article }: { article: LegacyMigratedArticle }) {
   const jsonLd = legacyMigratedArticleJsonLd(article);
+  const hub = article.clusterHub ? getBlogCluster(article.clusterHub) : null;
 
   return (
     <>
@@ -98,6 +129,14 @@ export function LegacyMigratedBlogArticlePage({ article }: { article: LegacyMigr
               <Link href="/blog" className="hover:text-navy-900">
                 بلاگ
               </Link>
+              {hub ? (
+                <>
+                  <span className="px-2">/</span>
+                  <Link href={hub.path} className="hover:text-navy-900">
+                    {article.clusterHub === "doctors" ? "پزشکان" : "هوش مصنوعی"}
+                  </Link>
+                </>
+              ) : null}
               <span className="px-2">/</span>
               <span>{article.h1}</span>
             </nav>
@@ -111,7 +150,7 @@ export function LegacyMigratedBlogArticlePage({ article }: { article: LegacyMigr
               <div className="relative mt-6 aspect-[1280/560] overflow-hidden rounded-2xl bg-navy-50">
                 <Image
                   src={article.coverSrc}
-                  alt=""
+                  alt={article.coverAlt ?? ""}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 760px"

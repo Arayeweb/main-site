@@ -54,7 +54,16 @@ export const LEGACY_MIGRATED_ARTICLES: Record<string, LegacyMigratedArticle> = {
     "intro": "بیشتر مشتری‌ها وقتی سؤال دارند و پاسخ سریع نمی‌گیرند، سایت را ترک می‌کنند. یک چت‌بات هوشمند می‌تواند ۲۴ ساعته پاسخگو باشد، خرید را راحت‌تر کند و در همان لحظه لید جمع کند. در این مقاله می‌بینیم چت‌بات خوب چه ویژگی‌هایی دارد.",
     "datePublished": "2026-05-31",
     "coverSrc": "/assets/blog/chatbot.svg",
+    "clusterHub": "ai",
     "relatedLinks": [
+      {
+        "href": "/blog/ai",
+        "label": "راهنمای کاربردی هوش مصنوعی"
+      },
+      {
+        "href": "/ai/compare",
+        "label": "مقایسه مدل‌های هوش مصنوعی"
+      },
       {
         "href": "/blog/seo-checklist-business-site",
         "label": "چک‌لیست کامل سئوی سایت کسب‌وکار"
@@ -74,7 +83,16 @@ export const LEGACY_MIGRATED_ARTICLES: Record<string, LegacyMigratedArticle> = {
     "intro": "اگر کلینیک، مطب، رستوران یا هر کسب‌وکار محلی دارید، گوگل مای بیزنس (Google Business Profile) ساده‌ترین و قدرتمندترین ابزار رایگان برای دیده‌شدن در منطقه‌تان است. در این راهنما قدم‌به‌قدم یاد می‌گیرید چطور پروفایل‌تان را بسازید، تکمیل کنید و بهینه کنید تا مشتری بیشتری از گوگل نقشه بگیرید.",
     "datePublished": "2026-06-21",
     "coverSrc": "/assets/blog/google-my-business.svg",
+    "clusterHub": "doctors",
     "relatedLinks": [
+      {
+        "href": "/blog/doctors",
+        "label": "راهنمای طراحی سایت و سئو پزشکان"
+      },
+      {
+        "href": "/blog/local-seo-for-doctors",
+        "label": "لوکال سئو برای پزشکان"
+      },
       {
         "href": "/blog/seo-checklist-business-site",
         "label": "چک‌لیست کامل سئوی سایت کسب‌وکار"

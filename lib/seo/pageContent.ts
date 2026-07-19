@@ -16,6 +16,23 @@ import {
   dentistWebsiteMvpPlan,
   dentistWebsiteWhatYouReceive,
 } from "./dentistPageData";
+import {
+  newBaseProblemByIndustry,
+  newProblemImpactByIndustry,
+  newWebsiteHeroByIndustry,
+  newWebsiteDeliverablesByIndustry,
+  newWebsiteWhatYouReceiveByIndustry,
+  newWebsiteMvpPlanByIndustry,
+  newWebsiteMetaByIndustry,
+  newWebsiteFaqsByIndustry,
+  newSeoHeroByIndustry,
+  newSeoProblemTitleByIndustry,
+  newSeoDeliverablesByIndustry,
+  newSeoWhatYouReceiveByIndustry,
+  newSeoMvpPlanByIndustry,
+  newSeoMetaByIndustry,
+  newSeoFaqsByIndustry,
+} from "./newWebsiteIndustryContent";
 
 export type ServiceType = "seo" | "website";
 
@@ -39,6 +56,7 @@ export interface IndustryLandingPageContent {
     lead: string;
     primaryCtaLabel: string;
     secondaryCtaLabel: string;
+    primaryCtaHref?: string;
   };
   problem: {
     title: string;
@@ -323,6 +341,7 @@ const baseProblemByIndustry: Record<
       "سایت‌هایی که ساختار صفحات‌شان برای جستجو قابل فهم نیست",
     ],
   },
+  ...newBaseProblemByIndustry,
 };
 
 // ------------------------------ SEO (serviceType=seo) ------------------------------
@@ -368,6 +387,7 @@ const seoHeroByIndustry: Record<IndustrySlug, { h1: string; lead: string }> = {
     lead:
       "آرایه کمک می‌کند صفحات دسته‌بندی و راهنمای انتخاب برای نیت واقعی کاربران ساخته شود تا ترافیک به خرید و درخواست مشاوره تبدیل شود.",
   },
+  ...newSeoHeroByIndustry,
 };
 
 const seoProblemTitleByIndustry: Record<IndustrySlug, string> = {
@@ -380,6 +400,7 @@ const seoProblemTitleByIndustry: Record<IndustrySlug, string> = {
   lawyer: baseProblemByIndustry.lawyer.title,
   "real-estate": baseProblemByIndustry["real-estate"].title,
   "online-shop": baseProblemByIndustry["online-shop"].title,
+  ...newSeoProblemTitleByIndustry,
 };
 
 const problemImpactByIndustry: Record<IndustrySlug, string> = {
@@ -400,6 +421,7 @@ const problemImpactByIndustry: Record<IndustrySlug, string> = {
     "اگر مسیر درخواست فایل/بازدید مبهم باشد، ترافیک به درخواست واقعی تبدیل نمی‌شود و تیم زمانش را روی تماس ضعیف هدر می‌دهد.",
   "online-shop":
     "کاربر فروشگاه باید سریع به دسته/محصول درست برسد. نبود مسیر انتخاب و FAQ قبل خرید، نرخ خروج را بالا می‌برد.",
+  ...newProblemImpactByIndustry,
 };
 
 const seoDeliverablesByIndustry: Record<IndustrySlug, string[]> = {
@@ -468,6 +490,7 @@ const seoDeliverablesByIndustry: Record<IndustrySlug, string[]> = {
     "سازمان‌دهی داخلی لینک‌ها برای اینکه کاربر به محصول/دسته درست برسد",
     "ردیابی رویدادهای مهم فروش/مشاوره: از کلیک دسته تا تبدیل نهایی",
   ],
+  ...newSeoDeliverablesByIndustry,
 };
 
 const seoWhatYouReceiveByIndustry: Record<IndustrySlug, string[]> = {
@@ -528,6 +551,7 @@ const seoWhatYouReceiveByIndustry: Record<IndustrySlug, string[]> = {
     "پیشنهاد سازمان‌دهی داخلی لینک‌ها برای هدایت به دسته/محصول درست",
     "راهنمای ردیابی رویدادهای مهم فروش و مشاوره",
   ],
+  ...newSeoWhatYouReceiveByIndustry,
 };
 
 const seoMvpPlanByIndustry: Record<IndustrySlug, PlanWeek[]> = {
@@ -580,6 +604,7 @@ const seoMvpPlanByIndustry: Record<IndustrySlug, PlanWeek[]> = {
     { label: "هفته ۳: تجربه موبایل و ردیابی", items: ["بهینه‌سازی سرعت و تجربه موبایل", "اصلاح بخش سوالات قبل خرید (FAQ)", "راه‌اندازی ردیابی رویدادهای مهم تبدیل"] },
     { label: "هفته ۴: مرور و بهبود", items: ["بررسی داده‌های رویداد و تبدیل", "اصلاح متن‌ها و مسیر تصمیم", "گزارش ماه اول + اقدام‌های بعدی"] },
   ],
+  ...newSeoMvpPlanByIndustry,
 };
 
 // ------------------------------ Website (serviceType=website) ------------------------------
@@ -625,6 +650,7 @@ const websiteHeroByIndustry: Record<IndustrySlug, { h1: string; lead: string }> 
     lead:
       "آرایه ساختار فروشگاه را طوری می‌چیند که کاربر سریع دسته/محصول درست را پیدا کند و برای راهنمای انتخاب یا خرید اقدام کند.",
   },
+  ...newWebsiteHeroByIndustry,
 };
 
 const websiteDeliverablesByIndustry: Record<IndustrySlug, string[]> = {
@@ -693,6 +719,7 @@ const websiteDeliverablesByIndustry: Record<IndustrySlug, string[]> = {
     "ساختار SEO-ready برای متادیتا و معماری صفحات قابل ایندکس",
     "اتصال رویدادهای مهم به تحلیل (تا بفهمید فروش از کدام صفحه شروع می‌شود)",
   ],
+  ...newWebsiteDeliverablesByIndustry,
 };
 
 const websiteWhatYouReceiveByIndustry: Record<IndustrySlug, string[]> = {
@@ -753,6 +780,7 @@ const websiteWhatYouReceiveByIndustry: Record<IndustrySlug, string[]> = {
     "پایه SEO-ready برای متادیتا و معماری صفحات",
     "اتصال رویدادهای مهم به تحلیل",
   ],
+  ...newWebsiteWhatYouReceiveByIndustry,
 };
 
 const websiteMvpPlanByIndustry: Record<IndustrySlug, PlanWeek[]> = {
@@ -805,6 +833,7 @@ const websiteMvpPlanByIndustry: Record<IndustrySlug, PlanWeek[]> = {
     { label: "هفته ۳: سرعت و تحلیل", items: ["بهینه‌سازی سرعت و تجربه", "اتصال رویدادهای مهم به تحلیل", "آماده‌سازی ساختار SEO-ready"] },
     { label: "هفته ۴: تحویل و اصلاح", items: ["مرور داده‌های اولیه (در حد نمونه)", "اصلاحات UX و مسیر CTA", "چک‌لیست انتشار"] },
   ],
+  ...newWebsiteMvpPlanByIndustry,
 };
 
 const seoMetaByIndustry: Record<
@@ -852,6 +881,7 @@ const seoMetaByIndustry: Record<
     description:
       "سئوی فروشگاه آنلاین: بهینه‌سازی دسته‌بندی‌ها و صفحات راهنمای انتخاب، FAQ قبل از خرید، بهبود سرعت و ردیابی تبدیل. کمک می‌کنیم ترافیک به خرید برسد.",
   },
+  ...newSeoMetaByIndustry,
 };
 
 const websiteMetaByIndustry: Record<
@@ -899,6 +929,7 @@ const websiteMetaByIndustry: Record<
     description:
       "طراحی سایت فروشگاه آنلاین: ساختار دسته‌بندی/نیاز، راهنمای انتخاب و CTA مشاوره، FAQ قبل از خرید. بهینه‌سازی موبایل و پایه SEO-ready برای تبدیل.",
   },
+  ...newWebsiteMetaByIndustry,
 };
 
 // ------------------------------ FAQ ------------------------------
@@ -1080,6 +1111,7 @@ const seoFaqsByIndustry: Record<IndustrySlug, FaqItem[]> = {
       a: "رتبه تضمین نمی‌شود. اما ردیابی رویدادهای مهم کمک می‌کند ببینیم کدام صفحه فروش/مشاوره توتماس کرده و کجا باید اصلاح کنیم.",
     },
   ],
+  ...newSeoFaqsByIndustry,
 };
 
 const websiteFaqsByIndustry: Record<IndustrySlug, FaqItem[]> = {
@@ -1260,6 +1292,7 @@ const websiteFaqsByIndustry: Record<IndustrySlug, FaqItem[]> = {
       a: "ساختار رویدادهای مهم و تحلیل به نحوی تنظیم می‌شود که بدانید کدام صفحات به خرید/مشاوره منتهی می‌شود.",
     },
   ],
+  ...newWebsiteFaqsByIndustry,
 };
 
 // ------------------------------ Builder API ------------------------------
@@ -1316,6 +1349,7 @@ export function getIndustryLandingPageContent(serviceType: ServiceType, slug: In
 
   const hero = websiteHeroByIndustry[slug];
   const base = baseProblemByIndustry[slug];
+  const isPrivateTutorWebsite = slug === "private-tutor";
   return {
     serviceType,
     slug,
@@ -1323,8 +1357,9 @@ export function getIndustryLandingPageContent(serviceType: ServiceType, slug: In
     hero: {
       h1: hero.h1,
       lead: hero.lead,
-      primaryCtaLabel: commonPrimaryCtaLabel,
+      primaryCtaLabel: isPrivateTutorWebsite ? "مشاهده سایت مخصوص مدرس‌ها" : commonPrimaryCtaLabel,
       secondaryCtaLabel: commonSecondaryCtaLabel,
+      ...(isPrivateTutorWebsite ? { primaryCtaHref: "/modares" } : {}),
     },
     problem: {
       title: base.title,

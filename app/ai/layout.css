@@ -4078,12 +4078,13 @@
   min-width: 0;
 }
 .ar-side-credits-left b { font-size: 13px; }
+.ar-root a.ar-side-credits-buy,
 .ar-side-credits-buy {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 800;
   background: var(--ar-accent);
-  color: var(--ar-on-ink);
+  color: #fff;
   padding: 4px 10px;
   border-radius: 999px;
   text-decoration: none;

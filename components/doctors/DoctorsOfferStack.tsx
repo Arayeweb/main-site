@@ -31,7 +31,7 @@ export default function DoctorsOfferStack() {
           </ul>
 
           <p className="mt-8 rounded-2xl bg-navy-900 px-5 py-4 text-center text-base font-extrabold text-white sm:text-lg">
-            همه این موارد با قیمت ثابت {formatToman(DOCTORS_PRODUCT_PRICE_TOMAN)} تومان
+            همه این موارد با قیمت {formatToman(DOCTORS_PRODUCT_PRICE_TOMAN)} تومان
           </p>
 
           <div className="mt-5 rounded-2xl border border-navy-100 bg-white px-4 py-4">

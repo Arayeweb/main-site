@@ -141,6 +141,31 @@ export default function BlogIndexContent() {
         </div>
       </section>
 
+      <section className="border-b border-navy-100 bg-white py-5 sm:py-6" aria-label="خوشه‌های محتوا">
+        <div className="container-mx container-px">
+          <div className="mx-auto grid max-w-3xl gap-3 sm:grid-cols-2">
+            <Link
+              href="/blog/doctors"
+              className="rounded-2xl border border-navy-100 bg-navy-50/50 px-5 py-4 transition-colors hover:border-brand-200 hover:bg-white"
+            >
+              <p className="text-xs font-bold text-brand-700">خوشه پزشکان</p>
+              <p className="mt-1 text-base font-extrabold text-navy-900">
+                راهنمای طراحی سایت و سئو پزشکان
+              </p>
+              <p className="mt-1 text-sm text-navy-500">مقالات پزشکی، کلینیک و جذب بیمار</p>
+            </Link>
+            <Link
+              href="/blog/ai"
+              className="rounded-2xl border border-navy-100 bg-navy-50/50 px-5 py-4 transition-colors hover:border-brand-200 hover:bg-white"
+            >
+              <p className="text-xs font-bold text-brand-700">خوشه هوش مصنوعی</p>
+              <p className="mt-1 text-base font-extrabold text-navy-900">راهنمای کاربردی هوش مصنوعی</p>
+              <p className="mt-1 text-sm text-navy-500">آموزش عملی مدل‌ها، پرامپت و Compare</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="border-b border-navy-100 bg-white py-4 sm:py-5" aria-label="موضوعات">
         <div className="container-mx container-px">
           <div className="flex flex-wrap items-center justify-center gap-2">

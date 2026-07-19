@@ -285,6 +285,25 @@ export const doctorPortfolioProjects: DoctorPortfolioProject[] = [
     quoteRole: doctorCaseStudy.quoteRole,
     verified: true,
   },
+  {
+    id: "pourdast-tahereh",
+    name: "دکتر طاهره پوردست",
+    specialty: "زنان و زایمان",
+    city: "شیراز",
+    siteUrl: "https://dr-pourdast.vercel.app",
+    problem:
+      "بیماران برای پیدا کردن تخصص، فلوشیپ لاپاراسکوپی و مسیر نوبت باید چند کانال جدا را طی می‌کردند؛ معرفی علمی و اقدام در یک مقصد نبود.",
+    work: [
+      "صفحه معرفی تخصص زنان و فلوشیپ لاپاراسکوپی",
+      "تمرکز روی درمان اندومتریوز و جراحی‌های کم‌تهاجمی",
+      "مسیر مشخص تماس مطب و مشاهده نوبت‌های آزاد",
+    ],
+    duration: "حدود ۵ روز کاری پس از دریافت محتوا",
+    quote:
+      "برای جست‌وجوهای مربوط به مطب زنان، حضورمان در گوگل شفاف‌تر شد و نوبت‌گیری برای بیماران راحت‌تر شده.",
+    quoteRole: "متخصص زنان و زایمان — فلوشیپ لاپاراسکوپی پیشرفته زنان",
+    verified: true,
+  },
 ];
 
 export function getVerifiedDoctorProjects() {
@@ -338,9 +357,10 @@ export const doctorReviews: DoctorReview[] = [
     id: "pourdast-tahereh",
     name: "دکتر طاهره پوردست",
     specialty: "زنان و زایمان",
-    city: "تهران",
+    city: "شیراز",
     quote:
       "برای جست‌وجوهای مربوط به مطب زنان، حضورمان در گوگل شفاف‌تر شد و نوبت‌گیری برای بیماران راحت‌تر شده.",
+    siteUrl: "https://dr-pourdast.vercel.app",
     verified: true,
   },
   {
@@ -414,8 +434,9 @@ export const doctorSpecialtySamples: DoctorSpecialtySample[] = [
   {
     key: "women",
     label: "زنان",
-    kind: "demo",
-    demoUrl: "/doctors/demo/women",
+    kind: "executed",
+    demoUrl: "https://dr-pourdast.vercel.app",
+    demoExternal: true,
     accent: "teal",
     buyReason: "معرفی تخصص، پاسخ به نگرانی‌های بیمار و نوبت سریع",
   },
@@ -604,7 +625,7 @@ export const doctorComparisonRows = [
   { criterion: "امکان توسعه", araaye: "بله", template: "کم", booking: "محدود" },
   { criterion: "پشتیبانی مشخص", araaye: "۳۰ روز + قرارداد", template: "مبهم", booking: "پشتیبانی پلتفرم" },
   { criterion: "زمان‌بندی و قرارداد", araaye: "۲ تا ۷ روز کاری", template: "نامشخص", booking: "آنی ولی وابسته" },
-  { criterion: "قیمت شفاف", araaye: "۲۰ میلیون ثابت", template: "ارزان اول، هزینه بعد", booking: "اشتراک ماهانه" },
+  { criterion: "قیمت شفاف", araaye: "۲۰ میلیون", template: "ارزان اول، هزینه بعد", booking: "اشتراک ماهانه" },
 ] as const;
 
 export const doctorComparisonFooter =
@@ -636,11 +657,11 @@ export const doctorFormAddons: DoctorFormAddon[] = [
 export const doctorSeoContentBlocks = [
   {
     title: "قیمت طراحی سایت پزشکی چقدر است؟",
-    body: "پکیج مطب تک‌پزشک آرایه قیمت ثابت ۲۰ میلیون تومان دارد: ۳۰٪ شروع (۶ میلیون)، ۴۰٪ بعد از تأیید نسخه اولیه، ۳۰٪ هنگام تحویل. کلینیک چندپزشکه پکیج جداگانه دارد و امکانات اضافه مثل سئوی ماهانه، تولید محتوا یا عکاسی نیازمند برآورد جدا هستند.",
+    body: "پکیج مطب تک‌پزشک آرایه قیمت ۲۰ میلیون تومان دارد: ۳۰٪ شروع (۶ میلیون)، ۴۰٪ بعد از تأیید نسخه اولیه، ۳۰٪ هنگام تحویل. کلینیک چندپزشکه پکیج جداگانه دارد و امکانات اضافه مثل سئوی ماهانه، تولید محتوا یا عکاسی نیازمند برآورد جدا هستند.",
   },
   {
     title: "نمونه سایت پزشکی واقعی چیست؟",
-    body: "نمونه اجراشده قابل‌مشاهده، سایت دکتر عالیه پوردست است. علاوه بر آن، دموهای تخصصی دندانپزشکی، پوست و زیبایی، چشم، کودکان و فیزیوتراپی مسیر معرفی خدمت تا درخواست نوبت را نشان می‌دهند.",
+    body: "نمونه‌های اجراشده قابل‌مشاهده، سایت دکتر عالیه پوردست و سایت دکتر طاهره پوردست هستند. علاوه بر آن، دموهای تخصصی دندانپزشکی، پوست و زیبایی، چشم، کودکان و فیزیوتراپی مسیر معرفی خدمت تا درخواست نوبت را نشان می‌دهند.",
   },
   {
     title: "امکانات سایت پزشکان در این پکیج",
@@ -709,6 +730,12 @@ export const doctorProblems = [
 export const doctorOutputs = [
   { title: "سایت مطب", description: "معرفی تخصص، خدمات و مسیر درخواست نوبت", href: "/demo" },
   { title: "نمونه واقعی", description: "سایت دکتر عالیه پوردست", href: "https://aliehpourdast.com", external: true },
+  {
+    title: "نمونه واقعی",
+    description: "سایت دکتر طاهره پوردست",
+    href: "https://dr-pourdast.vercel.app",
+    external: true,
+  },
   { title: "نمونه گزارش", description: "خروجی بررسی رایگان مسیر جذب بیمار", href: "#sample-report" },
 ];
 

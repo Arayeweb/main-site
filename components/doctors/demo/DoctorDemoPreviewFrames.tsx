@@ -4,6 +4,8 @@ import { BrowserChrome } from "@/components/showcase/ShowcaseFrames";
 import type { DoctorSpecialtySample } from "@/lib/doctorsData";
 import { getDoctorDemo } from "@/lib/doctorsDemoData";
 import DoctorDemoLandingPreview from "./DoctorDemoLandingPreview";
+import TaherehPourdastHomePreview from "@/components/home/previews/TaherehPourdastHomePreview";
+import PourdastClinicHomePreview from "@/components/home/previews/PourdastClinicHomePreview";
 
 function PreviewLink({
   href,
@@ -39,11 +41,25 @@ function EmptyDemoPreview({ label }: { label: string }) {
   );
 }
 
-export default function DoctorDemoPreviewFrames({ sample }: { sample: DoctorSpecialtySample }) {
-  const demo = getDoctorDemo(sample.key);
-  const previewUrl = demo?.previewUrl ?? sample.demoUrl.replace(/^https?:\/\//, "");
+function LiveSamplePreview({ sampleKey }: { sampleKey: string }) {
+  if (sampleKey === "women") return <TaherehPourdastHomePreview />;
+  if (sampleKey === "general" || sampleKey === "pourdast") return <PourdastClinicHomePreview />;
+  return null;
+}
 
-  const desktopPreview = demo ? (
+export default function DoctorDemoPreviewFrames({ sample }: { sample: DoctorSpecialtySample }) {
+  const livePreview = sample.kind === "executed" ? (
+    <LiveSamplePreview sampleKey={sample.key} />
+  ) : null;
+  const hasLivePreview = sample.kind === "executed" && (sample.key === "women" || sample.key === "general" || sample.key === "pourdast");
+  const demo = hasLivePreview ? null : getDoctorDemo(sample.key);
+  const previewUrl = sample.demoExternal
+    ? sample.demoUrl.replace(/^https?:\/\//, "")
+    : (demo?.previewUrl ?? sample.demoUrl.replace(/^https?:\/\//, ""));
+
+  const desktopPreview = hasLivePreview && livePreview ? (
+    livePreview
+  ) : demo ? (
     <DoctorDemoLandingPreview content={demo} />
   ) : (
     <EmptyDemoPreview label={sample.label} />

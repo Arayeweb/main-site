@@ -13,6 +13,7 @@ export type OutputSampleKey =
   | "emroz"
   | "deepinhq"
   | "pourdast-clinic"
+  | "tahereh-pourdast"
   | "google-shoope"
   | "google-emdad-ahan";
 
@@ -63,10 +64,17 @@ export const internationalOutputSamples: OutputSample[] = [
   },
   {
     key: "pourdast-clinic",
-    name: "سایت مطب عالیه پوردست",
+    name: "عالیه پوردست",
     goal: "سایت مطب با معرفی تخصص، اعتمادسازی و مسیر تماس بیمار",
     isDesignSample: false,
     showcasePath: "https://aliehpourdast.com",
+  },
+  {
+    key: "tahereh-pourdast",
+    name: "طاهره پوردست",
+    goal: "سایت مطب زنان با معرفی فلوشیپ لاپاراسکوپی و مسیر نوبت",
+    isDesignSample: false,
+    showcasePath: "https://dr-pourdast.vercel.app",
   },
 ];
 
@@ -105,6 +113,9 @@ export function resolveOutputSampleKey(key: string): OutputSampleKey | undefined
     "google-ashrafivand": "google-emdad-ahan",
     "google-pourdast": "google-emdad-ahan",
     pourdast: "pourdast-clinic",
+    "alieh-pourdast": "pourdast-clinic",
+    "tahereh-pourdast": "tahereh-pourdast",
+    "dr-pourdast": "tahereh-pourdast",
     "google-dental": "google-shoope",
   };
   const resolved = (aliases[key] ?? key) as OutputSampleKey;

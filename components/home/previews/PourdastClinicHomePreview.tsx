@@ -27,7 +27,7 @@ export default function PourdastClinicHomePreview() {
 
       <div className="border-t border-navy-50 px-5 py-4 text-right">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-navy-400">Clinic Website</p>
-        <p className="mt-1 text-sm font-extrabold text-navy-900">سایت مطب عالیه پوردست</p>
+        <p className="mt-1 text-sm font-extrabold text-navy-900">عالیه پوردست</p>
       </div>
     </div>
   );

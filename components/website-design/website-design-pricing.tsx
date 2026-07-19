@@ -394,8 +394,8 @@ export default function WebsiteDesignPricing() {
 
         <div className="mx-auto mt-8 flex max-w-[1100px] flex-col items-center justify-between gap-3 rounded-xl border border-[#E8EDFF] bg-white px-5 py-4 text-center sm:flex-row sm:text-right">
           <p className="text-sm font-semibold text-navy-700">
-            سایت رسمی سریع می‌خواهید، نه طراحی کاملاً اختصاصی؟ سایت فوری از ۴.۹ میلیون.
-            برای صفحه تبلیغات موقت هم AdReady مناسب است.
+            سایت رسمی سریع می‌خواهید؟ طراحی سایت ارزان و فوری از ۴.۹ میلیون. جدول کامل
+            تعرفه‌ها را هم ببینید.
           </p>
           <div className="flex shrink-0 flex-wrap items-center justify-center gap-4">
             <Link
@@ -404,17 +404,17 @@ export default function WebsiteDesignPricing() {
               className="inline-flex items-center text-sm font-bold transition-colors hover:opacity-80"
               style={{ color: ACCENT }}
             >
-              سایت فوری
+              طراحی سایت ارزان و فوری
               <span aria-hidden="true" className="ms-1.5">
                 ←
               </span>
             </Link>
             <Link
-              href="/adready"
-              onClick={() => track("website_design_adready_click", { location: "pricing_bar" })}
+              href="/website-design/cost"
+              onClick={() => track("website_pricing_view", { location: "pricing_bar" })}
               className="inline-flex items-center text-sm font-bold text-navy-600 transition-colors hover:opacity-80"
             >
-              AdReady
+              قیمت طراحی سایت
               <span aria-hidden="true" className="ms-1.5">
                 ←
               </span>

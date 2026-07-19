@@ -24,14 +24,23 @@ export default function WebsiteDesignPortfolio() {
             const cardContent = (
               <>
                 <div className="relative aspect-[16/10] overflow-hidden bg-navy-100">
-                  <Image
-                    src={item.image}
-                    alt={`نمای ${item.name}`}
-                    fill
-                    className={`object-cover transition-transform duration-300 group-hover:scale-[1.02] ${item.imagePosition ? "" : "object-top"}`}
-                    style={item.imagePosition ? { objectPosition: item.imagePosition } : undefined}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
+                  {item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={`نمای ${item.name}`}
+                      fill
+                      className={`object-cover transition-transform duration-300 group-hover:scale-[1.02] ${item.imagePosition ? "" : "object-top"}`}
+                      style={item.imagePosition ? { objectPosition: item.imagePosition } : undefined}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-rose-50 via-white to-navy-50 px-6 text-center">
+                      <div>
+                        <p className="text-sm font-extrabold text-navy-900">{item.name}</p>
+                        <p className="mt-1 text-[11px] font-medium text-navy-500">{item.industry}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col p-5">
                   <p className="text-[11px] font-bold text-brand-600">{item.industry}</p>

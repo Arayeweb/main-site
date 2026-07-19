@@ -9,7 +9,7 @@ export interface PortfolioItem {
   industry: string;
   problem: string;
   outcome: string;
-  image: string;
+  image?: string;
   href: string;
   external?: boolean;
   imagePosition?: string;
@@ -240,13 +240,22 @@ export const portfolioItems: PortfolioItem[] = [
   },
   {
     slug: "pourdast",
-    name: "سایت مطب عالیه پوردست",
+    name: "عالیه پوردست",
     industry: "خدمات پزشکی",
     problem: "نیاز به معرفی حرفه‌ای پزشک و مسیر تماس برای بیمار.",
     outcome: "سایت پزشکی با ساختار اعتمادساز و اطلاعات خدمات.",
     image: "/showcase-assets/pourdast/portrait.webp",
     imagePosition: "center 58%",
     href: "https://aliehpourdast.com",
+    external: true,
+  },
+  {
+    slug: "tahereh-pourdast",
+    name: "طاهره پوردست",
+    industry: "خدمات پزشکی",
+    problem: "نیاز به معرفی تخصص زنان، فلوشیپ لاپاراسکوپی و مسیر نوبت.",
+    outcome: "سایت مطب زنان با مسیر تماس و مشاهده نوبت.",
+    href: "https://dr-pourdast.vercel.app",
     external: true,
   },
 ];

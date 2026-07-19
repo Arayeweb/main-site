@@ -24,6 +24,17 @@ export default function IndustryHubLinks({ productType, title, subtitle }: Indus
       <div className="container-mx container-px">
         <SectionHeader badge="راهکارهای تخصصی" title={title} subtitle={subtitle} />
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {productType === "website" && (
+            <Link
+              href="/doctors"
+              className="card !p-5 transition hover:border-teal-200 hover:shadow-card"
+            >
+              <p className="text-sm font-extrabold text-navy-900">طراحی سایت پزشکی</p>
+              <p className="mt-2 text-[13px] leading-relaxed text-navy-500">
+                پزشکان — طراحی سایت پزشک
+              </p>
+            </Link>
+          )}
           {pages.map((page) => (
             <Link
               key={page.slug}

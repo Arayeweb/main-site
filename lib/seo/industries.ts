@@ -7,7 +7,13 @@ export type IndustrySlug =
   | "cafe"
   | "lawyer"
   | "real-estate"
-  | "online-shop";
+  | "online-shop"
+  | "private-tutor"
+  | "consultant"
+  | "architect"
+  | "photographer"
+  | "service-company"
+  | "instagram-business";
 
 export interface IndustryBase {
   slug: IndustrySlug;
@@ -71,6 +77,42 @@ export const industries: IndustryBase[] = [
     persianName: "فروشگاه آنلاین",
     englishName: "online-shop",
     audienceHint: "صفحات دسته‌بندی/محصولیِ قابل ایندکس + راه ارتباط با فروش",
+  },
+  {
+    slug: "private-tutor",
+    persianName: "مدرسان خصوصی",
+    englishName: "private-tutor",
+    audienceHint: "معرفی درس و پایه + ثبت درخواست شاگرد مستقیم",
+  },
+  {
+    slug: "consultant",
+    persianName: "مشاوران",
+    englishName: "consultant",
+    audienceHint: "تخصص، حوزه‌ها و رزرو جلسه با اعتبارسازی",
+  },
+  {
+    slug: "architect",
+    persianName: "معماران و دفاتر معماری",
+    englishName: "architect",
+    audienceHint: "گالری پروژه، شرح مسئله و فرم درخواست همکاری",
+  },
+  {
+    slug: "photographer",
+    persianName: "عکاسان و آتلیه‌ها",
+    englishName: "photographer",
+    audienceHint: "گالری سریع، پکیج‌ها و رزرو جلسه عکاسی",
+  },
+  {
+    slug: "service-company",
+    persianName: "شرکت‌های خدماتی",
+    englishName: "service-company",
+    audienceHint: "فهرست خدمات، استعلام قیمت و تماس فوری",
+  },
+  {
+    slug: "instagram-business",
+    persianName: "کسب‌وکارهای اینستاگرامی",
+    englishName: "instagram-business",
+    audienceHint: "فروش مستقل با دامنه اختصاصی و اتصال به پیج",
   },
 ];
 

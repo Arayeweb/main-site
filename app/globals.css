@@ -141,7 +141,7 @@ html {
   max-width: 760px;
 }
 .legacy-article-body h2 {
-  @apply mt-8 text-lg font-extrabold text-navy-900 sm:mt-10 sm:text-xl;
+  @apply mt-8 scroll-mt-28 text-lg font-extrabold text-navy-900 sm:mt-10 sm:text-xl;
 }
 .legacy-article-body h3 {
   @apply mt-6 text-base font-bold text-navy-900;
