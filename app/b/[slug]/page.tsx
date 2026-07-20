@@ -21,6 +21,14 @@ const THEMES: Record<string, { brand: string; deep: string }> = {
   slate:  { brand: "#475569", deep: "#334155" },
 };
 
+/** Footer overrides: hide Araaye promo, show a custom CTA instead. */
+const FOOTER_OVERRIDES: Record<string, { href: string; label: string }> = {
+  shoope_smoke_lab: {
+    href: "https://cafeshoope.menew.ir/menu",
+    label: "منو",
+  },
+};
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const slug = (params.slug || "").toLowerCase().trim();
   const supabase = getSupabaseAdmin();
@@ -196,10 +204,22 @@ export default async function BizcardPage({ params }: { params: { slug: string }
           )}
 
           <div className="bc-foot">
-            <a href="https://araaye.com/bizcard" target="_blank" rel="noopener noreferrer">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 2.5 5.5L20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5L12 3Z"/></svg>
-              کارت ویزیت با <b>آرایه</b> بساز
-            </a>
+            {FOOTER_OVERRIDES[slug] ? (
+              <a
+                className="bc-cta primary"
+                href={FOOTER_OVERRIDES[slug].href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                {FOOTER_OVERRIDES[slug].label}
+              </a>
+            ) : (
+              <a href="https://araaye.com/bizcard" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 2.5 5.5L20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5L12 3Z"/></svg>
+                کارت ویزیت با <b>آرایه</b> بساز
+              </a>
+            )}
           </div>
         </main>
       </div>

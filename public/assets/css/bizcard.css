@@ -163,12 +163,13 @@ html,body{height:100%;}
   margin-top:18px;padding:16px 26px 22px;text-align:center;
   border-top:1px solid var(--line);
 }
-.bc-foot a{
+.bc-foot > a:not(.bc-cta){
   display:inline-flex;align-items:center;gap:6px;
   color:var(--muted);font-size:12px;font-weight:700;text-decoration:none;
 }
-.bc-foot a b{color:var(--brand);}
-.bc-foot svg{width:13px;height:13px;}
+.bc-foot > a:not(.bc-cta) b{color:var(--brand);}
+.bc-foot > a:not(.bc-cta) svg{width:13px;height:13px;}
+.bc-foot .bc-cta{margin:0;}
 
 /* chatbot */
 .bc-chat-wrap{
