@@ -18,6 +18,7 @@ import {
   getUtmParams,
   pickUtmForDb,
 } from "@/lib/utm";
+import EnamadTrustSeal from "@/components/EnamadTrustSeal";
 import { IconCheck, IconDiamond, IconX } from "../icons";
 import { useArenaAuth } from "../ArenaAuthContext";
 
@@ -470,6 +471,18 @@ export default function PricingPage() {
           با کد معرفی دوست، ۱۰٪ تخفیف می‌گیری — معرف هم ۱۰ کردیت پاداش می‌گیرد.
           <br />
           کردیت‌ها بلافاصله بعد از پرداخت به حسابت اضافه می‌شوند و منقضی نمی‌شوند.
+        </div>
+
+        <div
+          className="ar-pricing-enamad"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 28,
+            marginBottom: 8,
+          }}
+        >
+          <EnamadTrustSeal size={88} />
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { footerColumns, FOOTER_ADDRESS, FOOTER_MAPS_URL, type FooterColumn } from "@/lib/homeData";
 import { IconPhone, IconMail, IconInstagram, IconLinkedin, IconMapPin } from "./icons";
+import EnamadTrustSeal from "./EnamadTrustSeal";
 import Logo from "./Logo";
 
 const socialIcons: Record<string, React.FC<{ size?: number; className?: string }>> = {
@@ -61,9 +62,12 @@ export default function Footer({ columns = footerColumns }: FooterProps) {
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-navy-50 pt-8 sm:flex-row">
           <Logo size="md" showTagline />
-          <p className="text-xs text-navy-400">
-            © ۱۴۰۵ آرایه. شرکت هوش آرایه پارس
-          </p>
+          <div className="flex flex-col items-center gap-3 sm:items-end">
+            <EnamadTrustSeal size={72} />
+            <p className="text-xs text-navy-400">
+              © ۱۴۰۵ آرایه. شرکت هوش آرایه پارس
+            </p>
+          </div>
         </div>
 
         <p className="mt-4 text-center text-xs text-navy-400">
