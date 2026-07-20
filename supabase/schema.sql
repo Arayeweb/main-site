@@ -584,6 +584,10 @@ alter table public.referrals enable row level security;
 -- فیلدهای اضافه روی bizcards برای فرم کوتاه اولیه (شهر + واتساپ)
 alter table public.bizcards add column if not exists city     text;
 alter table public.bizcards add column if not exists whatsapp text;
+alter table public.bizcards add column if not exists access_token text;
+create unique index if not exists bizcards_access_token_uidx
+  on public.bizcards (access_token)
+  where access_token is not null;
 
 -- لیدهای فروش‌محور حاصل از کارت ویزیت.
 -- هر کارت بعد از ساخت می‌تواند یک ردیف لید داشته باشد که با

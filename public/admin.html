@@ -1354,13 +1354,51 @@
               +'<td><strong>'+bcEsc(c.business_name)+'</strong></td>'
               +'<td>'+(c.category?'<span class="bc-tag">'+bcEsc(c.category)+'</span>':"—")+'</td>'
               +'<td><a href="/b/'+bcEsc(c.slug)+'" target="_blank">/b/'+bcEsc(c.slug)+'</a></td>'
-              +'<td><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(window.location.origin+'/b/'+c.slug)+'" target="_blank" download="'+bcEsc(c.slug)+'-qr.png">QR ⬇</a></td>'
+              +'<td style="white-space:nowrap">'
+              +'<button type="button" class="btn btn-ghost btn-sm" onclick="bcCopyOwnerLink(\''+bcEsc(c.id)+'\',false,this)">لینک پنل</button> '
+              +'<button type="button" class="btn btn-ghost btn-sm" onclick="bcCopyOwnerLink(\''+bcEsc(c.id)+'\',true,this)">تمدید</button> '
+              +'<a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(window.location.origin+'/b/'+c.slug)+'" target="_blank" download="'+bcEsc(c.slug)+'-qr.png">QR ⬇</a>'
+              +'</td>'
               +'</tr>';
           }).join("");
-          wrap.innerHTML = '<table class="bc-list-table"><thead><tr><th>نام</th><th>دسته</th><th>لینک</th><th>QR</th></tr></thead><tbody>'+rows+'</tbody></table>';
+          wrap.innerHTML = '<table class="bc-list-table"><thead><tr><th>نام</th><th>دسته</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>'+rows+'</tbody></table>';
         })
         .catch(function(){document.getElementById("bc_listWrap").innerHTML='<p class="bc-empty">خطا در بارگذاری</p>';});
     }
+
+    window.bcCopyOwnerLink = function(id, rotate, btn) {
+      var label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "…";
+      fetch("/api/bizcards/owner-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id: id, rotate: !!rotate })
+      })
+      .then(function(r){ return r.json().then(function(data){ return { ok: r.ok, data: data }; }); })
+      .then(function(res) {
+        btn.disabled = false;
+        btn.textContent = label;
+        if (!res.ok || !res.data.ok || !res.data.url) {
+          alert("خطا: " + ((res.data && res.data.error) || "نامشخص"));
+          return;
+        }
+        var url = res.data.url;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert((rotate ? "توکن تمدید و لینک کپی شد:\n\n" : "لینک پنل صاحب کپی شد:\n\n") + url);
+          }).catch(function(){ prompt("لینک را کپی کنید:", url); });
+        } else {
+          prompt("لینک را کپی کنید:", url);
+        }
+      })
+      .catch(function(){
+        btn.disabled = false;
+        btn.textContent = label;
+        alert("خطا در اتصال");
+      });
+    };
 
     // init when tab is clicked
     document.addEventListener("DOMContentLoaded", function() {

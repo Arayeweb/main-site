@@ -75,6 +75,10 @@
     .btn-edit{font-family:"Vazirmatn",Tahoma;font-size:12px;font-weight:700;background:#4285F4;color:#fff;border:0;border-radius:8px;padding:6px 14px;cursor:pointer;transition:background .15s;white-space:nowrap;margin-inline-end:6px;}
     .btn-edit:hover{background:#1b6ef3;}
     .btn-edit:disabled{background:#9aa0a6;cursor:not-allowed;}
+    .btn-owner{font-family:"Vazirmatn",Tahoma;font-size:12px;font-weight:700;background:#0F4C5C;color:#fff;border:0;border-radius:8px;padding:6px 14px;cursor:pointer;transition:background .15s;white-space:nowrap;margin-inline-end:6px;}
+    .btn-owner:hover{background:#0a3640;}
+    .btn-owner:disabled{background:#9aa0a6;cursor:not-allowed;}
+    .btn-owner-rotate{font-family:"Vazirmatn",Tahoma;font-size:11px;font-weight:700;background:#fff;color:#0F4C5C;border:1px solid #0F4C5C;border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap;margin-inline-end:6px;}
     .btn-refresh{font-family:"Vazirmatn",Tahoma;font-size:12px;font-weight:700;background:#fff;color:#4285F4;border:1.5px solid #4285F4;border-radius:8px;padding:6px 14px;cursor:pointer;transition:all .15s;}
     .btn-refresh:hover{background:#f8faff;}
     .list-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
@@ -515,7 +519,9 @@
               + '<td>' + esc(c.phone || '—') + '</td>'
               + '<td>' + esc(c.whatsapp || '—') + '</td>'
               + '<td>/b/' + esc(c.slug) + '</td>'
-              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button><button class="btn-approve" onclick="approveCard(\'' + esc(c.id) + '\',this)">✓ تایید</button></td>'
+              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button>'
+              + '<button class="btn-owner" onclick="copyOwnerLink(\'' + esc(c.id) + '\',false,this)">لینک پنل صاحب</button>'
+              + '<button class="btn-approve" onclick="approveCard(\'' + esc(c.id) + '\',this)">✓ تایید</button></td>'
               + '</tr>';
           }).join("");
           wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
@@ -548,7 +554,10 @@
               + '<td>' + esc(c.phone || '—') + '</td>'
               + '<td>' + esc(c.whatsapp || '—') + '</td>'
               + '<td><a href="/b/' + esc(c.slug) + '" target="_blank">/b/' + esc(c.slug) + '</a></td>'
-              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button><a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.origin + '/b/' + c.slug) + '" target="_blank" download="' + esc(c.slug) + '-qr.png">QR ⬇</a></td>'
+              + '<td><button class="btn-edit" onclick="openEditModal(\'' + esc(c.id) + '\')">✏️ ویرایش</button>'
+              + '<button class="btn-owner" onclick="copyOwnerLink(\'' + esc(c.id) + '\',false,this)">لینک پنل صاحب</button>'
+              + '<button class="btn-owner-rotate" onclick="copyOwnerLink(\'' + esc(c.id) + '\',true,this)">تمدید توکن</button>'
+              + '<a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.origin + '/b/' + c.slug) + '" target="_blank" download="' + esc(c.slug) + '-qr.png">QR ⬇</a></td>'
               + '</tr>';
           }).join("");
           wrap.innerHTML = '<table class="list-table"><thead><tr><th>نام</th><th>دسته</th><th>تلفن</th><th>واتساپ</th><th>لینک</th><th>عملیات</th></tr></thead><tbody>' + rows + '</tbody></table>';
@@ -557,6 +566,43 @@
         .catch(function() {
           document.getElementById("listWrap").innerHTML = '<p class="empty">خطا در بارگذاری لیست</p>';
         });
+    }
+
+    function copyOwnerLink(id, rotate, btn) {
+      var label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "…";
+      fetch("/api/bizcards/owner-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id: id, rotate: !!rotate })
+      })
+      .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+      .then(function(res) {
+        btn.disabled = false;
+        btn.textContent = label;
+        if (!res.ok || !res.data.ok || !res.data.url) {
+          if (res.data && res.data.error === "unauthorized") { location.href = "/admin"; return; }
+          alert("خطا در ساخت لینک: " + ((res.data && res.data.error) || "نامشخص"));
+          return;
+        }
+        var url = res.data.url;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert((rotate ? "توکن تمدید شد و لینک کپی شد:\n\n" : "لینک پنل صاحب کپی شد:\n\n") + url);
+          }).catch(function() {
+            prompt("لینک را کپی کنید:", url);
+          });
+        } else {
+          prompt("لینک را کپی کنید:", url);
+        }
+      })
+      .catch(function() {
+        btn.disabled = false;
+        btn.textContent = label;
+        alert("خطا در اتصال");
+      });
     }
 
     // edit modal
@@ -676,6 +722,7 @@
     window.openEditModal = openEditModal;
     window.closeEditModal = closeEditModal;
     window.saveEdit = saveEdit;
+    window.copyOwnerLink = copyOwnerLink;
 
     loadList();
 
