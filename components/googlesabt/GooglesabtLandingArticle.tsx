@@ -42,7 +42,7 @@ export default function GooglesabtLandingArticle({
 
             <div className="mx-auto max-w-3xl text-center">
               <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1.5 text-xs font-bold text-brand-600">
-                {isGuideOrComparison ? "راهنما" : "ثبت گوگل مپ — از ۵۹۰ هزار تومان"}
+                {isGuideOrComparison ? "راهنما" : "ثبت گوگل مپ — از ۲٫۲۴ میلیون تومان"}
               </span>
               <h1 className="text-3xl font-extrabold leading-tight text-navy-900 sm:text-4xl">
                 {page.hero.h1}

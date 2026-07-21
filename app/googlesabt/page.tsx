@@ -23,16 +23,16 @@ import { canonicalUrl } from "@/lib/siteUrl";
 import { ORGANIZATION_ID, organizationProviderRef, SITE_NAME } from "@/lib/seo/siteIdentity";
 
 export const metadata: Metadata = {
-  title: { absolute: "ثبت گوگل مپ | ثبت کسب‌وکار در نقشه از ۵۹۰ هزار تومان — آرایه" },
+  title: { absolute: "ثبت گوگل مپ | ثبت کسب‌وکار در نقشه از ۲٫۲۴ میلیون تومان — آرایه" },
   description:
-    "ثبت کسب‌وکار در گوگل مپ، نشان، بلد، اسنپ و OpenStreetMap. ۳ پکیج شفاف، پرداخت آنلاین و لینک همه‌کاره از پکیج حرفه‌ای.",
+    "ثبت کسب‌وکار در گوگل مپ، نشان، بلد، اسنپ و OpenStreetMap. ۳ پکیج شفاف، پرداخت آنلاین و هدیه کارت هوشمند کسب‌وکار از پکیج حرفه‌ای.",
   alternates: {
     canonical: "/googlesabt",
   },
   openGraph: {
-    title: "ثبت کسب‌وکار در گوگل مپ از ۵۹۰ هزار تومان — آرایه",
+    title: "ثبت کسب‌وکار در گوگل مپ از ۲٫۲۴ میلیون تومان — آرایه",
     description:
-      "ثبت در گوگل مپ، نشان، بلد و اسنپ + لینک همه‌کاره. تحویل کمتر از یک روز. پرداخت آنلاین امن.",
+      "ثبت در گوگل مپ، نشان، بلد و اسنپ + هدیه کارت هوشمند کسب‌وکار. تحویل کمتر از یک روز. پرداخت آنلاین امن.",
     url: "/googlesabt",
     type: "website",
     locale: "fa_IR",
@@ -65,7 +65,7 @@ const jsonLd = {
       areaServed: { "@type": "Country", name: "Iran" },
       url: canonicalUrl("/googlesabt"),
       description:
-        "ثبت لوکیشن، نام، عکس و ساعت کاری کسب‌وکار در گوگل مپ، نشان، بلد و اسنپ، با لینک BizCard و همه مسیریاب‌ها.",
+        "ثبت لوکیشن، نام، عکس و ساعت کاری کسب‌وکار در گوگل مپ، نشان، بلد و اسنپ، با کارت هوشمند کسب‌وکار و همه مسیریاب‌ها.",
       offers: googlesabtPackages.map((p) => ({
         "@type": "Offer",
         name: `پکیج ${p.name}`,

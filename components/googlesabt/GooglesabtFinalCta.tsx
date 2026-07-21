@@ -1,11 +1,12 @@
 "use client";
 
 import { pushGtmEvent } from "@/lib/gtm";
+import { IconShield, IconPhone, IconStar, IconSparkle } from "@/components/icons";
 
 const TRUST = [
-  "🔒 پرداخت امن بانکی",
-  "💬 پشتیبانی تا پایان راه‌اندازی",
-  "⭐ صدها کسب‌وکار به آرایه اعتماد کرده‌اند",
+  { text: "پرداخت امن بانکی", Icon: IconShield },
+  { text: "پشتیبانی تا پایان راه‌اندازی", Icon: IconPhone },
+  { text: "صدها کسب‌وکار به آرایه اعتماد کرده‌اند", Icon: IconStar },
 ] as const;
 
 export default function GooglesabtFinalCta() {
@@ -29,7 +30,7 @@ export default function GooglesabtFinalCta() {
 
       <div className="container-mx container-px relative text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold text-blue-200 backdrop-blur-sm">
-          <span aria-hidden>✨</span>
+          <IconSparkle size={14} className="shrink-0" />
           آماده شروع هستید؟
         </span>
 
@@ -45,9 +46,13 @@ export default function GooglesabtFinalCta() {
         </p>
 
         <ul className="mx-auto mt-10 flex max-w-3xl flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-8 sm:gap-y-3">
-          {TRUST.map((item) => (
-            <li key={item} className="text-[13px] font-bold text-white/75 sm:text-[14px]">
-              {item}
+          {TRUST.map(({ text, Icon }) => (
+            <li
+              key={text}
+              className="inline-flex items-center gap-2 text-[13px] font-bold text-white/75 sm:text-[14px]"
+            >
+              <Icon size={15} className="shrink-0 text-blue-300" />
+              {text}
             </li>
           ))}
         </ul>

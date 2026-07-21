@@ -21,7 +21,7 @@ import {
   type GooglesabtOrderDraft,
   type GooglesabtWeekdayId,
 } from "@/lib/googlesabtCheckout";
-import { IconCheck } from "@/components/icons";
+import { IconCheck, IconShield, IconStar } from "@/components/icons";
 import GooglesabtMapPicker from "@/components/googlesabt/GooglesabtMapPicker";
 import {
   SITE_PHONE_DISPLAY,
@@ -266,8 +266,7 @@ export default function GooglesabtCheckout() {
       "فاکتور رزرو — آرایه ثبت گوگل",
       `کد پیگیری: ${trackId || "—"}`,
       `پکیج: ${pkg.name}`,
-      `مبلغ پرداختی: ${formatToman(pkg.deposit)} تومان`,
-      `قیمت پکیج: ${formatToman(pkg.price)} تومان`,
+      `مبلغ پرداختی: ${formatToman(pkg.price)} تومان`,
       `کسب‌وکار: ${draft.businessName || "—"}`,
       `تماس: ${draft.phone || "—"}`,
       `تاریخ: ${new Date().toLocaleDateString("fa-IR")}`,
@@ -313,15 +312,16 @@ export default function GooglesabtCheckout() {
                     }`}
                   >
                     {isPopular ? (
-                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#4285F4] px-3.5 py-1 text-[11px] font-bold text-white shadow-soft">
-                        ⭐ پیشنهادی
+                      <span className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#4285F4] px-3.5 py-1 text-[11px] font-bold text-white shadow-soft">
+                        <IconStar size={12} className="fill-current" />
+                        پیشنهادی
                       </span>
                     ) : null}
 
                     <div className="flex items-baseline justify-between gap-2">
-                      <h3 className="text-lg font-extrabold text-navy-900">{p.name}</h3>
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
-                        {p.tagline}
+                      <h3 className="text-lg font-extrabold text-navy-900">پکیج {p.name}</h3>
+                      <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                        ۱۰٪ تخفیف
                       </span>
                     </div>
                     <p className="mt-2 text-[13px] leading-relaxed text-navy-500">{p.description}</p>
@@ -333,9 +333,6 @@ export default function GooglesabtCheckout() {
                       <span className="text-2xl font-extrabold text-navy-900 sm:text-[1.75rem]">
                         {formatToman(p.price)}
                         <small className="mr-1 text-xs font-medium text-navy-400">تومان</small>
-                      </span>
-                      <span className="mt-1 block text-[11px] font-bold text-[#4285F4]">
-                        شروع با {formatToman(p.deposit)} تومان
                       </span>
                     </div>
 
@@ -373,8 +370,14 @@ export default function GooglesabtCheckout() {
               <div className="min-w-0">
                 <p className="text-[11px] font-bold text-navy-400">پکیج انتخاب‌شده</p>
                 <p className="mt-0.5 text-[15px] font-extrabold text-navy-900">
-                  {pkg.popular ? "⭐ " : ""}
-                  {pkg.name}
+                  {pkg.popular ? (
+                    <span className="inline-flex items-center gap-1">
+                      <IconStar size={14} className="fill-current text-[#FABB05]" />
+                      پکیج {pkg.name}
+                    </span>
+                  ) : (
+                    <>پکیج {pkg.name}</>
+                  )}
                 </p>
                 <p className="mt-0.5 text-[13px] font-bold text-[#4285F4]">
                   {formatToman(pkg.price)} تومان
@@ -660,20 +663,20 @@ export default function GooglesabtCheckout() {
                     <div className="rounded-2xl border border-navy-100 bg-navy-50/40 p-5">
                       <div className="flex justify-between text-[13px] text-navy-500">
                         <span>پکیج {pkg.name}</span>
-                        <span>{formatToman(pkg.price)} تومان</span>
+                        <span className="line-through">{formatToman(pkg.oldPrice)} تومان</span>
                       </div>
                       <div className="mt-3 flex justify-between border-t border-navy-100 pt-3 text-sm font-extrabold text-navy-900">
                         <span>مبلغ قابل پرداخت</span>
                         <span className="text-[#4285F4]">
-                          {formatToman(pkg.deposit)} تومان
+                          {formatToman(pkg.price)} تومان
                         </span>
                       </div>
                       <p className="mt-2 text-[11px] text-navy-400">
-                        با پرداخت، قیمت قفل و راه‌اندازی شروع می‌شود. مالیات بر ارزش افزوده در صورت شمول در فاکتور نهایی لحاظ می‌شود.
+                        پرداخت کامل پکیج. با تأیید پرداخت، راه‌اندازی همان روز شروع می‌شود. مالیات بر ارزش افزوده در صورت شمول در فاکتور لحاظ می‌شود.
                       </p>
                     </div>
                     <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5 text-[12px] font-bold text-emerald-700">
-                      <span aria-hidden>🔒</span>
+                      <IconShield size={15} className="shrink-0" />
                       پرداخت امن از طریق درگاه معتبر
                     </div>
                   </div>
@@ -712,7 +715,7 @@ export default function GooglesabtCheckout() {
                         "در حال انتقال…"
                       ) : (
                         <>
-                          <span aria-hidden>🔒</span>
+                          <IconShield size={16} className="shrink-0" />
                           پرداخت امن آنلاین
                         </>
                       )}
@@ -740,7 +743,7 @@ export default function GooglesabtCheckout() {
               <SuccessRow label="کد پیگیری" value={trackId || "—"} mono />
               <SuccessRow label="زمان تحویل تقریبی" value="کمتر از ۱ روز کاری" />
               <SuccessRow label="پکیج" value={pkg.name} />
-              <SuccessRow label="مبلغ پرداخت‌شده" value={`${formatToman(pkg.deposit)} تومان`} />
+              <SuccessRow label="مبلغ پرداخت‌شده" value={`${formatToman(pkg.price)} تومان`} />
               {draft.businessName ? (
                 <SuccessRow label="کسب‌وکار" value={draft.businessName} />
               ) : null}

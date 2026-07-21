@@ -9,7 +9,7 @@ export interface GooglesabtPackage {
   tagline: string;
   price: number;
   oldPrice: number;
-  /** پیش‌پرداخت رزرو — با پرداخت آنلاین این مبلغ، قیمت قفل و ثبت شروع می‌شود */
+  /** مبلغ پرداخت آنلاین = قیمت کامل پکیج (تومان) */
   deposit: number;
   description: string;
   mapCount: number;
@@ -21,11 +21,11 @@ export interface GooglesabtPackage {
 export const googlesabtPackages: GooglesabtPackage[] = [
   {
     key: "basic",
-    name: "اقتصادی",
-    tagline: "Economy",
-    price: 590_000,
-    oldPrice: 1_200_000,
-    deposit: 290_000,
+    name: "استاندارد",
+    tagline: "Standard",
+    price: 2_241_000,
+    oldPrice: 2_490_000,
+    deposit: 2_241_000,
     mapCount: 3,
     includesBizcard: false,
     description: "ثبت حرفه‌ای در گوگل، نشان و بلد برای شروع دیده‌شدن.",
@@ -40,16 +40,16 @@ export const googlesabtPackages: GooglesabtPackage[] = [
     key: "popular",
     name: "حرفه‌ای",
     tagline: "Professional",
-    price: 990_000,
-    oldPrice: 2_800_000,
-    deposit: 490_000,
+    price: 3_411_000,
+    oldPrice: 3_790_000,
+    deposit: 3_411_000,
     mapCount: 5,
     includesBizcard: true,
     popular: true,
-    description: "ثبت در ۵ نقشه + لینک همه‌کاره با همه مسیریاب‌ها.",
+    description: "ثبت در ۵ نقشه + هدیه کارت هوشمند کسب‌وکار.",
     features: [
       "ثبت در ۵ نقشه: گوگل، نشان، بلد، اسنپ، OSM",
-      "کارت BizCard کامل + QR اختصاصی",
+      "هدیه: کارت هوشمند کسب‌وکار + QR اختصاصی",
       "همه مسیریاب‌ها روی یک لینک",
       "عکس، ساعت کاری و اطلاعات تماس",
       "تحویل کمتر از یک روز کاری",
@@ -59,14 +59,15 @@ export const googlesabtPackages: GooglesabtPackage[] = [
     key: "vip",
     name: "VIP",
     tagline: "VIP",
-    price: 1_990_000,
-    oldPrice: 4_500_000,
-    deposit: 990_000,
+    price: 4_491_000,
+    oldPrice: 4_990_000,
+    deposit: 4_491_000,
     mapCount: 5,
     includesBizcard: true,
     description: "همه امکانات حرفه‌ای + مدیریت نظرات و پشتیبانی اختصاصی.",
     features: [
       "همه امکانات پکیج حرفه‌ای",
+      "هدیه: کارت هوشمند کسب‌وکار",
       "پنل پیامکی مدیریت نمایه",
       "مدیریت نظرات و پاسخ‌گویی",
       "پیگیری درستی‌سنجی گوگل",
@@ -142,7 +143,7 @@ export interface GooglesabtCaseStudy {
   logo: string;
 }
 
-/** نمونه‌های واقعی ثبت‌شده — اسکرین‌شات از گوگل مپ و لینک همه‌کاره زنده */
+/** نمونه‌های واقعی ثبت‌شده — اسکرین‌شات از گوگل مپ و کارت هوشمند کسب‌وکار */
 export const googlesabtCaseStudies: GooglesabtCaseStudy[] = [
   {
     id: "shoope",

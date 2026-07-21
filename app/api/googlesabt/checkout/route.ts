@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   const pkg = GOOGLESABT_PACKAGES[pkgKey];
-  const amount = pkg.deposit;
+  const amount = pkg.price;
 
   if (amount <= 0) {
     return NextResponse.json({ ok: false, error: "zero_amount" }, { status: 422 });
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     const zibal = await zibalRequest({
       amountToman: amount,
       callbackUrl,
-      description: `آرایه ثبت گوگل - پیش‌پرداخت پکیج ${pkg.name} - ${businessName}`,
+      description: `آرایه ثبت گوگل - پکیج ${pkg.name} - ${businessName}`,
       mobile: contact,
       orderId: `googlesabt-${pkgKey}-${Date.now()}`,
     });
@@ -86,14 +86,14 @@ export async function POST(req: NextRequest) {
         budget: String(pkg.price),
         channel: "googlesabt_landing",
         detail:
-          `zibal_trackId: ${trackId} | package: ${pkg.name} | deposit: ${amount}` +
+          `zibal_trackId: ${trackId} | package: ${pkg.name} | amount: ${amount}` +
           ` | includesBizcard: ${pkg.includesBizcard}` +
           ` | category: ${category || "-"} | ${province || "-"}/${city || "-"}` +
           ` | hours: ${openTime || "-"}-${closeTime || "-"} | days: ${weekdays.join(",")}`,
         raw: {
           trackId,
           amount,
-          deposit: true,
+          fullPayment: true,
           fullPrice: pkg.price,
           package: pkgKey,
           businessName,

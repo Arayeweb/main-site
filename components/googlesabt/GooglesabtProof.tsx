@@ -39,13 +39,13 @@ export default function GooglesabtProof() {
                 <figure className="relative aspect-[4/5] overflow-hidden bg-navy-50">
                   <Image
                     src={item.smartLinkImage}
-                    alt={`لینک همه‌کاره ${item.name}`}
+                    alt={`کارت هوشمند کسب‌وکار ${item.name}`}
                     fill
                     className="object-cover object-top transition duration-500 group-hover:scale-[1.02]"
                     sizes="(max-width: 1024px) 50vw, 18vw"
                   />
                   <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-900/70 to-transparent px-2.5 pb-2 pt-8">
-                    <span className="text-[10px] font-bold text-white">لینک همه‌کاره</span>
+                    <span className="text-[10px] font-bold text-white">کارت هوشمند</span>
                   </figcaption>
                 </figure>
               </div>
@@ -84,7 +84,7 @@ export default function GooglesabtProof() {
                     rel="noopener noreferrer"
                     className="inline-flex flex-1 items-center justify-center rounded-xl border border-navy-200 bg-white px-3 py-2.5 text-[12px] font-bold text-navy-700 transition hover:border-[#4285F4] hover:text-[#4285F4]"
                   >
-                    مشاهده لینک همه‌کاره
+                    مشاهده کارت هوشمند
                   </a>
                 </div>
               </div>

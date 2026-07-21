@@ -2,16 +2,16 @@
 
 import { pushGtmEvent } from "@/lib/gtm";
 import GooglesabtHeroMockup from "./GooglesabtHeroMockup";
+import { IconCheck, IconSparkle } from "@/components/icons";
 
 export default function GooglesabtHero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-white to-blue-50/40 pb-12 pt-12 sm:pb-16 sm:pt-20">
       <div className="container-mx container-px">
         <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-14">
-          {/* Copy */}
           <div className="max-w-2xl text-center lg:text-right">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1.5 text-xs font-bold text-[#4285F4]">
-              <span aria-hidden="true">✨</span>
+              <IconSparkle size={14} className="shrink-0" />
               مناسب فروشگاه‌ها، مطب‌ها، شرکت‌ها و سایر کسب‌وکارهای ایرانی
             </span>
 
@@ -24,7 +24,6 @@ export default function GooglesabtHero() {
               ما حضور کسب‌وکارتان را در گوگل راه‌اندازی می‌کنیم تا مشتریان راحت‌تر شما را پیدا کنند و با شما ارتباط بگیرند.
             </p>
 
-            {/* Trust bar */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-[13px] font-bold text-navy-600 lg:justify-start">
               {[
                 "مناسب کسب‌وکارهای ایرانی",
@@ -32,13 +31,12 @@ export default function GooglesabtHero() {
                 "بدون نیاز به دانش فنی",
               ].map((t) => (
                 <span key={t} className="inline-flex items-center gap-1.5">
-                  <span className="text-[#34A853]">✓</span>
+                  <IconCheck size={14} className="shrink-0 text-[#34A853]" />
                   {t}
                 </span>
               ))}
             </div>
 
-            {/* CTA */}
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
               <a
                 href="#packages"
@@ -55,7 +53,6 @@ export default function GooglesabtHero() {
             </p>
           </div>
 
-          {/* Visual result */}
           <div className="w-full max-w-md lg:max-w-lg">
             <GooglesabtHeroMockup />
           </div>
