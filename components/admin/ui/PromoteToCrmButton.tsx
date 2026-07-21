@@ -6,7 +6,7 @@ import { UserPlus } from 'lucide-react';
 import { promoteToCrmLead } from '@/lib/adminApi';
 
 interface PromoteToCrmButtonProps {
-  sourceType: 'bizcard' | 'website_brief' | 'fastweb' | 'content_sales' | 'adready';
+  sourceType: 'bizcard' | 'website_brief' | 'fastweb' | 'adready';
   sourceId: string;
   className?: string;
 }

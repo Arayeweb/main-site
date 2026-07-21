@@ -36,6 +36,7 @@ export async function createAiUserAccount(
     .insert({
       phone: input.phone,
       password_hash,
+      credits: FREE_SIGNUP_CREDITS,
       utm_source: input.utm?.utm_source ?? null,
       utm_medium: input.utm?.utm_medium ?? null,
       utm_campaign: input.utm?.utm_campaign ?? null,
@@ -79,6 +80,17 @@ export async function createAiUserAccount(
     return { ok: false, error: "server_error" };
   }
 
+  // Ensure wallet matches grant even if DB column default differs from FREE_SIGNUP_CREDITS
+  const { error: creditSyncError } = await supabase
+    .from("ai_users")
+    .update({ credits: FREE_SIGNUP_CREDITS })
+    .eq("id", user.id);
+  if (creditSyncError) {
+    console.error("[createAiUserAccount] credit balance sync failed", creditSyncError);
+    await supabase.from("ai_users").delete().eq("id", user.id);
+    return { ok: false, error: "server_error" };
+  }
+
   let referralCode: string | null = null;
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = generateReferralCode();
@@ -97,7 +109,7 @@ export async function createAiUserAccount(
     user: {
       id: user.id as string,
       plan: user.plan as string,
-      credits: user.credits as number,
+      credits: FREE_SIGNUP_CREDITS,
       referralCode,
     },
   };

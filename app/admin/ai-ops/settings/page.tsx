@@ -37,7 +37,7 @@ export default function AiOpsSettingsPage() {
             <label className="text-sm font-medium text-slate-700 dark:text-slate-200 block mb-1">کردیت هدیه ثبت‌نام رایگان</label>
             <input
               type="number"
-              value={form.free_signup_credits ?? 5}
+              value={form.free_signup_credits ?? 10}
               onChange={(e) => setForm({ ...form, free_signup_credits: Number(e.target.value) })}
               className="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm"
             />

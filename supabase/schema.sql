@@ -1005,7 +1005,7 @@ create table if not exists public.ai_settings (
 );
 insert into public.ai_settings (id, data) values (1, '{
   "default_plan": "free",
-  "free_signup_credits": 5,
+  "free_signup_credits": 10,
   "rate_limit_per_minute": 12,
   "feature_flags": { "image_studio": true, "code_studio": true, "battle_mode": true, "referrals": true },
   "max_battle_cost_usd": 0.25

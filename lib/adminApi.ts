@@ -210,32 +210,6 @@ export function patchBizcardLead(id: string, body: { sales_status?: string; mark
   }, 'H2');
 }
 
-export interface ApiContentSalesOrder {
-  id: string;
-  created_at: string;
-  buyer_name: string;
-  buyer_phone: string;
-  buyer_email: string | null;
-  amount_toman: number;
-  status: string;
-  paid_at: string | null;
-  ai_user_id: string | null;
-  zibal_track_id: string | null;
-}
-
-export function fetchContentSalesOrders(params?: { q?: string; status?: string; page_num?: number }) {
-  const sp = new URLSearchParams();
-  if (params?.q) sp.set('q', params.q);
-  if (params?.status) sp.set('status', params.status);
-  if (params?.page_num != null) sp.set('page_num', String(params.page_num));
-  const qs = sp.toString();
-  return adminFetch<{ orders: ApiContentSalesOrder[]; has_more: boolean; migration_required?: boolean }>(
-    `/api/admin/content-sales-orders${qs ? `?${qs}` : ''}`,
-    undefined,
-    'H1'
-  );
-}
-
 export interface ApiFreelanceProject {
   id: string;
   created_at: string;
@@ -266,7 +240,7 @@ export function patchFreelanceProject(id: string, body: { status?: string; resul
 }
 
 export function promoteToCrmLead(
-  sourceType: 'bizcard' | 'website_brief' | 'fastweb' | 'content_sales' | 'adready',
+  sourceType: 'bizcard' | 'website_brief' | 'fastweb' | 'adready',
   id: string
 ) {
   return adminFetch<{ id: string; already_exists?: boolean }>('/api/sales/leads/promote', {

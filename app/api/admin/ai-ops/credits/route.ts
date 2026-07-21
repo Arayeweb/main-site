@@ -78,6 +78,16 @@ export async function POST(req: NextRequest) {
 
     const balanceAfter = Math.max(0, (user.credits as number) + delta);
     await supabase.from("ai_users").update({ credits: balanceAfter }).eq("id", userId);
+    if (delta > 0) {
+      await supabase.from("ai_credit_lots").insert({
+        user_id: userId,
+        source: "admin_grant",
+        amount: delta,
+        remaining: delta,
+        expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        metadata: { admin_id: session.userId, note: body.note || body.reason || null },
+      });
+    }
     await supabase.from("ai_credit_ledger").insert({
       user_id: userId,
       delta,

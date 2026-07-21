@@ -53,3 +53,9 @@ export function normalizeContact(rawInput: string): {
 
   return { kind: "invalid", value: raw };
 }
+
+/** Mask a phone number for UI display: 0912xxxxx89 */
+export function maskPhone(phone: string): string {
+  if (!phone || phone.length < 7) return phone;
+  return phone.slice(0, 4) + "xxxxx" + phone.slice(-2);
+}

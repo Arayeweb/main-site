@@ -8,9 +8,8 @@ import {
   signAdReadyToken,
   verifyPassword,
 } from "@/lib/adreadySession";
-import { maskPhone } from "@/lib/contentSalesOrder";
 import { withPublicTimeout } from "@/lib/publicDataFetch";
-import { normalizeContact } from "@/lib/validateContact";
+import { maskPhone, normalizeContact } from "@/lib/validateContact";
 import {
   ensureAdReadyUserFromAi,
   findAiUserForBridge,

@@ -11,7 +11,6 @@ const SOURCE_TYPES = new Set([
   "bizcard",
   "website_brief",
   "fastweb",
-  "content_sales",
   "adready",
 ]);
 
@@ -119,27 +118,6 @@ async function loadPayload(
       page: data.slug ? `/s/${data.slug}` : "fastweb",
       detail: str(data.package_key, 200),
       raw: { promoted_from: { type: "fastweb", id: sourceId }, record: data },
-    };
-  }
-
-  if (sourceType === "content_sales") {
-    const { data, error } = await supabase
-      .from("content_sales_orders")
-      .select("*")
-      .eq("id", sourceId)
-      .maybeSingle();
-    if (error || !data) return { error: "not_found", status: 404 };
-    const phone = str(data.buyer_phone, 200);
-    if (!phone) return { error: "missing_contact", status: 422 };
-    return {
-      source: "promoted_content_sales",
-      name: str(data.buyer_name, 200),
-      contact: phone,
-      goal: "content_sales",
-      budget: data.amount_toman != null ? String(data.amount_toman) : null,
-      page: "content-sales",
-      detail: str(data.status, 120),
-      raw: { promoted_from: { type: "content_sales", id: sourceId }, record: data },
     };
   }
 

@@ -147,7 +147,6 @@ export default function ArenaShell({
     authed,
     credits,
     historyItems: items,
-    hasContentBundle,
     phoneMasked,
     renameHistoryItem,
     removeHistoryItem,
@@ -447,16 +446,6 @@ export default function ArenaShell({
             </button>
             {moreToolsOpen && (
               <div className="ar-side-subnav">
-                {hasContentBundle && (
-                  <Link
-                    href="/ai/content-sales/app"
-                    className={`ar-side-nav-item${pathname.startsWith("/ai/content-sales/app") ? " active" : ""}`}
-                    onClick={closeDrawer}
-                  >
-                    <IconLayout size={14} />
-                    <span className="ar-side-nav-item-text">تولید محتوا</span>
-                  </Link>
-                )}
                 <Link
                   href="/ai/music"
                   className={`ar-side-nav-item${pathname.startsWith("/ai/music") ? " active" : ""}`}

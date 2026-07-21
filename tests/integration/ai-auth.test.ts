@@ -6,7 +6,6 @@ import { signAIToken, AI_COOKIE } from "@/lib/aiAuth";
 const db = createTestSupabase({
   ai_users: [],
   ai_referral_codes: [],
-  content_sales_orders: [],
 });
 
 vi.mock("@/lib/supabase", () => ({
@@ -17,7 +16,7 @@ import { POST, PUT, GET, DELETE } from "@/app/api/ai/auth/route";
 
 describe("integration — /api/ai/auth", () => {
   beforeEach(() => {
-    db.reset({ ai_users: [], ai_referral_codes: [], content_sales_orders: [] });
+    db.reset({ ai_users: [], ai_referral_codes: [] });
   });
 
   it("registers a new user and sets session cookie", async () => {
@@ -139,7 +138,7 @@ describe("integration — /api/ai/auth", () => {
   });
 
   it("DELETE clears session cookie", async () => {
-    const res = await DELETE();
+    const res = await DELETE(makeRequest("/api/ai/auth"));
     expect(res.status).toBe(200);
     expect(res.cookies.get(AI_COOKIE)?.value).toBe("");
   });

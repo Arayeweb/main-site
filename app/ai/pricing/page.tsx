@@ -455,16 +455,6 @@ export default function PricingPage() {
           </table>
         </div>
 
-        <div className="ar-pricing-bundle">
-          <div className="ar-pricing-bundle-title">Content & Sales Bundle</div>
-          <p className="ar-pricing-bundle-desc">
-            ۳۰ ریلز + ۳۰ کپشن + ۲۰ دایرکت + کمپین‌ها + ۱ ماه AI Pro — برای محتوا و فروش.
-          </p>
-          <Link href="/ai/content-sales" className="ar-btn ar-btn-primary ar-btn-sm">
-            مشاهده پکیج · ۵۹۰ هزار تومان
-          </Link>
-        </div>
-
         <div className="ar-pricing-note">
           پرداخت امن از طریق درگاه زیبال انجام می‌شود.
           <br />

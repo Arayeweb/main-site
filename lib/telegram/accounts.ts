@@ -6,6 +6,7 @@ import { randomBytes } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { hashPassword } from "@/lib/auth";
 import { generateReferralCode } from "@/lib/aiPromo";
+import { FREE_SIGNUP_CREDITS } from "@/lib/aiPricingConfig";
 
 export async function ensureAraayeUser(phone: string): Promise<string | null> {
   const supabase = getSupabaseAdmin();
@@ -23,6 +24,7 @@ export async function ensureAraayeUser(phone: string): Promise<string | null> {
     .insert({
       phone,
       password_hash,
+      credits: FREE_SIGNUP_CREDITS,
       utm_source: "telegram_bot",
       utm_medium: "telegram",
       utm_campaign: "acquisition",
@@ -33,6 +35,28 @@ export async function ensureAraayeUser(phone: string): Promise<string | null> {
   if (error || !user) {
     console.error("[telegram/accounts] create failed:", error?.message);
     return null;
+  }
+
+  const signupExpiresAt = new Date();
+  signupExpiresAt.setUTCFullYear(signupExpiresAt.getUTCFullYear() + 1);
+  const { error: lotError } = await supabase.from("ai_credit_lots").insert({
+    user_id: user.id,
+    source: "signup_bonus",
+    amount: FREE_SIGNUP_CREDITS,
+    remaining: FREE_SIGNUP_CREDITS,
+    expires_at: signupExpiresAt.toISOString(),
+    metadata: { signup_bonus_granted: true, via: "telegram" },
+  });
+  if (!lotError) {
+    await supabase.from("ai_credit_ledger").insert({
+      user_id: user.id,
+      delta: FREE_SIGNUP_CREDITS,
+      balance_after: FREE_SIGNUP_CREDITS,
+      reason: "signup_bonus",
+      note: "initial signup credit grant (telegram)",
+    });
+  } else {
+    console.error("[telegram/accounts] signup lot failed:", lotError.message);
   }
 
   for (let i = 0; i < 5; i++) {

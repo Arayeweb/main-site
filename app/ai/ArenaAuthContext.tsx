@@ -23,7 +23,6 @@ type ArenaAuthState = {
   credits: number | null;
   plan: string;
   phoneMasked: string | null;
-  hasContentBundle: boolean;
   guestBattlesRemaining: number | null;
   guestDirectRemaining: number | null;
   historyItems: HistoryItem[];
@@ -118,7 +117,6 @@ export function ArenaAuthProvider({
   const [credits, setCredits] = useState<number | null>(null);
   const [plan, setPlan] = useState(initialPlan);
   const [phoneMasked, setPhoneMasked] = useState<string | null>(null);
-  const [hasContentBundle, setHasContentBundle] = useState(false);
   const [guestBattlesRemaining, setGuestBattlesRemaining] = useState<number | null>(null);
   const [guestDirectRemaining, setGuestDirectRemaining] = useState<number | null>(null);
   // Always start with [] so server and client render identically (avoids hydration
@@ -136,7 +134,6 @@ export function ArenaAuthProvider({
       if (!d) return;
 
       setAuthed(!!d.authed);
-      setHasContentBundle(!!d.hasContentSalesBundle);
 
       if (d.authed && d.user) {
         const user = d.user as {
@@ -172,7 +169,6 @@ export function ArenaAuthProvider({
       setCredits(null);
       setPlan("free");
       setPhoneMasked(null);
-      setHasContentBundle(false);
       setHistoryItems(readHistoryCache(null));
       if (typeof d.guestBattlesRemaining === "number") {
         setGuestBattlesRemaining(d.guestBattlesRemaining);
@@ -265,7 +261,6 @@ export function ArenaAuthProvider({
       credits,
       plan,
       phoneMasked,
-      hasContentBundle,
       guestBattlesRemaining,
       guestDirectRemaining,
       historyItems,
@@ -280,7 +275,6 @@ export function ArenaAuthProvider({
       credits,
       plan,
       phoneMasked,
-      hasContentBundle,
       guestBattlesRemaining,
       guestDirectRemaining,
       historyItems,

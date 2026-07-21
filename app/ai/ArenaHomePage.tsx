@@ -50,10 +50,6 @@ const CouncilSessionView = dynamic(() => import("./CouncilSessionView"), {
   loading: () => <ArenaChatSkeleton />,
 });
 import {
-  CS_BOOTSTRAP_PROMPT_KEY,
-  consumeContentSalesBootstrapPrompt,
-} from "@/lib/contentSalesOpenInAi";
-import {
   AI_NEW_CHAT_EVENT,
   AI_ANALYZE_TEXT_EVENT,
   ANALYZE_TEXT_PROMPT,
@@ -268,13 +264,6 @@ export default function ArenaHomePage({
 
     // Prefill from /prompts "Run in Araaye AI" links (?prompt=...)
     const urlPrompt = params.get("prompt");
-    if (urlPrompt) {
-      try {
-        sessionStorage.setItem(CS_BOOTSTRAP_PROMPT_KEY, urlPrompt);
-      } catch {
-        /* ignore */
-      }
-    }
 
     if (p || params.get("login") || urlPrompt || next) {
       window.history.replaceState({}, "", "/ai");
@@ -679,14 +668,6 @@ export default function ArenaHomePage({
       setMode("direct");
       setPrompt(ANALYZE_TEXT_PROMPT);
       focusComposer(false);
-    }
-    const csPrompt = consumeContentSalesBootstrapPrompt();
-    if (csPrompt) {
-      setPrompt(csPrompt);
-      if (authBoot === "user" && canUseMode(plan, "direct")) {
-        setMode("direct");
-      }
-      focusComposer(true);
     }
   }, [focusComposer, authBoot, plan]);
 

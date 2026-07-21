@@ -10,10 +10,9 @@ import {
   issueAISessionCookie,
   revokeCurrentDeviceSession,
 } from "@/lib/aiDeviceSessions";
-import { findActiveContentSalesOrder, maskPhone } from "@/lib/contentSalesOrder";
 import { isE2eMode } from "@/lib/e2eMode";
 import { withPublicTimeout } from "@/lib/publicDataFetch";
-import { normalizeContact } from "@/lib/validateContact";
+import { maskPhone, normalizeContact } from "@/lib/validateContact";
 import { getGuestState, MAX_GUEST_BATTLES, MAX_GUEST_DIRECT } from "@/lib/aiGuest";
 
 export const runtime = "nodejs";
@@ -45,7 +44,6 @@ function sessionAuthFallback(session: AISession) {
       id: session.userId,
       plan: session.plan,
     },
-    hasContentSalesBundle: false,
   });
 }
 
@@ -204,22 +202,14 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
-    const [userResult, bundleOrder] = await Promise.all([
-      withPublicTimeout(
-        supabase
-          .from("ai_users")
-          .select("id, plan, credits, phone")
-          .eq("id", session.userId)
-          .maybeSingle(),
-        "auth/session-user"
-      ),
-      isE2eMode()
-        ? Promise.resolve(null)
-        : withPublicTimeout(
-            findActiveContentSalesOrder(supabase, { aiUserId: session.userId }),
-            "auth/content-bundle"
-          ),
-    ]);
+    const userResult = await withPublicTimeout(
+      supabase
+        .from("ai_users")
+        .select("id, plan, credits, phone")
+        .eq("id", session.userId)
+        .maybeSingle(),
+      "auth/session-user"
+    );
 
     if (userResult === null) return sessionAuthFallback(session);
 
@@ -235,8 +225,6 @@ export async function GET(req: NextRequest) {
         credits: data.credits,
         phoneMasked: maskPhone(data.phone as string),
       },
-      hasContentSalesBundle: !!bundleOrder,
-      contentSalesAppUrl: bundleOrder ? "/ai/content-sales/app" : null,
     });
   } catch {
     return sessionAuthFallback(session);

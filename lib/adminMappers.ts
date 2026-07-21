@@ -85,8 +85,6 @@ export const CRM_SOURCE_LABELS: Record<string, string> = {
   demo_exit_intent: 'دمو — exit intent',
   'free-seo-audit': 'بررسی رایگان سئو',
   fastweb_site_form: 'سایت فوری — فرم تماس',
-  content_sales_paid: 'فروش محتوا — پرداخت موفق',
-  content_sales_provision_failed: 'فروش محتوا — خطای راه‌اندازی',
   csv_import: 'ورود از فایل',
   unknown: 'نامشخص',
   bizcard: 'کارت ویزیت',
@@ -97,7 +95,6 @@ export const CRM_SOURCE_LABELS: Record<string, string> = {
   promoted_bizcard: 'کارت ویزیت (منتقل‌شده)',
   promoted_website_brief: 'بریف سایت (منتقل‌شده)',
   promoted_fastweb: 'سایت فوری (منتقل‌شده)',
-  promoted_content_sales: 'فروش محتوا (منتقل‌شده)',
   promoted_adready: 'AdReady (منتقل‌شده)',
 };
 

@@ -515,6 +515,171 @@ export const INTERNAL_LINK_MAP: Record<string, InternalLinkNode> = {
       },
     ],
   },
+  // Googlesabt cluster
+  "/googlesabt": {
+    url: "/googlesabt",
+    primaryKeyword: "ثبت کسب‌وکار در گوگل",
+    inboundFrom: [
+      {
+        href: "/blog/google-my-business-local-seo",
+        anchors: ["ثبت کسب‌وکار در گوگل", "سرویس ثبت گوگل مپ آرایه"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/bizcard",
+        anchors: ["ثبت در گوگل مپ"],
+        placement: "body",
+        priority: "P1",
+      },
+      {
+        href: "/seo",
+        anchors: ["ثبت در نقشه‌های آنلاین"],
+        placement: "body",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/googlesabt/google-business-price",
+        anchors: ["هزینه ثبت کسب‌وکار در گوگل"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/how-to",
+        anchors: ["آموزش ثبت کسب‌وکار در گوگل"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/google-business-vs-map",
+        anchors: ["مقایسه گوگل، نشان و بلد"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/bizcard",
+        anchors: ["کارت ویزیت دیجیتال رایگان"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+  },
+  "/googlesabt/google-business-price": {
+    url: "/googlesabt/google-business-price",
+    primaryKeyword: "هزینه ثبت کسب‌وکار در گوگل",
+    inboundFrom: [
+      {
+        href: "/googlesabt",
+        anchors: ["هزینه ثبت", "قیمت‌ها"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/how-to",
+        anchors: ["هزینه ثبت گوگل"],
+        placement: "body",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/googlesabt",
+        anchors: ["مشاهده پکیج‌ها"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/free-vs-paid",
+        anchors: ["ثبت رایگان یا پولی؟"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/diy-vs-agency",
+        anchors: ["خودم ثبت کنم یا بسپارم؟"],
+        placement: "body",
+        priority: "P0",
+      },
+    ],
+  },
+  "/googlesabt/how-to": {
+    url: "/googlesabt/how-to",
+    primaryKeyword: "آموزش ثبت کسب‌وکار در گوگل",
+    inboundFrom: [
+      {
+        href: "/googlesabt",
+        anchors: ["آموزش ثبت", "مراحل ثبت"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/blog/google-my-business-local-seo",
+        anchors: ["راهنمای ثبت گوگل بیزینس"],
+        placement: "body",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/googlesabt",
+        anchors: ["سفارش ثبت حرفه‌ای"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/google-business-price",
+        anchors: ["هزینه ثبت"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/how-long-does-it-take",
+        anchors: ["چقدر طول می‌کشد؟"],
+        placement: "body",
+        priority: "P1",
+      },
+    ],
+  },
+  "/blog/google-my-business-local-seo": {
+    url: "/blog/google-my-business-local-seo",
+    primaryKeyword: "لوکال سئو و گوگل بیزینس",
+    inboundFrom: [
+      {
+        href: "/blog",
+        anchors: ["مقاله گوگل بیزینس", "لوکال سئو"],
+        placement: "nav",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt",
+        anchors: ["راهنمای لوکال سئو"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/googlesabt",
+        anchors: ["سرویس ثبت گوگل مپ آرایه", "ثبت کسب‌وکار در گوگل"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/how-to",
+        anchors: ["آموزش کامل ثبت در گوگل"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt/google-business-price",
+        anchors: ["هزینه ثبت حرفه‌ای"],
+        placement: "body",
+        priority: "P1",
+      },
+    ],
+  },
 };
 
 export function getLinkNode(url: string): InternalLinkNode | undefined {
