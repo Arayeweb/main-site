@@ -59,7 +59,7 @@ export default function CouncilSessionView({
   const [err, setErr] = useState("");
 
   const canFollowUp =
-    !!conversationId && !bootstrapPrompt && !streaming && !loading && archivedTurns.length > 0;
+    !!conversationId && !streaming && !loading && archivedTurns.length > 0;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });

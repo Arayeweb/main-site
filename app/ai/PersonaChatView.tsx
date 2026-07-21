@@ -150,6 +150,7 @@ export default function PersonaChatView({
           model: chatModel,
           prompt: q,
           conversationId: activeThreadId,
+          excludeRunId: opts?.replaceTurnId ?? null,
           personaKey: persona.id,
         },
         {

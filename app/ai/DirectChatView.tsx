@@ -305,7 +305,7 @@ export default function DirectChatView({
       const priorTurns = opts?.replaceTurnId
         ? turns.filter((t) => t.id !== opts.replaceTurnId)
         : turns;
-      const useServerHistory = !!activeThreadId && !opts?.replaceTurnId;
+      const useServerHistory = !!activeThreadId;
 
       let full = "";
       const result = await startRunStream(
@@ -315,6 +315,7 @@ export default function DirectChatView({
           ...(useServerHistory ? {} : { messages: buildRunMessages(priorTurns, q) }),
           prompt: apiPrompt,
           conversationId: activeThreadId,
+          excludeRunId: opts?.replaceTurnId ?? null,
           webSearch: useWeb,
           attachments: attach.map((a) => ({
             url: a.url,

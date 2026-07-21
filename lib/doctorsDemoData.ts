@@ -2,7 +2,6 @@
 
 import { demoSites } from "@/lib/demoData";
 import { pedBrand, pedImages } from "@/lib/showdemoto/pediatric/config";
-import { sfBrand, sfImages } from "@/lib/showdemoto/salamat-farda/config";
 
 export type DoctorDemoKey =
   | "dentist"
@@ -261,7 +260,7 @@ export const doctorDemoLandings: Record<DoctorDemoKey, DoctorDemoLandingContent>
   },
   ophthalmology: {
     key: "ophthalmology",
-    practiceName: sfBrand.name,
+    practiceName: "مرکز تخصصی چشم",
     doctorName: "تیم جراحان چشم",
     doctorTitle: "جراحی و زیبایی چشم",
     city: "تهران",
@@ -270,10 +269,12 @@ export const doctorDemoLandings: Record<DoctorDemoKey, DoctorDemoLandingContent>
     heroBadge: "معاینه و جراحی تخصصی چشم",
     heroTitle: "دید واضح‌تر،",
     heroTitleAccent: "مسیر درمان شفاف‌تر",
-    heroSubtitle: sfBrand.tagline,
+    heroSubtitle:
+      "چشم‌هایی که فردا را می‌بینند، امروز در بیمارستان سلامت فردا معاینه می‌شوند.",
     heroCta: "درخواست مشاوره",
-    heroImage: sfImages.hero,
-    heroImageAlt: sfImages.heroAlt,
+    heroImage:
+      "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=1400&q=85&auto=format&fit=crop",
+    heroImageAlt: "معاینه تخصصی چشم در محیط کلینیک",
     heroSecondaryImage:
       "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
     trustBullets: [

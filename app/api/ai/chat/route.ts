@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { getAISession } from "@/lib/aiAuth";
 import { streamDirect, classifyOpenRouterFetchError } from "@/lib/aiEngine";
 import { persistChatTurn } from "@/lib/aiPersist";
 import {
@@ -15,6 +14,7 @@ import {
 import { hasVision } from "@/lib/aiModels";
 import { getPersona } from "@/lib/aiPersonas";
 import { planRank } from "@/lib/aiPackages";
+import { getActiveAISession } from "@/lib/aiDeviceSessions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "text/event-stream; charset=utf-8" },
     });
   }
-  const session = getAISession(req);
+  const session = await getActiveAISession(req);
   if (!session) {
     return new Response(sse({ type: "error", error: "unauthorized" }), {
       status: 401,

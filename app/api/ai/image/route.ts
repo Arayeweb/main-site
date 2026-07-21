@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { getAISession } from "@/lib/aiAuth";
 import {
   MAX_PROMPT_CHARS,
   imageGenCost,
@@ -15,13 +14,14 @@ import {
   refundCredits,
 } from "@/lib/billing/credits";
 import { isUuid } from "@/lib/ai/requestValidation";
+import { getActiveAISession } from "@/lib/aiDeviceSessions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
-  const session = getAISession(req);
+  const session = await getActiveAISession(req);
   if (!session) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }

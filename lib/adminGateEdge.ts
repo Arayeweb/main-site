@@ -27,7 +27,6 @@ async function expectedGateToken(): Promise<string | null> {
 
 export async function verifyAdminGateCookieEdge(value: string | undefined): Promise<boolean> {
   if (!isAdminGateEnabled()) return true;
-  if (value === 'open') return true;
   const expected = await expectedGateToken();
   if (!expected || !value) return false;
   if (expected.length !== value.length) return false;

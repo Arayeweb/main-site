@@ -285,7 +285,7 @@ export default function CompareSessionView({
 
   async function voteForModel(modelId: string, targetRunId: string) {
     if (!targetRunId || voting) return;
-    const already = selectedVote || archivedTurns.some((t) => t.runId === targetRunId && t.selectedVote);
+    const already = archivedTurns.some((t) => t.runId === targetRunId && t.selectedVote);
     if (already) return;
     setVoting(true);
     setVoteErr("");

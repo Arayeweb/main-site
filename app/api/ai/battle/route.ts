@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { getAISession } from "@/lib/aiAuth";
 import { runBattle, runDirect } from "@/lib/aiEngine";
 import {
   createGuestState,
@@ -24,6 +23,7 @@ import {
   type ArenaMode,
 } from "@/lib/aiCredits";
 import { getModel, modelName, modelPoweredBy } from "@/lib/aiModels";
+import { getActiveAISession } from "@/lib/aiDeviceSessions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       { status: 410 }
     );
   }
-  const session = getAISession(req);
+  const session = await getActiveAISession(req);
   const isGuest = !session;
 
   let body: Record<string, unknown>;

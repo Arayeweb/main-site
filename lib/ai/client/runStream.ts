@@ -26,6 +26,7 @@ export type RunStreamRequest = {
   webSearch?: boolean;
   personaKey?: string | null;
   attachments?: { url: string; mime: string; name?: string; size?: number; text?: string }[];
+  excludeRunId?: string | null;
 };
 
 export type RunStreamTerminalStatus = "completed" | "cancelled" | "failed" | "aborted";
@@ -215,6 +216,7 @@ export async function startRunStream(
   }
 
   if (req.attachments?.length) body.attachments = req.attachments;
+  if (req.excludeRunId) body.excludeRunId = req.excludeRunId;
 
   let res: Response;
   try {

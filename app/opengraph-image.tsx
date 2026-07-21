@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "شرکت آرایه — طراحی سایت، سئو و نرم‌افزار";
+export const alt = "آرایه";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -14,30 +14,39 @@ export default function OGImage() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-end",
+          alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0A1422 0%, #13243B 100%)",
-          padding: "80px 96px",
-          fontFamily: "sans-serif",
-          direction: "rtl",
+          background: "linear-gradient(135deg, #0A1422 0%, #13243B 55%, #0F1C2E 100%)",
+          position: "relative",
         }}
       >
-        {/* Brand mark */}
+        {/* Soft brand glow */}
         <div
           style={{
             position: "absolute",
             top: 60,
-            right: 96,
-            width: 72,
-            height: 72,
-            borderRadius: 18,
-            border: "2px solid rgba(63,160,138,0.5)",
+            right: 160,
+            width: 480,
+            height: 480,
+            borderRadius: 480,
+            background: "rgba(63,160,138,0.18)",
+          }}
+        />
+
+        {/* Logo mark */}
+        <div
+          style={{
+            width: 220,
+            height: 220,
+            borderRadius: 56,
+            border: "5px solid rgba(63,160,138,0.55)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            background: "rgba(10,20,34,0.65)",
           }}
         >
-          <svg width="38" height="38" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <svg width="120" height="120" viewBox="0 0 120 120">
             <path
               d="M 32 92 L 60 36 L 88 92"
               fill="none"
@@ -46,37 +55,26 @@ export default function OGImage() {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
+            <path
+              d="M 42 68 L 78 68"
+              fill="none"
+              stroke="#E8B45A"
+              strokeWidth="14"
+              strokeLinecap="round"
+            />
           </svg>
         </div>
 
-        {/* Main text */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <div style={{ fontSize: 72, fontWeight: 800, color: "#F6F8FA", lineHeight: 1.15 }}>
-            شرکت آرایه
-          </div>
-          <div style={{ fontSize: 36, fontWeight: 700, color: "#F6F8FA", marginTop: 16, lineHeight: 1.35 }}>
-            طراحی سایت · سئو · نرم‌افزار
-          </div>
-          <div style={{ fontSize: 26, fontWeight: 500, color: "#9FB2C2", marginTop: 12 }}>
-            شرکت هوش آرایه پارس
-          </div>
-        </div>
-
-        {/* Bottom chip */}
         <div
           style={{
-            position: "absolute",
-            bottom: 64,
-            right: 96,
-            background: "rgba(46,125,107,0.18)",
-            borderRadius: 28,
-            padding: "12px 28px",
-            fontSize: 26,
-            fontWeight: 600,
-            color: "#5FBFA8",
+            marginTop: 36,
+            fontSize: 42,
+            fontWeight: 700,
+            color: "#9FB2C2",
+            letterSpacing: 4,
           }}
         >
-          آرایه
+          araaye.com
         </div>
       </div>
     ),

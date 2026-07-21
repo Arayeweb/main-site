@@ -437,6 +437,28 @@ export function IconChevronDown({ size = 14, className, strokeWidth = 1.75 }: Ic
   );
 }
 
+export function IconDevices({ size = 16, className, strokeWidth = 1.6 }: IconProps) {
+  return (
+    <svg {...base(size, className)} strokeWidth={strokeWidth}>
+      <rect x="2" y="3" width="13" height="10" rx="1.5" />
+      <path d="M7 17h3" />
+      <path d="M8.5 13v4" />
+      <rect x="16" y="8" width="6" height="10" rx="1.2" />
+      <path d="M18 16.5h2" />
+    </svg>
+  );
+}
+
+export function IconCreditUsage({ size = 16, className, strokeWidth = 1.6 }: IconProps) {
+  return (
+    <svg {...base(size, className)} strokeWidth={strokeWidth}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v10" />
+      <path d="M9.5 9.5c.4-.8 1.3-1.3 2.5-1.3 1.5 0 2.5.8 2.5 2s-1 2-2.5 2h-1c-1.5 0-2.5.8-2.5 2s1 2 2.5 2c1.2 0 2.1-.5 2.5-1.3" />
+    </svg>
+  );
+}
+
 /* ---------- AI model brand marks (clean, distinct, monochrome) ---------- */
 function BrandOpenAI({ size = 20 }: IconProps) {
   return (

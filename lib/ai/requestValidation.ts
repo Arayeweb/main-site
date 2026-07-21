@@ -16,6 +16,7 @@ export type ParsedRunBody =
       model?: string;
       models: string[];
       conversationId: string | null;
+      excludeRunId: string | null;
       personaKey: string | null;
       webSearch: boolean;
     }
@@ -87,6 +88,14 @@ export function parseRunBody(body: Record<string, unknown>): ParsedRunBody {
     return { ok: false, error: "bad_request" };
   }
 
+  const rawExcludeRunId =
+    typeof body.excludeRunId === "string" && body.excludeRunId
+      ? body.excludeRunId.trim()
+      : null;
+  if (rawExcludeRunId && !isUuid(rawExcludeRunId)) {
+    return { ok: false, error: "bad_request" };
+  }
+
   const personaKey =
     typeof body.personaKey === "string" && body.personaKey.trim()
       ? body.personaKey.trim().slice(0, 80)
@@ -98,6 +107,7 @@ export function parseRunBody(body: Record<string, unknown>): ParsedRunBody {
     model,
     models,
     conversationId: rawConversationId,
+    excludeRunId: rawExcludeRunId,
     personaKey,
     webSearch: body.webSearch === true,
   };

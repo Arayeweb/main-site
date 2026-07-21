@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getAISession } from "@/lib/aiAuth";
+import {
+  isTrustedOpenRouterUrl,
+  isTrustedSupabaseStorageUrl,
+  openRouterVideoContentUrl,
+} from "@/lib/openRouterUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function openRouterContentUrl(pollingUrl: string | null, openrouterJobId: string | null): string | null {
+function resolveOpenRouterContentUrl(
+  pollingUrl: string | null,
+  openrouterJobId: string | null
+): string | null {
   if (openrouterJobId) {
-    return `https://openrouter.ai/api/v1/videos/${openrouterJobId}/content?index=0`;
+    return openRouterVideoContentUrl(openrouterJobId);
   }
-  if (!pollingUrl) return null;
+  if (!pollingUrl || !isTrustedOpenRouterUrl(pollingUrl)) return null;
   const m = pollingUrl.match(/\/videos\/([^/?#]+)/);
   if (!m) return null;
-  return `https://openrouter.ai/api/v1/videos/${m[1]}/content?index=0`;
+  return openRouterVideoContentUrl(m[1]);
 }
 
 export async function GET(
@@ -50,54 +58,32 @@ export async function GET(
   }
 
   const outputUrl = job.output_url as string | null;
-  if (outputUrl && !outputUrl.includes("openrouter.ai")) {
+
+  // Only redirect to our Supabase storage — never arbitrary third-party URLs.
+  if (outputUrl && isTrustedSupabaseStorageUrl(outputUrl)) {
     return NextResponse.redirect(outputUrl);
   }
 
   const sourceUrl =
-    outputUrl && outputUrl.includes("openrouter.ai")
+    outputUrl && isTrustedOpenRouterUrl(outputUrl)
       ? outputUrl
-      : openRouterContentUrl(
+      : resolveOpenRouterContentUrl(
           job.polling_url as string | null,
           job.openrouter_job_id as string | null
         );
 
-  if (!sourceUrl) {
+  if (!sourceUrl || !isTrustedOpenRouterUrl(sourceUrl)) {
     return NextResponse.json({ ok: false, error: "not_ready" }, { status: 404 });
   }
 
-  const headers: Record<string, string> = {};
-  if (sourceUrl.includes("openrouter.ai")) {
-    headers.Authorization = `Bearer ${apiKey}`;
-  }
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${apiKey}`,
+  };
 
   const range = req.headers.get("range");
   if (range) headers.Range = range;
 
   const upstream = await fetch(sourceUrl, { headers });
-
-  // #region agent log
-  fetch("http://127.0.0.1:7595/ingest/5edfe92e-8eff-41b7-9393-ff5814f12f32", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "d89e34" },
-    body: JSON.stringify({
-      sessionId: "d89e34",
-      runId: "post-fix",
-      hypothesisId: "H17",
-      location: "video/[jobId]/content/route.ts:upstream",
-      message: "video content upstream",
-      data: {
-        jobId: params.jobId,
-        upstreamOk: upstream.ok,
-        upstreamStatus: upstream.status,
-        contentType: (upstream.headers.get("content-type") || "").slice(0, 40),
-        hasRange: Boolean(range),
-        sourceHost: sourceUrl.includes("openrouter") ? "openrouter" : "storage",
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
 
   if (!upstream.ok) {
     return NextResponse.json({ ok: false, error: "upstream_error" }, { status: 502 });

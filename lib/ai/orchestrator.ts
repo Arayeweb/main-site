@@ -276,6 +276,7 @@ export async function prepareRun(
     let fatal = false;
     let firstDeltaMarked = false;
     const stopChecker = new ThrottledStopChecker(runId);
+    let terminalEvents: RunSSEEvent[] = [];
 
     const ctx: ModeContext = {
       runId,
@@ -291,267 +292,271 @@ export async function prepareRun(
       onCallComplete: (r) => callResults.push(r),
     };
 
-    yield { type: "run_started", runId, mode: req.mode, models };
-
-    const gen =
-      req.mode === "direct"
-        ? runDirectMode(ctx, models[0])
-        : req.mode === "compare"
-          ? runCompareMode(ctx, [models[0], models[1]])
-          : runCouncilMode(ctx, models);
-
     try {
-      for await (const ev of gen) {
-        if (ev.type === "model_started") {
-          perf?.mark("provider_started");
-        }
-        if (ev.type === "model_delta" && !firstDeltaMarked) {
-          firstDeltaMarked = true;
-          perf?.mark("first_model_delta");
-        }
-        if (ev.type === "model_done" && ev.model === models[models.length - 1]) {
-          perf?.mark("model_done");
-          perf?.setProviderTtftMs(ev.ttftMs);
-        }
-        yield ev;
-        if (await stopChecker.shouldStop(signal)) break;
-      }
-    } catch (e) {
-      console.error("[orchestrator] run crashed:", e);
-      fatal = true;
-    } finally {
+      yield { type: "run_started", runId, mode: req.mode, models };
+
+      const gen =
+        req.mode === "direct"
+          ? runDirectMode(ctx, models[0])
+          : req.mode === "compare"
+            ? runCompareMode(ctx, [models[0], models[1]])
+            : runCouncilMode(ctx, models);
+
       try {
-        await gen.return?.();
-      } catch {
-        /* mode generator cleanup best-effort */
-      }
-    }
-
-    const cancelled = signal.aborted || (await stopChecker.forceCheck());
-    const anySuccess = callResults.some((r) => r.succeeded);
-
-    // ---------- persistence ----------
-    const supabase = getSupabaseAdmin();
-    try {
-      if (callResults.length > 0) {
-        const callRows = callResults.map((r) => {
-          const creditsCharged = r.succeeded ? creditsForCall(r) : 0;
-          const providerCost = effectiveProviderCost(r);
-          const snapshot = buildPricingSnapshot({
-            modelId: r.model,
-            providerCostUsd: providerCost.costUsd,
-            providerCostMissing: r.succeeded && providerCost.missing,
-            creditsCharged,
-          });
-          if (snapshot.pricingFlags.length > 0) {
-            console.warn(JSON.stringify({
-              src: "ai-pricing-alert",
-              runId,
-              model: r.model,
-              flags: snapshot.pricingFlags,
-            }));
+        for await (const ev of gen) {
+          if (ev.type === "model_started") {
+            perf?.mark("provider_started");
           }
-          return {
-            run_id: runId,
-            provider: r.provider,
-            model: r.model,
-            displayed_model: snapshot.displayedModel,
-            actual_model: snapshot.actualModel,
-            role: r.role,
-            status: r.succeeded ? "completed" : "failed",
-            input_tokens: r.inputTokens,
-            output_tokens: r.outputTokens,
-            cached_tokens: r.cachedTokens,
-            reasoning_tokens: r.reasoningTokens,
-            tool_cost_usd: snapshot.toolCostUsd,
-            cost_usd: r.succeeded ? providerCost.costUsd : 0,
-            exchange_rate_toman: snapshot.usdToToman,
-            pricing_multiplier: snapshot.multiplier,
-            credit_value_toman: snapshot.creditValueToman,
-            credits_charged: creditsCharged,
-            revenue_toman: snapshot.revenueToman,
-            gross_profit_toman: snapshot.grossProfitToman,
-            gross_margin_percent: snapshot.grossMarginPercent,
-            pricing_snapshot: snapshot,
-            ttft_ms: r.ttftMs,
-            latency_ms: r.latencyMs,
-            error_code: r.errorCode,
-          };
-        });
-        const { data: inserted } = await supabase
-          .from("model_calls")
-          .insert(callRows)
-          .select("id, model, role");
-
-        const outputRows = callResults
-          .filter((r) => r.succeeded && r.text)
-          .map((r) => ({
-            run_id: runId,
-            model_call_id:
-              inserted?.find((row) => row.model === r.model && row.role === r.role)?.id ??
-              null,
-            model: r.model,
-            content: r.text,
-            role: "assistant",
-          }));
-        if (outputRows.length > 0) {
-          await supabase.from("model_outputs").insert(outputRows);
+          if (ev.type === "model_delta" && !firstDeltaMarked) {
+            firstDeltaMarked = true;
+            perf?.mark("first_model_delta");
+          }
+          if (ev.type === "model_done" && ev.model === models[models.length - 1]) {
+            perf?.mark("model_done");
+            perf?.setProviderTtftMs(ev.ttftMs);
+          }
+          yield ev;
+          if (await stopChecker.shouldStop(signal)) break;
+        }
+      } catch (e) {
+        console.error("[orchestrator] run crashed:", e);
+        fatal = true;
+      } finally {
+        try {
+          await gen.return?.();
+        } catch {
+          /* mode generator cleanup best-effort */
         }
       }
-    } catch (e) {
-      console.error("[orchestrator] persist failed:", e);
-    }
+    } finally {
+      const cancelled = signal.aborted || (await stopChecker.forceCheck());
+      const anySuccess = callResults.some((r) => r.succeeded);
 
-    // ---------- تسویه اعتبار ----------
-    let chargedCredits = 0;
-    let refundedCredits = 0;
-    let creditsRemaining: number | null = null;
-    let settlementFailed = false;
-    try {
-      // لغو کاربر = refund کامل؛ خروجی جزئی bill نمی‌شود.
-      const settlements: CallSettlement[] = cancelled
-        ? []
-        : callResults.map((r) => ({
-            model: r.model,
-            credits: creditsForCall(r),
-            succeeded: r.succeeded,
-          }));
-      const settled = await settleRun(req.userId, runId, reservedCredits, settlements);
-      if (!settled.ok) {
+      // ---------- persistence ----------
+      const supabase = getSupabaseAdmin();
+      try {
+        if (callResults.length > 0) {
+          const callRows = callResults.map((r) => {
+            const creditsCharged = r.succeeded ? creditsForCall(r) : 0;
+            const providerCost = effectiveProviderCost(r);
+            const snapshot = buildPricingSnapshot({
+              modelId: r.model,
+              providerCostUsd: providerCost.costUsd,
+              providerCostMissing: r.succeeded && providerCost.missing,
+              creditsCharged,
+            });
+            if (snapshot.pricingFlags.length > 0) {
+              console.warn(JSON.stringify({
+                src: "ai-pricing-alert",
+                runId,
+                model: r.model,
+                flags: snapshot.pricingFlags,
+              }));
+            }
+            return {
+              run_id: runId,
+              provider: r.provider,
+              model: r.model,
+              displayed_model: snapshot.displayedModel,
+              actual_model: snapshot.actualModel,
+              role: r.role,
+              status: r.succeeded ? "completed" : "failed",
+              input_tokens: r.inputTokens,
+              output_tokens: r.outputTokens,
+              cached_tokens: r.cachedTokens,
+              reasoning_tokens: r.reasoningTokens,
+              tool_cost_usd: snapshot.toolCostUsd,
+              cost_usd: r.succeeded ? providerCost.costUsd : 0,
+              exchange_rate_toman: snapshot.usdToToman,
+              pricing_multiplier: snapshot.multiplier,
+              credit_value_toman: snapshot.creditValueToman,
+              credits_charged: creditsCharged,
+              revenue_toman: snapshot.revenueToman,
+              gross_profit_toman: snapshot.grossProfitToman,
+              gross_margin_percent: snapshot.grossMarginPercent,
+              pricing_snapshot: snapshot,
+              ttft_ms: r.ttftMs,
+              latency_ms: r.latencyMs,
+              error_code: r.errorCode,
+            };
+          });
+          const { data: inserted } = await supabase
+            .from("model_calls")
+            .insert(callRows)
+            .select("id, model, role");
+
+          const outputRows = callResults
+            .filter((r) => r.succeeded && r.text)
+            .map((r) => ({
+              run_id: runId,
+              model_call_id:
+                inserted?.find((row) => row.model === r.model && row.role === r.role)?.id ??
+                null,
+              model: r.model,
+              content: r.text,
+              role: "assistant",
+            }));
+          if (outputRows.length > 0) {
+            await supabase.from("model_outputs").insert(outputRows);
+          }
+        }
+      } catch (e) {
+        console.error("[orchestrator] persist failed:", e);
+      }
+
+      // ---------- تسویه اعتبار ----------
+      let chargedCredits = 0;
+      let refundedCredits = 0;
+      let creditsRemaining: number | null = null;
+      let settlementFailed = false;
+      try {
+        // Bill successful provider calls even on user cancel — partial output is not free.
+        const settlements: CallSettlement[] = callResults.map((r) => ({
+          model: r.model,
+          credits: creditsForCall(r),
+          succeeded: r.succeeded,
+        }));
+        const settled = await settleRun(req.userId, runId, reservedCredits, settlements);
+        if (!settled.ok) {
+          settlementFailed = true;
+        } else {
+          chargedCredits = settled.chargedCredits;
+          refundedCredits = settled.refundedCredits;
+          creditsRemaining = settled.creditsRemaining;
+        }
+      } catch (e) {
+        console.error("[orchestrator] settle failed:", e);
         settlementFailed = true;
-      } else {
-        chargedCredits = settled.chargedCredits;
-        refundedCredits = settled.refundedCredits;
-        creditsRemaining = settled.creditsRemaining;
       }
-    } catch (e) {
-      console.error("[orchestrator] settle failed:", e);
-      settlementFailed = true;
-    }
 
-    perf?.mark("settlement_done");
+      perf?.mark("settlement_done");
 
-    // ---------- به‌روزرسانی وضعیت run ----------
-    const status = settlementFailed
-      ? "settlement_failed"
-      : cancelled
-      ? "cancelled"
-      : fatal || !anySuccess
-        ? "failed"
-        : "completed";
-    const successfulCosts = callResults
-      .filter((r) => r.succeeded)
-      .map((r) => effectiveProviderCost(r));
-    const totalProviderCostUsd = Number(
-      successfulCosts.reduce((sum, item) => sum + item.costUsd, 0).toFixed(8)
-    );
-    const runPricing = buildPricingSnapshot({
-      modelId: models[0] ?? "economy",
-      providerCostUsd: totalProviderCostUsd,
-      providerCostMissing: successfulCosts.some((item) => item.missing),
-      creditsCharged: chargedCredits,
-    });
-    await supabase
-      .from("ai_runs")
-      .update({
-        status,
-      charged_credits: chargedCredits,
-      refunded_credits: settlementFailed ? 0 : refundedCredits,
-      total_provider_cost_usd: totalProviderCostUsd,
-      total_revenue_toman: runPricing.revenueToman,
-      total_gross_profit_toman: runPricing.grossProfitToman,
-      pricing_snapshot: runPricing,
-      completed_at: new Date().toISOString(),
-      })
-      .eq("id", runId)
-      .then(({ error }) => {
-        if (error) console.error("[orchestrator] run status update failed:", error);
-      });
-
-    // ---------- trace ----------
-    for (const r of callResults) {
-      const providerCost = effectiveProviderCost(r);
-      const snapshot = buildPricingSnapshot({
-        modelId: r.model,
-        providerCostUsd: providerCost.costUsd,
-        providerCostMissing: r.succeeded && providerCost.missing,
-        creditsCharged: r.succeeded ? creditsForCall(r) : 0,
-      });
-      traceModelCall({
-        runId,
-        userId: req.userId,
-        mode: req.mode,
-        provider: r.provider,
-        model: r.model,
-        displayedModel: snapshot.displayedModel,
-        actualModel: snapshot.actualModel,
-        inputTokens: r.inputTokens,
-        outputTokens: r.outputTokens,
-        cachedTokens: r.cachedTokens,
-        reasoningTokens: r.reasoningTokens,
-        costUsd: r.succeeded ? providerCost.costUsd : 0,
-        providerCostMissing: r.succeeded && providerCost.missing,
-        pricingFlags: snapshot.pricingFlags,
-        creditsCharged: r.succeeded ? creditsForCall(r) : 0,
-        ttftMs: r.ttftMs,
-        latencyMs: r.latencyMs,
-        errorCode: r.errorCode,
-      });
-    }
-    traceRunDone({
-      runId,
-      userId: req.userId,
-      mode: req.mode,
-      status,
-      chargedCredits,
-      refundedCredits,
-      providerCostUsd: totalProviderCostUsd,
-      grossMarginPercent: runPricing.grossMarginPercent,
-      pricingFlags: runPricing.pricingFlags,
-      durationMs: Date.now() - startedAt,
-    });
-
-    // ---------- رویدادهای پایانی ----------
-    if (creditsRemaining != null) {
-      yield {
-        type: "usage_update",
-        runId,
+      // ---------- به‌روزرسانی وضعیت run ----------
+      const status = settlementFailed
+        ? "settlement_failed"
+        : cancelled
+          ? "cancelled"
+          : fatal || !anySuccess
+            ? "failed"
+            : "completed";
+      const successfulCosts = callResults
+        .filter((r) => r.succeeded)
+        .map((r) => effectiveProviderCost(r));
+      const totalProviderCostUsd = Number(
+        successfulCosts.reduce((sum, item) => sum + item.costUsd, 0).toFixed(8)
+      );
+      const runPricing = buildPricingSnapshot({
+        modelId: models[0] ?? "economy",
+        providerCostUsd: totalProviderCostUsd,
+        providerCostMissing: successfulCosts.some((item) => item.missing),
         creditsCharged: chargedCredits,
-        creditsRemaining,
-      };
-    }
+      });
+      await supabase
+        .from("ai_runs")
+        .update({
+          status,
+          charged_credits: chargedCredits,
+          refunded_credits: settlementFailed ? 0 : refundedCredits,
+          total_provider_cost_usd: totalProviderCostUsd,
+          total_revenue_toman: runPricing.revenueToman,
+          total_gross_profit_toman: runPricing.grossProfitToman,
+          pricing_snapshot: runPricing,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", runId)
+        .then(({ error }) => {
+          if (error) console.error("[orchestrator] run status update failed:", error);
+        });
 
-    if (status === "settlement_failed") {
-      yield { type: "run_error", runId, errorCode: "server_error", message: "" };
-    } else if (status === "failed") {
-      yield { type: "run_error", runId, errorCode: "provider_error", message: "" };
-    } else {
-      yield { type: "run_done", runId, status, chargedCredits };
-    }
-
-    perf?.mark("run_done");
-    logRunPerf(
-      perf?.summarize({
-        userId: req.userId,
-        mode: req.mode,
-        models,
-        status,
-      }) ?? {
+      // ---------- trace ----------
+      for (const r of callResults) {
+        const providerCost = effectiveProviderCost(r);
+        const snapshot = buildPricingSnapshot({
+          modelId: r.model,
+          providerCostUsd: providerCost.costUsd,
+          providerCostMissing: r.succeeded && providerCost.missing,
+          creditsCharged: r.succeeded ? creditsForCall(r) : 0,
+        });
+        traceModelCall({
+          runId,
+          userId: req.userId,
+          mode: req.mode,
+          provider: r.provider,
+          model: r.model,
+          displayedModel: snapshot.displayedModel,
+          actualModel: snapshot.actualModel,
+          inputTokens: r.inputTokens,
+          outputTokens: r.outputTokens,
+          cachedTokens: r.cachedTokens,
+          reasoningTokens: r.reasoningTokens,
+          costUsd: r.succeeded ? providerCost.costUsd : 0,
+          providerCostMissing: r.succeeded && providerCost.missing,
+          pricingFlags: snapshot.pricingFlags,
+          creditsCharged: r.succeeded ? creditsForCall(r) : 0,
+          ttftMs: r.ttftMs,
+          latencyMs: r.latencyMs,
+          errorCode: r.errorCode,
+        });
+      }
+      traceRunDone({
         runId,
         userId: req.userId,
         mode: req.mode,
-        models,
         status,
-        timings: {},
-        prepareRunMs: null,
-        dbUserMs: null,
-        createRunMs: null,
-        reserveCreditsMs: null,
-        providerTtftMs: null,
-        totalTtftMs: null,
-        totalRunMs: Date.now() - startedAt,
+        chargedCredits,
+        refundedCredits,
+        providerCostUsd: totalProviderCostUsd,
+        grossMarginPercent: runPricing.grossMarginPercent,
+        pricingFlags: runPricing.pricingFlags,
+        durationMs: Date.now() - startedAt,
+      });
+
+      // ---------- رویدادهای پایانی (yield after finalize so .return() still settles) ----------
+      if (creditsRemaining != null) {
+        terminalEvents.push({
+          type: "usage_update",
+          runId,
+          creditsCharged: chargedCredits,
+          creditsRemaining,
+        });
       }
-    );
+
+      if (status === "settlement_failed") {
+        terminalEvents.push({ type: "run_error", runId, errorCode: "server_error", message: "" });
+      } else if (status === "failed") {
+        terminalEvents.push({ type: "run_error", runId, errorCode: "provider_error", message: "" });
+      } else {
+        terminalEvents.push({ type: "run_done", runId, status, chargedCredits });
+      }
+
+      perf?.mark("run_done");
+      logRunPerf(
+        perf?.summarize({
+          userId: req.userId,
+          mode: req.mode,
+          models,
+          status,
+        }) ?? {
+          runId,
+          userId: req.userId,
+          mode: req.mode,
+          models,
+          status,
+          timings: {},
+          prepareRunMs: null,
+          dbUserMs: null,
+          createRunMs: null,
+          reserveCreditsMs: null,
+          providerTtftMs: null,
+          totalTtftMs: null,
+          totalRunMs: Date.now() - startedAt,
+        }
+      );
+    }
+
+    for (const ev of terminalEvents) {
+      yield ev;
+    }
   };
 
   return { runId, models, reservedCredits, execute, cleanup };

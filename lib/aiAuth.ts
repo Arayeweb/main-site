@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual, randomUUID } from "crypto";
 import { NextRequest } from "next/server";
 import { hashPassword, verifyPassword } from "./auth";
 
@@ -14,6 +14,8 @@ export interface AISession {
   userId: string;
   plan: string;
   exp: number;
+  /** شناسه ردیف ai_device_sessions — برای توکن‌های قدیمی ممکن است نباشد */
+  sessionId?: string;
 }
 
 function aiSecret(): string {
@@ -35,19 +37,39 @@ function b64url(buf: Buffer): string {
     .replace(/=+$/, "");
 }
 
+export type SignAITokenOptions = {
+  ttlMs?: number;
+  sessionId?: string;
+};
+
 /** توکن نشست امضاشده برای کاربر AI می‌سازد. */
 export function signAIToken(
   userId: string,
   plan: string,
-  ttlMs: number = SESSION_TTL_MS
+  ttlMsOrOptions: number | SignAITokenOptions = SESSION_TTL_MS
 ): string {
-  const payload = JSON.stringify({ sub: userId, plan, exp: Date.now() + ttlMs });
-  const body = b64url(Buffer.from(payload, "utf8"));
+  const opts: SignAITokenOptions =
+    typeof ttlMsOrOptions === "number"
+      ? { ttlMs: ttlMsOrOptions }
+      : ttlMsOrOptions;
+  const ttlMs = opts.ttlMs ?? SESSION_TTL_MS;
+  const payload: Record<string, unknown> = {
+    sub: userId,
+    plan,
+    exp: Date.now() + ttlMs,
+  };
+  if (opts.sessionId) payload.sid = opts.sessionId;
+  const body = b64url(Buffer.from(JSON.stringify(payload), "utf8"));
   const sig = createHmac("sha256", aiSecret()).update(body).digest("hex");
   return `${body}.${sig}`;
 }
 
-/** توکن AI را تأیید و payload را برمی‌گرداند. */
+/** شناسه نشست دستگاه تازه (قبل از insert در DB). */
+export function newDeviceSessionId(): string {
+  return randomUUID();
+}
+
+/** توکن AI را تأیید و payload را برمی‌گرداند (بدون چک revoke در DB). */
 export function verifyAIToken(
   token: string | undefined | null
 ): AISession | null {
@@ -77,13 +99,21 @@ export function verifyAIToken(
     ) {
       return null;
     }
-    return { userId: payload.sub, plan: payload.plan, exp: payload.exp };
+    const session: AISession = {
+      userId: payload.sub,
+      plan: payload.plan,
+      exp: payload.exp,
+    };
+    if (typeof payload.sid === "string" && payload.sid.length > 0) {
+      session.sessionId = payload.sid;
+    }
+    return session;
   } catch {
     return null;
   }
 }
 
-/** نشست AI را از کوکی request می‌خواند. */
+/** نشست AI را از کوکی request می‌خواند (بدون چک revoke). */
 export function getAISession(req: NextRequest): AISession | null {
   return verifyAIToken(req.cookies.get(AI_COOKIE)?.value);
 }

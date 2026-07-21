@@ -1,21 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { verifyPassword, getAISession, type AISession } from "@/lib/aiAuth";
+import { createAiUserAccount } from "@/lib/aiAuthRegister";
 import {
-  AI_COOKIE,
-  getAISession,
-  hashPassword,
-  signAIToken,
-  verifyPassword,
-  type AISession,
-} from "@/lib/aiAuth";
+  clearAICookie,
+  clientIpFromRequest,
+  getActiveAISession,
+  issueAISessionCookie,
+  revokeCurrentDeviceSession,
+} from "@/lib/aiDeviceSessions";
 import { findActiveContentSalesOrder, maskPhone } from "@/lib/contentSalesOrder";
 import { isE2eMode } from "@/lib/e2eMode";
 import { withPublicTimeout } from "@/lib/publicDataFetch";
-import { generateReferralCode } from "@/lib/aiPromo";
 import { normalizeContact } from "@/lib/validateContact";
 import { getGuestState, MAX_GUEST_BATTLES, MAX_GUEST_DIRECT } from "@/lib/aiGuest";
-import { FREE_SIGNUP_CREDITS } from "@/lib/aiPricingConfig";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,26 +31,10 @@ function rateLimited(ip: string): boolean {
   return arr.length > MAX_PER_WINDOW;
 }
 
-function clientIp(req: NextRequest): string {
-  const xff = req.headers.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
-  return req.headers.get("x-real-ip") || "unknown";
-}
-
 function str(v: unknown, max = 200): string | null {
   if (v === undefined || v === null) return null;
   const s = String(v).trim();
   return s ? s.slice(0, max) : null;
-}
-
-function setAICookie(res: NextResponse, token: string) {
-  res.cookies.set(AI_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 30 * 24 * 60 * 60, // ۳۰ روز
-  });
 }
 
 function sessionAuthFallback(session: AISession) {
@@ -68,7 +51,7 @@ function sessionAuthFallback(session: AISession) {
 
 // ثبت‌نام
 export async function POST(req: NextRequest) {
-  const ip = clientIp(req);
+  const ip = clientIpFromRequest(req);
   if (rateLimited(ip)) {
     return jsonNoStore({ ok: false, error: "rate_limited" }, { status: 429 });
   }
@@ -98,7 +81,6 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
 
-    // بررسی تکراری نبودن
     const { data: existing } = await supabase
       .from("ai_users")
       .select("id")
@@ -109,80 +91,31 @@ export async function POST(req: NextRequest) {
       return jsonNoStore({ ok: false, error: "phone_taken" }, { status: 409 });
     }
 
-    const password_hash = hashPassword(password);
-
-    const utmSource = str(body.utm_source, 200);
-    const utmMedium = str(body.utm_medium, 200);
-    const utmCampaign = str(body.utm_campaign, 200);
-
-    const { data: user, error } = await supabase
-      .from("ai_users")
-      .insert({
-        phone,
-        password_hash,
-        utm_source: utmSource,
-        utm_medium: utmMedium,
-        utm_campaign: utmCampaign,
-      })
-      .select("id, plan, credits")
-      .single();
-
-    if (error || !user) {
-      console.error("[api/ai/auth POST]", error);
-      if ((error as { code?: string } | null)?.code === "23505") {
-        return jsonNoStore({ ok: false, error: "phone_taken" }, { status: 409 });
-      }
-      return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
-    }
-
-    const signupExpiresAt = new Date();
-    signupExpiresAt.setUTCFullYear(signupExpiresAt.getUTCFullYear() + 1);
-    const { error: lotError } = await supabase.from("ai_credit_lots").insert({
-      user_id: user.id,
-      source: "signup_bonus",
-      amount: FREE_SIGNUP_CREDITS,
-      remaining: FREE_SIGNUP_CREDITS,
-      expires_at: signupExpiresAt.toISOString(),
-      metadata: {
-        guest_token: getGuestState(req)?.token ?? null,
-        signup_bonus_granted: true,
+    const created = await createAiUserAccount(supabase, {
+      phone,
+      password,
+      utm: {
+        utm_source: str(body.utm_source, 200),
+        utm_medium: str(body.utm_medium, 200),
+        utm_campaign: str(body.utm_campaign, 200),
       },
+      req,
     });
-    const { error: ledgerError } = lotError
-      ? { error: lotError }
-      : await supabase.from("ai_credit_ledger").insert({
-          user_id: user.id,
-          delta: FREE_SIGNUP_CREDITS,
-          balance_after: FREE_SIGNUP_CREDITS,
-          reason: "signup_bonus",
-          note: "initial signup credit grant",
-        });
-    if (lotError || ledgerError) {
-      console.error("[api/ai/auth POST] signup credit grant failed");
-      await supabase.from("ai_users").delete().eq("id", user.id);
-      return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
-    }
-
-    // ساخت کد معرفی AI-XXXXXX
-    let referralCode: string | null = null;
-    for (let attempt = 0; attempt < 8; attempt++) {
-      const code = generateReferralCode();
-      const { error: refErr } = await supabase.from("ai_referral_codes").insert({
-        user_id: user.id,
-        code,
-      });
-      if (!refErr) {
-        referralCode = code;
-        break;
-      }
+    if (!created.ok) {
+      const status = created.error === "phone_taken" ? 409 : 500;
+      return jsonNoStore({ ok: false, error: created.error }, { status });
     }
 
     const res = jsonNoStore({
       ok: true,
-      user: { id: user.id, plan: user.plan, credits: user.credits },
-      referralCode,
+      user: {
+        id: created.user.id,
+        plan: created.user.plan,
+        credits: created.user.credits,
+      },
+      referralCode: created.user.referralCode,
     });
-    setAICookie(res, signAIToken(user.id as string, user.plan as string));
+    await issueAISessionCookie(res, req, created.user.id, created.user.plan);
     return res;
   } catch (e) {
     console.error("[api/ai/auth POST]", e);
@@ -192,7 +125,7 @@ export async function POST(req: NextRequest) {
 
 // ورود
 export async function PUT(req: NextRequest) {
-  const ip = clientIp(req);
+  const ip = clientIpFromRequest(req);
   if (rateLimited(ip)) {
     return jsonNoStore({ ok: false, error: "rate_limited" }, { status: 429 });
   }
@@ -242,7 +175,7 @@ export async function PUT(req: NextRequest) {
       ok: true,
       user: { id: data.id, plan: data.plan, credits: data.credits },
     });
-    setAICookie(res, signAIToken(data.id as string, data.plan as string));
+    await issueAISessionCookie(res, req, data.id as string, data.plan as string);
     return res;
   } catch (e) {
     console.error("[api/ai/auth PUT]", e);
@@ -252,17 +185,21 @@ export async function PUT(req: NextRequest) {
 
 // بررسی نشست
 export async function GET(req: NextRequest) {
-  const session = getAISession(req);
+  const raw = getAISession(req);
+  const session = await getActiveAISession(req);
   if (!session) {
     const guest = getGuestState(req);
     const guestBattlesRemaining = guest?.remaining ?? MAX_GUEST_BATTLES;
     const guestDirectRemaining = guest?.directRemaining ?? MAX_GUEST_DIRECT;
-    return jsonNoStore({
+    const res = jsonNoStore({
       ok: true,
       authed: false,
       guestBattlesRemaining,
       guestDirectRemaining,
     });
+    // توکن معتبر ولی نشست revoke شده → کوکی را پاک کن
+    if (raw?.sessionId) clearAICookie(res);
+    return res;
   }
 
   try {
@@ -307,14 +244,10 @@ export async function GET(req: NextRequest) {
 }
 
 // خروج
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
+  const session = await getActiveAISession(req);
+  await revokeCurrentDeviceSession(session);
   const res = jsonNoStore({ ok: true });
-  res.cookies.set(AI_COOKIE, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 0,
-  });
+  clearAICookie(res);
   return res;
 }

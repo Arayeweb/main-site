@@ -71,6 +71,19 @@ export async function GET(req: NextRequest) {
     return redirectNoStore(`${siteUrl()}/ai/pricing?payment=error`);
   }
 
+  // Claim order atomically — only one concurrent callback can grant credits.
+  const { data: claimed } = await supabase
+    .from("ai_orders")
+    .update({ status: "paid", paid_at: new Date().toISOString() })
+    .eq("id", order.id)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
+
+  if (!claimed) {
+    return redirectNoStore(`${siteUrl()}/ai?payment=success`);
+  }
+
   const pkg = AI_PACKAGES[order.package_id as string];
   const { data: user } = await supabase
     .from("ai_users")
@@ -98,11 +111,6 @@ export async function GET(req: NextRequest) {
       metadata: { package_id: order.package_id },
     });
   }
-
-  await supabase
-    .from("ai_orders")
-    .update({ status: "paid", paid_at: new Date().toISOString() })
-    .eq("id", order.id);
 
   // promo used_count++
   if (order.promo_code) {

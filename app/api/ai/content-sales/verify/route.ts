@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { attachContentSalesCookie } from "@/lib/contentSalesAccess";
 import { provisionContentSalesAI } from "@/lib/contentSalesProvision";
 import { paymentSiteUrl } from "@/lib/paymentCallback";
-import { signAIToken, AI_COOKIE } from "@/lib/aiAuth";
+import { issueAISessionCookie } from "@/lib/aiDeviceSessions";
 import { resolveZibalVerify } from "@/lib/zibal";
 
 export const runtime = "nodejs";
@@ -64,6 +64,21 @@ export async function GET(req: NextRequest) {
     return redirectNoStore(`${SITE_URL}/ai/content-sales?payment=error`);
   }
 
+  // Claim order atomically before provisioning — only one callback proceeds.
+  const { data: claimed } = await supabase
+    .from("content_sales_orders")
+    .update({ status: "paid", paid_at: new Date().toISOString() })
+    .eq("id", order.id)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
+
+  if (!claimed) {
+    const res = redirectNoStore(successUrl.toString());
+    setCookies(res, order.id as string, order.ai_user_id as string | null);
+    return res;
+  }
+
   let orderStatus: "paid" | "paid_needs_setup" = "paid";
   let aiUserId: string | null = null;
   let tempPassword: string | null = null;
@@ -93,7 +108,6 @@ export async function GET(req: NextRequest) {
     .from("content_sales_orders")
     .update({
       status: orderStatus,
-      paid_at: new Date().toISOString(),
       ai_user_id: aiUserId,
       temp_password: tempPassword,
     })
@@ -114,19 +128,18 @@ export async function GET(req: NextRequest) {
   });
 
   const res = redirectNoStore(successUrl.toString());
-  setCookies(res, order.id as string, aiUserId);
+  await setCookies(res, req, order.id as string, aiUserId);
   return res;
 }
 
-function setCookies(res: NextResponse, orderId: string, aiUserId: string | null) {
+async function setCookies(
+  res: NextResponse,
+  req: NextRequest,
+  orderId: string,
+  aiUserId: string | null
+) {
   attachContentSalesCookie(res, orderId);
   if (aiUserId) {
-    res.cookies.set(AI_COOKIE, signAIToken(aiUserId, "pro"), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 30 * 24 * 60 * 60,
-    });
+    await issueAISessionCookie(res, req, aiUserId, "pro");
   }
 }

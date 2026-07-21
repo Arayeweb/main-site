@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { getAISession } from "@/lib/aiAuth";
 import { AI_PACKAGES } from "@/lib/aiPackages";
 import { resolveCode } from "@/lib/aiPromo";
 import { getPaymentCallbackUrl } from "@/lib/paymentCallback";
 import { zibalRequest } from "@/lib/zibal";
+import { getActiveAISession } from "@/lib/aiDeviceSessions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       { status: 503 }
     );
   }
-  const session = getAISession(req);
+  const session = await getActiveAISession(req);
   if (!session) {
     return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
   }

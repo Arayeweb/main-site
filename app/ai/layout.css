@@ -1982,9 +1982,9 @@ html[data-ar-pwa="1"] body {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  width: 72px;
-  height: 46px;
-  padding: 0 10px;
+  min-width: 64px;
+  height: 34px;
+  padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--ar-border);
   background: var(--ar-card);
@@ -2488,10 +2488,10 @@ html[data-ar-pwa="1"] body {
     display: grid;
     grid-template-columns: 48px 1fr auto;
     align-items: center;
-    padding: 8px 12px;
+    padding: 10px 12px 14px;
     gap: 10px;
-    min-height: 52px;
-    height: 52px;
+    min-height: 56px;
+    height: auto;
     box-sizing: border-box;
     border-bottom: none;
     background: transparent;
@@ -3538,6 +3538,36 @@ html[data-ar-pwa="1"] body {
   font-size: 14px;
 }
 
+.ar-sheet--auth .ar-auth-link {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ar-text2);
+  font: inherit;
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ar-sheet--auth .ar-auth-link:disabled {
+  opacity: 0.55;
+  cursor: default;
+  text-decoration: none;
+}
+
+.ar-sheet--auth .ar-auth-link:not(:disabled):hover {
+  color: var(--ar-text);
+}
+
+.ar-sheet--auth .ar-field input:disabled {
+  opacity: 0.72;
+}
+
 /* ---------- Pricing ---------- */
 .ar-pricing-hero {
   padding: 60px 0 34px;
@@ -4094,6 +4124,13 @@ html[data-ar-pwa="1"] body {
   align-items: center;
   gap: 6px;
   min-width: 0;
+}
+.ar-root a.ar-side-credits-left {
+  color: inherit;
+  text-decoration: none;
+}
+.ar-root a.ar-side-credits-left:hover {
+  opacity: 0.85;
 }
 .ar-side-credits-left b { font-size: 13px; }
 .ar-root a.ar-side-credits-buy,

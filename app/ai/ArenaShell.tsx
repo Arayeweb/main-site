@@ -32,6 +32,8 @@ import {
   IconPen,
   IconCode,
   IconDownload,
+  IconDevices,
+  IconCreditUsage,
 } from "./icons";
 import TelegramBanner from "./TelegramBanner";
 import { useArenaAuth } from "./ArenaAuthContext";
@@ -660,11 +662,16 @@ export default function ArenaShell({
       <div className="ar-side-foot">
         {credits !== null && (
           <div className="ar-side-credits">
-            <span className="ar-side-credits-left">
+            <Link
+              href="/ai/usage"
+              className="ar-side-credits-left"
+              onClick={closeDrawer}
+              title="مصرف اعتبار"
+            >
               <IconDiamond size={13} />
               <b>{credits.toLocaleString("fa-IR")}</b>
               <span>اعتبار</span>
-            </span>
+            </Link>
             <Link
               href="/ai/pricing"
               className="ar-side-credits-buy"
@@ -717,6 +724,30 @@ export default function ArenaShell({
                 </button>
                 {settingsOpen && (
                   <div className="ar-side-settings-sub">
+                    <Link
+                      href="/ai/devices"
+                      className={`ar-side-nav-item${pathname.startsWith("/ai/devices") ? " active" : ""}`}
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        closeDrawer();
+                      }}
+                    >
+                      <IconDevices size={14} />
+                      <span className="ar-side-nav-item-text">دستگاه‌ها</span>
+                    </Link>
+                    <Link
+                      href="/ai/usage"
+                      className={`ar-side-nav-item${pathname.startsWith("/ai/usage") ? " active" : ""}`}
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        closeDrawer();
+                      }}
+                    >
+                      <IconCreditUsage size={14} />
+                      <span className="ar-side-nav-item-text">مصرف اعتبار</span>
+                    </Link>
                     <button
                       type="button"
                       className="ar-side-nav-item"

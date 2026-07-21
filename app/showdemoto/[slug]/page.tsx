@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SITE_URL, canonicalUrl } from "@/lib/siteUrl";
 import { getAllShowDemoSlugs, getShowDemoEntry } from "@/lib/showdemoto/registry";
-import { sfJsonLd } from "@/lib/showdemoto/salamat-farda/config";
 import { pedJsonLd } from "@/lib/showdemoto/pediatric/config";
 
 export function generateStaticParams() {
@@ -46,12 +45,6 @@ export default async function ShowDemoToPage({
 
   return (
     <>
-      {slug === "salamat-farda-eye" ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(sfJsonLd) }}
-        />
-      ) : null}
       {slug === "dr-ahmadi-pediatric" ? (
         <script
           type="application/ld+json"

@@ -1,19 +1,19 @@
 import { NextRequest } from "next/server";
 import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { getAISession } from "@/lib/aiAuth";
 import {
   buildHistoryItems,
   buildRunHistoryItems,
   mergeUnifiedHistory,
   type HistoryRow,
 } from "@/lib/aiHistory";
+import { getActiveAISession } from "@/lib/aiDeviceSessions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const session = getAISession(req);
+  const session = await getActiveAISession(req);
   if (!session) {
     return jsonNoStore({ ok: false, error: "unauthorized" }, { status: 401 });
   }

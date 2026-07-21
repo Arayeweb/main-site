@@ -32,6 +32,7 @@ import PlanUpsellBanner from "./PlanUpsellBanner";
 import ModeSelector from "./ModeSelector";
 import HomeCompactDropdown from "./HomeCompactDropdown";
 import { invalidateArenaAuthCache, useArenaAuth } from "./ArenaAuthContext";
+import ArenaAuthForm from "./ArenaAuthForm";
 import { ArenaChatSkeleton, ArenaPageSkeleton } from "./ArenaSkeleton";
 import {
   getStoredAiLandingType,
@@ -68,7 +69,7 @@ import { canUseMode, canUseModel, MODE_MIN_PLAN } from "@/lib/aiCredits";
 import { PLAN_LABELS, planRank } from "@/lib/aiPackages";
 import { directModels, getModel } from "@/lib/aiModels";
 import { captureCampaignParams, trackAiPurchase, trackAiSignup } from "@/lib/aiTracking";
-import { getStoredPromoCode, pickUtmForDb, getUtmParams } from "@/lib/utm";
+import { getStoredPromoCode } from "@/lib/utm";
 
 type AuthBoot = "pending" | "guest" | "user";
 
@@ -169,15 +170,6 @@ const SPEED_OPTIONS = [
   { id: "deep" as const, label: "عمیق", desc: "استدلال و تحلیل بیشتر" },
 ];
 
-const AUTH_ERRORS: Record<string, string> = {
-  phone_taken: "این شماره قبلاً ثبت‌نام کرده — وارد شو.",
-  invalid_credentials: "شماره یا رمز اشتباه است.",
-  invalid_phone: "شماره موبایل معتبر نیست.",
-  password_too_short: "رمز باید حداقل ۶ کاراکتر باشد.",
-  rate_limited: "تلاش زیاد؛ یک دقیقه بعد دوباره امتحان کن.",
-  default: "خطایی پیش آمد. دوباره تلاش کن.",
-};
-
 export default function ArenaHomePage({
   children,
 }: {
@@ -228,12 +220,8 @@ export default function ArenaHomePage({
 
   // Auth sheet
   const [showSheet, setShowSheet] = useState(false);
+  const [authFormKey, setAuthFormKey] = useState(0);
   const [pendingPrompt, setPendingPrompt] = useState("");
-  const [authTab, setAuthTab] = useState<"register" | "login">("register");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [authErr, setAuthErr] = useState("");
-  const [authBusy, setAuthBusy] = useState(false);
   const [authRedirect, setAuthRedirect] = useState<string | null>(null);
   const [composerFlash, setComposerFlash] = useState(false);
   const firstMessageTracked = useRef(false);
@@ -269,6 +257,7 @@ export default function ArenaHomePage({
       trackAiPurchase({ promoCode: getStoredPromoCode() || undefined });
     } else if (p === "failed") setBanner("failed");
     if (params.get("login") === "1") {
+      setAuthFormKey((k) => k + 1);
       setShowSheet(true);
       setTimeout(() => phoneRef.current?.focus(), 150);
     }
@@ -313,8 +302,7 @@ export default function ArenaHomePage({
   useEffect(() => {
     const openLogin = () => {
       setPendingPrompt("");
-      setShowSheet(true);
-      setTimeout(() => phoneRef.current?.focus(), 100);
+      openAuthSheet();
     };
     window.addEventListener("ai:open-login", openLogin);
     return () => window.removeEventListener("ai:open-login", openLogin);
@@ -447,6 +435,7 @@ export default function ArenaHomePage({
   }
 
   function openAuthSheet() {
+    setAuthFormKey((k) => k + 1);
     setShowSheet(true);
     trackAiSignupStart({
       landing_type: getStoredAiLandingType() || "ai_home",
@@ -454,6 +443,7 @@ export default function ArenaHomePage({
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("araaye:ai-auth-open"));
     }
+    setTimeout(() => phoneRef.current?.focus(), 100);
   }
 
   function startDirectChat(q: string) {
@@ -540,8 +530,7 @@ export default function ArenaHomePage({
   function handleModeSelect(m: Mode) {
     if (isModeLocked(m)) {
       if (authBoot === "guest") {
-        setShowSheet(true);
-        setTimeout(() => phoneRef.current?.focus(), 100);
+        openAuthSheet();
         return;
       }
       setSendErr("mode_locked");
@@ -588,58 +577,30 @@ export default function ArenaHomePage({
     startCompareChat(q);
   }
 
-  async function handleAuth() {
-    if (authBusy) return;
-    setAuthErr("");
-    if (!phone.trim() || !password.trim()) {
-      setAuthErr("شماره و رمز را وارد کن.");
+  function handleAuthSuccess(result: {
+    tab: "register" | "login" | "reset";
+    user: { credits: number; plan: string };
+  }) {
+    setAuthed(true);
+    setAuthBoot("user");
+    if (result.tab === "register") trackAiSignup();
+    setCredits(result.user.credits);
+    setPlan(result.user.plan || "free");
+    setShowSheet(false);
+    invalidateArenaAuthCache();
+    window.dispatchEvent(new Event("ai:refresh"));
+
+    if (authRedirect) {
+      window.location.assign(authRedirect);
       return;
     }
-    setAuthBusy(true);
-    try {
-      const utm = pickUtmForDb(getUtmParams());
-      const res = await fetch("/api/ai/auth", {
-        method: authTab === "register" ? "POST" : "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim(), password, ...utm }),
-      });
-      const data = await res.json().catch(() => null);
 
-      if (!res.ok || !data?.ok) {
-        const code = data?.error as string;
-        if (code === "phone_taken") setAuthTab("login");
-        setAuthErr(AUTH_ERRORS[code] ?? AUTH_ERRORS.default);
-        setAuthBusy(false);
-        return;
-      }
-
-      setAuthed(true);
-      setAuthBoot("user");
-      if (authTab === "register") trackAiSignup();
-      if (data.user) {
-        setCredits(data.user.credits as number);
-        setPlan((data.user.plan as string) || "free");
-      }
-      setShowSheet(false);
-      setAuthBusy(false);
-      invalidateArenaAuthCache();
-      window.dispatchEvent(new Event("ai:refresh"));
-
-      if (authRedirect) {
-        window.location.assign(authRedirect);
-        return;
-      }
-
-      const q = pendingPrompt || prompt.trim();
-      setPendingPrompt("");
-      if (q) {
-        if (mode === "direct") startDirectChat(q);
-        else if (mode === "battle") startCouncilChat(q);
-        else startCompareChat(q);
-      }
-    } catch {
-      setAuthErr(AUTH_ERRORS.default);
-      setAuthBusy(false);
+    const q = pendingPrompt || prompt.trim();
+    setPendingPrompt("");
+    if (q) {
+      if (mode === "direct") startDirectChat(q);
+      else if (mode === "battle") startCouncilChat(q);
+      else startCompareChat(q);
     }
   }
 
@@ -762,8 +723,7 @@ export default function ArenaHomePage({
           onClick={() => {
             if (locked) {
               if (authBoot === "guest") {
-                setShowSheet(true);
-                setTimeout(() => phoneRef.current?.focus(), 100);
+                openAuthSheet();
                 setModeOpen(false);
                 return;
               }
@@ -1200,7 +1160,7 @@ export default function ArenaHomePage({
         {sendErr === "guest_direct_limit" && (
           <div className="ar-composer-err">
             برای ارسال پیام{" "}
-            <button type="button" className="ar-link-btn" onClick={() => setShowSheet(true)}>
+            <button type="button" className="ar-link-btn" onClick={() => openAuthSheet()}>
               وارد شو
             </button>
           </div>
@@ -1558,66 +1518,16 @@ export default function ArenaHomePage({
                 <IconX size={13} />
               </button>
             </div>
-            <p className="ar-sheet-sub">
-              {pendingPrompt
-                ? "برای ارسال پیام، با شماره موبایل وارد شو یا ثبت‌نام کن."
-                : "با شماره موبایل وارد شو یا ثبت‌نام کن."}
-            </p>
-
-            <div className="ar-tabs">
-              <button
-                className={`ar-tab${authTab === "register" ? " active" : ""}`}
-                onClick={() => { setAuthTab("register"); setAuthErr(""); }}
-              >
-                ثبت‌نام
-              </button>
-              <button
-                className={`ar-tab${authTab === "login" ? " active" : ""}`}
-                onClick={() => { setAuthTab("login"); setAuthErr(""); }}
-              >
-                ورود
-              </button>
-            </div>
-
-            <div className="ar-field">
-              <label>شماره موبایل</label>
-              <input
-                ref={phoneRef}
-                type="tel"
-                inputMode="tel"
-                placeholder="09xxxxxxxxx"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                autoComplete="tel"
-              />
-            </div>
-            <div className="ar-field">
-              <label>رمز عبور</label>
-              <input
-                type="password"
-                placeholder={authTab === "register" ? "حداقل ۶ کاراکتر" : "رمز عبور"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-                autoComplete={authTab === "register" ? "new-password" : "current-password"}
-              />
-            </div>
-
-            {authErr && <div className="ar-auth-err">{authErr}</div>}
-
-            <button className="ar-btn ar-btn-primary ar-btn-block" onClick={handleAuth} disabled={authBusy}>
-              {authBusy
-                ? "لطفاً صبر کن…"
-                : authTab === "register"
-                  ? "شروع رایگان"
-                  : "ورود"}
-            </button>
-
-            {authTab === "register" && (
-              <p className="ar-auth-note">
-                ۱۰ پیام رایگان بعد از ثبت‌نام فعال می‌شود.
-              </p>
-            )}
+            <ArenaAuthForm
+              key={authFormKey}
+              hint={
+                pendingPrompt
+                  ? "برای ارسال پیام، با شماره موبایل وارد شو یا ثبت‌نام کن."
+                  : undefined
+              }
+              phoneRef={phoneRef}
+              onSuccess={handleAuthSuccess}
+            />
           </div>
         </div>
       )}

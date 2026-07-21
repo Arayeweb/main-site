@@ -5,7 +5,6 @@
 // =========================================================
 
 import { NextRequest } from "next/server";
-import { getAISession } from "@/lib/aiAuth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getPersona } from "@/lib/aiPersonas";
 import { hasVision } from "@/lib/aiModels";
@@ -30,6 +29,7 @@ import {
 import { RunPerfTracker } from "@/lib/observability/perf";
 import type { ChatMessage } from "@/lib/ai/providers/interface";
 import { isOwnedAiUploadUrl } from "@/lib/aiUploadSecurity";
+import { getActiveAISession } from "@/lib/aiDeviceSessions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
   const perf = new RunPerfTracker();
   perf.mark("request_received");
 
-  const session = getAISession(req);
+  const session = await getActiveAISession(req);
   perf.mark("auth_done");
   if (!session) return sseError("unauthorized", 401);
 
@@ -235,7 +235,9 @@ export async function POST(req: NextRequest) {
         let history: ChatMessage[] = [];
         if (conversationId) {
           const priorRuns = await loadConversationRuns(session.userId, conversationId);
-          history = buildConversationHistory(priorRuns);
+          history = buildConversationHistory(priorRuns, {
+            excludeRunId: parsed.excludeRunId ?? undefined,
+          });
         }
         if (history.length === 0) {
           history = parseClientHistory(body.messages);
