@@ -3,19 +3,27 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { isE2eMode } from "@/lib/e2eMode";
 import { getKavenegarApiKey, sendKavenegarLookup } from "@/lib/kavenegar";
 
-export type AiOtpPurpose = "login" | "register" | "reset";
+export type AiOtpPurpose = "login" | "register" | "reset" | "auth";
 
 export const AI_OTP_PURPOSES: readonly AiOtpPurpose[] = [
   "login",
   "register",
   "reset",
+  "auth",
 ] as const;
 
 export const AI_OTP_TTL_MS = 5 * 60 * 1000;
-export const AI_OTP_RESEND_COOLDOWN_MS = 60_000;
-export const AI_OTP_MAX_ATTEMPTS = 5;
+/** حداقل فاصله بین دو ارسال کد برای یک شماره */
+export const AI_OTP_RESEND_COOLDOWN_MS = 2 * 60 * 1000;
+/** حداکثر تلاش اشتباه برای یک کد (بعدش باید کد جدید بگیرد) */
+export const AI_OTP_MAX_ATTEMPTS = 3;
+/** سقف ارسال کد برای یک شماره در یک ساعت */
 export const AI_OTP_MAX_SENDS_PER_HOUR = 5;
 export const AI_OTP_LENGTH = 5;
+/** سقف تلاش verify از یک IP در هر دقیقه */
+export const AI_OTP_VERIFY_PER_MINUTE = 3;
+/** سقف درخواست send از یک IP در هر دقیقه */
+export const AI_OTP_SEND_PER_MINUTE = 3;
 /** Fixed code when E2E_MODE=1 (never sent via SMS). */
 export const AI_OTP_E2E_CODE = "11111";
 

@@ -488,7 +488,7 @@ export default function PersonaChatView({
               {activeInfo.poweredBy !== activeInfo.name && (
                 <span className="powered-by"> · {activeInfo.poweredBy}</span>
               )}{" "}
-              · ممکن است نادرست باشد
+              · هوش مصنوعی ممکن است اشتباه کند؛ اطلاعات مهم را بررسی کنید.
             </div>
           )}
           {err === "credits_out" && (

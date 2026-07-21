@@ -1512,8 +1512,11 @@ export default function ArenaHomePage({
           }}
         >
           <div className="ar-sheet ar-sheet--auth">
-            <div className="ar-sheet-head">
-              <h3>ورود به آرایه AI</h3>
+            <div className="ar-sheet-head ar-sheet-head--auth">
+              <div className="ar-auth-brand">
+                <span className="ar-auth-brand-mark" aria-hidden />
+                <span className="ar-auth-brand-name">آرایه AI</span>
+              </div>
               <button className="ar-sheet-close" onClick={() => setShowSheet(false)} aria-label="بستن">
                 <IconX size={13} />
               </button>

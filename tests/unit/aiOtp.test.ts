@@ -20,6 +20,7 @@ describe("aiOtp helpers", () => {
     expect(isAiOtpPurpose("login")).toBe(true);
     expect(isAiOtpPurpose("register")).toBe(true);
     expect(isAiOtpPurpose("reset")).toBe(true);
+    expect(isAiOtpPurpose("auth")).toBe(true);
     expect(isAiOtpPurpose("other")).toBe(false);
   });
 

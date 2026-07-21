@@ -350,7 +350,7 @@ alter table public.ai_users enable row level security;
 create table if not exists public.ai_otp_challenges (
   id uuid primary key default gen_random_uuid(),
   phone text not null,
-  purpose text not null check (purpose in ('login', 'register', 'reset')),
+  purpose text not null check (purpose in ('login', 'register', 'reset', 'auth')),
   code_hash text not null,
   attempts int not null default 0,
   expires_at timestamptz not null,

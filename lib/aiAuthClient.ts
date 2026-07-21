@@ -14,7 +14,7 @@ export type AiAuthCheckResult = {
 };
 
 export type AiAuthActionResult =
-  | { ok: true; user: AiAuthUser; referralCode?: string }
+  | { ok: true; user: AiAuthUser; referralCode?: string; isNewUser?: boolean }
   | { ok: false; error: string; message: string; retryAfterSec?: number };
 
 export type AiOtpSendResult =
@@ -31,6 +31,7 @@ type AiAuthApiResponse = {
   authed?: boolean;
   user?: AiAuthUser;
   referralCode?: string;
+  isNewUser?: boolean;
   error?: string;
   retryAfterSec?: number;
   expiresAt?: string;
@@ -137,7 +138,7 @@ export async function sendAiOtp(input: {
   return {
     ok: true,
     expiresAt: data.expiresAt ?? new Date(Date.now() + 5 * 60_000).toISOString(),
-    resendAfterSec: data.resendAfterSec ?? 60,
+    resendAfterSec: data.resendAfterSec ?? 120,
     debugCode: data.debugCode,
   };
 }
@@ -174,5 +175,6 @@ export async function verifyAiOtp(input: {
     ok: true,
     user: data.user,
     referralCode: data.referralCode,
+    isNewUser: data.isNewUser,
   };
 }

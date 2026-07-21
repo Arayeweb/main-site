@@ -743,7 +743,7 @@ export default function DirectChatView({
             {activeInfo.poweredBy !== activeInfo.name && (
               <span className="powered-by"> · {activeInfo.poweredBy}</span>
             )}
-            {attachments.length > 0 ? " (هزینه فایل بر اساس حجم محاسبه می‌شود)" : ""} · ممکن است نادرست باشد
+            {attachments.length > 0 ? " (هزینه فایل بر اساس حجم محاسبه می‌شود)" : ""} · هوش مصنوعی ممکن است اشتباه کند؛ اطلاعات مهم را بررسی کنید.
           </div>
         )}
         {notice && <div className="ar-chat-note">{notice}</div>}

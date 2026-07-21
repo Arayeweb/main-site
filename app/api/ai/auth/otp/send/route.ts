@@ -2,22 +2,33 @@ import { NextRequest } from "next/server";
 import { jsonNoStore } from "@/lib/apiHeaders";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { clientIpFromRequest } from "@/lib/aiDeviceSessions";
-import { isAiOtpPurpose, createAndSendAiOtp, type AiOtpPurpose } from "@/lib/aiOtp";
+import {
+  AI_OTP_SEND_PER_MINUTE,
+  isAiOtpPurpose,
+  createAndSendAiOtp,
+  type AiOtpPurpose,
+} from "@/lib/aiOtp";
 import { normalizeContact } from "@/lib/validateContact";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 10;
 const hits = new Map<string, number[]>();
 
-function rateLimited(ip: string): boolean {
+function rateLimited(key: string, max: number): { limited: boolean; retryAfterSec: number } {
   const now = Date.now();
-  const arr = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  const arr = (hits.get(key) || []).filter((t) => now - t < WINDOW_MS);
+  if (arr.length >= max) {
+    const oldest = arr[0] ?? now;
+    return {
+      limited: true,
+      retryAfterSec: Math.max(1, Math.ceil((WINDOW_MS - (now - oldest)) / 1000)),
+    };
+  }
   arr.push(now);
-  hits.set(ip, arr);
-  return arr.length > MAX_PER_WINDOW;
+  hits.set(key, arr);
+  return { limited: false, retryAfterSec: 0 };
 }
 
 function str(v: unknown, max = 200): string | null {
@@ -32,8 +43,12 @@ function str(v: unknown, max = 200): string | null {
  */
 export async function POST(req: NextRequest) {
   const ip = clientIpFromRequest(req);
-  if (rateLimited(ip)) {
-    return jsonNoStore({ ok: false, error: "rate_limited" }, { status: 429 });
+  const ipLimit = rateLimited(`send:ip:${ip}`, AI_OTP_SEND_PER_MINUTE);
+  if (ipLimit.limited) {
+    return jsonNoStore(
+      { ok: false, error: "rate_limited", retryAfterSec: ipLimit.retryAfterSec },
+      { status: 429 }
+    );
   }
 
   let body: Record<string, unknown>;
@@ -77,6 +92,7 @@ export async function POST(req: NextRequest) {
     if ((purpose === "login" || purpose === "reset") && !existing) {
       return jsonNoStore({ ok: false, error: "phone_not_found" }, { status: 404 });
     }
+    // purpose === "auth" → allow both existing and new phones
 
     const result = await createAndSendAiOtp(supabase, { phone, purpose });
     if (!result.ok) {
