@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 
   if (order.status === "paid" || order.status === "paid_needs_setup") {
     const res = redirectNoStore(successUrl.toString());
-    setCookies(res, order.id as string, order.ai_user_id as string | null);
+    await setCookies(res, req, order.id as string, order.ai_user_id as string | null);
     return res;
   }
 
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
 
   if (!claimed) {
     const res = redirectNoStore(successUrl.toString());
-    setCookies(res, order.id as string, order.ai_user_id as string | null);
+    await setCookies(res, req, order.id as string, order.ai_user_id as string | null);
     return res;
   }
 
