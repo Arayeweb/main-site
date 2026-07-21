@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ToolProgrammaticLanding from "@/components/tools/ToolProgrammaticLanding";
+import GooglesabtLandingArticle from "@/components/googlesabt/GooglesabtLandingArticle";
 import { buildToolProgrammaticPage } from "@/lib/tools/toolPageContent";
 import { getPublishedToolPages } from "@/lib/tools/toolRegistry";
 import {
@@ -33,7 +33,7 @@ export default function GooglesabtSlugPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ToolProgrammaticLanding page={page} />
+      <GooglesabtLandingArticle page={page} />
     </>
   );
 }

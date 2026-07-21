@@ -21,14 +21,14 @@ export interface GooglesabtPackage {
 export const googlesabtPackages: GooglesabtPackage[] = [
   {
     key: "basic",
-    name: "دیده شو",
-    tagline: "ثبت در ۳ نقشه",
+    name: "اقتصادی",
+    tagline: "Economy",
     price: 590_000,
     oldPrice: 1_200_000,
     deposit: 290_000,
     mapCount: 3,
     includesBizcard: false,
-    description: "ثبت حرفه‌ای در گوگل، نشان و بلد + لینک پروفایل گوگل قابل اشتراک.",
+    description: "ثبت حرفه‌ای در گوگل، نشان و بلد برای شروع دیده‌شدن.",
     features: [
       "ثبت در ۳ نقشه: گوگل، نشان، بلد",
       "درستی‌سنجی نمایه گوگل",
@@ -38,36 +38,35 @@ export const googlesabtPackages: GooglesabtPackage[] = [
   },
   {
     key: "popular",
-    name: "محبوب",
-    tagline: "ثبت + لینک همه‌کاره",
+    name: "حرفه‌ای",
+    tagline: "Professional",
     price: 990_000,
     oldPrice: 2_800_000,
     deposit: 490_000,
     mapCount: 5,
     includesBizcard: true,
     popular: true,
-    description:
-      "ثبت در ۵ نقشه + کارت ویزیت آنلاین با همه مسیریاب‌ها روی یک لینک (araaye.com/b/…).",
+    description: "ثبت در ۵ نقشه + لینک همه‌کاره با همه مسیریاب‌ها.",
     features: [
       "ثبت در ۵ نقشه: گوگل، نشان، بلد، اسنپ، OSM",
       "کارت BizCard کامل + QR اختصاصی",
-      "همه مسیریاب‌ها روی یک لینk",
+      "همه مسیریاب‌ها روی یک لینک",
       "عکس، ساعت کاری و اطلاعات تماس",
       "تحویل کمتر از یک روز کاری",
     ],
   },
   {
     key: "vip",
-    name: "کامل",
-    tagline: "مدیریت حرفه‌ای",
+    name: "VIP",
+    tagline: "VIP",
     price: 1_990_000,
     oldPrice: 4_500_000,
     deposit: 990_000,
     mapCount: 5,
     includesBizcard: true,
-    description: "همه امکانات محبوب + پنل پیامکی و مدیریت نظرات گوگل.",
+    description: "همه امکانات حرفه‌ای + مدیریت نظرات و پشتیبانی اختصاصی.",
     features: [
-      "همه امکانات پکیج محبوب",
+      "همه امکانات پکیج حرفه‌ای",
       "پنل پیامکی مدیریت نمایه",
       "مدیریت نظرات و پاسخ‌گویی",
       "پیگیری درستی‌سنجی گوگل",
@@ -96,44 +95,122 @@ export interface GooglesabtFaqItem {
 
 export const googlesabtFaq: GooglesabtFaqItem[] = [
   {
-    q: "ثبت کسب‌وکار در گوگل مپ چقدر طول می‌کشد؟",
-    a: "ثبت اولیه معمولاً کمتر از یک روز کاری انجام می‌شود؛ زمان نهایی به درستی‌سنجی گوگل بستگی دارد که آن را هم برایت پیگیری می‌کنیم.",
+    q: "آیا این سرویس برای کسب‌وکار من مناسب است؟",
+    a: "اگر مشتریان شما نام کسب‌وکارتان را در گوگل جستجو می‌کنند، این سرویس برای شما مناسب است؛ از فروشگاه‌ها و مطب‌ها گرفته تا شرکت‌ها و مراکز خدماتی.",
   },
   {
-    q: "ثبت گوگل مپ از چه قیمتی شروع می‌شود؟",
-    a: "پکیج پایه «دیده شو» از ۵۹۰ هزار تومان است. پکیج محبوب با لینک BizCard و ثبت در ۵ نقشه ۹۹۰ هزار تومان است.",
+    q: "راه‌اندازی چقدر زمان می‌برد؟",
+    a: "پس از تکمیل سفارش، فرایند راه‌اندازی آغاز می‌شود و نتیجه در کوتاه‌ترین زمان ممکن به شما اطلاع داده خواهد شد.",
   },
   {
-    q: "لینک BizCard چیست و چه فرقی با ثبت گوگل دارد؟",
-    a: "ثبت گوگل یعنی کسب‌وکار شما در نقشه‌ها دیده می‌شود. لینک BizCard (از پکیج محبوب) همه مسیریاب‌ها، تماس، واتساپ و شبکه‌های اجتماعی را در یک صفحه جمع می‌کند تا مشتری با یک لینک همه‌چیز را پیدا کند.",
+    q: "برای ثبت سفارش چه اطلاعاتی نیاز است؟",
+    a: "نام کسب‌وکار، شماره تماس، آدرس، دسته‌بندی و اطلاعات پایه کافی است. در صورت نیاز، کارشناسان ما با شما هماهنگ خواهند شد.",
   },
   {
-    q: "برای ثبت چه اطلاعاتی لازم است؟",
-    a: "نام دقیق کسب‌وکار، آدرس و موقعیت روی نقشه، شماره تماس، ساعت کاری و چند عکس باکیفیت. بقیه مراحل فنی با ماست.",
+    q: "اگر اطلاعات کسب‌وکارم تغییر کند چه می‌شود؟",
+    a: "در صورت نیاز می‌توانید درخواست به‌روزرسانی اطلاعات را ثبت کنید.",
   },
   {
-    q: "آیا در نشان، بلد و اسنپ هم ثبت می‌شود؟",
-    a: "بله. پکیج پایه گوگل، نشان و بلد را پوشش می‌دهد؛ پکیج محبوب و کامل، اسنپ و OpenStreetMap را هم اضافه می‌کند.",
+    q: "اگر در حین انجام کار سوال داشته باشم؟",
+    a: "تیم پشتیبانی آرایه در تمام مراحل پاسخگوی شما خواهد بود.",
   },
   {
-    q: "اگر اطلاعاتم اشتباه ثبت شده باشد چه؟",
-    a: "مالکیت نمایه موجود را ادعا می‌کنیم و آدرس، شماره، ساعت کاری و عکس‌ها را اصلاح و بهینه می‌کنیم.",
+    q: "پرداخت آنلاین امن است؟",
+    a: "بله. پرداخت از طریق درگاه بانکی امن انجام می‌شود و اطلاعات پرداخت نزد آرایه ذخیره نخواهد شد.",
   },
   {
-    q: "کارت ویزیت رایگان /bizcard با این پکیج‌ها چه فرقی دارد؟",
-    a: "کارت رایگان را خودتان می‌سازید. در پکیج پولی، تیم آرایه ثبت حرفه‌ای در نقشه‌ها را انجام می‌دهد و (از پکیج محبوب) لینک شما با همه مسیریاب‌های پر شده تحویل می‌گیرد.",
-  },
-  {
-    q: "برای چه کسب‌وکارهایی مناسب است؟",
-    a: "رستوران، کافه، مطب، کلینیک، آرایشگاه، فروشگاه، املاک، باشگاه و هر کسب‌وکار محلی که مشتری از نقشه پیدایش کند.",
+    q: "اگر قبل از خرید سوال داشته باشم؟",
+    a: "از طریق تماس یا واتساپ می‌توانید با کارشناسان آرایه در ارتباط باشید.",
   },
 ];
 
 export const googlesabtHowToSteps = [
-  "پکیج مناسب را انتخاب و پیش‌پرداخت آنلاین را انجام دهید.",
-  "نام، آدرس، تماس، ساعت کاری و عکس‌های کسب‌وکار را ارسال کنید.",
-  "تیم آرایه ثبت را در گوگل، نشان، بلد (و در پکیج‌های بالاتر اسنپ و OSM) انجام می‌دهد.",
-  "از پکیج محبوب، لینک BizCard با همه مسیریاب‌ها را هم تحویل می‌گیرید.",
+  "پکیج مناسب را انتخاب کنید.",
+  "اطلاعات کسب‌وکار، آدرس و ساعات کاری را تکمیل کنید.",
+  "پرداخت آنلاین را انجام دهید.",
+  "تیم آرایه راه‌اندازی را انجام می‌دهد و خروجی را تحویل می‌دهد.",
+];
+
+export interface GooglesabtCaseStudy {
+  id: string;
+  name: string;
+  category: string;
+  googleImage: string;
+  smartLinkImage: string;
+  googleUrl: string;
+  smartLinkUrl: string;
+  logo: string;
+}
+
+/** نمونه‌های واقعی ثبت‌شده — اسکرین‌شات از گوگل مپ و لینک همه‌کاره زنده */
+export const googlesabtCaseStudies: GooglesabtCaseStudy[] = [
+  {
+    id: "shoope",
+    name: "اسموک لاب شوپه",
+    category: "رستوران باربیکیو · کرمان",
+    googleImage: "/showcase-assets/googlesabt/shoope-google-panel.png",
+    smartLinkImage: "/showcase-assets/googlesabt/shoope-smartlink-card.png",
+    googleUrl: "https://maps.app.goo.gl/RrDnaiHEaRYgyKf76",
+    smartLinkUrl: "/b/shoope_smoke_lab",
+    logo: "/showcase-assets/shoope/logo.jpg",
+  },
+  {
+    id: "emdadahan",
+    name: "امداد آهن",
+    category: "توزیع مقاطع فولادی · تهران",
+    googleImage: "/showcase-assets/googlesabt/emdadahan-google-panel.png",
+    smartLinkImage: "/showcase-assets/googlesabt/emdadahan-smartlink-card.png",
+    googleUrl: "https://maps.app.goo.gl/Lhfkg6XUfBY2j2xaA?g_st=ic",
+    smartLinkUrl: "/b/emdadahan",
+    logo: "/showcase-assets/emdadahan/logo.jpg",
+  },
+  {
+    id: "salamt",
+    name: "کلینیک دندانپزشکی سلامت",
+    category: "دندانپزشکی · تهران",
+    googleImage: "/showcase-assets/googlesabt/salamt-google-panel.png",
+    smartLinkImage: "/showcase-assets/googlesabt/salamt-smartlink-card.png",
+    googleUrl:
+      "https://www.google.com/maps/place/Salamat+clinic/@35.7814536,51.4677344,17z/data=!3m1!4b1!4m6!3m5!1s0x3f8e0474aa3f977b:0xdd6a292a2448bd1f!8m2!3d35.7814536!4d51.4677344!16s%2Fg%2F11f1226tf0",
+    smartLinkUrl: "/b/salamt-clinic",
+    logo: "/showcase-assets/salamt/logo.jpg",
+  },
+];
+
+export interface GooglesabtTestimonial {
+  id: string;
+  name: string;
+  business: string;
+  review: string;
+  rating: number;
+  logo: string;
+}
+
+export const googlesabtTestimonials: GooglesabtTestimonial[] = [
+  {
+    id: "emdadahan",
+    name: "امداد آهن",
+    business: "توزیع مقاطع فولادی",
+    review: "ثبت در گوگل را انجام دادند؛ از نتیجه راضی هستیم.",
+    rating: 5,
+    logo: "/showcase-assets/emdadahan/logo.jpg",
+  },
+  {
+    id: "salamt",
+    name: "کلینیک دندانپزشکی سلامت",
+    business: "دندانپزشکی",
+    review: "حضورمان در نقشه درست شد؛ مشتری قبل از آمدن آدرس و ساعت کاری را می‌بیند.",
+    rating: 5,
+    logo: "/showcase-assets/salamt/logo.jpg",
+  },
+  {
+    id: "shoope",
+    name: "اسموک لاب شوپه",
+    business: "رستوران باربیکیو تگزاسی",
+    review: "جست‌وجوی رستوران در کرمان دیگر بی‌نتیجه نیست؛ تماس و مسیر روی نقشه واضح شده.",
+    rating: 5,
+    logo: "/showcase-assets/shoope/logo.jpg",
+  },
 ];
 
 export { formatToman } from "@/lib/doctorsData";

@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import GooglesabtHero from "@/components/googlesabt/GooglesabtHero";
-import GooglesabtPackagesForm from "@/components/googlesabt/GooglesabtPackagesForm";
+import GooglesabtProof from "@/components/googlesabt/GooglesabtProof";
+import GooglesabtTestimonials from "@/components/googlesabt/GooglesabtTestimonials";
+import GooglesabtTrustBar from "@/components/googlesabt/GooglesabtTrustBar";
+import GooglesabtBenefits from "@/components/googlesabt/GooglesabtBenefits";
+import GooglesabtCheckout from "@/components/googlesabt/GooglesabtCheckout";
+import GooglesabtTimeline from "@/components/googlesabt/GooglesabtTimeline";
 import GooglesabtFaq from "@/components/googlesabt/GooglesabtFaq";
+import GooglesabtFinalCta from "@/components/googlesabt/GooglesabtFinalCta";
 import GooglesabtStickyCta from "@/components/googlesabt/GooglesabtStickyCta";
 import ToolHubLinks from "@/components/tools/ToolHubLinks";
 import ToolHubIndex from "@/components/tools/ToolHubIndex";
@@ -19,14 +25,14 @@ import { ORGANIZATION_ID, organizationProviderRef, SITE_NAME } from "@/lib/seo/s
 export const metadata: Metadata = {
   title: { absolute: "ثبت گوگل مپ | ثبت کسب‌وکار در نقشه از ۵۹۰ هزار تومان — آرایه" },
   description:
-    "ثبت کسب‌وکار در گوگل مپ، نشان، بلد، اسنپ و OpenStreetMap. ۳ پکیج شفاف، پیش‌پرداخت آنلاین و لینک BizCard با همه مسیریاب‌ها از پکیج محبوب.",
+    "ثبت کسب‌وکار در گوگل مپ، نشان، بلد، اسنپ و OpenStreetMap. ۳ پکیج شفاف، پرداخت آنلاین و لینک همه‌کاره از پکیج حرفه‌ای.",
   alternates: {
     canonical: "/googlesabt",
   },
   openGraph: {
     title: "ثبت کسب‌وکار در گوگل مپ از ۵۹۰ هزار تومان — آرایه",
     description:
-      "ثبت در گوگل مپ، نشان، بلد و اسنپ + لینک همه‌کاره BizCard. تحویل کمتر از یک روز. پرداخت آنلاین امن.",
+      "ثبت در گوگل مپ، نشان، بلد و اسنپ + لینک همه‌کاره. تحویل کمتر از یک روز. پرداخت آنلاین امن.",
     url: "/googlesabt",
     type: "website",
     locale: "fa_IR",
@@ -109,13 +115,19 @@ export default function GooglesabtPage() {
       <Navbar />
       <main className="pb-20 sm:pb-0">
         <GooglesabtHero />
-        <GooglesabtPackagesForm />
+        <GooglesabtProof />
+        <GooglesabtTestimonials />
+        <GooglesabtTrustBar />
+        <GooglesabtBenefits />
+        <GooglesabtCheckout />
+        <GooglesabtTimeline />
         <ToolHubIndex
           hub="googlesabt"
           title="ثبت گوگل مپ برای چه کسب‌وکارهایی؟"
           subtitle="راهنمای ثبت رستوران، مطب، کلینیک، آرایشگاه، فروشگاه و بیشتر"
         />
         <GooglesabtFaq />
+        <GooglesabtFinalCta />
         <ToolHubLinks
           title="ابزارهای رایگان مرتبط"
           subtitle="کارت ویزیت، لینک کوتاه و QR برای تکمیل حضور آنلاین"

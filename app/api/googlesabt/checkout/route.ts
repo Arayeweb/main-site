@@ -13,6 +13,12 @@ function str(v: unknown, max = 500): string | null {
   return s ? s.slice(0, max) : null;
 }
 
+function num(v: unknown): number | null {
+  if (v === undefined || v === null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
@@ -35,6 +41,17 @@ export async function POST(req: NextRequest) {
 
   const businessName = str(body.businessName, 200) || str(body.name, 200) || "";
   const contact = str(body.contact, 200) || "";
+  const category = str(body.category, 80);
+  const province = str(body.province, 80);
+  const city = str(body.city, 80);
+  const address = str(body.address, 500);
+  const lat = num(body.lat);
+  const lng = num(body.lng);
+  const openTime = str(body.openTime, 16);
+  const closeTime = str(body.closeTime, 16);
+  const weekdays = Array.isArray(body.weekdays)
+    ? body.weekdays.map((d) => String(d).slice(0, 12)).filter(Boolean).slice(0, 7)
+    : [];
 
   const callbackUrl = getPaymentCallbackUrl("googlesabt", "/api/googlesabt/verify");
 
@@ -68,7 +85,11 @@ export async function POST(req: NextRequest) {
         plan: pkgKey,
         budget: String(pkg.price),
         channel: "googlesabt_landing",
-        detail: `zibal_trackId: ${trackId} | package: ${pkg.name} | deposit: ${amount} | includesBizcard: ${pkg.includesBizcard}`,
+        detail:
+          `zibal_trackId: ${trackId} | package: ${pkg.name} | deposit: ${amount}` +
+          ` | includesBizcard: ${pkg.includesBizcard}` +
+          ` | category: ${category || "-"} | ${province || "-"}/${city || "-"}` +
+          ` | hours: ${openTime || "-"}-${closeTime || "-"} | days: ${weekdays.join(",")}`,
         raw: {
           trackId,
           amount,
@@ -77,6 +98,15 @@ export async function POST(req: NextRequest) {
           package: pkgKey,
           businessName,
           contact,
+          category,
+          province,
+          city,
+          address,
+          lat,
+          lng,
+          openTime,
+          closeTime,
+          weekdays,
           includesBizcard: pkg.includesBizcard,
           status: "pending_payment",
         },
