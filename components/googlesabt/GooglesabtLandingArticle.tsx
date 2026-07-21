@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SectionHeader from "@/components/home/SectionHeader";
 import ToolHubLinks from "@/components/tools/ToolHubLinks";
+import GooglesabtChatWidget from "@/components/googlesabt/GooglesabtChatWidget";
 import type { ToolProgrammaticPage } from "@/lib/tools/toolPageContent";
 import { getHubLabel, getHubPath } from "@/lib/tools/toolRegistry";
 import { IconCheck, IconClose } from "@/components/icons";
@@ -18,7 +19,7 @@ export default function GooglesabtLandingArticle({
 
   return (
     <>
-      <Navbar />
+      <Navbar ctaLabel="مشاوره رایگان" />
       <main>
         <section className="relative overflow-hidden bg-gradient-to-b from-white via-brand-50/30 to-slate-50 pb-10 pt-14 sm:pb-12 sm:pt-20">
           <div className="container-mx container-px">
@@ -337,6 +338,7 @@ export default function GooglesabtLandingArticle({
         />
       </main>
       <Footer />
+      <GooglesabtChatWidget />
     </>
   );
 }

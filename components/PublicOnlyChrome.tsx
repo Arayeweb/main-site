@@ -12,7 +12,7 @@ import ChatWidget from "./ChatWidget";
 // /dashboard فضای داخلی کاربران است — chrome سایت عمومی نباید روی آن نمایش داده شود.
 // /campaign صفحه مستقل مشتری است — CTA و راه‌های تماس خودش را دارد.
 // /b/* کارت ویزیت آنلاین — BizcardChatWidget اختصاصی دارد.
-// /googlesabt قیف خرید مستقیم است — ویجت چت حواس‌پرتی ایجاد می‌کند.
+// /googlesabt چت‌بات اختصاصی مشاوره رایگان دارد (GooglesabtChatWidget).
 export default function PublicOnlyChrome() {
   const pathname = usePathname();
   if (

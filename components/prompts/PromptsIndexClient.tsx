@@ -1,23 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ALL_PROMPTS } from "@/lib/prompts/promptData";
-import {
-  PROMPT_CATEGORIES,
-  type PromptCategoryId,
-} from "@/lib/prompts/promptTypes";
+import { PROMPT_CATEGORIES } from "@/lib/prompts/promptTypes";
 import PromptCard from "./PromptCard";
 import { pushGtmEvent } from "@/lib/gtm";
 
 export default function PromptsIndexClient() {
-  const [category, setCategory] = useState<PromptCategoryId | "all">("all");
-
-  const filtered = useMemo(() => {
-    if (category === "all") return ALL_PROMPTS;
-    return ALL_PROMPTS.filter((p) => p.category === category);
-  }, [category]);
-
   return (
     <div className="pb-16">
       {/* Hero */}
@@ -51,41 +40,58 @@ export default function PromptsIndexClient() {
         </div>
       </section>
 
-      {/* Filters + grid */}
-      <section id="prompt-grid" className="container-mx container-px pt-10 sm:pt-14">
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="دسته‌بندی پرامپت‌ها">
-          <button
-            type="button"
-            className={`rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
-              category === "all"
-                ? "bg-navy-900 text-white"
-                : "bg-navy-50 text-navy-600 hover:bg-navy-100"
-            }`}
-            onClick={() => setCategory("all")}
-          >
-            همه ({ALL_PROMPTS.length})
-          </button>
+      {/* Category hubs */}
+      <section className="container-mx container-px pt-10 sm:pt-12">
+        <h2 className="text-lg font-extrabold text-navy-900">دسته‌بندی‌ها</h2>
+        <p className="mt-2 text-sm text-navy-500">
+          پرامپت‌ها بر اساس کاربرد دسته‌بندی شده‌اند — هر دسته صفحهٔ SEO جدا دارد.
+        </p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {PROMPT_CATEGORIES.map((cat) => {
             const count = ALL_PROMPTS.filter((p) => p.category === cat.id).length;
             return (
-              <button
+              <Link
                 key={cat.id}
-                type="button"
-                className={`rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
-                  category === cat.id
-                    ? "bg-navy-900 text-white"
-                    : "bg-navy-50 text-navy-600 hover:bg-navy-100"
-                }`}
-                onClick={() => setCategory(cat.id)}
+                href={`/prompts/category/${cat.id}`}
+                className="rounded-2xl border border-navy-100 bg-white p-4 transition-colors hover:border-brand-200 hover:bg-brand-50/40"
               >
-                {cat.label} ({count})
-              </button>
+                <div className="text-sm font-extrabold text-navy-900">{cat.label}</div>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-navy-500">
+                  {cat.description}
+                </p>
+                <div className="mt-3 text-xs font-bold text-brand-600">
+                  {count.toLocaleString("fa-IR")} پرامپت
+                </div>
+              </Link>
             );
           })}
         </div>
+      </section>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((prompt) => (
+      {/* Filters + grid */}
+      <section id="prompt-grid" className="container-mx container-px pt-10 sm:pt-14">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-extrabold text-navy-900">همه پرامپت‌ها</h2>
+            <p className="mt-1 text-sm text-navy-500">
+              {ALL_PROMPTS.length.toLocaleString("fa-IR")} پرامپت آماده
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2" aria-label="میانبر دسته‌ها">
+            {PROMPT_CATEGORIES.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/prompts/category/${cat.id}`}
+                className="rounded-xl bg-navy-50 px-3 py-2 text-xs font-bold text-navy-600 transition-colors hover:bg-navy-100"
+              >
+                {cat.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {ALL_PROMPTS.map((prompt) => (
             <PromptCard key={prompt.slug} prompt={prompt} />
           ))}
         </div>

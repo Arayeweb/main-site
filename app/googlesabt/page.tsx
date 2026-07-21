@@ -11,6 +11,7 @@ import GooglesabtTimeline from "@/components/googlesabt/GooglesabtTimeline";
 import GooglesabtFaq from "@/components/googlesabt/GooglesabtFaq";
 import GooglesabtFinalCta from "@/components/googlesabt/GooglesabtFinalCta";
 import GooglesabtStickyCta from "@/components/googlesabt/GooglesabtStickyCta";
+import GooglesabtChatWidget from "@/components/googlesabt/GooglesabtChatWidget";
 import ToolHubLinks from "@/components/tools/ToolHubLinks";
 import ToolHubIndex from "@/components/tools/ToolHubIndex";
 import {
@@ -112,7 +113,7 @@ export default function GooglesabtPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar />
+      <Navbar ctaLabel="مشاوره رایگان" />
       <main className="pb-20 sm:pb-0">
         <GooglesabtHero />
         <GooglesabtProof />
@@ -135,6 +136,7 @@ export default function GooglesabtPage() {
       </main>
       <Footer />
       <GooglesabtStickyCta />
+      <GooglesabtChatWidget />
     </>
   );
 }

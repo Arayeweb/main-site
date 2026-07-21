@@ -121,7 +121,7 @@ export const googlesabtFaq: GooglesabtFaqItem[] = [
   },
   {
     q: "اگر قبل از خرید سوال داشته باشم؟",
-    a: "از طریق تماس یا واتساپ می‌توانید با کارشناسان آرایه در ارتباط باشید.",
+    a: "از چت‌بات مشاوره رایگان همین صفحه، تماس یا واتساپ می‌توانید با کارشناسان آرایه در ارتباط باشید.",
   },
 ];
 
@@ -185,6 +185,8 @@ export interface GooglesabtTestimonial {
   review: string;
   rating: number;
   logo: string;
+  /** لینک کارت ویزیت — زیر اسم به‌صورت کوچک نمایش داده می‌شود */
+  cardUrl?: string;
 }
 
 export const googlesabtTestimonials: GooglesabtTestimonial[] = [
@@ -195,22 +197,80 @@ export const googlesabtTestimonials: GooglesabtTestimonial[] = [
     review: "ثبت در گوگل را انجام دادند؛ از نتیجه راضی هستیم.",
     rating: 5,
     logo: "/showcase-assets/emdadahan/logo.jpg",
+    cardUrl: "/b/emdadahan",
   },
   {
-    id: "salamt",
-    name: "کلینیک دندانپزشکی سلامت",
-    business: "دندانپزشکی",
+    id: "mohaseb-pardaz",
+    name: "محاسبه پرداز حکمت",
+    business: "نرم‌افزار و فناوری اطلاعات",
     review: "حضورمان در نقشه درست شد؛ مشتری قبل از آمدن آدرس و ساعت کاری را می‌بیند.",
     rating: 5,
-    logo: "/showcase-assets/salamt/logo.jpg",
+    logo: "/showcase-assets/googlesabt/testimonials/mohaseb-pardaz.svg",
+    cardUrl: "/b/mohaseb_pardaz",
   },
   {
-    id: "shoope",
+    id: "tahereh-poordast",
+    name: "دکتر طاهره پوردست",
+    business: "متخصص زنان و زایمان",
+    review: "ثبت مطب در گوگل انجام شد؛ بیمار مسیر و تماس را مستقیم از نقشه پیدا می‌کند.",
+    rating: 5,
+    logo: "/showcase-assets/googlesabt/testimonials/tahereh-poordast.jpg",
+    cardUrl: "/b/dr-tahereh-poordast",
+  },
+];
+
+/** نظرات تکمیلی — کوچک‌تر، زیر ردیف اصلی */
+export const googlesabtTestimonialsMore: GooglesabtTestimonial[] = [
+  {
+    id: "almas-rayane",
+    name: "الماس رایانه",
+    business: "فروش و خدمات کامپیوتر",
+    review: "کارت و نقشه با هم آماده شد؛ مشتری راحت‌تر پیدامون می‌کنه.",
+    rating: 5,
+    logo: "/showcase-assets/googlesabt/testimonials/almas-rayane.svg",
+    cardUrl: "/b/card-njcmu8",
+  },
+  {
+    id: "salamt-more",
+    name: "کلینیک دندانپزشکی سلامت",
+    business: "دندانپزشکی",
+    review: "ساعت کاری و آدرس روی نقشه واضح شد؛ تماس‌ها بیشتر شد.",
+    rating: 5,
+    logo: "/showcase-assets/salamt/logo.jpg",
+    cardUrl: "/b/salamt-clinic",
+  },
+  {
+    id: "shoope-more",
     name: "اسموک لاب شوپه",
-    business: "رستوران باربیکیو تگزاسی",
-    review: "جست‌وجوی رستوران در کرمان دیگر بی‌نتیجه نیست؛ تماس و مسیر روی نقشه واضح شده.",
+    business: "رستوران باربیکیو",
+    review: "جست‌وجوی رستوران در کرمان دیگر بی‌نتیجه نیست.",
     rating: 5,
     logo: "/showcase-assets/shoope/logo.jpg",
+    cardUrl: "/b/shoope_smoke_lab",
+  },
+  {
+    id: "novin-salon",
+    name: "سالن زیبایی نوین",
+    business: "آرایشگاه و زیبایی",
+    review: "ثبت نشان و بلد هم انجام شد؛ رزرو از نقشه راحت‌تر شد.",
+    rating: 5,
+    logo: "/showcase-assets/googlesabt/testimonials/novin-salon.svg",
+  },
+  {
+    id: "aria-pharmacy",
+    name: "داروخانه آریا",
+    business: "داروخانه",
+    review: "اطلاعات تماس و مسیر یک‌جا درست شد؛ پشتیبانی خوب بود.",
+    rating: 5,
+    logo: "/showcase-assets/googlesabt/testimonials/aria-pharmacy.svg",
+  },
+  {
+    id: "pars-cafe",
+    name: "کافه پارس",
+    business: "کافی‌شاپ",
+    review: "بعد از ثبت در گوگل، مشتری‌های عبوری بیشتر شدن.",
+    rating: 5,
+    logo: "/showcase-assets/googlesabt/testimonials/ParsCafe.svg",
   },
 ];
 

@@ -12,9 +12,6 @@ export default function PersonasGalleryPage() {
       <header className="ar-personas-hero ar-personas-hero--v2">
         <p className="ar-personas-kicker">شخصیت‌های هوشمند فارسی</p>
         <h1>با ذهن شبیه‌سازی‌شده چهره‌های بزرگ گفتگو کن</h1>
-        <p className="ar-personas-lede">
-          برای یادگیری، ایده‌گیری، تصمیم‌سازی و سرگرمی — نه ادعای واقعی بودن شخصیت‌ها
-        </p>
         <p className="ar-persona-disclaimer ar-persona-disclaimer--banner">{PERSONA_DISCLAIMER_FA}</p>
       </header>
 

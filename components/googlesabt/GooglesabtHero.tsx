@@ -1,12 +1,13 @@
 "use client";
 
 import { pushGtmEvent } from "@/lib/gtm";
+import { openSiteChat } from "@/lib/openSiteChat";
 import GooglesabtHeroMockup from "./GooglesabtHeroMockup";
 import { IconCheck, IconSparkle } from "@/components/icons";
 
 export default function GooglesabtHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white to-blue-50/40 pb-12 pt-12 sm:pb-16 sm:pt-20">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white to-blue-50/40 pb-12 pt-24 sm:pb-16 sm:pt-32">
       <div className="container-mx container-px">
         <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-14">
           <div className="max-w-2xl text-center lg:text-right">
@@ -47,9 +48,19 @@ export default function GooglesabtHero() {
               >
                 شروع درخواست
               </a>
+              <button
+                type="button"
+                onClick={() => {
+                  pushGtmEvent("cta_click", { location: "googlesabt_hero_consult", page: "googlesabt" });
+                  openSiteChat("hero");
+                }}
+                className="rounded-xl border border-navy-200 bg-white px-8 py-3.5 text-sm font-bold text-navy-700 transition hover:border-[#4285F4]/40 hover:text-[#1b6ef3] active:scale-[0.98]"
+              >
+                مشاوره رایگان
+              </button>
             </div>
             <p className="mt-3 text-xs font-bold text-navy-400">
-              ثبت درخواست کمتر از ۲ دقیقه زمان می‌برد.
+              ثبت درخواست کمتر از ۲ دقیقه — یا اول رایگان مشاوره بگیر.
             </p>
           </div>
 

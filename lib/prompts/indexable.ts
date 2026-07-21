@@ -1,5 +1,6 @@
-import { ALL_PROMPTS, getPromptBySlug } from "./promptData";
 import type { AraayePrompt } from "./promptTypes";
+import { PROMPT_CATEGORIES, type PromptCategoryId } from "./promptTypes";
+import { ALL_PROMPTS, getPromptBySlug } from "./promptData";
 
 /** A prompt page is indexable only when content is complete and useful. */
 export function isPromptComplete(prompt: AraayePrompt): boolean {
@@ -28,6 +29,18 @@ export function getIndexablePrompts(): AraayePrompt[] {
   return ALL_PROMPTS.filter(isPromptComplete);
 }
 
+export function getIndexableCategoryPaths(): string[] {
+  return PROMPT_CATEGORIES.map((c) => `/prompts/category/${c.id}`);
+}
+
+export function getIndexablePromptsByCategory(category: PromptCategoryId): AraayePrompt[] {
+  return getIndexablePrompts().filter((p) => p.category === category);
+}
+
 export function getIndexablePromptPaths(): string[] {
-  return ["/prompts", ...getIndexablePrompts().map((p) => p.canonicalPath)];
+  return [
+    "/prompts",
+    ...getIndexableCategoryPaths(),
+    ...getIndexablePrompts().map((p) => p.canonicalPath),
+  ];
 }

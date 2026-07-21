@@ -508,6 +508,24 @@ export const INTERNAL_LINK_MAP: Record<string, InternalLinkNode> = {
         priority: "P0",
       },
       {
+        href: "/prompts/category/programming",
+        anchors: ["پرامپت برنامه‌نویسی"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/prompts/category/marketing",
+        anchors: ["پرامپت مارکتینگ و سئو"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/prompts/category/writing",
+        anchors: ["پرامپت نویسندگی"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
         href: "/blog/ai",
         anchors: ["آموزش پرامپت‌نویسی"],
         placement: "related",

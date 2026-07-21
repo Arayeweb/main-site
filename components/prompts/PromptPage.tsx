@@ -1,25 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { AraayePrompt } from "@/lib/prompts/promptTypes";
 import { getCategoryLabel } from "@/lib/prompts/promptTypes";
 import { getRelatedPrompts } from "@/lib/prompts/promptData";
 import { pushGtmEvent } from "@/lib/gtm";
 import CopyPromptButton from "./CopyPromptButton";
+import PromptCodeBlock, { type PromptModelTab } from "./PromptCodeBlock";
 import RunInAraayeButton from "./RunInAraayeButton";
 
 type Props = {
   prompt: AraayePrompt;
 };
 
-type ModelTab = "base" | "gpt" | "claude" | "gemini";
-
 export default function PromptPage({ prompt }: Props) {
   const related = getRelatedPrompts(prompt).slice(0, 5);
-  const hasModelVariants = Boolean(
-    prompt.gptVersion || prompt.claudeVersion || prompt.geminiVersion
-  );
 
   useEffect(() => {
     pushGtmEvent("prompt_page_view", {
@@ -30,7 +26,7 @@ export default function PromptPage({ prompt }: Props) {
   }, [prompt.slug, prompt.category]);
 
   const tabs = useMemo(() => {
-    const list: { id: ModelTab; label: string; text: string }[] = [
+    const list: PromptModelTab[] = [
       { id: "base", label: "نسخه اصلی", text: prompt.basePrompt },
     ];
     if (prompt.gptVersion) {
@@ -44,9 +40,6 @@ export default function PromptPage({ prompt }: Props) {
     }
     return list;
   }, [prompt]);
-
-  const [activeTab, setActiveTab] = useState<ModelTab>("base");
-  const activeText = tabs.find((t) => t.id === activeTab)?.text ?? prompt.basePrompt;
 
   return (
     <div className="pb-16">
@@ -65,6 +58,15 @@ export default function PromptPage({ prompt }: Props) {
               <li>
                 <Link href="/prompts" className="hover:text-navy-700">
                   پرامپت‌ها
+                </Link>
+              </li>
+              <li aria-hidden>/</li>
+              <li>
+                <Link
+                  href={`/prompts/category/${prompt.category}`}
+                  className="hover:text-navy-700"
+                >
+                  {getCategoryLabel(prompt.category)}
                 </Link>
               </li>
               <li aria-hidden>/</li>
@@ -111,55 +113,8 @@ export default function PromptPage({ prompt }: Props) {
 
         {/* Main prompt */}
         <section>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-extrabold text-navy-900">خود پرامپت</h2>
-            <CopyPromptButton
-              text={activeText}
-              slug={prompt.slug}
-              label="کپی این نسخه"
-              className="!px-4 !py-2 text-xs"
-            />
-          </div>
-
-          {hasModelVariants ? (
-            <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label="نسخه‌های مدل">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === tab.id}
-                  className={`rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-navy-900 text-white"
-                      : "bg-navy-50 text-navy-600 hover:bg-navy-100"
-                  }`}
-                  onClick={() => setActiveTab(tab.id)}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="mb-3 text-sm text-navy-400">
-              برای اکثر مدل‌ها نسخه اصلی کافی است.
-            </p>
-          )}
-
-          <pre
-            className="overflow-x-auto whitespace-pre-wrap rounded-2xl border border-navy-100 bg-navy-950 p-4 text-sm leading-7 text-navy-50 sm:p-5"
-            dir="auto"
-          >
-            {activeText}
-          </pre>
-
-          <div className="mt-4">
-            <RunInAraayeButton
-              prompt={activeText}
-              slug={prompt.slug}
-              label="همین نسخه را در Araaye AI اجرا کن"
-            />
-          </div>
+          <h2 className="mb-4 text-xl font-extrabold text-navy-900">خود پرامپت</h2>
+          <PromptCodeBlock slug={prompt.slug} tabs={tabs} />
         </section>
 
         {prompt.promptVariations && prompt.promptVariations.length > 0 ? (

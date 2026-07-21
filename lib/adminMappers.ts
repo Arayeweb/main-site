@@ -75,6 +75,7 @@ export const CRM_SOURCE_LABELS: Record<string, string> = {
   googlesabt_multistep: 'گوگل‌ثبت — فرم پکیج',
   googlesabt_checkout: 'گوگل‌ثبت — شروع پرداخت',
   googlesabt_payment_confirmed: 'گوگل‌ثبت — پرداخت تأییدشده',
+  googlesabt_chatbot: 'گوگل‌ثبت — چت‌بات مشاوره',
   'website-design': 'طراحی سایت',
   'website-design-hero': 'طراحی سایت — هیرو',
   'website-design-estimate': 'طراحی سایت — تخمین قیمت',

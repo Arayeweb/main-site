@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import PromptPage from "@/components/prompts/PromptPage";
 import { ALL_PROMPTS, getPromptBySlug } from "@/lib/prompts/promptData";
 import { isPromptIndexable } from "@/lib/prompts/indexable";
+import { getCategoryLabel } from "@/lib/prompts/promptTypes";
 import { canonicalUrl, SITE_URL } from "@/lib/siteUrl";
 import { SITE_NAME, websitePartOfRef } from "@/lib/seo/siteIdentity";
 
@@ -86,6 +87,12 @@ export default function PromptSlugPage({ params }: { params: { slug: string } })
           {
             "@type": "ListItem",
             position: 3,
+            name: getCategoryLabel(prompt.category),
+            item: canonicalUrl(`/prompts/category/${prompt.category}`),
+          },
+          {
+            "@type": "ListItem",
+            position: 4,
             name: prompt.title,
             item: pageUrl,
           },

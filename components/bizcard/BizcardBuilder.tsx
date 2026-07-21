@@ -49,6 +49,9 @@ export default function BizcardBuilder() {
     phone: "",
     whatsapp: "",
     instagram: "",
+    telegram: "",
+    website: "",
+    hours: "",
     address: "",
     maps_url: "",
     neshan_url: "",
@@ -218,6 +221,9 @@ export default function BizcardBuilder() {
       phone: "",
       whatsapp: "",
       instagram: "",
+      telegram: "",
+      website: "",
+      hours: "",
       address: "",
       maps_url: "",
       neshan_url: "",
@@ -328,6 +334,42 @@ export default function BizcardBuilder() {
                         value={form.instagram}
                         onChange={(e) => setField("instagram", e.target.value)}
                         placeholder="@username"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold text-navy-700">
+                        تلگرام <span className="font-normal text-navy-400">(اختیاری)</span>
+                      </label>
+                      <input
+                        className={inputClass}
+                        dir="ltr"
+                        value={form.telegram}
+                        onChange={(e) => setField("telegram", e.target.value)}
+                        placeholder="@username"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold text-navy-700">
+                        وب‌سایت <span className="font-normal text-navy-400">(اختیاری)</span>
+                      </label>
+                      <input
+                        className={inputClass}
+                        dir="ltr"
+                        type="url"
+                        value={form.website}
+                        onChange={(e) => setField("website", e.target.value)}
+                        placeholder="https://example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold text-navy-700">
+                        ساعات کاری <span className="font-normal text-navy-400">(اختیاری)</span>
+                      </label>
+                      <input
+                        className={inputClass}
+                        value={form.hours}
+                        onChange={(e) => setField("hours", e.target.value)}
+                        placeholder="شنبه تا پنجشنبه ۹ تا ۱۸"
                       />
                     </div>
                     <div className="sm:col-span-2">

@@ -264,6 +264,9 @@ export default function ArenaHomePage({
 
     // Prefill from /prompts "Run in Araaye AI" links (?prompt=...)
     const urlPrompt = params.get("prompt");
+    if (urlPrompt) {
+      setPrompt(urlPrompt);
+    }
 
     if (p || params.get("login") || urlPrompt || next) {
       window.history.replaceState({}, "", "/ai");

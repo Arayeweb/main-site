@@ -1023,6 +1023,152 @@ html[data-ar-pwa="1"] body {
   flex: 1;
 }
 
+/* Voice recording strip — live waveform while mic is on */
+.ar-composer-box--voice {
+  min-height: 72px;
+}
+
+.ar-voice-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 12px;
+  min-height: 72px;
+}
+
+.ar-voice-bar-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ar-voice-wave {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  overflow: hidden;
+}
+
+.ar-voice-wave-track {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 48px;
+  opacity: 0.55;
+}
+
+.ar-voice-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ar-text3);
+  flex-shrink: 0;
+}
+
+.ar-voice-wave-bars {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2.5px;
+  height: 100%;
+  flex: 1.1;
+  min-width: 96px;
+}
+
+.ar-voice-bar-col {
+  display: block;
+  width: 2.5px;
+  height: 100%;
+  max-height: 28px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ar-text2) 72%, var(--ar-text));
+  transform-origin: center;
+  transition: transform 0.08s linear;
+  will-change: transform;
+}
+
+.ar-voice-wave-bars.is-busy .ar-voice-bar-col {
+  animation: ar-voice-busy 0.9s ease-in-out infinite;
+}
+
+.ar-voice-wave-bars.is-busy .ar-voice-bar-col:nth-child(3n) {
+  animation-delay: 0.12s;
+}
+.ar-voice-wave-bars.is-busy .ar-voice-bar-col:nth-child(3n + 1) {
+  animation-delay: 0.24s;
+}
+.ar-voice-wave-bars.is-busy .ar-voice-bar-col:nth-child(3n + 2) {
+  animation-delay: 0.36s;
+}
+
+@keyframes ar-voice-busy {
+  0%,
+  100% {
+    transform: scaleY(0.28);
+  }
+  50% {
+    transform: scaleY(0.85);
+  }
+}
+
+.ar-voice-timer {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ar-text2);
+  min-width: 2.4em;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ar-voice-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ar-voice-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--ar-border2);
+  background: var(--ar-bg);
+  color: var(--ar-text2);
+  cursor: pointer;
+  transition: background 0.13s, color 0.13s, border-color 0.13s, opacity 0.13s;
+}
+
+.ar-voice-action:hover:not(:disabled) {
+  color: var(--ar-text);
+  background: var(--ar-bg2);
+}
+
+.ar-voice-action:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ar-voice-action--confirm {
+  background: var(--ar-ink);
+  border-color: transparent;
+  color: var(--ar-on-ink);
+}
+
+.ar-voice-action--confirm:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ar-ink) 88%, #fff);
+  color: var(--ar-on-ink);
+}
+
 .ar-send-btn--dock {
   width: 40px;
   height: 40px;

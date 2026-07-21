@@ -1,6 +1,7 @@
 "use client";
 
 import { pushGtmEvent } from "@/lib/gtm";
+import { openSiteChat } from "@/lib/openSiteChat";
 import { IconShield, IconPhone, IconStar, IconSparkle } from "@/components/icons";
 
 const TRUST = [
@@ -67,15 +68,19 @@ export default function GooglesabtFinalCta() {
           >
             ثبت سفارش
           </a>
-          <a
-            href="#packages"
-            onClick={() =>
-              pushGtmEvent("cta_click", { location: "googlesabt_final_packages", page: "googlesabt" })
-            }
-            className="inline-flex items-center justify-center rounded-2xl px-6 py-3 text-sm font-bold text-white/70 underline-offset-4 transition hover:text-white hover:underline"
+          <button
+            type="button"
+            onClick={() => {
+              pushGtmEvent("cta_click", {
+                location: "googlesabt_final_consult",
+                page: "googlesabt",
+              });
+              openSiteChat("googlesabt_final_cta");
+            }}
+            className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-8 py-3.5 text-sm font-bold text-white/90 backdrop-blur-sm transition hover:bg-white/10 hover:text-white active:scale-[0.98]"
           >
-            مشاهده پکیج‌ها
-          </a>
+            مشاوره رایگان
+          </button>
         </div>
 
         <p className="mt-8 text-[12px] font-medium text-white/40">

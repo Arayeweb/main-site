@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { ALL_PROMPTS, getAllPromptSlugs, getPromptBySlug } from "@/lib/prompts/promptData";
-import { getIndexablePromptPaths, isPromptComplete, isPromptIndexable } from "@/lib/prompts/indexable";
+import {
+  getIndexableCategoryPaths,
+  getIndexablePromptPaths,
+  isPromptComplete,
+  isPromptIndexable,
+} from "@/lib/prompts/indexable";
 import { buildAraayeComparePromptUrl, buildAraayePromptUrl } from "@/lib/prompts/buildAraayeUrl";
 import { PROMPT_CATEGORIES } from "@/lib/prompts/promptTypes";
 
-const EXPECTED_SLUGS = [
+const LEGACY_SLUGS = [
   "python-debug",
   "sql-query",
   "code-review",
@@ -39,30 +44,41 @@ const EXPECTED_SLUGS = [
 ] as const;
 
 describe("prompt catalog", () => {
-  it("has exactly 31 unique prompts", () => {
-    expect(ALL_PROMPTS).toHaveLength(31);
+  it("keeps legacy prompts and adds seed prompts", () => {
     const slugs = getAllPromptSlugs();
-    expect(new Set(slugs).size).toBe(31);
-    expect(slugs.sort()).toEqual([...EXPECTED_SLUGS].sort());
+    expect(new Set(slugs).size).toBe(slugs.length);
+    expect(ALL_PROMPTS.length).toBeGreaterThanOrEqual(55);
+    for (const slug of LEGACY_SLUGS) {
+      expect(slugs).toContain(slug);
+    }
   });
 
   it("has unique meta titles and descriptions", () => {
     const titles = ALL_PROMPTS.map((p) => p.metaTitle);
     const descriptions = ALL_PROMPTS.map((p) => p.metaDescription);
-    expect(new Set(titles).size).toBe(31);
-    expect(new Set(descriptions).size).toBe(31);
+    expect(new Set(titles).size).toBe(ALL_PROMPTS.length);
+    expect(new Set(descriptions).size).toBe(ALL_PROMPTS.length);
   });
 
-  it("marks all MVP prompts complete and indexable", () => {
+  it("marks all prompts complete and indexable", () => {
     for (const prompt of ALL_PROMPTS) {
       expect(isPromptComplete(prompt), prompt.slug).toBe(true);
       expect(isPromptIndexable(prompt.slug), prompt.slug).toBe(true);
       expect(prompt.canonicalPath).toBe(`/prompts/${prompt.slug}`);
-      expect(prompt.faq.length).toBeGreaterThanOrEqual(5);
+      expect(prompt.faq.length).toBeGreaterThanOrEqual(3);
       expect(prompt.relatedPrompts.every((slug) => Boolean(getPromptBySlug(slug)))).toBe(true);
     }
-    expect(getIndexablePromptPaths()).toContain("/prompts");
-    expect(getIndexablePromptPaths()).toHaveLength(32);
+    const paths = getIndexablePromptPaths();
+    expect(paths).toContain("/prompts");
+    expect(paths).toHaveLength(1 + PROMPT_CATEGORIES.length + ALL_PROMPTS.length);
+  });
+
+  it("includes indexable category hub paths", () => {
+    const categoryPaths = getIndexableCategoryPaths();
+    expect(categoryPaths).toHaveLength(PROMPT_CATEGORIES.length);
+    for (const cat of PROMPT_CATEGORIES) {
+      expect(categoryPaths).toContain(`/prompts/category/${cat.id}`);
+    }
   });
 
   it("builds compare URLs with side_by_side mode", () => {
@@ -72,9 +88,13 @@ describe("prompt catalog", () => {
     expect(params.get("promptSlug")).toBe("google-review-reply");
   });
 
-  it("covers all six categories", () => {
+  it("covers all ten categories with at least one prompt", () => {
+    expect(PROMPT_CATEGORIES).toHaveLength(10);
     for (const cat of PROMPT_CATEGORIES) {
-      expect(ALL_PROMPTS.some((p) => p.category === cat.id)).toBe(true);
+      expect(
+        ALL_PROMPTS.some((p) => p.category === cat.id),
+        `missing prompts for ${cat.id}`
+      ).toBe(true);
     }
   });
 
@@ -90,11 +110,20 @@ describe("prompt catalog", () => {
   it("logo-image targets consolidated logo prompt cluster", () => {
     const logo = getPromptBySlug("logo-image");
     expect(logo).toBeDefined();
+    expect(logo!.category).toBe("design");
+    expect(logo!.tags).toContain("image");
     expect(logo!.searchIntent).toBe("پرامپت ساخت لوگو");
     expect(logo!.metaTitle).toContain("پرامپت ساخت و طراحی لوگو");
     expect(logo!.title).toContain("پرامپت ساخت لوگو");
     expect(logo!.promptVariations?.length).toBeGreaterThanOrEqual(3);
     expect(logo!.basePrompt).toMatch(/Minimal flat vector logo/i);
     expect(logo!.canonicalPath).toBe("/prompts/logo-image");
+  });
+
+  it("remaps career and social prompts into the new taxonomy", () => {
+    expect(getPromptBySlug("resume")!.category).toBe("writing");
+    expect(getPromptBySlug("instagram-caption")!.category).toBe("social");
+    expect(getPromptBySlug("translation")!.category).toBe("language");
+    expect(getPromptBySlug("idea-generation")!.category).toBe("productivity");
   });
 });

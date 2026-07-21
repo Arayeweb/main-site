@@ -764,6 +764,18 @@
           <label for="instagram">اینستاگرام <span class="opt">(اختیاری)</span></label>
           <input id="instagram" name="instagram" type="text" placeholder="@username" maxlength="100" />
         </div>
+        <div>
+          <label for="telegram">تلگرام <span class="opt">(اختیاری)</span></label>
+          <input id="telegram" name="telegram" type="text" placeholder="@username" dir="ltr" maxlength="100" />
+        </div>
+        <div>
+          <label for="website">وب‌سایت <span class="opt">(اختیاری)</span></label>
+          <input id="website" name="website" type="url" placeholder="https://example.com" dir="ltr" maxlength="2000" />
+        </div>
+        <div>
+          <label for="hours">ساعات کاری <span class="opt">(اختیاری)</span></label>
+          <input id="hours" name="hours" type="text" placeholder="شنبه تا پنجشنبه ۹ تا ۱۸" maxlength="300" />
+        </div>
         <div class="full">
           <label for="address">آدرس یا لوکیشن <span class="opt">(اختیاری)</span></label>
           <input id="address" name="address" type="text" placeholder="تهران، خیابان ولیعصر، پلاک ۱۲" maxlength="500" />
@@ -1150,7 +1162,7 @@
     }
 
     var body = {};
-    ["business_name","category","city","phone","whatsapp","instagram","address","maps_url","neshan_url","balad_url"]
+    ["business_name","category","city","phone","whatsapp","instagram","telegram","website","hours","address","maps_url","neshan_url","balad_url"]
       .forEach(function(k){
         var v = document.getElementById(k).value.trim();
         if(v) body[k] = v;
