@@ -6,6 +6,12 @@ import {
   type ToolHub,
   type ToolRegistryEntry,
 } from "./toolRegistry";
+import {
+  getGooglesabtContentOverride,
+  type GooglesabtMistakes,
+  type GooglesabtExample,
+  type GooglesabtVideo,
+} from "@/lib/googlesabt/contentOverrides";
 
 export type ToolFaq = { q: string; a: string };
 
@@ -27,6 +33,9 @@ export type ToolProgrammaticPage = {
   crossToolLinks: { href: string; anchor: string }[];
   industryLinks: { href: string; label: string }[];
   meta: { title: string; description: string; canonicalPath: string };
+  mistakes?: GooglesabtMistakes;
+  example?: GooglesabtExample;
+  video?: GooglesabtVideo;
 };
 
 const HUB_CTA: Record<ToolHub, { label: string; path: string }> = {
@@ -38,6 +47,18 @@ const HUB_CTA: Record<ToolHub, { label: string; path: string }> = {
 
 function problemFor(entry: ToolRegistryEntry): ToolProgrammaticPage["problem"] {
   if (entry.hub === "googlesabt") {
+    if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
+      return {
+        title: entry.primaryKeyword,
+        body: `این راهنما به شما کمک می‌کند ${entry.primaryKeyword} را بهتر بفهمید و تصمیم درست بگیرید. اطلاعات کاربردی برای صاحبان کسب‌وکار ایرانی.`,
+        bullets: [
+          "پاسخ به سوالات رایج",
+          "نکات عملی و کاربردی",
+          "اشتباهات رایج و راه‌حل‌ها",
+          "لینک به منابع مرتبط",
+        ],
+      };
+    }
     return {
       title: `چرا ${entry.label} باید در گوگل مپ ثبت شود؟`,
       body: `مشتریان نزدیک وقتی «${entry.label} نزدیک من» را جست‌وجو می‌کنند، اول نتایج نقشه را می‌بینند. ${entry.primaryKeyword} باعث می‌شود نام، آدرس، ساعت کاری و تماس شما در گوگل، نشان و بلد دیده شود — نه فقط در اینستاگرام.`,
@@ -112,6 +133,17 @@ function problemFor(entry: ToolRegistryEntry): ToolProgrammaticPage["problem"] {
 
 function stepsFor(entry: ToolRegistryEntry): ToolProgrammaticPage["steps"] {
   if (entry.hub === "googlesabt") {
+    if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
+      return {
+        title: `نکات کلیدی`,
+        items: [
+          "این راهنما را تا انتها بخوانید",
+          "سوالات متداول را بررسی کنید",
+          "اگر سوالی دارید با تیم آرایه تماس بگیرید",
+          "برای شروع، صفحه پکیج‌ها را ببینید",
+        ],
+      };
+    }
     return {
       title: `مراحل ${entry.primaryKeyword}`,
       items: [
@@ -156,6 +188,26 @@ function stepsFor(entry: ToolRegistryEntry): ToolProgrammaticPage["steps"] {
 
 function benefitsFor(entry: ToolRegistryEntry): ToolProgrammaticPage["benefits"] {
   if (entry.hub === "googlesabt") {
+    if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
+      return [
+        {
+          title: "اطلاعات به‌روز",
+          desc: "محتوای این صفحه بر اساس تجربه واقعی کسب‌وکارهای ایرانی نوشته شده.",
+        },
+        {
+          title: "پاسخ سوالات رایج",
+          desc: "سوالاتی که بیشتر مشتریان می‌پرسند را پوشش داده‌ایم.",
+        },
+        {
+          title: "راهنمای عملی",
+          desc: "نکات کاربردی که می‌توانید فوراً استفاده کنید.",
+        },
+        {
+          title: "پشتیبانی آرایه",
+          desc: "اگر سوالی دارید، تیم آرایه آماده پاسخگویی است.",
+        },
+      ];
+    }
     return [
       {
         title: "جستجوی محلی",
@@ -239,6 +291,30 @@ function faqsFor(entry: ToolRegistryEntry): ToolFaq[] {
   const kw = entry.primaryKeyword;
   const label = entry.label;
   if (entry.hub === "googlesabt") {
+    if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
+      return [
+        {
+          q: "ثبت در گوگل مپ چقدر طول می‌کشد؟",
+          a: "ثبت اولیه معمولاً کمتر از یک روز کاری است؛ وریفای بسته به روش ۳ تا ۱۴ روز طول می‌کشد.",
+        },
+        {
+          q: "هزینه ثبت در گوگل مپ چقدر است؟",
+          a: "ثبت اولیه رایگان است. سرویس حرفه‌ای آرایه از ۵۹۰ هزار تومان شروع می‌شود.",
+        },
+        {
+          q: "آیا در نشان و بلد هم ثبت می‌شود؟",
+          a: "بله. پکیج‌های آرایه شامل ثبت در گوگل، نشان و بلد است؛ پکیج‌های بالاتر اسنپ و OSM را هم پوشش می‌دهند.",
+        },
+        {
+          q: "اگر قبلاً در گوگل ثبت شده باشم چه؟",
+          a: "مالکیت پروفایل موجود را ادعا می‌کنیم و اطلاعات را اصلاح و تکمیل می‌کنیم.",
+        },
+        {
+          q: "چطور شروع کنم؟",
+          a: "صفحه پکیج‌ها را ببینید و پکیج مناسب را انتخاب کنید. بعد از پرداخت، تیم آرایه با شما تماس می‌گیرد.",
+        },
+      ];
+    }
     return [
       {
         q: `${kw} چقدر طول می‌کشد؟`,
@@ -341,6 +417,14 @@ function bodyParagraphsFor(entry: ToolRegistryEntry): string[] {
   const secondary = entry.secondaryKeywords[0] ?? kw;
 
   if (entry.hub === "googlesabt") {
+    if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
+      return [
+        `این راهنما به سوال «${kw}» پاسخ می‌دهد و اطلاعات کاربردی برای صاحبان کسب‌وکار ایرانی ارائه می‌کند.`,
+        `ثبت کسب‌وکار در نقشه‌ها (گوگل، نشان، بلد) یکی از مهم‌ترین کارهای بازاریابی محلی است. مشتریان نزدیک اول نتایج نقشه را می‌بینند.`,
+        `اگر به دنبال ${secondary} هستید، پکیج‌های آرایه از ۵۹۰ هزار تومان شروع می‌شود و ثبت در همه نقشه‌ها را پوشش می‌دهد.`,
+        `برای شروع، صفحه پکیج‌ها را ببینید یا با تیم آرایه تماس بگیرید.`,
+      ];
+    }
     return [
       `${kw} به ${label} کمک می‌کند در نتایج محلی گوگل و نقشه‌ها دیده شود؛ جایی که مشتری نزدیک برای پیدا کردن خدمات جست‌وجو می‌کند.`,
       `خیلی از کسب‌وکارهای ${label} فقط روی اینستاگرام فعال‌اند و در نقشه نیستند. با ثبت حرفه‌ای، نام، آدرس، تماس و ساعت کاری روی گوگل، نشان و بلد درست می‌شود.`,
@@ -389,7 +473,12 @@ function prefillFor(entry: ToolRegistryEntry): string | undefined {
 }
 
 function ctaLabelFor(entry: ToolRegistryEntry): string {
-  if (entry.hub === "googlesabt") return `سفارش ${entry.primaryKeyword}`;
+  if (entry.hub === "googlesabt") {
+    if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
+      return "مشاهده پکیج‌ها و قیمت";
+    }
+    return `سفارش ${entry.primaryKeyword}`;
+  }
   if (entry.hub === "bizcard") return `ساخت ${entry.primaryKeyword}`;
   if (entry.hub === "qr") {
     if (entry.pageType === "guide" || entry.pageType === "comparison") return "شروع ساخت QR رایگان";
@@ -465,6 +554,13 @@ export function buildToolProgrammaticPage(
     ? `${entry.primaryKeyword} — ${entry.secondaryKeywords.slice(0, 2).join("، ")}. ثبت در گوگل، نشان و بلد با تحویل سریع و لینک BizCard از پکیج محبوب.`
     : `${entry.primaryKeyword} — ${entry.secondaryKeywords.slice(0, 2).join("، ")}. ابزار رایگان آرایه، بدون نصب اپ.`;
 
+  const contentOverride = hub === "googlesabt" ? getGooglesabtContentOverride(slug) : undefined;
+
+  const problem = contentOverride?.problem ?? problemFor(entry);
+  const steps = contentOverride?.steps ?? stepsFor(entry);
+  const bodyParagraphs = contentOverride?.bodyParagraphs ?? bodyParagraphsFor(entry);
+  const faqs = contentOverride?.faqs ?? faqsFor(entry);
+
   return {
     hub,
     slug,
@@ -474,18 +570,18 @@ export function buildToolProgrammaticPage(
     label: entry.label,
     hero: {
       h1: entry.primaryKeyword,
-      lead: bodyParagraphsFor(entry)[0],
+      lead: bodyParagraphs[0],
     },
-    problem: problemFor(entry),
-    steps: stepsFor(entry),
+    problem,
+    steps,
     benefits: benefitsFor(entry),
-    bodyParagraphs: bodyParagraphsFor(entry),
+    bodyParagraphs,
     toolCta: {
       label: ctaLabelFor(entry),
       href: HUB_CTA[hub].path,
       prefillText: prefillFor(entry),
     },
-    faqs: faqsFor(entry),
+    faqs,
     related,
     crossToolLinks,
     industryLinks,
@@ -494,5 +590,8 @@ export function buildToolProgrammaticPage(
       description,
       canonicalPath: `${getHubPath(hub)}/${slug}`,
     },
+    mistakes: contentOverride?.mistakes,
+    example: contentOverride?.example,
+    video: contentOverride?.video,
   };
 }
