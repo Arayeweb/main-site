@@ -131,9 +131,17 @@ export const AUDIENCE_TABS = [
 
 /** مدل‌های اصلی مقایسه — فقط آن‌هایی که در محصول فعال‌اند */
 export const FEATURED_COMPARE_MODELS = COMPARE_MODELS.filter((m) =>
-  ["cmp-gpt-55", "cmp-claude-opus", "cmp-gemini-pro", "cmp-grok-4", "cmp-deepseek-v4"].includes(
-    m.id
-  )
+  [
+    "cmp-gpt-55",
+    "cmp-claude-opus",
+    "cmp-gemini-pro",
+    "cmp-gemini-flash",
+    "cmp-deepseek-v4",
+    "cmp-grok-4",
+    "cmp-gpt-4o-mini",
+    "cmp-qwen-37",
+    "cmp-deepseek-lite",
+  ].includes(m.id)
 ).map((m) => ({
   id: m.id,
   name: m.name,

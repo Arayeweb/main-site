@@ -85,7 +85,7 @@ export function resolveAudioModel(
 }
 
 export function musicGenCost(model: AIModelInfo): number {
-  return model.musicCreditCost ?? 8;
+  return model.musicCreditCost ?? 40;
 }
 
 export function resolveMusicModel(

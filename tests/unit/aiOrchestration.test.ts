@@ -179,7 +179,7 @@ describe("usage/estimate", () => {
   });
 
   it("compare run sums both models", () => {
-    expect(estimateRunCredits("compare", ["cmp-gpt-55", "cmp-claude-opus"])).toBe(38);
+    expect(estimateRunCredits("compare", ["cmp-gpt-55", "cmp-claude-opus"])).toBe(60);
   });
 
   it("council reserves member costs plus critique and synthesis", () => {

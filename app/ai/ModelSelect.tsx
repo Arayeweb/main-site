@@ -32,8 +32,8 @@ const TIER_MIN_RANK: Record<ModelTier, number> = {
 
 const TIER_LABEL: Record<ModelTier, string> = {
   economy: "اقتصادی",
-  mid: "استاندارد",
-  premium: "پرچم‌دار",
+  mid: "متوسط",
+  premium: "پرچمدار",
 };
 
 export default function ModelSelect({

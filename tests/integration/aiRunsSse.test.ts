@@ -546,7 +546,7 @@ describe("integration — /api/ai/runs SSE contract", () => {
       const res = await postRun({
         mode: "compare",
         prompt: "too many",
-        models: ["cmp-deepseek-v4", "cmp-grok-4", "cmp-gpt-55", "cmp-claude-haiku"],
+        models: ["cmp-deepseek-lite", "cmp-grok-4", "cmp-gpt-55", "cmp-gemini-flash"],
       });
       const events = await readSseEvents(res);
       expect(res.status).toBe(200);

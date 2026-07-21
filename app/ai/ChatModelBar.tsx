@@ -27,11 +27,11 @@ export function resolvePickedModel(
 ): string {
   if (pick === "auto") {
     if (!deepMode) {
-      const economy = getModel("economy");
-      if (economy && canUseModel(plan, economy)) return "economy";
+      const smart = getModel("smart");
+      if (smart && canUseModel(plan, smart)) return "smart";
     } else {
-      const precise = getModel("precise");
-      if (precise && canUseModel(plan, precise)) return "precise";
+      const deep = getModel("deep");
+      if (deep && canUseModel(plan, deep)) return "deep";
     }
     return fallback;
   }

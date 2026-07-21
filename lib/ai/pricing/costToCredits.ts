@@ -25,22 +25,22 @@ const DEFAULT_MIN_GROSS_MARGIN = 0.45;
 
 const MODEL_MIN_CREDITS: Record<string, number> = {
   economy: 1,
-  "cmp-deepseek-v4": 1,
-  "cmp-gemini-flash": 1,
-  "cmp-llama-70b": 1,
-  fast: 2,
+  smart: 1,
+  "cmp-deepseek-lite": 1,
+  "cmp-qwen-37": 1,
   "cmp-gpt-4o-mini": 2,
-  "cmp-grok-4": 2,
-  "cmp-mistral-medium": 2,
-  "cmp-claude-haiku": 2,
+  fast: 2,
+  "cmp-gemini-flash": 2,
+  "cmp-deepseek-v4": 2,
+  "cmp-grok-4": 3,
   creative: 6,
   "cmp-gemini-pro": 6,
   precise: 7,
-  "cmp-gpt-55": 7,
+  "cmp-gpt-55": 8,
   critic: 10,
+  deep: 10,
   "cmp-claude-opus": 10,
 };
-
 export const IMAGE_MIN_CREDITS: Record<string, number> = {
   "image-lite": 20,
   "image-nano": 35,

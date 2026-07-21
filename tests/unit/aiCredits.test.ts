@@ -110,16 +110,20 @@ describe("aiCredits — pricing & access", () => {
 
   it("keeps displayed model names aligned with provider routes", () => {
     expect(getModel("cmp-grok-4")).toMatchObject({
-      routeId: "x-ai/grok-4.3",
-      name: "Grok 4.3",
+      routeId: "x-ai/grok-4.5",
+      name: "Grok 4.5",
     });
     expect(getModel("cmp-gemini-flash")).toMatchObject({
-      routeId: "google/gemini-2.5-flash-lite",
-      name: "Gemini 2.5 Flash Lite",
+      routeId: "google/gemini-3.5-flash",
+      name: "Gemini Flash",
     });
-    expect(getModel("cmp-llama-70b")).toMatchObject({
-      routeId: "meta-llama/llama-4-maverick",
-      name: "Llama 4 Maverick",
+    expect(getModel("cmp-deepseek-lite")).toMatchObject({
+      routeId: "deepseek/deepseek-v4-flash",
+      name: "DeepSeek Lite",
+    });
+    expect(getModel("cmp-gpt-55")).toMatchObject({
+      routeId: "openai/gpt-5.6-sol",
+      name: "GPT-5.6",
     });
   });
 });

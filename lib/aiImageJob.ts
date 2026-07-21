@@ -8,6 +8,13 @@ import { refundCredits } from "@/lib/billing/credits";
 import { creditsForProviderCost } from "@/lib/ai/pricing/costToCredits";
 import { settleMediaCredits } from "@/lib/ai/mediaBilling";
 
+/**
+ * After this age, a "processing" job is assumed abandoned (serverless timeout/crash)
+ * and may be reclaimed. Keep below/near Vercel maxDuration so users aren't stuck forever,
+ * accepting a rare double OpenRouter call if a worker is still alive.
+ */
+const STALE_PROCESSING_MS = 90_000;
+
 export type ImageJobRow = {
   id: string;
   user_id: string;
@@ -22,6 +29,8 @@ export type ImageJobRow = {
   thread_id: string | null;
   reference_url?: string | null;
   dismissed_at?: string | null;
+  created_at?: string | null;
+  processing_started_at?: string | null;
 };
 
 export async function refundImageJobCredits(
@@ -39,6 +48,54 @@ export async function refundImageJobCredits(
     })
     .eq("id", jobId)
     .eq("user_id", userId);
+}
+
+function jobAgeMs(row: ImageJobRow): number {
+  const raw = row.processing_started_at || row.created_at;
+  if (!raw) return Number.POSITIVE_INFINITY;
+  const t = Date.parse(raw);
+  return Number.isFinite(t) ? Date.now() - t : Number.POSITIVE_INFINITY;
+}
+
+function isStaleProcessing(row: ImageJobRow): boolean {
+  return row.status === "processing" && jobAgeMs(row) >= STALE_PROCESSING_MS;
+}
+
+async function claimJobRow(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  jobId: string,
+  fromStatus: "pending" | "processing"
+): Promise<ImageJobRow | null> {
+  const nowIso = new Date().toISOString();
+  const withStarted = await supabase
+    .from("ai_media_jobs")
+    .update({
+      status: "processing",
+      processing_started_at: nowIso,
+      error: null,
+    })
+    .eq("id", jobId)
+    .eq("status", fromStatus)
+    .select("*")
+    .maybeSingle();
+
+  if (!withStarted.error && withStarted.data) {
+    return withStarted.data as ImageJobRow;
+  }
+
+  // Column may be missing before migration 20260739 — fall back to status-only claim.
+  const msg = String(withStarted.error?.message || "");
+  if (msg.includes("processing_started_at") || withStarted.error) {
+    const fallback = await supabase
+      .from("ai_media_jobs")
+      .update({ status: "processing", error: null })
+      .eq("id", jobId)
+      .eq("status", fromStatus)
+      .select("*")
+      .maybeSingle();
+    if (!fallback.error && fallback.data) return fallback.data as ImageJobRow;
+  }
+  return null;
 }
 
 async function runImageGenWithFallback(
@@ -90,20 +147,20 @@ export async function claimAndProcessImageJob(
   if (row.user_id !== userId) return "failed";
   if (row.status === "completed" || row.battle_id) return "done";
   if (row.status === "failed") return "failed";
-  if (row.status === "processing") return "busy";
+  if (row.status === "processing" && !isStaleProcessing(row)) return "busy";
 
-  const { data: claimed } = await supabase
-    .from("ai_media_jobs")
-    .update({ status: "processing" })
-    .eq("id", jobId)
-    .eq("status", "pending")
-    .select("*")
-    .maybeSingle();
+  let claimed: ImageJobRow | null = null;
+  if (row.status === "pending") {
+    claimed = await claimJobRow(supabase, jobId, "pending");
+  } else if (isStaleProcessing(row)) {
+    console.warn(`[aiImageJob] reclaiming stale processing job ${jobId}`);
+    claimed = await claimJobRow(supabase, jobId, "processing");
+  }
 
   if (!claimed) {
     const { data: again } = await supabase
       .from("ai_media_jobs")
-      .select("status, battle_id")
+      .select("status, battle_id, processing_started_at, created_at")
       .eq("id", jobId)
       .maybeSingle();
     if (again?.status === "completed" || again?.battle_id) return "done";
@@ -111,7 +168,7 @@ export async function claimAndProcessImageJob(
     return "busy";
   }
 
-  const job = claimed as ImageJobRow;
+  const job = claimed;
   try {
     const prompt = job.prompt || "";
     const { gen, modelId: usedModelId } = await runImageGenWithFallback(

@@ -25,7 +25,7 @@ type GalleryItem = {
   createdAt: string;
 };
 
-const DEFAULT_MUSIC_MODEL = musicModels()[0]?.id || "music-suno";
+const DEFAULT_MUSIC_MODEL = musicModels()[0]?.id || "music-lyria";
 
 export default function MusicStudioView({
   threadId: initialThreadId = null,
@@ -58,7 +58,7 @@ export default function MusicStudioView({
   const bootRef = useRef(false);
 
   const modelInfo = getModel(musicModel);
-  const perCost = modelInfo ? musicGenCost(modelInfo) : 8;
+  const perCost = modelInfo ? musicGenCost(modelInfo) : 40;
 
   const loadGallery = useCallback(() => {
     setGalleryLoading(true);
@@ -183,7 +183,7 @@ export default function MusicStudioView({
 
   return (
     <div className="ar-chat-wrap ar-image-studio ar-music-studio ar-generator-studio">
-      <StudioHeader icon={IconMusic} title="استودیو موزیک" badge="Suno · AI" />
+      <StudioHeader icon={IconMusic} title="استودیو موزیک" badge="Lyria 3 · Google" />
 
       <div className="ar-studio-tabs">
         <div className="ar-studio-tabs-track">
@@ -337,7 +337,7 @@ export default function MusicStudioView({
               </div>
             )}
             {err === "music_unavailable" && (
-              <div className="ar-composer-err ar-image-composer-err">سرویس موزیک به‌زودی فعال می‌شود.</div>
+              <div className="ar-composer-err ar-image-composer-err">سرویس موزیک موقتاً در دسترس نیست.</div>
             )}
             {err === "unauthorized" && (
               <div className="ar-composer-err ar-image-composer-err">

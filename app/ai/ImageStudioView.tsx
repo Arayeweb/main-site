@@ -185,7 +185,8 @@ export default function ImageStudioView({
 
   function scheduleJobPoll(jobId: string, fn: () => void) {
     if (dismissedJobsRef.current.has(jobId)) return;
-    clearJobPoll(jobId);
+    const existing = pollTimersRef.current.get(jobId);
+    if (existing) clearTimeout(existing);
     const attempt = pollAttemptsRef.current.get(jobId) ?? 0;
     const delay = Math.min(1000 * 2 ** attempt, 8000);
     pollAttemptsRef.current.set(jobId, attempt + 1);

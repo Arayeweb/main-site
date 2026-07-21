@@ -361,10 +361,10 @@ describe("telegram acquisition — unit", () => {
   });
 
   it("18. مدل سریع به provider model سریع map می‌شود", () => {
-    expect(getModel("economy")?.routeId).toBe("deepseek/deepseek-chat-v3.1");
+    expect(getModel("economy")?.routeId).toBe("deepseek/deepseek-v4-flash");
     expect(getModel("fast")?.routeId).toBe("openai/gpt-4o-mini");
-    expect(getModel("precise")?.routeId).toBe("openai/gpt-4o");
-    expect(getModel("critic")?.routeId).toBe("anthropic/claude-sonnet-4");
+    expect(getModel("precise")?.routeId).toBe("openai/gpt-5.4-mini");
+    expect(getModel("critic")?.routeId).toBe("anthropic/claude-haiku-4.5");
   });
 
   it("19. typing قبل از provider ارسال می‌شود", async () => {

@@ -25,8 +25,8 @@ export const AI_USER_STATUS_COLORS: Record<string, string> = {
 
 export const AI_MODEL_TIER_LABELS: Record<string, string> = {
   economy: "اقتصادی",
-  mid: "میانی",
-  premium: "پرچم‌دار",
+  mid: "متوسط",
+  premium: "پرچمدار",
 };
 
 export const AI_MODEL_TIER_COLORS: Record<string, string> = {

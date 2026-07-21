@@ -37,8 +37,8 @@ describe("costToCredits — cost-based AI pricing", () => {
     expect(snapshot.usdToToman).toBe(220_000);
     expect(snapshot.revenueToman).toBe(10_000);
     expect(snapshot.grossProfitToman).toBe(5_600);
-    expect(snapshot.actualModel).toBe("openai/gpt-4o");
-    expect(snapshot.displayedModel).toBe("GPT-4o");
+    expect(snapshot.actualModel).toBe("openai/gpt-5.4-mini");
+    expect(snapshot.displayedModel).toBe("GPT-5.4 Mini");
   });
 
   it("uses safe defaults from environment", () => {

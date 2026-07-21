@@ -243,19 +243,20 @@ export const PRICING_EXPLANATION_FA =
 export const MODEL_CHAT_CREDITS: Record<string, number> = {
   // Direct personas
   economy: 1,
+  smart: 1,
   fast: 2,
   creative: 5,
   precise: 15,
   critic: 15,
+  deep: 15,
   // Compare / battle pool
-  "cmp-deepseek-v4": 1,
-  "cmp-gemini-flash": 1,
-  "cmp-llama-70b": 1,
+  "cmp-deepseek-lite": 1,
+  "cmp-qwen-37": 2,
   "cmp-gpt-4o-mini": 2,
-  "cmp-grok-4": 2,
-  "cmp-mistral-medium": 2,
-  "cmp-claude-haiku": 8,
-  "cmp-gemini-pro": 5,
+  "cmp-gemini-flash": 3,
+  "cmp-deepseek-v4": 3,
+  "cmp-grok-4": 4,
+  "cmp-gemini-pro": 10,
   "cmp-gpt-55": 15,
   "cmp-claude-opus": 15,
 };

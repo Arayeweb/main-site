@@ -15,7 +15,8 @@ export type BrandKey =
   | "claude"
   | "bytedance"
   | "kwaivgi"
-  | "google";
+  | "google"
+  | "qwen";
 
 export type ModelTier = "economy" | "mid" | "premium";
 export type ModelKind = "direct" | "compare" | "image" | "video" | "audio" | "transcribe" | "music";
@@ -55,7 +56,7 @@ export interface AIModelInfo {
 }
 
 export const POWERED_BY_TAGLINE =
-  "Powered by GPT-4o, Claude Sonnet, Gemini, Grok, DeepSeek";
+  "Powered by GPT-5.6, Claude Sonnet 5, Gemini, Grok, DeepSeek, Qwen";
 
 export const IMAGE_POWERED_BY_TAGLINE =
   "Powered by Gemini 3.1 Image, GPT Image 2";
@@ -66,16 +67,16 @@ export const VIDEO_POWERED_BY_TAGLINE =
 export const AUDIO_POWERED_BY_TAGLINE =
   "Powered by GPT Audio, GPT-4o Transcribe";
 
-export const MUSIC_POWERED_BY_TAGLINE = "Powered by Suno";
+export const MUSIC_POWERED_BY_TAGLINE = "Powered by Google Lyria 3";
 
 /** گفتگوی مستقیم — فقط ۵ شخصیت */
 export const DIRECT_MODELS: AIModelInfo[] = [
   {
     id: "precise",
-    routeId: "openai/gpt-4o",
-    name: "GPT-4o",
+    routeId: "openai/gpt-5.4-mini",
+    name: "GPT-5.4 Mini",
     personaName: "هوش مصنوعی دقیق",
-    poweredBy: "GPT-4o",
+    poweredBy: "GPT-5.4 Mini",
     brand: "openai",
     color: "#10A37F",
     tier: "premium",
@@ -86,10 +87,10 @@ export const DIRECT_MODELS: AIModelInfo[] = [
   },
   {
     id: "critic",
-    routeId: "anthropic/claude-sonnet-4",
-    name: "Claude Sonnet 4",
+    routeId: "anthropic/claude-haiku-4.5",
+    name: "Claude Haiku 4.5",
     personaName: "هوش مصنوعی منتقد",
-    poweredBy: "Claude Sonnet 4",
+    poweredBy: "Claude Haiku 4.5",
     brand: "claude",
     color: "#D97757",
     tier: "premium",
@@ -99,10 +100,10 @@ export const DIRECT_MODELS: AIModelInfo[] = [
   },
   {
     id: "creative",
-    routeId: "google/gemini-2.5-pro",
-    name: "Gemini 2.5 Pro",
+    routeId: "google/gemini-3.5-flash-lite",
+    name: "Gemini 3.5 Flash Lite",
     personaName: "هوش مصنوعی خلاق",
-    poweredBy: "Gemini 2.5 Pro",
+    poweredBy: "Gemini 3.5 Flash Lite",
     brand: "gemini",
     color: "#4285F4",
     tier: "mid",
@@ -127,10 +128,10 @@ export const DIRECT_MODELS: AIModelInfo[] = [
   },
   {
     id: "economy",
-    routeId: "deepseek/deepseek-chat-v3.1",
-    name: "DeepSeek Chat V3.1",
+    routeId: "deepseek/deepseek-v4-flash",
+    name: "DeepSeek V4 Flash",
     personaName: "حالت بهینه",
-    poweredBy: "DeepSeek Chat V3.1",
+    poweredBy: "DeepSeek V4 Flash",
     brand: "deepseek",
     color: "#4D6BFE",
     tier: "economy",
@@ -140,130 +141,150 @@ export const DIRECT_MODELS: AIModelInfo[] = [
   },
 ];
 
+/** مسیرهای داخلی انتخاب خودکار / عمیق — در picker شخصیت‌ها نشان داده نمی‌شوند */
+export const AUTO_ROUTE_MODELS: AIModelInfo[] = [
+  {
+    id: "smart",
+    routeId: "deepseek/deepseek-v4-pro",
+    name: "DeepSeek V4",
+    poweredBy: "DeepSeek V4",
+    brand: "deepseek",
+    color: "#4D6BFE",
+    tier: "economy",
+    estCostPer1kTokens: 0.003,
+    blurb: "انتخاب هوشمند پیش‌فرض",
+    kind: "direct",
+  },
+  {
+    id: "deep",
+    routeId: "openai/gpt-5.4",
+    name: "GPT-5.4",
+    poweredBy: "GPT-5.4",
+    brand: "openai",
+    color: "#10A37F",
+    tier: "premium",
+    estCostPer1kTokens: 0.02,
+    blurb: "استدلال عمیق‌تر",
+    capabilities: { vision: true },
+    kind: "direct",
+  },
+];
+
 /** مقایسه دو مدل + pool نبرد — نام موتور، بدون شخصیت */
 export const COMPARE_MODELS: AIModelInfo[] = [
+  // ⭐ پرچمدار
   {
     id: "cmp-gpt-55",
-    routeId: "openai/gpt-4o",
-    name: "GPT-4o",
+    routeId: "openai/gpt-5.6-sol",
+    name: "GPT-5.6",
     poweredBy: "OpenAI",
     brand: "openai",
     color: "#10A37F",
     tier: "premium",
-    estCostPer1kTokens: 0.01,
-    blurb: "قدرتمند و چندمنظوره",
+    estCostPer1kTokens: 0.02,
+    blurb: "پرچمدار OpenAI برای استدلال و کدنویسی",
     capabilities: { vision: true },
     kind: "compare",
   },
   {
     id: "cmp-claude-opus",
-    routeId: "anthropic/claude-sonnet-4",
-    name: "Claude Sonnet 4",
+    routeId: "anthropic/claude-sonnet-5",
+    name: "Claude Sonnet 5",
     poweredBy: "Anthropic",
     brand: "claude",
     color: "#D97757",
     tier: "premium",
-    estCostPer1kTokens: 0.012,
-    blurb: "استدلال عمیق",
+    estCostPer1kTokens: 0.015,
+    blurb: "استدلال عمیق و کدنویسی دقیق",
     kind: "compare",
   },
   {
     id: "cmp-gemini-pro",
     routeId: "google/gemini-2.5-pro",
-    name: "Gemini 2.5 Pro",
+    name: "Gemini Pro",
     poweredBy: "Google",
     brand: "gemini",
     color: "#4285F4",
     tier: "premium",
-    estCostPer1kTokens: 0.01,
-    blurb: "استدلال قوی",
+    estCostPer1kTokens: 0.012,
+    blurb: "آخرین نسخه پایدار Gemini Pro",
     capabilities: { vision: true },
     kind: "compare",
   },
+  // ⚖️ متوسط
   {
-    id: "cmp-grok-4",
-    routeId: "x-ai/grok-4.3",
-    name: "Grok 4.3",
-    poweredBy: "xAI",
-    brand: "grok",
-    color: "#1A1A1A",
+    id: "cmp-gemini-flash",
+    routeId: "google/gemini-3.5-flash",
+    name: "Gemini Flash",
+    poweredBy: "Google",
+    brand: "gemini",
+    color: "#4285F4",
     tier: "mid",
-    estCostPer1kTokens: 0.008,
-    blurb: "سریع و به‌روز",
+    estCostPer1kTokens: 0.004,
+    blurb: "سریع و چندرسانه‌ای",
+    capabilities: { vision: true },
     kind: "compare",
   },
   {
     id: "cmp-deepseek-v4",
-    routeId: "deepseek/deepseek-chat-v3.1",
-    name: "DeepSeek Chat V3.1",
+    routeId: "deepseek/deepseek-v4-pro",
+    name: "DeepSeek V4",
     poweredBy: "DeepSeek",
     brand: "deepseek",
     color: "#4D6BFE",
-    tier: "economy",
-    estCostPer1kTokens: 0.001,
-    blurb: "اقتصادی و دقیق",
+    tier: "mid",
+    estCostPer1kTokens: 0.003,
+    blurb: "قوی در استدلال و کدنویسی",
     kind: "compare",
   },
   {
+    id: "cmp-grok-4",
+    routeId: "x-ai/grok-4.5",
+    name: "Grok 4.5",
+    poweredBy: "xAI",
+    brand: "grok",
+    color: "#1A1A1A",
+    tier: "mid",
+    estCostPer1kTokens: 0.006,
+    blurb: "سریع، به‌روز و قوی در مهندسی",
+    kind: "compare",
+  },
+  // 💰 اقتصادی
+  {
     id: "cmp-gpt-4o-mini",
-    routeId: "openai/gpt-4o-mini",
-    name: "GPT-4o mini",
+    routeId: "openai/gpt-5.6-luna",
+    name: "GPT-5.6 Mini / Luna",
     poweredBy: "OpenAI",
     brand: "openai",
     color: "#10A37F",
     tier: "economy",
-    estCostPer1kTokens: 0.0006,
-    blurb: "سریع و همه‌کاره",
+    estCostPer1kTokens: 0.001,
+    blurb: "نسخه سبک GPT-5.6 برای کار روزمره",
     capabilities: { vision: true },
     kind: "compare",
   },
   {
-    id: "cmp-gemini-flash",
-    routeId: "google/gemini-2.5-flash-lite",
-    name: "Gemini 2.5 Flash Lite",
-    poweredBy: "Google",
-    brand: "gemini",
-    color: "#4285F4",
+    id: "cmp-qwen-37",
+    routeId: "qwen/qwen3.7-max",
+    name: "Qwen 3.7",
+    poweredBy: "Alibaba",
+    brand: "qwen",
+    color: "#6A5ACD",
     tier: "economy",
-    estCostPer1kTokens: 0.0004,
-    blurb: "سبک و روان",
-    capabilities: { vision: true },
+    estCostPer1kTokens: 0.0012,
+    blurb: "اقتصادی و مناسب متن و کد",
     kind: "compare",
   },
   {
-    id: "cmp-llama-70b",
-    routeId: "meta-llama/llama-4-maverick",
-    name: "Llama 4 Maverick",
-    poweredBy: "Meta",
-    brand: "llama",
-    color: "#0668E1",
+    id: "cmp-deepseek-lite",
+    routeId: "deepseek/deepseek-v4-flash",
+    name: "DeepSeek Lite",
+    poweredBy: "DeepSeek",
+    brand: "deepseek",
+    color: "#4D6BFE",
     tier: "economy",
-    estCostPer1kTokens: 0.0004,
-    blurb: "متن‌باز و قوی",
-    kind: "compare",
-  },
-  {
-    id: "cmp-mistral-medium",
-    routeId: "mistralai/mistral-medium-3",
-    name: "Mistral Medium 3",
-    poweredBy: "Mistral",
-    brand: "mistral",
-    color: "#FA5111",
-    tier: "mid",
-    estCostPer1kTokens: 0.002,
-    blurb: "متعادل",
-    kind: "compare",
-  },
-  {
-    id: "cmp-claude-haiku",
-    routeId: "anthropic/claude-haiku-4.5",
-    name: "Claude Haiku 4.5",
-    poweredBy: "Anthropic",
-    brand: "claude",
-    color: "#D97757",
-    tier: "mid",
-    estCostPer1kTokens: 0.005,
-    blurb: "دقیق و منظم",
+    estCostPer1kTokens: 0.0005,
+    blurb: "سبک‌ترین DeepSeek برای شروع",
     kind: "compare",
   },
 ];
@@ -435,18 +456,18 @@ export const AUDIO_MODELS: AIModelInfo[] = [
 
 export const MUSIC_MODELS: AIModelInfo[] = [
   {
-    id: "music-suno",
-    routeId: "suno/v1",
-    name: "موزیک Suno",
-    poweredBy: "Suno",
-    brand: "openai",
-    color: "#6366f1",
-    tier: "mid",
+    id: "music-lyria",
+    routeId: "google/lyria-3-pro-preview",
+    name: "Lyria 3 Pro",
+    poweredBy: "Google Lyria 3",
+    brand: "google",
+    color: "#4285F4",
+    tier: "premium",
     estCostPer1kTokens: 0,
-    blurb: "ساخت موزیک از توضیح فارسی — شبیه Hoosha",
+    blurb: "ساخت آهنگ کامل با وکال و تنظیم از توضیح فارسی",
     capabilities: { musicGen: true },
     kind: "music",
-    musicCreditCost: 8,
+    musicCreditCost: 40,
   },
 ];
 
@@ -472,6 +493,7 @@ export const MODELS: AIModelInfo[] = COMPARE_MODELS;
 
 const ALL_MODELS: AIModelInfo[] = [
   ...DIRECT_MODELS,
+  ...AUTO_ROUTE_MODELS,
   ...COMPARE_MODELS,
   ...IMAGE_MODELS,
   ...VIDEO_MODELS,
@@ -482,16 +504,32 @@ const ALL_MODELS: AIModelInfo[] = [
 
 const LEGACY_ROUTE_ALIASES: Record<string, string> = {
   "openai/gpt-4o-mini": "cmp-gpt-4o-mini",
+  "openai/gpt-5.6-luna": "cmp-gpt-4o-mini",
+  "openai/gpt-5.6-sol": "cmp-gpt-55",
+  "openai/gpt-4o": "cmp-gpt-55",
+  "openai/gpt-5.4-mini": "precise",
+  "openai/gpt-5.4": "deep",
   "google/gemini-2.5-flash-lite": "cmp-gemini-flash",
-  "meta-llama/llama-3.3-70b-instruct": "cmp-llama-70b",
+  "google/gemini-3.5-flash": "cmp-gemini-flash",
+  "google/gemini-3.5-flash-lite": "creative",
+  "meta-llama/llama-3.3-70b-instruct": "cmp-deepseek-lite",
+  "meta-llama/llama-4-maverick": "cmp-deepseek-lite",
   "openai/gpt-4.1-mini": "cmp-grok-4",
   "deepseek/deepseek-chat-v3.1": "cmp-deepseek-v4",
-  "mistralai/mistral-medium-3": "cmp-mistral-medium",
-  "anthropic/claude-haiku-4.5": "cmp-claude-haiku",
-  "openai/gpt-4o": "cmp-gpt-55",
+  "deepseek/deepseek-v4-pro": "smart",
+  "deepseek/deepseek-v4-flash": "economy",
+  "mistralai/mistral-medium-3": "cmp-qwen-37",
+  "anthropic/claude-haiku-4.5": "critic",
   "x-ai/grok-4.3": "cmp-grok-4",
+  "x-ai/grok-4.5": "cmp-grok-4",
   "google/gemini-2.5-pro": "cmp-gemini-pro",
+  "google/gemini-pro-latest": "cmp-gemini-pro",
   "anthropic/claude-sonnet-4": "cmp-claude-opus",
+  "anthropic/claude-sonnet-5": "cmp-claude-opus",
+  "qwen/qwen3.7-max": "cmp-qwen-37",
+  "cmp-llama-70b": "cmp-deepseek-lite",
+  "cmp-mistral-medium": "cmp-qwen-37",
+  "cmp-claude-haiku": "cmp-gpt-4o-mini",
   "google/gemini-2.5-flash-image-preview": "image-nano",
   "google/gemini-2.5-flash-image": "image-nano",
   "google/gemini-3.1-flash-image": "image-nano",
@@ -500,11 +538,15 @@ const LEGACY_ROUTE_ALIASES: Record<string, string> = {
   "black-forest-labs/flux.2-pro": "image-gpt",
   "openai/gpt-image-2": "image-gpt",
   "image-gemini": "image-nano",
+  "music-suno": "music-lyria",
+  "suno/v1": "music-lyria",
   precise: "precise",
   critic: "critic",
   creative: "creative",
   fast: "fast",
   economy: "economy",
+  smart: "smart",
+  deep: "deep",
 };
 
 const MODEL_MAP: Record<string, AIModelInfo> = {};
@@ -555,7 +597,7 @@ export function chatModels(): AIModelInfo[] {
 export const COUNCIL_MODEL_IDS = [
   "cmp-deepseek-v4",
   "cmp-grok-4",
-  "cmp-claude-haiku",
+  "cmp-gemini-flash",
   "cmp-gpt-55",
 ] as const;
 

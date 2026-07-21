@@ -206,7 +206,7 @@ export default function ArenaHomePage({
   const [modeOpen, setModeOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [modelA, setModelA] = useState("cmp-deepseek-v4");
+  const [modelA, setModelA] = useState("cmp-deepseek-lite");
   const [modelB, setModelB] = useState("cmp-grok-4");
   const [directModel, setDirectModel] = useState("economy");
   const [modelPick, setModelPick] = useState<ModelPick>("auto");

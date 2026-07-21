@@ -8,7 +8,7 @@ import { getActiveAISession } from "@/lib/aiDeviceSessions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 export async function POST(req: NextRequest) {
   const session = await getActiveAISession(req);
@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
   }
 
   const plan = (user.plan as string) || "free";
-  const m = resolveMusicModel(String(body.model ?? ""), plan);
+  const requestedModel = String(body.model ?? "").trim() || "music-lyria";
+  const m = resolveMusicModel(requestedModel, plan);
   if ("error" in m) {
     return NextResponse.json({ ok: false, error: m.error }, {
       status: m.error === "plan_upgrade_required" ? 403 : 422,
@@ -65,12 +66,12 @@ export async function POST(req: NextRequest) {
   let gen;
   try {
     const fullPrompt = instrumental ? `${prompt} — instrumental only, no vocals` : prompt;
-    gen = await generateMusic(fullPrompt);
+    gen = await generateMusic(fullPrompt, m.id);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "";
     if (msg.includes("music_unavailable")) {
       return NextResponse.json(
-        { ok: false, error: "music_unavailable", message: "سرویس موزیک به‌زودی فعال می‌شود." },
+        { ok: false, error: "music_unavailable", message: "سرویس موزیک در دسترس نیست." },
         { status: 503 }
       );
     }

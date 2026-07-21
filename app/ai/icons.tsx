@@ -535,6 +535,15 @@ function BrandGoogle({ size = 20 }: IconProps) {
   );
 }
 
+function BrandQwen({ size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={1.7}>
+      <path d="M7 7h10v10H7z" />
+      <path d="M12 7v10M7 12h10" />
+    </svg>
+  );
+}
+
 const BRAND_GLYPH: Record<BrandKey, (p: IconProps) => JSX.Element> = {
   openai: BrandOpenAI,
   gemini: BrandGemini,
@@ -546,6 +555,7 @@ const BRAND_GLYPH: Record<BrandKey, (p: IconProps) => JSX.Element> = {
   bytedance: BrandByteDance,
   kwaivgi: BrandKwaivgi,
   google: BrandGoogle,
+  qwen: BrandQwen,
 };
 
 export function BrandGlyph({ brand, size = 20 }: { brand: BrandKey; size?: number }) {
