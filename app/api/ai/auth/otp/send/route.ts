@@ -6,6 +6,7 @@ import {
   AI_OTP_SEND_PER_MINUTE,
   isAiOtpPurpose,
   createAndSendAiOtp,
+  resolveStoredOtpPurpose,
   type AiOtpPurpose,
 } from "@/lib/aiOtp";
 import { normalizeContact } from "@/lib/validateContact";
@@ -92,9 +93,12 @@ export async function POST(req: NextRequest) {
     if ((purpose === "login" || purpose === "reset") && !existing) {
       return jsonNoStore({ ok: false, error: "phone_not_found" }, { status: 404 });
     }
-    // purpose === "auth" → allow both existing and new phones
 
-    const result = await createAndSendAiOtp(supabase, { phone, purpose });
+    const storedPurpose = resolveStoredOtpPurpose(purpose, !!existing);
+    const result = await createAndSendAiOtp(supabase, {
+      phone,
+      purpose: storedPurpose,
+    });
     if (!result.ok) {
       const status =
         result.error === "otp_cooldown" || result.error === "otp_send_limit"

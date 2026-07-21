@@ -12,6 +12,7 @@ import {
   AI_OTP_VERIFY_PER_MINUTE,
   consumeAiOtp,
   isAiOtpPurpose,
+  resolveStoredOtpPurpose,
   type AiOtpPurpose,
 } from "@/lib/aiOtp";
 import { normalizeContact } from "@/lib/validateContact";
@@ -102,7 +103,35 @@ export async function POST(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
-    const consumed = await consumeAiOtp(supabase, { phone, purpose, code });
+
+    const { data: existingUser, error: existingErr } = await supabase
+      .from("ai_users")
+      .select("id, plan, credits")
+      .eq("phone", phone)
+      .maybeSingle();
+    if (existingErr) {
+      console.error("[api/ai/auth/otp/verify existing]", existingErr);
+      return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
+    }
+
+    const storedPurpose = resolveStoredOtpPurpose(purpose, !!existingUser);
+    let consumed = await consumeAiOtp(supabase, {
+      phone,
+      purpose: storedPurpose,
+      code,
+    });
+
+    // auth OTP may have been issued before account state changed — try the other bucket
+    if (
+      purpose === "auth" &&
+      !consumed.ok &&
+      consumed.error === "otp_not_found"
+    ) {
+      const alt: typeof storedPurpose =
+        storedPurpose === "login" ? "register" : "login";
+      consumed = await consumeAiOtp(supabase, { phone, purpose: alt, code });
+    }
+
     if (!consumed.ok) {
       const status =
         consumed.error === "invalid_otp" ||
@@ -129,18 +158,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (purpose === "auth" || purpose === "login") {
-      const { data, error } = await supabase
-        .from("ai_users")
-        .select("id, plan, credits")
-        .eq("phone", phone)
-        .maybeSingle();
-      if (error) {
-        console.error("[api/ai/auth/otp/verify login]", error);
-        return jsonNoStore({ ok: false, error: "server_error" }, { status: 500 });
-      }
-
-      if (data) {
-        return finishLogin(data.id as string, data.plan as string, data.credits);
+      if (existingUser) {
+        return finishLogin(
+          existingUser.id as string,
+          existingUser.plan as string,
+          existingUser.credits
+        );
       }
 
       if (purpose === "login") {

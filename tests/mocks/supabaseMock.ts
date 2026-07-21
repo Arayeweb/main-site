@@ -46,7 +46,7 @@ class QueryBuilder {
   private pendingUpdate: Row | null = null;
   private pendingUpsert: Row | null = null;
   private upsertConflictCols: string[] = [];
-  private op: "select" | "insert" | "update" | "upsert" = "select";
+  private op: "select" | "insert" | "update" | "upsert" | "delete" = "select";
   private postInsertSelect = false;
 
   constructor(
@@ -71,6 +71,11 @@ class QueryBuilder {
   update(data: Row) {
     this.op = "update";
     this.pendingUpdate = data;
+    return this;
+  }
+
+  delete() {
+    this.op = "delete";
     return this;
   }
 
@@ -290,6 +295,17 @@ class QueryBuilder {
         }
       }
       return { data: updated, error: null };
+    }
+
+    if (this.op === "delete") {
+      const kept: Row[] = [];
+      const removed: Row[] = [];
+      for (const row of this.rows()) {
+        if (this.match(row)) removed.push(row);
+        else kept.push(row);
+      }
+      this.db.tables[this.table] = kept;
+      return { data: removed, error: null };
     }
 
     const data = await this.runSelect();

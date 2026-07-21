@@ -39,6 +39,21 @@ export function isAiOtpPurpose(v: unknown): v is AiOtpPurpose {
   return typeof v === "string" && (AI_OTP_PURPOSES as readonly string[]).includes(v);
 }
 
+/**
+ * DB check constraint may only allow login|register|reset until migration 20260735.
+ * Map unified `auth` to a stored purpose based on whether the phone already has an account.
+ */
+export type StoredAiOtpPurpose = Exclude<AiOtpPurpose, "auth">;
+
+export function resolveStoredOtpPurpose(
+  purpose: AiOtpPurpose,
+  phoneExists: boolean
+): StoredAiOtpPurpose {
+  if (purpose === "auth") return phoneExists ? "login" : "register";
+  return purpose;
+}
+
+
 export function generateAiOtpCode(): string {
   if (isE2eMode()) return AI_OTP_E2E_CODE;
   const max = 10 ** AI_OTP_LENGTH;
@@ -136,7 +151,7 @@ export async function createAndSendAiOtp(
 
   const { data: inserted, error: insertErr } = await supabase
     .from("ai_otp_challenges")
-    .insert({ phone, purpose, code_hash, expires_at })
+    .insert({ phone, purpose, code_hash, expires_at, attempts: 0 })
     .select("id, expires_at")
     .single();
 
@@ -207,11 +222,13 @@ export async function consumeAiOtp(
     return { ok: false, error: "otp_not_found" };
   }
 
+  const attempts = Number(challenge.attempts) || 0;
+
   if (new Date(challenge.expires_at).getTime() <= Date.now()) {
     return { ok: false, error: "otp_expired" };
   }
 
-  if (challenge.attempts >= AI_OTP_MAX_ATTEMPTS) {
+  if (attempts >= AI_OTP_MAX_ATTEMPTS) {
     return { ok: false, error: "otp_locked" };
   }
 
@@ -225,7 +242,7 @@ export async function consumeAiOtp(
   if (!valid) {
     await supabase
       .from("ai_otp_challenges")
-      .update({ attempts: challenge.attempts + 1 })
+      .update({ attempts: attempts + 1 })
       .eq("id", challenge.id);
     return { ok: false, error: "invalid_otp" };
   }

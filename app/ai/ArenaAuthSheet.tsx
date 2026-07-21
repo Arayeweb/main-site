@@ -48,7 +48,13 @@ export default function ArenaAuthSheet() {
       <div className="ar-sheet ar-sheet--auth">
         <div className="ar-sheet-head ar-sheet-head--auth">
           <div className="ar-auth-brand">
-            <span className="ar-auth-brand-mark" aria-hidden />
+            <img
+              className="ar-auth-brand-logo"
+              src="/assets/logo-icon.svg"
+              alt=""
+              width={22}
+              height={22}
+            />
             <span className="ar-auth-brand-name">آرایه AI</span>
           </div>
           <button className="ar-sheet-close" onClick={close} aria-label="بستن">

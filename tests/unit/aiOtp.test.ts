@@ -7,6 +7,7 @@ import {
   hashAiOtpCode,
   isAiOtpPurpose,
   normalizeAiOtpCode,
+  resolveStoredOtpPurpose,
   verifyAiOtpCodeHash,
 } from "@/lib/aiOtp";
 import { getKavenegarOtpTemplate } from "@/lib/kavenegar";
@@ -22,6 +23,12 @@ describe("aiOtp helpers", () => {
     expect(isAiOtpPurpose("reset")).toBe(true);
     expect(isAiOtpPurpose("auth")).toBe(true);
     expect(isAiOtpPurpose("other")).toBe(false);
+  });
+
+  it("maps auth purpose to login/register for DB storage", () => {
+    expect(resolveStoredOtpPurpose("auth", true)).toBe("login");
+    expect(resolveStoredOtpPurpose("auth", false)).toBe("register");
+    expect(resolveStoredOtpPurpose("reset", false)).toBe("reset");
   });
 
   it("normalizes otp input to digits", () => {
