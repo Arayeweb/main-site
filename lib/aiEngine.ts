@@ -121,6 +121,9 @@ async function fetchOpenRouterWithRetry(
     try {
       const res = await fetch(url, {
         ...init,
+        // Next.js Data Cache can replay these POST responses inside GET route
+        // handlers (observed: repeated image gens returning in ~1ms).
+        cache: "no-store",
         dispatcher: getOpenRouterDispatcher(),
       } as RequestInit & { dispatcher: Agent });
       return res;

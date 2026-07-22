@@ -160,6 +160,8 @@ export default function ArenaShell({
     totalReferrals: number;
     creditsEarned: number;
   } | null>(null);
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [referralError, setReferralError] = useState<string | null>(null);
   const [copiedRef, setCopiedRef] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -251,26 +253,36 @@ export default function ArenaShell({
     }
   }
 
+  async function loadReferral() {
+    setReferralError(null);
+    setReferralLoading(true);
+    try {
+      const res = await fetch("/api/ai/referral/me", { credentials: "same-origin" });
+      const data = await res.json().catch(() => null);
+      if (data?.ok && data.code) {
+        setReferral({
+          code: data.code,
+          shareUrl: data.shareUrl,
+          totalReferrals: data.totalReferrals ?? 0,
+          creditsEarned: data.creditsEarned ?? 0,
+        });
+      } else {
+        setReferralError("کد معرفی فعلاً در دسترس نیست. دوباره تلاش کن.");
+      }
+    } catch {
+      setReferralError("ارتباط برقرار نشد. دوباره تلاش کن.");
+    } finally {
+      setReferralLoading(false);
+    }
+  }
+
   async function openReferral() {
     setProfileOpen(false);
     setSettingsOpen(false);
     closeDrawer();
     setReferralOpen(true);
-    if (referral) return;
-    try {
-      const res = await fetch("/api/ai/referral/me", { credentials: "same-origin" });
-      const data = await res.json();
-      if (data?.ok) {
-        setReferral({
-          code: data.code,
-          shareUrl: data.shareUrl,
-          totalReferrals: data.totalReferrals,
-          creditsEarned: data.creditsEarned,
-        });
-      }
-    } catch {
-      /* ignore */
-    }
+    if (referral || referralLoading) return;
+    await loadReferral();
   }
 
   async function copyReferralCode() {
@@ -915,6 +927,18 @@ export default function ArenaShell({
                       <IconCopy size={14} /> کپی کد معرفی
                     </>
                   )}
+                </button>
+              </>
+            ) : referralError ? (
+              <>
+                <p className="ar-sheet-sub">{referralError}</p>
+                <button
+                  type="button"
+                  className="ar-btn ar-btn-primary ar-btn-block"
+                  onClick={() => void loadReferral()}
+                  disabled={referralLoading}
+                >
+                  تلاش مجدد
                 </button>
               </>
             ) : (

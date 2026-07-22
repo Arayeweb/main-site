@@ -1,9 +1,6 @@
 import type { MetadataRoute } from "next";
 import { canonicalUrl } from "@/lib/siteUrl";
-import {
-  getPublishedFastWebExamplePaths,
-  getPublishedFastWebIndustryPaths,
-} from "@/lib/fastweb/industries";
+import { getPublishedFastWebIndustryPaths } from "@/lib/fastweb/industries";
 import { getPublishedIndustryPaths } from "@/lib/seo/programmaticPages";
 import { getIndexablePromptPaths } from "@/lib/prompts/indexable";
 import { getSitemapLastMod } from "@/lib/blog/postUpdatedAt";
@@ -22,7 +19,6 @@ const STATIC_SITEMAP_PATHS = [
   "/bizcard",
   "/adready",
   "/fastweb",
-  "/fastweb/examples",
   "/website-design",
   "/website-design/cost",
   "/website-design/restaurant",
@@ -90,7 +86,6 @@ export const SITEMAP_PATHS = [
   ...getPublishedIndustryPaths("seo"),
   ...getPublishedIndustryPaths("website"),
   ...getPublishedFastWebIndustryPaths(),
-  ...getPublishedFastWebExamplePaths(),
 ] as const;
 
 export function isSitemapExcludedPath(path: string): boolean {
@@ -104,7 +99,6 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
     ...getPublishedIndustryPaths("seo"),
     ...getPublishedIndustryPaths("website"),
     ...getPublishedFastWebIndustryPaths(),
-    ...getPublishedFastWebExamplePaths(),
   ];
   const toolPaths = getPublishedToolPaths();
   const paths = Array.from(

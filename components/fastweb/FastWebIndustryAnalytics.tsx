@@ -12,23 +12,14 @@ export default function FastWebIndustryAnalytics({ industry }: { industry: FastW
   useEffect(() => {
     const page = pathname || `/fastweb/${industry.slug}`;
     recordPageview(page);
-    const keyword = industry.searchTerms[0] ?? industry.slug;
     trackFastWebEvent("fastweb_industry_view", {
       page_path: page,
       industry: industry.slug,
-      primary_keyword: keyword,
+      primary_keyword: industry.primaryKeyword,
       cta_position: "hero",
       offer: "fastweb",
-      page_type: "industry",
     });
-    trackFastWebEvent("fastweb_industry_page_view", {
-      page_path: page,
-      industry: industry.slug,
-      primary_keyword: keyword,
-      offer: "fastweb",
-      page_type: "industry",
-    });
-  }, [pathname, industry.slug, industry.searchTerms]);
+  }, [pathname, industry.slug, industry.primaryKeyword]);
 
   return null;
 }

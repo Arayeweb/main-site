@@ -39,14 +39,8 @@ export function getSitemapLastMod(path: string): string | undefined {
     return "2026-07-19";
   }
 
-  const fastwebExampleMatch = normalized.match(/^\/fastweb\/examples\/([^/]+)$/);
-  if (fastwebExampleMatch) return getFastWebIndustryUpdatedAt(fastwebExampleMatch[1]);
-
   const fastwebMatch = normalized.match(/^\/fastweb\/([^/]+)$/);
-  if (fastwebMatch && fastwebMatch[1] !== "examples") {
-    return getFastWebIndustryUpdatedAt(fastwebMatch[1]);
-  }
-  if (normalized === "/fastweb/examples") return "2026-07-22";
+  if (fastwebMatch) return getFastWebIndustryUpdatedAt(fastwebMatch[1]);
 
   const blogMatch = normalized.match(/^\/blog\/([^/]+)$/);
   if (blogMatch) return getBlogPostLastMod(blogMatch[1]);

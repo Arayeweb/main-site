@@ -20,7 +20,6 @@ import StepPayment from "@/components/fastweb/wizard-steps/StepPayment";
 import StepPreview from "@/components/fastweb/wizard-steps/StepPreview";
 import StepStyle from "@/components/fastweb/wizard-steps/StepStyle";
 import { pickCategoryKey } from "@/lib/fastwebCategories";
-import { mapIndustryToCategoryKey } from "@/lib/fastweb/industries";
 import { pushGtmEvent } from "@/lib/gtm";
 import {
   FASTWEB_PACKAGES,
@@ -144,42 +143,12 @@ export default function FastWebWizard() {
       if (draft.packageKey) setPackageKey(draft.packageKey);
     }
     if (isFastWebPackageKey(pkgParam)) setPackageKey(pkgParam);
-
-    // Industry SEO pages pass ?industry=slug (+ optional category). Prefer industry mapping.
-    const industryParam = searchParams.get("industry");
-    const categoryFromIndustry = industryParam
-      ? mapIndustryToCategoryKey(industryParam)
-      : undefined;
     const categoryParam = searchParams.get("category");
-    const resolvedCategory =
-      categoryFromIndustry ??
-      (isFastWebCategoryKey(categoryParam) ? categoryParam : undefined);
-
-    if (!draft?.brief?.categoryKey && resolvedCategory) {
-      setBrief((prev) => ({
-        ...prev,
-        categoryKey: resolvedCategory,
-        industry: prev.industry || industryParam || prev.industry,
-      }));
-      pushGtmEvent("fastweb_industry_select", {
-        industry: industryParam || resolvedCategory,
-        source: searchParams.get("source") || "wizard_query",
-        page_type: "wizard",
-      });
+    if (!draft?.brief?.categoryKey && isFastWebCategoryKey(categoryParam)) {
+      setBrief((prev) => ({ ...prev, categoryKey: categoryParam }));
     }
-
     setHydrated(true);
-    pushGtmEvent("fastweb_wizard_open", {
-      package: pkgParam || "fast",
-      industry: industryParam || undefined,
-      source: searchParams.get("source") || undefined,
-    });
-    pushGtmEvent("fastweb_order_start", {
-      package: pkgParam || "fast",
-      industry: industryParam || undefined,
-      source: searchParams.get("source") || undefined,
-      page_type: "wizard",
-    });
+    pushGtmEvent("fastweb_wizard_open", { package: pkgParam || "fast" });
   }, [searchParams]);
 
   useEffect(() => {
