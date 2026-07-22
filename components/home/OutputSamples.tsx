@@ -88,7 +88,7 @@ export default function OutputSamples() {
       <div className="mx-auto max-w-[1180px] px-5 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-2xl font-extrabold leading-snug tracking-tight text-navy-900 sm:text-3xl">
-            نمونه‌هایی از چیزی که تحویل می‌گیرید
+            نتیجه را در نمونه‌های واقعی ببینید
           </h2>
         </div>
 

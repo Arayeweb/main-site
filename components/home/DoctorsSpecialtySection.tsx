@@ -6,11 +6,11 @@ export default function DoctorsSpecialtySection() {
           <div className="max-w-xl text-center lg:text-right">
             <p className="text-xs font-semibold text-teal-700">راهکار تخصصی</p>
             <h2 className="mt-2 text-lg font-extrabold leading-snug tracking-tight text-navy-900 sm:text-xl">
-              برای پزشکان و کلینیک‌ها، مسیر آماده‌تری داریم
+              تجربه‌ای متناسب با نیاز پزشکان و کلینیک‌ها
             </h2>
             <p className="mt-2.5 text-sm leading-relaxed text-navy-500">
-              حضور در گوگل، معرفی خدمات و دریافت درخواست نوبت؛ با ساختاری متناسب با مطب
-              و کلینیک.
+              از دیده‌شدن در گوگل و معرفی تخصص تا اعتماد بیمار و درخواست نوبت؛ همه در یک مسیر
+              ساده و حرفه‌ای.
             </p>
             <a
               href="/doctors"

@@ -5,7 +5,7 @@ export default function HomeFaq() {
     <section id="faq" className="bg-white py-10 sm:py-12">
       <div className="mx-auto max-w-[900px] px-5 sm:px-6">
         <h2 className="text-center text-2xl font-extrabold leading-snug tracking-tight text-navy-900 sm:text-[1.75rem]">
-          سوالات متداول درباره شرکت آرایه
+          پیش از شروع، شاید این سؤال‌ها را داشته باشید
         </h2>
 
         <div className="mt-8 border-t border-navy-100">

@@ -5,21 +5,21 @@ import { openSiteChat } from "@/lib/openSiteChat";
 const steps = [
   {
     number: "۱",
-    title: "کسب‌وکارتان را می‌شناسیم",
-    description: "خدمات، مشتریان و هدف اصلی شما را بررسی می‌کنیم.",
-    output: "اطلاعات کسب‌وکار",
+    title: "مسئله را دقیق می‌فهمیم",
+    description: "درباره هدف، مخاطب، محدودیت‌ها و وضعیت فعلی کسب‌وکارتان گفت‌وگو می‌کنیم.",
+    output: "خلاصه نیازها و هدف پروژه",
   },
   {
     number: "۲",
-    title: "مسیر مناسب را مشخص می‌کنیم",
-    description: "می‌گوییم از گوگل، صفحه فروش یا ترکیب هر دو باید شروع کنید.",
-    output: "برنامه پیشنهادی",
+    title: "راهکار و اولویت‌ها را می‌چینیم",
+    description: "مشخص می‌کنیم چه چیزی باید ساخته شود، از کجا شروع کنیم و چه کاری فعلاً لازم نیست.",
+    output: "پیشنهاد شفاف زمان و اجرا",
   },
   {
     number: "۳",
-    title: "اجرا می‌کنیم و تحویل می‌دهیم",
-    description: "صفحه‌ها و تنظیمات لازم آماده می‌شوند و نتیجه کار را می‌بینید.",
-    output: "صفحه یا گزارش نهایی",
+    title: "می‌سازیم، آزمایش می‌کنیم و تحویل می‌دهیم",
+    description: "خروجی را مرحله‌به‌مرحله می‌بینید، بازخورد می‌دهید و نسخه نهایی آماده انتشار می‌شود.",
+    output: "خروجی قابل استفاده و آماده رشد",
   },
 ] as const;
 
@@ -29,7 +29,7 @@ export default function CollaborationProcess() {
       <div className="mx-auto max-w-[1180px] px-5 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-2xl font-extrabold leading-snug tracking-tight text-navy-900 sm:text-3xl">
-            شروع همکاری با آرایه چطور است؟
+            از گفت‌وگوی اول تا تحویل، مسیر روشن است
           </h2>
         </div>
 

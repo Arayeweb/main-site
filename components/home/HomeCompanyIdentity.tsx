@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   COMPANY_DISPLAY_NAME,
   COMPANY_EMAIL,
-  COMPANY_LEGAL_NAME,
   COMPANY_PHONE_DISPLAY,
   COMPANY_PHONE_TEL,
   COMPANY_SAME_AS,
@@ -14,11 +13,11 @@ export default function HomeCompanyIdentity() {
       <div className="container-mx container-px">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-2xl font-extrabold leading-snug tracking-tight text-navy-900 sm:text-3xl">
-            اطلاعات تماس {COMPANY_DISPLAY_NAME}
+            برای شروع یک گفت‌وگو، در دسترسیم
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed text-navy-500 sm:text-base">
-            نام حقوقی مجموعه {COMPANY_LEGAL_NAME} است. برای مشاوره یا هماهنگی پروژه از راه‌های
-            زیر با ما در ارتباط باشید.
+            اگر درباره انتخاب مسیر مناسب، زمان اجرا یا هزینه سؤال دارید، مستقیم با{" "}
+            {COMPANY_DISPLAY_NAME} در تماس باشید.
           </p>
         </div>
 
