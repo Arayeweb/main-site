@@ -211,6 +211,7 @@ export interface FastWebBrief {
   /** Reference file/image uploaded by the customer (e.g. logo, moodboard, brief PDF). */
   attachmentUrl?: string;
   attachmentName?: string;
+  attachmentKind?: "hero" | "logo" | "reference";
   contacts?: FastWebContacts;
   slugPreference?: string;
   domainChoice?: "subdomain" | "custom";

@@ -19,7 +19,11 @@ import StepGoalAudience from "@/components/fastweb/wizard-steps/StepGoalAudience
 import StepPayment from "@/components/fastweb/wizard-steps/StepPayment";
 import StepPreview from "@/components/fastweb/wizard-steps/StepPreview";
 import StepStyle from "@/components/fastweb/wizard-steps/StepStyle";
-import { pickCategoryKey } from "@/lib/fastwebCategories";
+import {
+  defaultSectionsForCategory,
+  getFastWebCategory,
+  pickCategoryKey,
+} from "@/lib/fastwebCategories";
 import { pushGtmEvent } from "@/lib/gtm";
 import {
   FASTWEB_PACKAGES,
@@ -42,18 +46,18 @@ const STEP_LABELS = [
   "نوع کسب‌وکار",
   "هدف و مخاطب",
   "ظاهر",
+  "پیش‌نمایش",
   "آدرس سایت",
   "تماس",
-  "پیش‌نمایش",
   "پرداخت",
 ] as const;
 
 const CATEGORY_STEP = 1;
 const GOAL_STEP = 2;
 const STYLE_STEP = 3;
-const DOMAIN_STEP = 4;
-const CONTACTS_STEP = 5;
-const PREVIEW_STEP = 6;
+const PREVIEW_STEP = 4;
+const DOMAIN_STEP = 5;
+const CONTACTS_STEP = 6;
 const PAY_STEP = 7;
 
 type SlugStatus = "idle" | "checking" | "ok" | "taken" | "invalid";
@@ -98,7 +102,6 @@ export default function FastWebWizard() {
   const [packageKey, setPackageKey] = useState<FastWebPackageKey>("fast");
   const [orderId, setOrderId] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -137,7 +140,7 @@ export default function FastWebWizard() {
     const pkgParam = searchParams.get("package");
     if (draft) {
       setBrief({ ...createEmptyBrief(), ...draft.brief });
-      setStep(Math.min(draft.step, PREVIEW_STEP - 1));
+      setStep(Math.min(draft.step, PAY_STEP - 1));
       if (draft.orderId) setOrderId(draft.orderId);
       if (draft.accessToken) setAccessToken(draft.accessToken);
       if (draft.packageKey) setPackageKey(draft.packageKey);
@@ -238,6 +241,7 @@ export default function FastWebWizard() {
       patchBrief({
         attachmentUrl: data.url,
         attachmentName: data.name || file.name,
+        attachmentKind: file.type.startsWith("image/") ? "hero" : "reference",
       });
     } finally {
       setUploading(false);
@@ -300,7 +304,14 @@ export default function FastWebWizard() {
       }
     }
     if (step === CATEGORY_STEP && !brief.categoryKey) {
-      patchBrief({ categoryKey: pickCategoryKey(brief) });
+      const categoryKey = pickCategoryKey(brief);
+      const category = getFastWebCategory(categoryKey);
+      patchBrief({
+        categoryKey,
+        sections: defaultSectionsForCategory(categoryKey),
+        style: category?.recommendedStyle,
+        brandColor: category?.defaultBrandColor,
+      });
     }
     if (step === GOAL_STEP && !brief.goal) {
       setError("هدف سایت را انتخاب کنید.");
@@ -327,14 +338,16 @@ export default function FastWebWizard() {
       try {
         const draft = await ensureDraft();
         if (!draft) return;
-        pushGtmEvent("fastweb_wizard_preview", {});
-        setStep(PREVIEW_STEP);
+        setStep(PAY_STEP);
       } finally {
         setBusy(false);
       }
       return;
     }
 
+    if (step === STYLE_STEP) {
+      pushGtmEvent("fastweb_wizard_preview", {});
+    }
     pushGtmEvent("fastweb_wizard_step", { step: step + 1 });
     setStep((s) => Math.min(s + 1, STEP_LABELS.length - 1));
   }
@@ -423,14 +436,24 @@ export default function FastWebWizard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
+      <main
+        className={`mx-auto px-4 py-8 sm:py-10 ${
+          step === PREVIEW_STEP ? "max-w-[1480px]" : "max-w-5xl"
+        }`}
+      >
         {paymentFlag === "failed" || paymentFlag === "error" ? (
           <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             پرداخت کامل نشد. می‌توانید دوباره از مرحله پرداخت اقدام کنید.
           </div>
         ) : null}
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/80 sm:p-8">
+        <div
+          className={
+            step === PREVIEW_STEP
+              ? ""
+              : "rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/80 sm:p-8"
+          }
+        >
           {step === 0 ? (
             <StepBusiness
               brief={brief}
@@ -473,13 +496,7 @@ export default function FastWebWizard() {
           ) : null}
 
           {step === PREVIEW_STEP ? (
-            <StepPreview
-              brief={brief}
-              preview={preview}
-              previewMode={previewMode}
-              slugHint={slugHint}
-              onPreviewMode={setPreviewMode}
-            />
+            <StepPreview brief={brief} preview={preview} slugHint={slugHint} />
           ) : null}
 
           {step === PAY_STEP ? (
@@ -534,9 +551,9 @@ export default function FastWebWizard() {
               >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {step === CONTACTS_STEP
-                  ? "ذخیره و مشاهده پیش‌نمایش"
+                  ? "ذخیره و ادامه به پرداخت"
                   : step === PREVIEW_STEP
-                    ? "ادامه به پرداخت"
+                    ? "این طرح را می‌خواهم"
                     : "ادامه"}
                 {!busy ? <ArrowLeft className="h-4 w-4" /> : null}
               </button>

@@ -14,6 +14,7 @@ import type {
   FastWebTeamMemberItem,
 } from "@/lib/fastweb";
 import {
+  FASTWEB_AUDIENCE_PRESETS,
   FASTWEB_CORE_KEYS,
   FASTWEB_STYLES,
   isFastWebCategoryKey,
@@ -21,7 +22,6 @@ import {
 } from "@/lib/fastweb";
 import {
   defaultSectionsForCategory,
-  getFastWebCategory,
   pickCategoryKey,
   pickCoreKey,
 } from "@/lib/fastwebCategories";
@@ -253,7 +253,7 @@ export function parseFastWebPreviewContent(
   const content: FastWebPreviewContent = {
     headline: headline || "کسب‌وکار شما",
     subheadline: subheadline || "معرفی خدمات و راه‌های تماس",
-    aboutText: asString(row.aboutText, 600) || "درباره کسب‌وکار به‌زودی تکمیل می‌شود.",
+    aboutText: asString(row.aboutText, 600) || "تجربه، کیفیت و توجه به نیاز مشتری پایه اصلی فعالیت این مجموعه است.",
     offerings: asOfferings(row.offerings),
     portfolioNotes: asStringArray(row.portfolioNotes, 6, 160),
     testimonials: asTestimonials(row.testimonials),
@@ -305,25 +305,25 @@ export function hasPreviewContent(
 
 const DEFAULT_PRICING_PLANS: FastWebPricingPlanItem[] = [
   {
-    name: "پلن پایه",
-    price: "قیمت را در نسخه نهایی وارد کنید",
-    description: "مناسب برای شروع",
-    features: ["ویژگی اول", "ویژگی دوم"],
+    name: "شروع",
+    price: "استعلام قیمت",
+    description: "مناسب برای نیازهای پایه و شروع سریع",
+    features: ["مشاوره اولیه", "پیشنهاد متناسب با نیاز"],
   },
   {
-    name: "پلن حرفه‌ای",
-    price: "قیمت را در نسخه نهایی وارد کنید",
-    description: "برای استفاده منظم",
-    features: ["همه امکانات پلن پایه", "امکانات بیشتر"],
+    name: "انتخاب حرفه‌ای",
+    price: "پیشنهاد اختصاصی",
+    description: "برای کسانی که نتیجه کامل‌تری می‌خواهند",
+    features: ["همه امکانات شروع", "پشتیبانی و همراهی بیشتر"],
   },
 ];
 
 const DEFAULT_TEAM_MEMBERS: FastWebTeamMemberItem[] = [
-  { name: "نام و نام خانوادگی", role: "تخصص یا سمت", bio: "توضیح کوتاه در نسخه نهایی تکمیل می‌شود." },
+  { name: "تیم متخصص مجموعه", role: "اجرای حرفه‌ای خدمات", bio: "با تجربه، دقیق و متعهد به ارائه بهترین نتیجه برای هر مشتری." },
 ];
 
 const DEFAULT_LISTINGS: FastWebListingItem[] = [
-  { title: "فایل نمونه", price: "قیمت توافقی", meta: "جزئیات در نسخه نهایی تکمیل می‌شود" },
+  { title: "فایل منتخب و آماده بازدید", price: "قیمت روز", meta: "اطلاعات تأییدشده • شرایط مناسب • هماهنگی بازدید" },
 ];
 
 const DEFAULT_SCHEDULE: FastWebScheduleItem[] = [
@@ -334,6 +334,153 @@ const DEFAULT_STATS: FastWebStatItem[] = [
   { value: "+۱۰۰", label: "مشتری راضی" },
   { value: "+۵", label: "سال تجربه" },
 ];
+
+type DemoPreset = {
+  promise: string;
+  about: string;
+  offeringDescriptions: string[];
+  offerings: string[];
+  portfolioNotes: string[];
+  testimonials: { name: string; text: string }[];
+  faq: FastWebFaqItem[];
+  pricingPlans: FastWebPricingPlanItem[];
+  teamMembers: FastWebTeamMemberItem[];
+  galleryNotes: string[];
+  listings: FastWebListingItem[];
+  schedule: FastWebScheduleItem[];
+  stats: FastWebStatItem[];
+  clients: string[];
+  ctaText: string;
+  formTitle: string;
+};
+
+const DEMO_PRESETS: Record<FastWebCategoryKey, DemoPreset> = {
+  "service-business": {
+    promise: "خدمات مطمئن، اجرای دقیق و پاسخ‌گویی سریع؛ درست وقتی که به آن نیاز دارید.",
+    about: "با تکیه بر تجربه اجرایی و تعهد به کیفیت، هر درخواست از بررسی اولیه تا تحویل نهایی با دقت پیگیری می‌شود.",
+    offerings: ["بازدید و عیب‌یابی", "اجرا و تعمیر تخصصی", "سرویس و پشتیبانی"],
+    offeringDescriptions: ["بررسی دقیق نیاز و ارائه راه‌حل شفاف پیش از شروع کار.", "اجرای اصولی توسط نیروی متخصص با تضمین کیفیت.", "پیگیری پس از انجام کار و پشتیبانی در صورت نیاز."],
+    portfolioNotes: ["اجرای کامل پروژه مسکونی", "رفع ایراد و تحویل در همان روز", "سرویس دوره‌ای مجموعه اداری"],
+    testimonials: [{ name: "یکی از مشتریان محلی", text: "از تماس اول تا پایان کار، همه‌چیز منظم، شفاف و حرفه‌ای پیش رفت." }],
+    faq: [{ question: "هزینه خدمات چگونه مشخص می‌شود؟", answer: "پس از بررسی نیاز، هزینه و زمان اجرا شفاف اعلام می‌شود و کار فقط با تأیید شما آغاز خواهد شد." }],
+    pricingPlans: [], teamMembers: [], galleryNotes: ["اجرای تمیز و اصولی", "تجهیزات حرفه‌ای", "قبل و بعد پروژه", "تیم آماده خدمت"], listings: [], schedule: [],
+    stats: [{ value: "+۱۰۰", label: "درخواست انجام‌شده" }, { value: "سریع", label: "زمان پاسخ‌گویی" }], clients: [],
+    ctaText: "درخواست بازدید رایگان", formTitle: "جزئیات درخواست شما",
+  },
+  professional: {
+    promise: "ترکیبی از دانش تخصصی، تجربه و توجه انسانی برای تصمیمی مطمئن‌تر.",
+    about: "هر مراجعه‌کننده شرایط منحصربه‌فردی دارد؛ به همین دلیل مسیر مشاوره و ارائه خدمات بر پایه شناخت دقیق نیازهای شما شکل می‌گیرد.",
+    offerings: ["ارزیابی و مشاوره تخصصی", "خدمات و درمان اختصاصی", "پیگیری و همراهی"],
+    offeringDescriptions: ["بررسی دقیق شرایط و پاسخ روشن به پرسش‌های شما.", "انتخاب بهترین مسیر متناسب با نیاز و هدف شما.", "همراهی منظم برای رسیدن به نتیجه‌ای پایدار."],
+    portfolioNotes: [], testimonials: [{ name: "یکی از مراجعه‌کنندگان", text: "توضیحات بسیار شفاف بود و از همان جلسه اول احساس کردم در مسیر درستی قرار گرفته‌ام." }],
+    faq: [{ question: "جلسه اول چگونه برگزار می‌شود؟", answer: "در جلسه نخست، شرایط و هدف شما بررسی می‌شود و مناسب‌ترین مسیر به‌صورت شفاف توضیح داده خواهد شد." }],
+    pricingPlans: [], teamMembers: [{ name: "متخصص مجموعه", role: "مشاور ارشد", bio: "با تجربه حرفه‌ای و رویکردی دقیق و نتیجه‌محور." }],
+    galleryNotes: ["فضای آرام مجموعه", "اتاق مشاوره", "تجهیزات تخصصی", "تجربه مراجعه"], listings: [], schedule: [{ day: "شنبه تا چهارشنبه", time: "۹ تا ۱۹", title: "پذیرش با تعیین وقت" }],
+    stats: [{ value: "+۱۰", label: "سال تجربه تخصصی" }, { value: "+۵۰۰", label: "مراجعه موفق" }], clients: [],
+    ctaText: "رزرو جلسه مشاوره", formTitle: "درخواست وقت مشاوره",
+  },
+  "online-store": {
+    promise: "محصولاتی انتخاب‌شده برای کسانی که به کیفیت، اصالت و جزئیات اهمیت می‌دهند.",
+    about: "مجموعه‌ای دقیق و باکیفیت را گردآوری کرده‌ایم تا خرید آنلاین برای شما ساده، مطمئن و لذت‌بخش باشد.",
+    offerings: ["محصول منتخب", "پرفروش این هفته", "انتخاب ویژه هدیه"],
+    offeringDescriptions: ["کیفیت ممتاز با جزئیاتی که از نزدیک هم چشمگیر است.", "انتخاب محبوب مشتریان با ارسال سریع.", "بسته‌بندی زیبا و مناسب برای یک هدیه ماندگار."],
+    portfolioNotes: [], testimonials: [{ name: "خریدار تأییدشده", text: "کیفیت محصول دقیقاً مطابق تصاویر بود و بسته‌بندی خیلی حرفه‌ای به دستم رسید." }],
+    faq: [{ question: "ارسال سفارش چقدر زمان می‌برد؟", answer: "سفارش‌ها پس از تأیید، بسته به مقصد طی ۲ تا ۴ روز کاری ارسال می‌شوند." }],
+    pricingPlans: [{ name: "محصول منتخب", price: "برای قیمت تماس بگیرید", description: "کیفیت ممتاز و ضمانت اصالت", features: ["ارسال امن", "امکان تعویض", "پشتیبانی خرید"] }],
+    teamMembers: [], galleryNotes: ["جزئیات محصول", "بسته‌بندی اختصاصی", "انتخاب‌های تازه", "محبوب مشتریان"], listings: [], schedule: [],
+    stats: [{ value: "۱۰۰٪", label: "ضمانت اصالت" }, { value: "سریع", label: "ارسال سفارش" }], clients: [],
+    ctaText: "ثبت سفارش", formTitle: "سفارش و راهنمای خرید",
+  },
+  "restaurant-cafe": {
+    promise: "طعم‌های تازه، فضای گرم و لحظه‌هایی که دوست دارید دوباره تجربه‌شان کنید.",
+    about: "اینجا هر جزئیات، از انتخاب مواد اولیه تا سرو نهایی، برای ساختن یک تجربه خوش‌طعم و به‌یادماندنی طراحی شده است.",
+    offerings: ["قهوه و نوشیدنی ویژه", "صبحانه و غذای تازه", "دسر روز"],
+    offeringDescriptions: ["تهیه‌شده با مواد تازه و ترکیب اختصاصی مجموعه.", "سفارش‌هایی تازه، خوش‌عطر و آماده برای یک شروع خوب.", "هر روز تازه و در تعداد محدود برای بهترین کیفیت."],
+    portfolioNotes: [], testimonials: [{ name: "یکی از مهمانان", text: "هم طعم غذا عالی بود و هم فضا آن‌قدر دلنشین که حتماً دوباره برمی‌گردیم." }],
+    faq: [{ question: "برای رزرو میز چه‌کار کنم؟", answer: "از فرم همین صفحه یا واتساپ، تعداد نفرات و زمان موردنظر را ارسال کنید." }],
+    pricingPlans: [], teamMembers: [], galleryNotes: ["فضای گرم و صمیمی", "بشقاب‌های تازه", "قهوه تخصصی", "دسر روز"], listings: [], schedule: [{ day: "هر روز", time: "۸ تا ۲۳", title: "پذیرایی از مهمانان" }],
+    stats: [{ value: "تازه", label: "مواد اولیه روز" }, { value: "هر روز", label: "آماده پذیرایی" }], clients: [],
+    ctaText: "رزرو میز", formTitle: "رزرو میز و سفارش",
+  },
+  "company-b2b": {
+    promise: "ظرفیت اجرایی قابل اتکا برای همکاری‌های بزرگ، دقیق و بلندمدت.",
+    about: "با تمرکز بر کیفیت پایدار، کنترل دقیق فرایند و تعهد به زمان تحویل، شریک اجرایی قابل اعتماد کسب‌وکارها هستیم.",
+    offerings: ["تولید و اجرای سفارشی", "تأمین سازمانی", "کنترل کیفیت و پشتیبانی"],
+    offeringDescriptions: ["طراحی و اجرا متناسب با مشخصات فنی و نیاز پروژه.", "تأمین مستمر با ظرفیت برنامه‌ریزی‌شده و تحویل منظم.", "کنترل مرحله‌به‌مرحله و مستندسازی کیفیت خروجی."],
+    portfolioNotes: ["پروژه تأمین صنعتی", "بهینه‌سازی خط تولید", "همکاری بلندمدت سازمانی"],
+    testimonials: [{ name: "مدیر تأمین یکی از مشتریان", text: "ثبات کیفیت و پایبندی به برنامه تحویل، این مجموعه را به یکی از شرکای مطمئن ما تبدیل کرده است." }],
+    faq: [{ question: "امکان تولید یا اجرای سفارشی وجود دارد؟", answer: "بله، پس از دریافت مشخصات فنی، امکان‌سنجی، زمان‌بندی و پیشنهاد همکاری ارائه می‌شود." }],
+    pricingPlans: [], teamMembers: [{ name: "تیم مهندسی", role: "طراحی و کنترل پروژه", bio: "متخصص در اجرای پروژه‌های دقیق و مقیاس‌پذیر." }],
+    galleryNotes: ["زیرساخت تولید", "کنترل کیفیت", "تیم اجرایی", "پروژه‌های انجام‌شده"], listings: [], schedule: [],
+    stats: [{ value: "+۱۵", label: "سال تجربه" }, { value: "+۴۰", label: "مشتری سازمانی" }, { value: "ISO", label: "فرایند کنترل کیفیت" }], clients: ["همکار صنعتی", "تأمین‌کننده منتخب", "مشتری سازمانی"],
+    ctaText: "دریافت پروپوزال همکاری", formTitle: "درخواست همکاری سازمانی",
+  },
+  "beauty-salon": {
+    promise: "زیبایی طبیعی شما، با اجرای ظریف، مواد حرفه‌ای و تجربه‌ای کاملاً شخصی.",
+    about: "پیش از هر خدمات، سلیقه و ویژگی‌های شما را می‌شناسیم تا نتیجه نهایی فقط زیبا نباشد؛ دقیقاً مناسب خود شما باشد.",
+    offerings: ["رنگ و استایل مو", "خدمات تخصصی ناخن", "مراقبت پوست و زیبایی"],
+    offeringDescriptions: ["انتخاب رنگ و فرم متناسب با چهره و استایل شما.", "اجرای ظریف با رعایت کامل بهداشت و ماندگاری بالا.", "پروتکل اختصاصی برای شفافیت و سلامت پوست."],
+    portfolioNotes: ["تغییر استایل طبیعی و درخشان", "طراحی ظریف برای مراسم", "مراقبت حرفه‌ای و نتیجه ماندگار"],
+    testimonials: [{ name: "یکی از مشتریان سالن", text: "نتیجه حتی بهتر از چیزی شد که تصور می‌کردم؛ همه‌چیز با حوصله و ظرافت انجام شد." }],
+    faq: [{ question: "چطور خدمات مناسبم را انتخاب کنم؟", answer: "قبل از رزرو نهایی، مشاوره کوتاهی برای شناخت سلیقه و شرایط شما انجام می‌شود." }],
+    pricingPlans: [], teamMembers: [{ name: "تیم زیبایی", role: "متخصص مو و زیبایی", bio: "آموزش‌دیده، دقیق و به‌روز با جدیدترین تکنیک‌ها." }],
+    galleryNotes: ["رنگ و لایت حرفه‌ای", "طراحی ناخن", "مراقبت پوست", "فضای اختصاصی سالن"], listings: [], schedule: [{ day: "شنبه تا پنجشنبه", time: "۱۰ تا ۲۰", title: "رزرو خدمات" }],
+    stats: [{ value: "+۵۰۰", label: "مشتری خوشحال" }, { value: "اورجینال", label: "مواد مصرفی" }], clients: [],
+    ctaText: "رزرو نوبت زیبایی", formTitle: "نوبت اختصاصی شما",
+  },
+  "gym-fitness": {
+    promise: "تمرین هدفمند، مربی همراه و برنامه‌ای که نتیجه‌اش را در زندگی واقعی می‌بینید.",
+    about: "از ارزیابی اولیه تا برنامه تمرین و پیگیری پیشرفت، همه‌چیز متناسب با بدن، سبک زندگی و هدف واقعی شما طراحی می‌شود.",
+    offerings: ["بدنسازی و تناسب اندام", "تمرین خصوصی", "کلاس‌های گروهی"],
+    offeringDescriptions: ["تجهیزات کامل و برنامه تمرینی متناسب با سطح شما.", "تمرین یک‌به‌یک با تمرکز کامل روی تکنیک و نتیجه.", "انرژی گروهی بالا با مربی حرفه‌ای و ظرفیت محدود."],
+    portfolioNotes: ["شروع مسیر تناسب اندام", "پیگیری تغییرات واقعی", "جامعه‌ای پرانرژی"],
+    testimonials: [{ name: "یکی از ورزشکاران", text: "برای اولین بار برنامه‌ای داشتم که واقعاً با شرایط من هماهنگ بود و توانستم ادامه‌اش بدهم." }],
+    faq: [{ question: "از چه سطحی می‌توانم شروع کنم؟", answer: "پس از ارزیابی اولیه، برنامه از سطح فعلی شما آغاز می‌شود؛ تجربه قبلی لازم نیست." }],
+    pricingPlans: [{ name: "عضویت پایه", price: "ماهانه", description: "دسترسی به سالن و ارزیابی اولیه", features: ["تجهیزات کامل", "مشاوره شروع", "پیگیری ماهانه"] }, { name: "مربی اختصاصی", price: "پلن ویژه", description: "برنامه کاملاً شخصی", features: ["ارزیابی تخصصی", "برنامه تمرین", "پیگیری هفتگی"] }],
+    teamMembers: [{ name: "مربی ارشد", role: "بدنسازی و تناسب اندام", bio: "مربی رسمی با تمرکز بر تمرین ایمن و نتیجه پایدار." }],
+    galleryNotes: ["سالن تمرین مجهز", "تمرین با مربی", "کلاس گروهی", "تجهیزات حرفه‌ای"], listings: [], schedule: [{ day: "شنبه، دوشنبه، چهارشنبه", time: "۱۸ تا ۲۰", title: "کلاس گروهی" }, { day: "هر روز", time: "۶ تا ۲۲", title: "تمرین آزاد" }],
+    stats: [{ value: "+۲۰۰", label: "عضو فعال" }, { value: "۷ روز", label: "فعال در هفته" }], clients: [],
+    ctaText: "شروع جلسه آزمایشی", formTitle: "شروع مسیر تمرینی",
+  },
+  "law-firm": {
+    promise: "تحلیل روشن، راهبرد حقوقی دقیق و همراهی مسئولانه در تصمیم‌های مهم.",
+    about: "هر پرونده با شنیدن دقیق مسئله، بررسی مستندات و ارائه تصویری شفاف از مسیرهای پیش رو آغاز می‌شود.",
+    offerings: ["مشاوره و تحلیل پرونده", "دعاوی و قراردادها", "پیگیری تخصصی"],
+    offeringDescriptions: ["شناخت ابعاد مسئله و ارائه راهکارهای قابل اجرا.", "تنظیم و دفاع حقوقی با توجه کامل به جزئیات.", "گزارش منظم وضعیت و همراهی تا پایان مسیر."],
+    portfolioNotes: ["حل‌وفصل اختلاف از مسیر مذاکره", "دفاع موفق در پرونده قراردادی", "تنظیم قرارداد پیشگیرانه"],
+    testimonials: [{ name: "یکی از موکلان", text: "مسیر پرونده از ابتدا کاملاً شفاف توضیح داده شد و در تمام مراحل احساس اطمینان داشتم." }],
+    faq: [{ question: "پیش از جلسه چه مدارکی آماده کنم؟", answer: "شرح کوتاه موضوع و اسناد مرتبط را آماده کنید تا جلسه اول با بررسی دقیق‌تری انجام شود." }],
+    pricingPlans: [], teamMembers: [{ name: "وکیل پایه یک دادگستری", role: "مشاور و وکیل پرونده", bio: "با تجربه در تحلیل پرونده‌های پیچیده و مذاکره حقوقی." }],
+    galleryNotes: ["جلسه مشاوره", "بررسی مستندات", "فضای حرفه‌ای دفتر", "همراهی حقوقی"], listings: [], schedule: [{ day: "شنبه تا چهارشنبه", time: "۹ تا ۱۸", title: "جلسات حضوری و آنلاین" }],
+    stats: [{ value: "+۱۰", label: "سال سابقه" }, { value: "محرمانه", label: "تمام مشاوره‌ها" }], clients: [],
+    ctaText: "درخواست مشاوره محرمانه", formTitle: "شرح اولیه موضوع حقوقی",
+  },
+  "real-estate": {
+    promise: "فایل واقعی، تحلیل دقیق بازار و همراهی مطمئن تا امضای یک انتخاب خوب.",
+    about: "به‌جای نمایش صدها فایل نامرتبط، نیاز و بودجه شما را می‌شناسیم و انتخاب‌هایی واقعی و قابل بررسی پیشنهاد می‌کنیم.",
+    offerings: ["خرید و فروش ملک", "رهن و اجاره", "ارزیابی و مشاوره سرمایه‌گذاری"],
+    offeringDescriptions: ["جست‌وجوی هدفمند و مذاکره برای یک معامله مطمئن.", "فایل‌های به‌روز متناسب با محدوده و بودجه شما.", "بررسی ارزش واقعی و ظرفیت رشد هر انتخاب."],
+    portfolioNotes: [], testimonials: [{ name: "یکی از خریداران", text: "فقط فایل‌های واقعی و متناسب دیدیم و بدون اتلاف وقت به گزینه مناسب رسیدیم." }],
+    faq: [{ question: "چطور فایل مناسب دریافت کنم؟", answer: "بودجه، محدوده و اولویت‌هایتان را ثبت کنید تا گزینه‌های واقعی و نزدیک به نیاز شما معرفی شوند." }],
+    pricingPlans: [], teamMembers: [], galleryNotes: ["خانه‌های منتخب", "فضای داخلی باکیفیت", "محله‌های ارزشمند", "فرصت‌های سرمایه‌گذاری"],
+    listings: [{ title: "آپارتمان خوش‌نقشه در محدوده منتخب", price: "قیمت روز", meta: "نور عالی • سند کامل • آماده بازدید" }, { title: "فرصت سرمایه‌گذاری ویژه", price: "شرایط مناسب", meta: "موقعیت روبه‌رشد • کارشناسی‌شده" }, { title: "خانه مناسب خانواده", price: "تماس بگیرید", meta: "دسترسی عالی • محیط آرام" }],
+    schedule: [], stats: [{ value: "واقعی", label: "فایل‌های تأییدشده" }, { value: "همراه", label: "تا امضای قرارداد" }], clients: [],
+    ctaText: "دریافت فایل‌های مناسب من", formTitle: "ملک موردنظر شما",
+  },
+  education: {
+    promise: "یادگیری هدفمند با استادان حرفه‌ای و مسیری روشن از شروع تا نتیجه.",
+    about: "کلاس‌های کم‌جمعیت، ارزیابی مستمر و پشتیبانی آموزشی کمک می‌کند هر زبان‌آموز با ریتم مناسب خودش پیشرفت کند.",
+    offerings: ["دوره‌های عمومی", "کلاس خصوصی و فشرده", "آمادگی آزمون"],
+    offeringDescriptions: ["مسیر سطح‌بندی‌شده برای ساخت مهارت‌های پایدار.", "برنامه منعطف و تمرکز کامل روی نیاز شما.", "تمرین هدفمند، آزمون آزمایشی و تحلیل عملکرد."],
+    portfolioNotes: ["مسیر پیشرفت زبان‌آموزان", "کارگاه‌های مهارتی", "نتایج آزمون‌های بین‌المللی"],
+    testimonials: [{ name: "یکی از زبان‌آموزان", text: "برنامه کلاس دقیق و منظم بود و بالاخره توانستم پیشرفتم را به‌صورت واقعی احساس کنم." }],
+    faq: [{ question: "چطور سطح مناسبم مشخص می‌شود؟", answer: "پس از یک تعیین سطح کوتاه، دوره و برنامه مناسب هدف و زمان شما پیشنهاد می‌شود." }],
+    pricingPlans: [], teamMembers: [{ name: "مدرس ارشد", role: "طراح مسیر آموزشی", bio: "با تجربه تدریس و رویکردی کاربردی و نتیجه‌محور." }],
+    galleryNotes: ["کلاس‌های تعاملی", "اساتید حرفه‌ای", "فضای یادگیری", "موفقیت زبان‌آموزان"], listings: [], schedule: [{ day: "شنبه تا چهارشنبه", time: "۱۶ تا ۲۱", title: "کلاس‌های عصر" }, { day: "پنجشنبه", time: "۹ تا ۱۴", title: "دوره‌های فشرده" }],
+    stats: [{ value: "+۱۰۰۰", label: "زبان‌آموز" }, { value: "+۲۰", label: "مدرس منتخب" }], clients: [],
+    ctaText: "تعیین سطح رایگان", formTitle: "شروع مسیر یادگیری",
+  },
+};
 
 /**
  * Deterministic preview built directly from the brief — no AI.
@@ -347,6 +494,8 @@ export function buildDraftPreview(brief: FastWebBrief): FastWebPreviewContent {
   const city = brief.city?.trim();
   const advantage = brief.mainAdvantage?.trim();
   const shortDescription = brief.shortDescription?.trim();
+  const categoryKey = pickCategoryKey(brief);
+  const preset = DEMO_PRESETS[categoryKey];
 
   const offeringsRaw = (brief.offerings || "")
     .split(/[\n,،]+/)
@@ -355,21 +504,18 @@ export function buildDraftPreview(brief: FastWebBrief): FastWebPreviewContent {
     .slice(0, 5);
   const offerings: FastWebOfferingItem[] =
     offeringsRaw.length > 0
-      ? offeringsRaw.map((title) => ({
+      ? offeringsRaw.map((title, index) => ({
           title,
-          description: advantage || "توضیح این مورد در نسخه نهایی تکمیل می‌شود.",
+          description:
+            preset.offeringDescriptions[index % preset.offeringDescriptions.length],
         }))
-      : [
-          {
-            title: "خدمت یا محصول اصلی",
-            description: shortDescription || "توضیح کوتاه در نسخه نهایی تکمیل می‌شود.",
-          },
-        ];
+      : preset.offerings.map((title, index) => ({
+          title,
+          description: preset.offeringDescriptions[index],
+        }));
 
   const style = (brief.style || "modern") as FastWebStyleId;
-  const categoryKey = pickCategoryKey(brief);
   const templateKey = pickCoreKey(brief);
-  const category = getFastWebCategory(categoryKey);
   const sections = (
     brief.sections?.length
       ? brief.sections
@@ -378,10 +524,10 @@ export function buildDraftPreview(brief: FastWebBrief): FastWebPreviewContent {
         : suggestedSectionsForGoal(brief.goal)
   ).slice(0, 12) as FastWebSectionId[];
 
-  const faq: FastWebFaqItem[] = [
+  const commonFaq: FastWebFaqItem[] = [
     {
       question: "چطور می‌توانم با شما تماس بگیرم؟",
-      answer: "از طریق شماره تماس، واتساپ یا فرم درخواست در همین صفحه.",
+      answer: `از طریق شماره تماس، واتساپ یا فرم درخواست همین صفحه با ${name} در ارتباط باشید.`,
     },
     {
       question: "محدوده فعالیت کجاست؟",
@@ -392,36 +538,78 @@ export function buildDraftPreview(brief: FastWebBrief): FastWebPreviewContent {
       answer: "فرم درخواست را پر کنید؛ در اولین فرصت پاسخ می‌دهیم.",
     },
   ];
+  const headlineByCategory: Record<FastWebCategoryKey, string> = {
+    "service-business": "کار درست، از همان بار اول",
+    professional: "تخصصی که می‌توانید به آن اعتماد کنید",
+    "online-store": "انتخاب‌هایی برای سلیقه‌های متفاوت",
+    "restaurant-cafe": "طعم خوب، حال خوب",
+    "company-b2b": "ساخته‌شده برای همکاری‌های بزرگ",
+    "beauty-salon": "زیبایی‌ای که شبیه خود شماست",
+    "gym-fitness": "قوی‌تر از دیروز",
+    "law-firm": "آرامش، پشت یک تصمیم حقوقی درست",
+    "real-estate": "خانه‌ای نزدیک به تصویر زندگی شما",
+    education: "یادگیری‌ای که شما را جلو می‌برد",
+  };
+  const locationPhrase = city ? `در ${city}` : "";
+  const audiencePresetLabels = (brief.audiencePresets || [])
+    .map(
+      (id) =>
+        FASTWEB_AUDIENCE_PRESETS.find((preset) => preset.id === id)?.label
+    )
+    .filter(Boolean);
+  const audience = brief.audience?.trim() || audiencePresetLabels.join(" و ");
+  const audiencePhrase = audience
+    ? `برای ${audience}`
+    : "";
 
   return {
-    headline: city ? `${name} در ${city}` : name,
+    headline: `${name}${city ? ` در ${city}` : ""}؛ ${headlineByCategory[categoryKey]}`,
     subheadline:
-      shortDescription ||
       advantage ||
-      category?.pitch ||
-      "معرفی خدمات و راه‌های ارتباط سریع با ما",
+      [preset.promise, locationPhrase, audiencePhrase].filter(Boolean).join(" "),
     aboutText:
-      shortDescription ||
-      `${name} آماده ارائه خدمات به ${brief.audience?.trim() || "مشتریان"} است.`,
+      [shortDescription, `${name} ${locationPhrase} فعالیت می‌کند.`, preset.about]
+        .filter(Boolean)
+        .join(" "),
     offerings,
-    portfolioNotes: [],
-    testimonials: [],
-    faq,
-    ctaText: "ثبت درخواست",
-    formTitle: "فرم درخواست",
+    portfolioNotes: preset.portfolioNotes,
+    testimonials: preset.testimonials,
+    faq: [...preset.faq, ...commonFaq].slice(0, 4),
+    ctaText: preset.ctaText,
+    formTitle: preset.formTitle,
     seoTitle: city ? `${name} | ${city}` : name,
-    seoDescription: (shortDescription || `سایت معرفی ${name}`).slice(0, 150),
+    seoDescription: (shortDescription || advantage || preset.promise).slice(0, 150),
     categoryKey,
     templateKey,
     styleKey: style,
     brandColor: brief.brandColor || "#0F4C5C",
     sections,
-    pricingPlans: sections.includes("pricing") ? DEFAULT_PRICING_PLANS : [],
-    teamMembers: sections.includes("team") ? DEFAULT_TEAM_MEMBERS : [],
-    galleryNotes: [],
-    listings: sections.includes("listings") ? DEFAULT_LISTINGS : [],
-    schedule: sections.includes("schedule") ? DEFAULT_SCHEDULE : [],
-    stats: sections.includes("stats") ? DEFAULT_STATS : [],
-    clients: [],
+    pricingPlans: sections.includes("pricing")
+      ? preset.pricingPlans.length
+        ? preset.pricingPlans
+        : DEFAULT_PRICING_PLANS
+      : [],
+    teamMembers: sections.includes("team")
+      ? preset.teamMembers.length
+        ? preset.teamMembers
+        : DEFAULT_TEAM_MEMBERS
+      : [],
+    galleryNotes: preset.galleryNotes,
+    listings: sections.includes("listings")
+      ? preset.listings.length
+        ? preset.listings
+        : DEFAULT_LISTINGS
+      : [],
+    schedule: sections.includes("schedule")
+      ? preset.schedule.length
+        ? preset.schedule
+        : DEFAULT_SCHEDULE
+      : [],
+    stats: sections.includes("stats")
+      ? preset.stats.length
+        ? preset.stats
+        : DEFAULT_STATS
+      : [],
+    clients: preset.clients,
   };
 }

@@ -4,10 +4,10 @@ import type { FastWebBrief } from "@/lib/fastweb";
 import Field from "./Field";
 
 const EXAMPLE_PROMPTS = [
-  "فروشگاه آنلاین لباس مردانه؛ مخاطب آقایان ۲۰ تا ۴۰ سال؛ حال‌وهوای مدرن و مینیمال با رنگ‌های تیره.",
-  "سایت شرکت مهندسی؛ معرفی خدمات و نمونه‌کارها؛ ظاهر رسمی و حرفه‌ای.",
-  "بلاگ شخصی آشپزی؛ لحن صمیمی و رنگ‌های گرم.",
-  "نمونه‌کار عکاسی و طراحی؛ گالری تصاویر با طراحی تمیز و تیره.",
+  "سالن زیبایی تخصصی رنگ و لایت با ۸ سال سابقه؛ مخاطب خانم‌های جوان شیراز؛ فضای لوکس و صمیمی.",
+  "باشگاه بدنسازی مجهز با مربی اختصاصی و کلاس گروهی؛ مناسب جوانان؛ حال‌وهوای پرانرژی و مدرن.",
+  "دفتر وکالت متخصص پرونده‌های ملکی و قراردادها؛ مشاوره حضوری و آنلاین؛ ظاهر رسمی و مطمئن.",
+  "کافه با قهوه تخصصی، صبحانه و دسر روز؛ فضای گرم برای قرارهای دوستانه و کاری.",
 ];
 
 interface StepBusinessProps {
@@ -26,7 +26,8 @@ export default function StepBusiness({
   return (
     <section className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold">بیایید سایت‌تان را بسازیم</h1>
+        <p className="mb-2 text-xs font-bold text-[#0F4C5C]">کمتر از ۳ دقیقه تا دیدن دمو</p>
+        <h1 className="text-2xl font-bold">بیایید سایت واقعی کسب‌وکارتان را بسازیم</h1>
         <p className="mt-2 text-sm text-slate-600 leading-7">
           هرچه بیشتر بنویسید، سایت دقیق‌تری برایتان می‌سازیم. درباره کسب‌وکار،
           مخاطب، خدمات یا محصولات و حال‌وهوای دلخواه توضیح دهید؛ در صورت تمایل
@@ -86,6 +87,14 @@ export default function StepBusiness({
       />
 
       <Field
+        label="مهم‌ترین دلیل انتخاب شما (اختیاری اما مهم)"
+        value={brief.mainAdvantage || ""}
+        onChange={(v) => onPatch({ mainAdvantage: v })}
+        placeholder="مثلاً: مشاوره اولیه رایگان، مواد اورجینال و تضمین رضایت"
+        hint="این جمله در پیام اصلی و بخش‌های اعتمادساز دمو استفاده می‌شود."
+      />
+
+      <Field
         label="خدمات یا محصولات اصلی (اختیاری)"
         value={brief.offerings || ""}
         onChange={(v) => onPatch({ offerings: v })}
@@ -95,7 +104,9 @@ export default function StepBusiness({
 
       <div>
         <p className="text-sm font-medium">افزودن فایل (اختیاری)</p>
-        <p className="mt-1 text-xs text-slate-500">تصویر یا PDF — حداکثر ۱۰ مگابایت</p>
+        <p className="mt-1 text-xs text-slate-500">
+          بهترین عکس واقعی کسب‌وکار، لوگو یا PDF — حداکثر ۱۰ مگابایت
+        </p>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:border-slate-300">
             <input
@@ -112,9 +123,41 @@ export default function StepBusiness({
             {uploading ? "در حال آپلود..." : "انتخاب فایل"}
           </label>
           {brief.attachmentName ? (
-            <span className="text-xs text-slate-600 truncate max-w-[200px]">
-              {brief.attachmentName}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {brief.attachmentUrl &&
+              /\.(avif|gif|jpe?g|png|webp)$/i.test(brief.attachmentName || "") ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={brief.attachmentUrl}
+                  alt="تصویر انتخاب‌شده برای دمو"
+                  className="h-10 w-10 rounded-lg object-cover"
+                />
+              ) : null}
+              <span className="max-w-[200px] truncate text-xs text-slate-600">
+                {brief.attachmentName}
+              </span>
+              {/\.(avif|gif|jpe?g|png|webp)$/i.test(brief.attachmentName) ? (
+                <div className="flex rounded-lg bg-slate-100 p-1">
+                  {[
+                    { id: "hero" as const, label: "عکس اصلی سایت" },
+                    { id: "logo" as const, label: "لوگو" },
+                  ].map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => onPatch({ attachmentKind: option.id })}
+                      className={`rounded-md px-2.5 py-1.5 text-[11px] font-medium ${
+                        brief.attachmentKind === option.id
+                          ? "bg-white text-[#0F4C5C] shadow-sm"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

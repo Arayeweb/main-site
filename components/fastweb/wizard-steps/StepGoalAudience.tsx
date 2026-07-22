@@ -37,6 +37,16 @@ function toggleSection(
   return next.slice(0, 12) as FastWebSectionId[];
 }
 
+function mergeGoalSections(
+  current: FastWebSectionId[] | undefined,
+  suggested: FastWebSectionId[]
+): FastWebSectionId[] {
+  const optional = Array.from(new Set([...(current || []), ...suggested])).filter(
+    (id) => id !== "hero" && id !== "contact"
+  );
+  return ["hero", ...optional.slice(0, 10), "contact"];
+}
+
 export default function StepGoalAudience({ brief, onPatch }: StepGoalAudienceProps) {
   const audiencePresets = (brief.audiencePresets || []) as FastWebAudiencePresetId[];
 
@@ -57,9 +67,10 @@ export default function StepGoalAudience({ brief, onPatch }: StepGoalAudiencePro
             onClick={() =>
               onPatch({
                 goal: g.id,
-                sections: brief.sections?.length
-                  ? brief.sections
-                  : suggestedSectionsForGoal(g.id),
+                sections: mergeGoalSections(
+                  brief.sections,
+                  suggestedSectionsForGoal(g.id)
+                ),
               })
             }
             className={`rounded-xl border px-4 py-4 text-right transition ${
@@ -105,10 +116,17 @@ export default function StepGoalAudience({ brief, onPatch }: StepGoalAudiencePro
         </div>
       </div>
 
-      <div>
-        <p className="text-sm font-medium">چه بخش‌هایی در سایت نیاز دارید؟</p>
-        <p className="mt-1 text-xs text-slate-500">
-          بر اساس هدف شما پیش‌فرض انتخاب شده؛ می‌توانید تغییر دهید.
+      <details className="group rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-slate-700">
+          <span>تنظیم بخش‌های سایت</span>
+          <span className="text-xs font-normal text-slate-500 group-open:hidden">
+            {brief.sections?.length || 0} بخش متناسب انتخاب شده
+          </span>
+          <span className="hidden text-xs font-normal text-[#0F4C5C] group-open:block">بستن تنظیمات</span>
+        </summary>
+        <p className="mt-3 text-xs leading-6 text-slate-500">
+          بهترین ساختار برای دسته و هدف شما از قبل انتخاب شده است. فقط در صورت
+          نیاز می‌توانید بخش‌ها را تغییر دهید.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {FASTWEB_SECTIONS.map((s) => {
@@ -136,7 +154,7 @@ export default function StepGoalAudience({ brief, onPatch }: StepGoalAudiencePro
             );
           })}
         </div>
-      </div>
+      </details>
     </section>
   );
 }

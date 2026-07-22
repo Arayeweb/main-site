@@ -25,6 +25,7 @@ import {
   type FastWebCategoryKey,
   type FastWebCoreKey,
   type FastWebSectionId,
+  type FastWebStyleId,
 } from "@/lib/fastweb";
 
 export interface FastWebCategoryMeta {
@@ -37,6 +38,8 @@ export interface FastWebCategoryMeta {
   /** Free-text examples of the target market, shown as chips. */
   targetMarket: string[];
   core: FastWebCoreKey;
+  recommendedStyle: FastWebStyleId;
+  defaultBrandColor: string;
   /** Blocks turned on by default for this category (hero/contact always included by FastWebSiteView). */
   defaultSections: FastWebSectionId[];
   /** Lucide icon name — resolved in UI via a local icon map, kept as string here to avoid a client import. */
@@ -54,7 +57,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "تعمیرات، خدمات فنی منزل، آموزشگاه‌های آزاد، مشاوران و پیمانکاران که نیاز به معرفی خدمات و دریافت درخواست دارند.",
     targetMarket: ["تعمیرگاه", "خدمات منزل", "آموزشگاه آزاد", "مشاور", "پیمانکار"],
     core: "service",
-    defaultSections: ["services", "about", "testimonials", "faq"],
+    recommendedStyle: "modern",
+    defaultBrandColor: "#0F4C5C",
+    defaultSections: ["services", "about", "testimonials", "faq", "booking"],
     icon: "Wrench",
     detectPattern:
       /تعمیر|خدمات فنی|نصب|تاسیسات|پیمانکار|برق‌کار|لوله‌کش|نقاش|خدماتی|service/i,
@@ -67,7 +72,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "پزشکان، روانشناسان، مربیان و فریلنسرهایی که با معرفی تخصص، رزومه و مدارک اعتماد می‌سازند و درخواست مشاوره می‌گیرند.",
     targetMarket: ["پزشک", "روانشناس", "مربی", "فریلنسر", "مشاور مستقل"],
     core: "professional",
-    defaultSections: ["about", "credentials", "services", "testimonials", "faq"],
+    recommendedStyle: "formal",
+    defaultBrandColor: "#1E3A5F",
+    defaultSections: ["about", "credentials", "services", "testimonials", "faq", "booking"],
     icon: "Stethoscope",
     detectPattern:
       /پزشک|دکتر|روانشناس|مشاور|فریلنسر|freelanc|دندان|مطب|کلینیک|درمانگر/i,
@@ -80,6 +87,8 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "فروش محصول، پوشاک، صنایع دستی و فروش خانگی که می‌خواهند محصولات و قیمت را حرفه‌ای نمایش دهند.",
     targetMarket: ["فروش پوشاک", "صنایع دستی", "فروش خانگی", "محصولات دیجیتال"],
     core: "commerce",
+    recommendedStyle: "modern",
+    defaultBrandColor: "#B8542F",
     defaultSections: ["products", "pricing", "gallery", "testimonials", "faq"],
     icon: "ShoppingBag",
     detectPattern: /فروشگاه|پوشاک|صنایع دستی|فروش محصول|shop|store|محصول/i,
@@ -92,7 +101,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "رستوران، کافه، فست‌فود و شیرینی‌فروشی‌هایی که منو، فضا و مسیر سفارش را باید در یک صفحه نشان دهند.",
     targetMarket: ["رستوران", "کافه", "فست‌فود", "شیرینی‌فروشی"],
     core: "local",
-    defaultSections: ["menu", "gallery", "about", "testimonials"],
+    recommendedStyle: "warm",
+    defaultBrandColor: "#8B3A3A",
+    defaultSections: ["menu", "gallery", "about", "testimonials", "faq", "booking"],
     icon: "UtensilsCrossed",
     detectPattern: /رستوران|کافه|فست‌فود|فست فود|شیرینی|کافی‌شاپ|café|restaurant|cafe/i,
   },
@@ -104,7 +115,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "شرکت‌ها، تولیدکننده‌ها و کارخانه‌هایی که باید توان تولید، مشتریان و اعتبار B2B را نمایش دهند.",
     targetMarket: ["شرکت تولیدی", "کارخانه", "شرکت صنعتی", "تامین‌کننده B2B"],
     core: "company",
-    defaultSections: ["services", "stats", "clients", "team", "about"],
+    recommendedStyle: "formal",
+    defaultBrandColor: "#1F3B4D",
+    defaultSections: ["services", "stats", "clients", "team", "about", "testimonials", "faq", "booking"],
     icon: "Building2",
     detectPattern:
       /شرکت|کارخانه|تولیدی|صنعتی|holding|هلدینگ|تامین‌کننده|b2b/i,
@@ -117,7 +130,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "آرایشگاه، کلینیک زیبایی، ناخن، پوست و مو — با گالری نمونه‌کار و درخواست رزرو سریع.",
     targetMarket: ["آرایشگاه", "کلینیک زیبایی", "سالن ناخن", "پوست و مو"],
     core: "service",
-    defaultSections: ["services", "gallery", "booking", "portfolio", "testimonials"],
+    recommendedStyle: "warm",
+    defaultBrandColor: "#A6416F",
+    defaultSections: ["services", "gallery", "portfolio", "about", "testimonials", "faq", "booking"],
     icon: "Sparkles",
     detectPattern: /آرایشگاه|سالن زیبایی|زیبایی|ناخن|میکاپ|آرایش|beauty|salon/i,
   },
@@ -129,7 +144,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "باشگاه، مربی ورزشی، یوگا و بدنسازی — با پلن‌های عضویت، معرفی مربیان و برنامه کلاس‌ها.",
     targetMarket: ["باشگاه بدنسازی", "مربی ورزشی", "یوگا", "پیلاتس"],
     core: "service",
-    defaultSections: ["pricing", "team", "schedule", "testimonials"],
+    recommendedStyle: "modern",
+    defaultBrandColor: "#1A5C3E",
+    defaultSections: ["pricing", "team", "schedule", "gallery", "about", "testimonials", "faq", "booking"],
     icon: "Dumbbell",
     detectPattern: /باشگاه|بدنسازی|مربی ورزشی|یوگا|پیلاتس|فیتنس|crossfit|gym|fitness/i,
   },
@@ -141,7 +158,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "وکلا و موسسات حقوقی که با حوزه‌های تخصصی، نمونه پرونده‌ها و مسیر مشاوره اعتماد می‌سازند.",
     targetMarket: ["وکیل", "موسسه حقوقی", "مشاور حقوقی"],
     core: "professional",
-    defaultSections: ["services", "caseStudies", "credentials", "booking", "faq"],
+    recommendedStyle: "formal",
+    defaultBrandColor: "#2C3E50",
+    defaultSections: ["services", "caseStudies", "credentials", "about", "testimonials", "faq", "booking"],
     icon: "Scale",
     detectPattern: /وکیل|وکالت|حقوقی|دادگستری|law|lawyer|attorney/i,
   },
@@ -153,7 +172,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "املاک، مشاورین ملک و شرکت‌های ساخت‌وساز — با نمایش فایل‌های منتخب و ثبت درخواست خرید/فروش.",
     targetMarket: ["مشاور املاک", "بنگاه املاک", "شرکت ساختمانی"],
     core: "local",
-    defaultSections: ["listings", "services", "about", "faq"],
+    recommendedStyle: "modern",
+    defaultBrandColor: "#5C4A2E",
+    defaultSections: ["listings", "services", "gallery", "about", "testimonials", "faq", "booking"],
     icon: "Home",
     detectPattern: /املاک|بنگاه|مشاور املاک|ساخت‌وساز|ساختمانی|real estate|realtor/i,
   },
@@ -165,7 +186,9 @@ export const FASTWEB_CATEGORIES: FastWebCategoryMeta[] = [
       "آموزشگاه زبان، کنکور و دوره‌های آنلاین که باید دوره‌ها، اساتید و مسیر ثبت‌نام را نشان دهند.",
     targetMarket: ["آموزشگاه زبان", "آموزشگاه کنکور", "دوره آنلاین"],
     core: "professional",
-    defaultSections: ["services", "team", "schedule", "testimonials", "faq"],
+    recommendedStyle: "modern",
+    defaultBrandColor: "#2E5C6E",
+    defaultSections: ["services", "team", "schedule", "about", "testimonials", "faq", "booking"],
     icon: "GraduationCap",
     detectPattern: /آموزشگاه|زبان|کنکور|دوره آنلاین|مدرسه|آکادمی|academy|course/i,
   },

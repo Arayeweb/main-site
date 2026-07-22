@@ -20,7 +20,13 @@ export default function StepCategory({ brief, onPatch }: StepCategoryProps) {
   const selected = brief.categoryKey || suggested;
 
   function select(key: FastWebCategoryKey) {
-    onPatch({ categoryKey: key, sections: defaultSectionsForCategory(key) });
+    const category = categories.find((item) => item.key === key);
+    onPatch({
+      categoryKey: key,
+      sections: defaultSectionsForCategory(key),
+      style: category?.recommendedStyle,
+      brandColor: category?.defaultBrandColor,
+    });
   }
 
   return (

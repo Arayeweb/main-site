@@ -72,8 +72,13 @@ export default function StepContacts({
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 space-y-4">
-        <p className="text-sm font-semibold text-slate-800">اطلاعات رسمی (اختیاری)</p>
+      <details className="group rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-slate-800">
+          <span>اطلاعات رسمی و مجوزها</span>
+          <span className="text-xs font-normal text-slate-500 group-open:hidden">اختیاری — در صورت نیاز باز کنید</span>
+          <span className="hidden text-xs font-normal text-[#0F4C5C] group-open:block">بستن</span>
+        </summary>
+        <div className="mt-4 space-y-4">
         <Field
           label="نام حقوقی / نام سایت"
           value={brief.legalName || ""}
@@ -116,7 +121,8 @@ export default function StepContacts({
           onChange={(v) => onPatch({ socialLinksRaw: v })}
           placeholder="لینک اینستاگرام، تلگرام، واتساپ..."
         />
-      </div>
+        </div>
+      </details>
     </section>
   );
 }

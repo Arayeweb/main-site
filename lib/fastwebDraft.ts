@@ -34,6 +34,7 @@ export function createEmptyBrief(): FastWebBrief {
     favoriteSites: "",
     attachmentUrl: "",
     attachmentName: "",
+    attachmentKind: "reference",
     contacts: {
       phone: "",
       whatsapp: "",
