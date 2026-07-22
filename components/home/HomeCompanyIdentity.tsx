@@ -1,10 +1,8 @@
 import Link from "next/link";
 import {
-  COMPANY_ADDRESS_FULL,
   COMPANY_DISPLAY_NAME,
   COMPANY_EMAIL,
   COMPANY_LEGAL_NAME,
-  COMPANY_MAPS_URL,
   COMPANY_PHONE_DISPLAY,
   COMPANY_PHONE_TEL,
   COMPANY_SAME_AS,
@@ -41,17 +39,6 @@ export default function HomeCompanyIdentity() {
             <p className="text-xs font-bold text-navy-400">ایمیل</p>
             <p className="mt-1 text-base font-extrabold text-navy-900" dir="ltr">
               {COMPANY_EMAIL}
-            </p>
-          </a>
-          <a
-            href={COMPANY_MAPS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-[16px] border border-navy-100 bg-white px-5 py-4 transition hover:border-teal-200 sm:col-span-2"
-          >
-            <p className="text-xs font-bold text-navy-400">آدرس شرکت</p>
-            <p className="mt-1 text-sm font-bold leading-relaxed text-navy-900">
-              {COMPANY_ADDRESS_FULL}
             </p>
           </a>
         </div>
