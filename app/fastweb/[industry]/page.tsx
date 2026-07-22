@@ -30,8 +30,8 @@ export async function generateMetadata({
   const canonicalPath = getFastWebIndustryPath(slug);
 
   return {
-    title: { absolute: industry.title },
-    description: industry.description,
+    title: { absolute: industry.metadata.title },
+    description: industry.metadata.description,
     alternates: { canonical: canonicalPath },
     robots: {
       index: indexable,
@@ -39,16 +39,16 @@ export async function generateMetadata({
       googleBot: { index: indexable, follow: true },
     },
     openGraph: {
-      title: industry.title,
-      description: industry.description,
+      title: industry.metadata.title,
+      description: industry.metadata.description,
       url: canonicalUrl(canonicalPath),
       type: "website",
       locale: "fa_IR",
     },
     twitter: {
       card: "summary_large_image",
-      title: industry.title,
-      description: industry.description,
+      title: industry.metadata.title,
+      description: industry.metadata.description,
     },
   };
 }

@@ -19,6 +19,12 @@ export function getSupabaseAdmin(): SupabaseClient {
 
   cached = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      // Next.js patches global fetch with its Data Cache, which can replay
+      // stale PostgREST responses inside route handlers (jobs stuck "pending").
+      fetch: (input, init) =>
+        fetch(input as RequestInfo, { ...init, cache: "no-store" } as RequestInit),
+    },
   });
   return cached;
 }

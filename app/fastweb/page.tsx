@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import FastWebLanding, { fastwebFaq } from "@/components/fastweb/FastWebLanding";
+import FastWebLanding from "@/components/fastweb/FastWebLanding";
+import { fastwebFaq } from "@/components/fastweb/landing/content";
 import FastWebPageAnalytics from "@/components/fastweb/FastWebPageAnalytics";
 import { canonicalUrl } from "@/lib/siteUrl";
 

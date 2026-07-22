@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 const PAGE_SIZE = 50;
 const LIST_COLUMNS =
   "id, slug, phone, business_name, package, amount_toman, payment_status, " +
-  "fulfillment_status, template_key, revision_count, domain_request, " +
+  "fulfillment_status, category_key, template_key, revision_count, domain_request, " +
   "paid_at, published_at, created_at, updated_at";
 
 export async function GET(req: NextRequest) {

@@ -64,14 +64,75 @@ export const FASTWEB_SECTIONS = [
   { id: "hero", label: "معرفی اصلی", required: true },
   { id: "services", label: "خدمات" },
   { id: "products", label: "محصولات" },
-  { id: "about", label: "درباره ما" },
+  { id: "menu", label: "منو" },
+  { id: "pricing", label: "قیمت‌ها و پلن‌ها" },
+  { id: "gallery", label: "گالری تصاویر" },
+  { id: "listings", label: "فایل‌های ملکی" },
   { id: "portfolio", label: "نمونه‌کار" },
+  { id: "caseStudies", label: "نمونه پرونده‌ها" },
+  { id: "about", label: "درباره ما" },
+  { id: "credentials", label: "رزومه و مدارک" },
+  { id: "team", label: "تیم و متخصصان" },
+  { id: "stats", label: "آمار و اعداد" },
+  { id: "clients", label: "مشتریان و همکاران" },
+  { id: "schedule", label: "برنامه زمانی" },
   { id: "testimonials", label: "نظرات مشتریان" },
   { id: "faq", label: "سؤالات متداول" },
+  { id: "booking", label: "رزرو و مشاوره" },
   { id: "contact", label: "تماس و نقشه", required: true },
 ] as const;
 
 export type FastWebSectionId = (typeof FASTWEB_SECTIONS)[number]["id"];
+
+/**
+ * The 5 reusable layout "Core" systems. Every one of the 10 business
+ * categories below maps to exactly one Core; the Core decides hero layout,
+ * information density and overall tone. Categories differentiate themselves
+ * from their siblings by which optional blocks (FastWebSectionId) they turn on.
+ */
+export const FASTWEB_CORE_KEYS = [
+  "service",
+  "professional",
+  "commerce",
+  "local",
+  "company",
+] as const;
+
+export type FastWebCoreKey = (typeof FASTWEB_CORE_KEYS)[number];
+
+/** @deprecated use FastWebCoreKey — kept for backward compatibility with existing data/imports. */
+export type FastWebTemplateKey = FastWebCoreKey;
+/** @deprecated use FASTWEB_CORE_KEYS */
+export const FASTWEB_TEMPLATE_KEYS = FASTWEB_CORE_KEYS;
+
+/**
+ * The 10 sellable business categories (see lib/fastwebCategories.ts for full
+ * metadata: label, icon, default blocks, marketing copy, auto-detect rules).
+ * Kept here — alongside the other base vocabularies on this file — so both
+ * fastwebCategories.ts and fastwebContent.ts can depend on the same type
+ * without a circular import.
+ */
+export const FASTWEB_CATEGORY_KEYS = [
+  "service-business",
+  "professional",
+  "online-store",
+  "restaurant-cafe",
+  "company-b2b",
+  "beauty-salon",
+  "gym-fitness",
+  "law-firm",
+  "real-estate",
+  "education",
+] as const;
+
+export type FastWebCategoryKey = (typeof FASTWEB_CATEGORY_KEYS)[number];
+
+export function isFastWebCategoryKey(v: unknown): v is FastWebCategoryKey {
+  return (
+    typeof v === "string" &&
+    (FASTWEB_CATEGORY_KEYS as readonly string[]).includes(v)
+  );
+}
 
 export const FASTWEB_STYLES = [
   { id: "formal", label: "رسمی و مطمئن", hint: "مناسب پزشک، وکیل، شرکت و خدمات حرفه‌ای" },
@@ -80,14 +141,6 @@ export const FASTWEB_STYLES = [
 ] as const;
 
 export type FastWebStyleId = (typeof FASTWEB_STYLES)[number]["id"];
-
-export const FASTWEB_TEMPLATE_KEYS = [
-  "local-business",
-  "clinic-service",
-  "portfolio-services",
-] as const;
-
-export type FastWebTemplateKey = (typeof FASTWEB_TEMPLATE_KEYS)[number];
 
 export const PAYMENT_STATUSES = ["draft", "pending", "paid", "failed"] as const;
 export type FastWebPaymentStatus = (typeof PAYMENT_STATUSES)[number];
@@ -139,6 +192,8 @@ export interface FastWebContacts {
 
 export interface FastWebBrief {
   goal?: FastWebGoalId | string;
+  /** One of the 10 sellable categories (see lib/fastwebCategories.ts). Drives Core + default blocks. */
+  categoryKey?: FastWebCategoryKey;
   businessName?: string;
   industry?: string;
   city?: string;
@@ -180,6 +235,36 @@ export interface FastWebOfferingItem {
   description: string;
 }
 
+export interface FastWebPricingPlanItem {
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+}
+
+export interface FastWebTeamMemberItem {
+  name: string;
+  role: string;
+  bio: string;
+}
+
+export interface FastWebListingItem {
+  title: string;
+  price: string;
+  meta: string;
+}
+
+export interface FastWebScheduleItem {
+  day: string;
+  time: string;
+  title: string;
+}
+
+export interface FastWebStatItem {
+  value: string;
+  label: string;
+}
+
 export interface FastWebPreviewContent {
   headline: string;
   subheadline: string;
@@ -192,10 +277,20 @@ export interface FastWebPreviewContent {
   formTitle: string;
   seoTitle: string;
   seoDescription: string;
-  templateKey: FastWebTemplateKey;
+  /** One of the 10 categories — drives which blocks render and how they're labeled. */
+  categoryKey: FastWebCategoryKey;
+  /** Legacy/underlying layout system (5 cores). Derived from categoryKey. */
+  templateKey: FastWebCoreKey;
   styleKey: FastWebStyleId;
   brandColor: string;
   sections: FastWebSectionId[];
+  pricingPlans: FastWebPricingPlanItem[];
+  teamMembers: FastWebTeamMemberItem[];
+  galleryNotes: string[];
+  listings: FastWebListingItem[];
+  schedule: FastWebScheduleItem[];
+  stats: FastWebStatItem[];
+  clients: string[];
 }
 
 export interface FastWebOrder {
@@ -210,7 +305,8 @@ export interface FastWebOrder {
   brief: FastWebBrief;
   previewContent: Partial<FastWebPreviewContent>;
   publishedContent: Partial<FastWebPreviewContent>;
-  templateKey: FastWebTemplateKey | null;
+  categoryKey: FastWebCategoryKey | null;
+  templateKey: FastWebCoreKey | null;
   styleKey: FastWebStyleId | null;
   brandColor: string | null;
   revisionCount: number;
@@ -231,7 +327,7 @@ export interface FastWebOrder {
 export const FASTWEB_ORDER_COLUMNS =
   "id, access_token, slug, phone, business_name, package, amount_toman, " +
   "payment_status, fulfillment_status, brief, preview_content, published_content, " +
-  "template_key, style_key, brand_color, revision_count, revision_notes, " +
+  "category_key, template_key, style_key, brand_color, revision_count, revision_notes, " +
   "domain_request, admin_notes, zibal_track_id, paid_at, published_at, created_at, updated_at";
 
 export function isUuid(value: string): boolean {
@@ -271,27 +367,6 @@ export function suggestedSectionsForGoal(
     default:
       return base;
   }
-}
-
-export function pickTemplateKey(brief: FastWebBrief): FastWebTemplateKey {
-  const industry = (brief.industry || "").toLowerCase();
-  const goal = brief.goal;
-  if (
-    /پزشک|کلینیک|دندان|زیبایی|سلامت|مطب|clinic|doctor|beauty/.test(industry) ||
-    goal === "leads"
-  ) {
-    if (/پزشک|کلینیک|دندان|مطب|clinic|doctor/.test(industry)) {
-      return "clinic-service";
-    }
-  }
-  if (
-    goal === "portfolio" ||
-    goal === "expertise" ||
-    /طراح|معمار|عکاس|portfolio|نمونه‌کار/.test(industry)
-  ) {
-    return "portfolio-services";
-  }
-  return "local-business";
 }
 
 function slugifyFa(input: string): string {
@@ -350,7 +425,10 @@ export function mapFastWebOrder(
     typeof row.published_content === "object"
       ? row.published_content
       : {}) as Partial<FastWebPreviewContent>,
-    templateKey: (row.template_key as FastWebTemplateKey) || null,
+    categoryKey: isFastWebCategoryKey(row.category_key)
+      ? row.category_key
+      : null,
+    templateKey: (row.template_key as FastWebCoreKey) || null,
     styleKey: (row.style_key as FastWebStyleId) || null,
     brandColor: typeof row.brand_color === "string" ? row.brand_color : null,
     revisionCount: Number(row.revision_count) || 0,

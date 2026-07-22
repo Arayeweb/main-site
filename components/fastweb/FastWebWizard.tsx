@@ -12,15 +12,19 @@ import {
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import StepBusiness from "@/components/fastweb/wizard-steps/StepBusiness";
+import StepCategory from "@/components/fastweb/wizard-steps/StepCategory";
 import StepContacts from "@/components/fastweb/wizard-steps/StepContacts";
 import StepDomain from "@/components/fastweb/wizard-steps/StepDomain";
 import StepGoalAudience from "@/components/fastweb/wizard-steps/StepGoalAudience";
 import StepPayment from "@/components/fastweb/wizard-steps/StepPayment";
 import StepPreview from "@/components/fastweb/wizard-steps/StepPreview";
 import StepStyle from "@/components/fastweb/wizard-steps/StepStyle";
+import { pickCategoryKey } from "@/lib/fastwebCategories";
+import { mapIndustryToCategoryKey } from "@/lib/fastweb/industries";
 import { pushGtmEvent } from "@/lib/gtm";
 import {
   FASTWEB_PACKAGES,
+  isFastWebCategoryKey,
   isFastWebPackageKey,
   normalizeIranPhone,
   type FastWebBrief,
@@ -36,6 +40,7 @@ import {
 
 const STEP_LABELS = [
   "کسب‌وکار",
+  "نوع کسب‌وکار",
   "هدف و مخاطب",
   "ظاهر",
   "آدرس سایت",
@@ -44,8 +49,13 @@ const STEP_LABELS = [
   "پرداخت",
 ] as const;
 
-const PREVIEW_STEP = 5;
-const PAY_STEP = 6;
+const CATEGORY_STEP = 1;
+const GOAL_STEP = 2;
+const STYLE_STEP = 3;
+const DOMAIN_STEP = 4;
+const CONTACTS_STEP = 5;
+const PREVIEW_STEP = 6;
+const PAY_STEP = 7;
 
 type SlugStatus = "idle" | "checking" | "ok" | "taken" | "invalid";
 
@@ -128,14 +138,48 @@ export default function FastWebWizard() {
     const pkgParam = searchParams.get("package");
     if (draft) {
       setBrief({ ...createEmptyBrief(), ...draft.brief });
-      setStep(Math.min(draft.step, 4));
+      setStep(Math.min(draft.step, PREVIEW_STEP - 1));
       if (draft.orderId) setOrderId(draft.orderId);
       if (draft.accessToken) setAccessToken(draft.accessToken);
       if (draft.packageKey) setPackageKey(draft.packageKey);
     }
     if (isFastWebPackageKey(pkgParam)) setPackageKey(pkgParam);
+
+    // Industry SEO pages pass ?industry=slug (+ optional category). Prefer industry mapping.
+    const industryParam = searchParams.get("industry");
+    const categoryFromIndustry = industryParam
+      ? mapIndustryToCategoryKey(industryParam)
+      : undefined;
+    const categoryParam = searchParams.get("category");
+    const resolvedCategory =
+      categoryFromIndustry ??
+      (isFastWebCategoryKey(categoryParam) ? categoryParam : undefined);
+
+    if (!draft?.brief?.categoryKey && resolvedCategory) {
+      setBrief((prev) => ({
+        ...prev,
+        categoryKey: resolvedCategory,
+        industry: prev.industry || industryParam || prev.industry,
+      }));
+      pushGtmEvent("fastweb_industry_select", {
+        industry: industryParam || resolvedCategory,
+        source: searchParams.get("source") || "wizard_query",
+        page_type: "wizard",
+      });
+    }
+
     setHydrated(true);
-    pushGtmEvent("fastweb_wizard_open", { package: pkgParam || "fast" });
+    pushGtmEvent("fastweb_wizard_open", {
+      package: pkgParam || "fast",
+      industry: industryParam || undefined,
+      source: searchParams.get("source") || undefined,
+    });
+    pushGtmEvent("fastweb_order_start", {
+      package: pkgParam || "fast",
+      industry: industryParam || undefined,
+      source: searchParams.get("source") || undefined,
+      page_type: "wizard",
+    });
   }, [searchParams]);
 
   useEffect(() => {
@@ -152,7 +196,7 @@ export default function FastWebWizard() {
   }, [hydrated, step, orderId, accessToken, packageKey, brief]);
 
   useEffect(() => {
-    if (step !== 3) return;
+    if (step !== DOMAIN_STEP) return;
     const slug = brief.slugPreference?.trim();
     if (!slug) {
       setSlugStatus("idle");
@@ -286,11 +330,14 @@ export default function FastWebWizard() {
         return;
       }
     }
-    if (step === 1 && !brief.goal) {
+    if (step === CATEGORY_STEP && !brief.categoryKey) {
+      patchBrief({ categoryKey: pickCategoryKey(brief) });
+    }
+    if (step === GOAL_STEP && !brief.goal) {
       setError("هدف سایت را انتخاب کنید.");
       return;
     }
-    if (step === 3 && brief.slugPreference?.trim()) {
+    if (step === DOMAIN_STEP && brief.slugPreference?.trim()) {
       if (slugStatus === "invalid" || slugStatus === "taken") {
         setError("آدرس سایت معتبر نیست یا قبلاً گرفته شده.");
         return;
@@ -300,7 +347,7 @@ export default function FastWebWizard() {
         return;
       }
     }
-    if (step === 4) {
+    if (step === CONTACTS_STEP) {
       const p = normalizeIranPhone(brief.contacts?.phone || "");
       if (!p) {
         setError("شماره تماس معتبر وارد کنید.");
@@ -424,15 +471,19 @@ export default function FastWebWizard() {
             />
           ) : null}
 
-          {step === 1 ? (
+          {step === CATEGORY_STEP ? (
+            <StepCategory brief={brief} onPatch={patchBrief} />
+          ) : null}
+
+          {step === GOAL_STEP ? (
             <StepGoalAudience brief={brief} onPatch={patchBrief} />
           ) : null}
 
-          {step === 2 ? (
+          {step === STYLE_STEP ? (
             <StepStyle brief={brief} onPatch={patchBrief} />
           ) : null}
 
-          {step === 3 ? (
+          {step === DOMAIN_STEP ? (
             <StepDomain
               brief={brief}
               slugHint={slugHint}
@@ -444,7 +495,7 @@ export default function FastWebWizard() {
             />
           ) : null}
 
-          {step === 4 ? (
+          {step === CONTACTS_STEP ? (
             <StepContacts
               brief={brief}
               onPatch={patchBrief}
@@ -513,7 +564,7 @@ export default function FastWebWizard() {
                 className="inline-flex items-center gap-2 rounded-xl bg-[#0F4C5C] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60"
               >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {step === 4
+                {step === CONTACTS_STEP
                   ? "ذخیره و مشاهده پیش‌نمایش"
                   : step === PREVIEW_STEP
                     ? "ادامه به پرداخت"

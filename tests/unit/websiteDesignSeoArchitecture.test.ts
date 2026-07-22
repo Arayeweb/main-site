@@ -75,11 +75,11 @@ describe("website design SEO architecture", () => {
     expect(hero).toContain("سایتی که به مشتری نشان دهد چرا باید شما را انتخاب کند");
   });
 
-  it("fastweb H1 targets ارزان و فوری intent", () => {
+  it("fastweb H1 targets فوری/سایت سریع intent", () => {
     const landing = readSource("components/fastweb/FastWebLanding.tsx");
     const h1Matches = landing.match(/<h1[\s\S]*?<\/h1>/g) ?? [];
     expect(h1Matches).toHaveLength(1);
-    expect(h1Matches[0]).toContain("طراحی سایت ارزان و حرفه‌ای؛ نسخه اول در ۲۴ ساعت");
+    expect(h1Matches[0]).toContain("سایت فوری");
   });
 
   it("canonical helpers stay on araaye.com for new routes", () => {

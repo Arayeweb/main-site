@@ -10,6 +10,7 @@ import { StatusBadge } from '@/components/admin/ui/StatusBadge';
 import { fetchFastWebOrders } from '@/lib/adminApi';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 import { FULFILLMENT_LABELS, FULFILLMENT_PIPELINE } from '@/lib/fastweb';
+import { getFastWebCategory } from '@/lib/fastwebCategories';
 import { formatPriceToman } from '@/lib/aiPricingConfig';
 
 export default function FastWebAdminListPage() {
@@ -84,6 +85,7 @@ export default function FastWebAdminListPage() {
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
                   <th className="px-4 py-3 text-right font-medium">کسب‌وکار</th>
+                  <th className="px-4 py-3 text-right font-medium">دسته</th>
                   <th className="px-4 py-3 text-right font-medium">بسته</th>
                   <th className="px-4 py-3 text-right font-medium">مبلغ</th>
                   <th className="px-4 py-3 text-right font-medium">وضعیت</th>
@@ -97,6 +99,7 @@ export default function FastWebAdminListPage() {
                     id: string;
                     businessName?: string | null;
                     phone?: string | null;
+                    categoryKey?: string | null;
                     package?: string;
                     amountToman?: number;
                     fulfillmentStatus?: string;
@@ -108,6 +111,9 @@ export default function FastWebAdminListPage() {
                       <td className="px-4 py-3">
                         <div className="font-medium">{o.businessName || '—'}</div>
                         <div className="text-xs text-slate-500">{o.phone}</div>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-600">
+                        {getFastWebCategory(o.categoryKey)?.label || '—'}
                       </td>
                       <td className="px-4 py-3">{o.package === 'plus' ? 'پلاس' : 'فوری'}</td>
                       <td className="px-4 py-3">

@@ -14,6 +14,7 @@ import {
   FULFILLMENT_PIPELINE,
   type FastWebFulfillmentStatus,
 } from '@/lib/fastweb';
+import { getFastWebCategory } from '@/lib/fastwebCategories';
 import { formatPriceToman } from '@/lib/aiPricingConfig';
 
 const PUBLISH_CHECKLIST = [
@@ -43,6 +44,7 @@ export default function FastWebAdminDetailPage() {
         slug?: string;
         publicPath?: string;
         brief?: Record<string, unknown>;
+        categoryKey?: string | null;
         templateKey?: string | null;
         styleKey?: string | null;
         brandColor?: string | null;
@@ -158,7 +160,11 @@ export default function FastWebAdminDetailPage() {
                   : '—'
               }
             />
-            <Row label="قالب" value={order.templateKey || '—'} />
+            <Row
+              label="دسته"
+              value={getFastWebCategory(order.categoryKey)?.label || order.categoryKey || '—'}
+            />
+            <Row label="Core" value={order.templateKey || '—'} />
             <Row label="سبک" value={order.styleKey || '—'} />
             <Row label="رنگ" value={order.brandColor || '—'} />
             <Row

@@ -2,9 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   buildSlugCandidate,
   normalizeIranPhone,
-  pickTemplateKey,
   suggestedSectionsForGoal,
 } from "@/lib/fastweb";
+import {
+  defaultSectionsForCategory,
+  getAllFastWebCategories,
+  getFastWebCategory,
+  pickCategoryKey,
+  pickCoreKey,
+} from "@/lib/fastwebCategories";
 import {
   buildDraftPreview,
   parseFastWebPreviewContent,
@@ -17,10 +23,37 @@ describe("fastweb helpers", () => {
     expect(suggestedSectionsForGoal("leads")).toContain("services");
   });
 
-  it("picks clinic template for medical industry", () => {
+  it("exposes exactly 10 sellable categories", () => {
+    expect(getAllFastWebCategories()).toHaveLength(10);
+  });
+
+  it("picks professional category + core for medical industry", () => {
+    expect(pickCategoryKey({ industry: "کلینیک پوست", goal: "leads" })).toBe(
+      "professional"
+    );
+    expect(pickCoreKey({ industry: "کلینیک پوست", goal: "leads" })).toBe(
+      "professional"
+    );
+  });
+
+  it("picks gym-fitness category for fitness industry", () => {
+    expect(pickCategoryKey({ industry: "باشگاه بدنسازی" })).toBe("gym-fitness");
+    expect(getFastWebCategory("gym-fitness")?.core).toBe("service");
+  });
+
+  it("picks law-firm category and defaults its blocks", () => {
+    expect(pickCategoryKey({ industry: "دفتر وکالت" })).toBe("law-firm");
+    const sections = defaultSectionsForCategory("law-firm");
+    expect(sections).toContain("caseStudies");
+    expect(sections).toContain("credentials");
+    expect(sections).toContain("hero");
+    expect(sections).toContain("contact");
+  });
+
+  it("respects an explicit categoryKey override", () => {
     expect(
-      pickTemplateKey({ industry: "کلینیک پوست", goal: "leads" })
-    ).toBe("clinic-service");
+      pickCategoryKey({ industry: "کلینیک پوست", categoryKey: "beauty-salon" })
+    ).toBe("beauty-salon");
   });
 
   it("normalizes iran phone", () => {
@@ -51,7 +84,8 @@ describe("fastweb helpers", () => {
       formTitle: "فرم",
       seoTitle: "سئو",
       seoDescription: "توضیح سئو",
-      templateKey: "local-business",
+      categoryKey: "service-business",
+      templateKey: "service",
       styleKey: "modern",
       brandColor: "#0F4C5C",
       sections: ["hero", "about", "contact"],
@@ -76,9 +110,23 @@ describe("fastweb helpers", () => {
     expect(a.headline).toContain("کلینیک آریا");
     expect(a.headline).toContain("اصفهان");
     expect(a.offerings).toHaveLength(3);
-    expect(a.templateKey).toBe("clinic-service");
+    expect(a.categoryKey).toBe("professional");
+    expect(a.templateKey).toBe("professional");
     expect(a.brandColor).toBe("#123456");
     expect(parseFastWebPreviewContent(a).ok).toBe(true);
+  });
+
+  it("builds a preview with category-specific blocks (gym membership + schedule)", () => {
+    const preview = buildDraftPreview({
+      businessName: "باشگاه پارس",
+      industry: "باشگاه بدنسازی",
+      categoryKey: "gym-fitness",
+    });
+    expect(preview.categoryKey).toBe("gym-fitness");
+    expect(preview.sections).toContain("pricing");
+    expect(preview.sections).toContain("schedule");
+    expect(preview.pricingPlans.length).toBeGreaterThan(0);
+    expect(preview.schedule.length).toBeGreaterThan(0);
   });
 
   it("preview falls back gracefully for an empty brief", () => {

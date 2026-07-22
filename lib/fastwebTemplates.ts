@@ -1,4 +1,4 @@
-import type { FastWebStyleId, FastWebTemplateKey } from "@/lib/fastweb";
+import type { FastWebCoreKey, FastWebStyleId } from "@/lib/fastweb";
 
 export interface FastWebTheme {
   brand: string;
@@ -99,20 +99,36 @@ export function buildThemeFromBrand(
   };
 }
 
+/**
+ * The 5 reusable Core layouts. Each of the 10 sellable categories
+ * (lib/fastwebCategories.ts) maps to exactly one Core; categories differentiate
+ * within a shared Core by turning on different optional blocks.
+ */
 export const TEMPLATE_META: Record<
-  FastWebTemplateKey,
+  FastWebCoreKey,
   { label: string; description: string }
 > = {
-  "local-business": {
-    label: "کسب‌وکار محلی",
-    description: "مناسب خدمات شهری، فروشگاه‌های محلی و کسب‌وکارهای حضوری",
+  service: {
+    label: "Service Core",
+    description: "مناسب خدمات فنی، آرایشگاه، باشگاه و کسب‌وکارهای درخواست‌محور",
   },
-  "clinic-service": {
-    label: "خدمات تخصصی",
-    description: "مناسب مطب، کلینیک و خدمات حرفه‌ای با حس اعتماد",
+  professional: {
+    label: "Professional Core",
+    description: "مناسب پزشک، وکیل، آموزشگاه و متخصصان مستقل با حس اعتماد",
   },
-  "portfolio-services": {
-    label: "نمونه‌کار و خدمات",
-    description: "مناسب استودیو، طراح، پیمانکار و نمایش پروژه‌ها",
+  commerce: {
+    label: "Commerce Core",
+    description: "مناسب فروشگاه آنلاین و نمایش محصول با قیمت و گالری",
+  },
+  local: {
+    label: "Local Core",
+    description: "مناسب رستوران، کافه و املاک با تمرکز بر منو/فایل و حس محلی",
+  },
+  company: {
+    label: "Company Core",
+    description: "مناسب شرکت، کارخانه و B2B با تمرکز بر اعتبار و ارقام",
   },
 };
+
+/** @deprecated use TEMPLATE_META keyed by FastWebCoreKey — kept for compat. */
+export const CORE_META = TEMPLATE_META;

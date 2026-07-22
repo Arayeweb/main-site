@@ -17,6 +17,12 @@ interface FastWebSiteViewProps {
   }) => Promise<void> | void;
 }
 
+/**
+ * Renders any of the 10 FastWeb categories through one shared component.
+ * `content.templateKey` (one of 5 Cores) picks the hero layout/tone;
+ * `content.sections` toggles which optional blocks render below it.
+ * See lib/fastwebCategories.ts for the category → core/blocks mapping.
+ */
 export default function FastWebSiteView({
   content,
   brief,
@@ -32,7 +38,7 @@ export default function FastWebSiteView({
   const sections = content.sections?.length
     ? content.sections
     : ["hero", "services", "about", "faq", "contact"];
-  const template = content.templateKey || "local-business";
+  const core = content.templateKey || "service";
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -68,11 +74,15 @@ export default function FastWebSiteView({
   }
 
   const heroTitleClass =
-    template === "clinic-service"
+    core === "professional"
       ? "text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight"
-      : template === "portfolio-services"
-        ? "text-3xl sm:text-5xl font-semibold leading-[1.15]"
-        : "text-3xl sm:text-4xl md:text-[2.75rem] font-bold leading-tight";
+      : core === "commerce"
+        ? "text-3xl sm:text-5xl font-extrabold leading-[1.15]"
+        : core === "company"
+          ? "text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight"
+          : core === "local"
+            ? "text-3xl sm:text-4xl font-semibold leading-[1.2]"
+            : "text-3xl sm:text-4xl md:text-[2.75rem] font-bold leading-tight";
 
   return (
     <div
@@ -131,7 +141,9 @@ export default function FastWebSiteView({
           className="relative px-5 py-14 sm:px-8 sm:py-20 text-white"
           style={{ background: theme.heroOverlay }}
         >
-          <div className="relative z-10 max-w-3xl">
+          <div
+            className={`relative z-10 ${core === "company" ? "max-w-4xl" : "max-w-3xl"}`}
+          >
             {mode === "preview" ? (
               <p className="mb-3 text-xs font-medium tracking-wide text-white/70">
                 پیش‌نمایش سایت فوری
@@ -143,7 +155,7 @@ export default function FastWebSiteView({
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
-                href="#contact"
+                href={sections.includes("booking") ? "#booking" : "#contact"}
                 className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold"
                 style={{
                   background: "#fff",
@@ -165,11 +177,21 @@ export default function FastWebSiteView({
                 </a>
               ) : null}
             </div>
+            {core === "company" && content.stats?.length ? (
+              <div className="mt-10 flex flex-wrap gap-8">
+                {content.stats.slice(0, 4).map((s) => (
+                  <div key={s.label}>
+                    <p className="text-2xl font-extrabold">{s.value}</p>
+                    <p className="mt-1 text-xs text-white/70">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         </section>
       ) : null}
 
-      {/* Offerings */}
+      {/* Offerings (services / products) */}
       {(sections.includes("services") || sections.includes("products")) &&
       content.offerings?.length ? (
         <section className="px-5 py-12 sm:px-8 sm:py-16">
@@ -181,9 +203,11 @@ export default function FastWebSiteView({
           </p>
           <div
             className={
-              template === "portfolio-services"
-                ? "grid gap-4 sm:grid-cols-2"
-                : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              core === "commerce"
+                ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                : core === "professional"
+                  ? "grid gap-4 sm:grid-cols-2"
+                  : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
             }
           >
             {content.offerings.map((item) => (
@@ -199,6 +223,165 @@ export default function FastWebSiteView({
                 <p className="text-sm leading-relaxed" style={{ color: theme.muted }}>
                   {item.description}
                 </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Menu (restaurant/cafe) */}
+      {sections.includes("menu") && content.offerings?.length ? (
+        <section
+          className="px-5 py-12 sm:px-8 sm:py-16"
+          style={{ background: theme.surfaceAlt }}
+        >
+          <h2 className="text-2xl font-bold mb-8">منو</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {content.offerings.map((item) => (
+              <div
+                key={item.title}
+                className="flex items-start justify-between gap-4 border-b pb-3"
+                style={{ borderColor: `${theme.muted}30` }}
+              >
+                <div>
+                  <p className="font-semibold">{item.title}</p>
+                  <p className="text-xs mt-1" style={{ color: theme.muted }}>
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Pricing / membership plans */}
+      {sections.includes("pricing") && content.pricingPlans?.length ? (
+        <section className="px-5 py-12 sm:px-8 sm:py-16">
+          <h2 className="text-2xl font-bold mb-8">قیمت‌ها و پلن‌ها</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {content.pricingPlans.map((plan) => (
+              <div
+                key={plan.name}
+                className="p-5"
+                style={{
+                  background: theme.surfaceAlt,
+                  borderRadius: theme.radius,
+                  border: `1px solid ${theme.brandSoft}`,
+                }}
+              >
+                <h3 className="font-bold">{plan.name}</h3>
+                <p
+                  className="mt-1 text-lg font-extrabold"
+                  style={{ color: theme.brand }}
+                >
+                  {plan.price}
+                </p>
+                <p className="mt-2 text-xs" style={{ color: theme.muted }}>
+                  {plan.description}
+                </p>
+                <ul className="mt-3 space-y-1.5 text-sm">
+                  {plan.features.map((f) => (
+                    <li key={f}>• {f}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Gallery */}
+      {sections.includes("gallery") ? (
+        <section
+          className="px-5 py-12 sm:px-8 sm:py-16"
+          style={{ background: theme.surfaceAlt }}
+        >
+          <h2 className="text-2xl font-bold mb-8">گالری</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {(content.galleryNotes?.length
+              ? content.galleryNotes
+              : ["تصویر نمونه ۱", "تصویر نمونه ۲", "تصویر نمونه ۳", "تصویر نمونه ۴"]
+            ).map((note, i) => (
+              <div
+                key={`${note}-${i}`}
+                className="aspect-square flex items-center justify-center text-center p-3 text-xs"
+                style={{
+                  background: `linear-gradient(160deg, ${theme.brandSoft}, ${theme.surface})`,
+                  borderRadius: theme.radius,
+                  color: theme.muted,
+                }}
+              >
+                {note}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Listings (real estate) */}
+      {sections.includes("listings") && content.listings?.length ? (
+        <section className="px-5 py-12 sm:px-8 sm:py-16">
+          <h2 className="text-2xl font-bold mb-8">فایل‌های منتخب</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {content.listings.map((item) => (
+              <div
+                key={item.title}
+                className="p-5"
+                style={{
+                  background: theme.surfaceAlt,
+                  borderRadius: theme.radius,
+                }}
+              >
+                <h3 className="font-semibold">{item.title}</h3>
+                <p className="mt-1 text-sm font-bold" style={{ color: theme.brand }}>
+                  {item.price}
+                </p>
+                <p className="mt-2 text-xs" style={{ color: theme.muted }}>
+                  {item.meta}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Portfolio */}
+      {sections.includes("portfolio") && content.portfolioNotes?.length ? (
+        <section className="px-5 py-12 sm:px-8 sm:py-16">
+          <h2 className="text-2xl font-bold mb-8">نمونه‌کار</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {content.portfolioNotes.map((note) => (
+              <div
+                key={note}
+                className="min-h-[120px] flex items-end p-5"
+                style={{
+                  background: `linear-gradient(160deg, ${theme.brandSoft}, ${theme.surfaceAlt})`,
+                  borderRadius: theme.radius,
+                }}
+              >
+                <p className="text-sm font-medium">{note}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Case studies (law firm) */}
+      {sections.includes("caseStudies") && content.portfolioNotes?.length ? (
+        <section
+          className="px-5 py-12 sm:px-8 sm:py-16"
+          style={{ background: theme.surfaceAlt }}
+        >
+          <h2 className="text-2xl font-bold mb-8">نمونه پرونده‌ها</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {content.portfolioNotes.map((note) => (
+              <div
+                key={note}
+                className="p-5"
+                style={{ background: theme.surface, borderRadius: theme.radius }}
+              >
+                <p className="text-sm leading-7">{note}</p>
               </div>
             ))}
           </div>
@@ -232,21 +415,108 @@ export default function FastWebSiteView({
         </section>
       ) : null}
 
-      {/* Portfolio */}
-      {sections.includes("portfolio") && content.portfolioNotes?.length ? (
+      {/* Credentials (professional/law) */}
+      {sections.includes("credentials") ? (
         <section className="px-5 py-12 sm:px-8 sm:py-16">
-          <h2 className="text-2xl font-bold mb-8">نمونه‌کار</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {content.portfolioNotes.map((note) => (
+          <h2 className="text-2xl font-bold mb-6">رزومه و مدارک</h2>
+          <ul className="max-w-2xl space-y-2 text-sm leading-7" style={{ color: theme.muted }}>
+            <li>• تحصیلات و سوابق در نسخه نهایی تکمیل می‌شود.</li>
+            <li>• عضویت‌های حرفه‌ای و مجوزها.</li>
+          </ul>
+        </section>
+      ) : null}
+
+      {/* Team */}
+      {sections.includes("team") && content.teamMembers?.length ? (
+        <section
+          className="px-5 py-12 sm:px-8 sm:py-16"
+          style={{ background: theme.surfaceAlt }}
+        >
+          <h2 className="text-2xl font-bold mb-8">تیم و متخصصان</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {content.teamMembers.map((member) => (
               <div
-                key={note}
-                className="min-h-[120px] flex items-end p-5"
+                key={member.name}
+                className="p-5 text-center"
+                style={{ background: theme.surface, borderRadius: theme.radius }}
+              >
+                <span
+                  className="mx-auto mb-3 flex h-14 w-14 items-center justify-center text-lg font-bold text-white"
+                  style={{ background: theme.brand, borderRadius: "50%" }}
+                >
+                  {member.name.slice(0, 1)}
+                </span>
+                <h3 className="font-semibold">{member.name}</h3>
+                <p className="mt-1 text-xs" style={{ color: theme.brand }}>
+                  {member.role}
+                </p>
+                <p className="mt-2 text-xs leading-6" style={{ color: theme.muted }}>
+                  {member.bio}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Stats (company) */}
+      {sections.includes("stats") && content.stats?.length && core !== "company" ? (
+        <section className="px-5 py-10 sm:px-8 sm:py-14">
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+            {content.stats.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="text-2xl font-extrabold" style={{ color: theme.brand }}>
+                  {s.value}
+                </p>
+                <p className="mt-1 text-xs" style={{ color: theme.muted }}>
+                  {s.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Clients / partners */}
+      {sections.includes("clients") && content.clients?.length ? (
+        <section
+          className="px-5 py-10 sm:px-8 sm:py-14"
+          style={{ background: theme.surfaceAlt }}
+        >
+          <h2 className="text-lg font-bold mb-6">مشتریان و همکاران</h2>
+          <div className="flex flex-wrap gap-3">
+            {content.clients.map((c) => (
+              <span
+                key={c}
+                className="px-3 py-1.5 text-xs font-medium"
                 style={{
-                  background: `linear-gradient(160deg, ${theme.brandSoft}, ${theme.surfaceAlt})`,
+                  background: theme.surface,
                   borderRadius: theme.radius,
+                  color: theme.muted,
                 }}
               >
-                <p className="text-sm font-medium">{note}</p>
+                {c}
+              </span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Schedule */}
+      {sections.includes("schedule") && content.schedule?.length ? (
+        <section className="px-5 py-12 sm:px-8 sm:py-16">
+          <h2 className="text-2xl font-bold mb-8">برنامه زمانی</h2>
+          <div className="max-w-2xl space-y-2">
+            {content.schedule.map((item) => (
+              <div
+                key={`${item.day}-${item.title}`}
+                className="flex items-center justify-between gap-4 p-3"
+                style={{ background: theme.surfaceAlt, borderRadius: theme.radius }}
+              >
+                <span className="text-sm font-medium">{item.title}</span>
+                <span className="text-xs" style={{ color: theme.muted }}>
+                  {item.day} · {item.time}
+                </span>
               </div>
             ))}
           </div>
@@ -306,6 +576,29 @@ export default function FastWebSiteView({
               </details>
             ))}
           </div>
+        </section>
+      ) : null}
+
+      {/* Booking / consultation CTA */}
+      {sections.includes("booking") ? (
+        <section
+          id="booking"
+          className="px-5 py-12 sm:px-8 sm:py-16 text-center"
+          style={{ background: theme.brandSoft }}
+        >
+          <h2 className="text-xl font-bold" style={{ color: theme.brandInk }}>
+            برای رزرو یا مشاوره آماده‌ایم
+          </h2>
+          <p className="mt-2 text-sm" style={{ color: theme.brandInk }}>
+            از طریق فرم تماس یا واتساپ درخواست بدهید؛ در اولین فرصت پاسخ می‌دهیم.
+          </p>
+          <a
+            href="#contact"
+            className="mt-6 inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white"
+            style={{ background: theme.brand, borderRadius: theme.radius }}
+          >
+            درخواست رزرو
+          </a>
         </section>
       ) : null}
 

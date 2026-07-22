@@ -1,18 +1,30 @@
 import type {
   FastWebBrief,
+  FastWebCategoryKey,
+  FastWebCoreKey,
   FastWebFaqItem,
+  FastWebListingItem,
   FastWebOfferingItem,
   FastWebPreviewContent,
+  FastWebPricingPlanItem,
+  FastWebScheduleItem,
   FastWebSectionId,
+  FastWebStatItem,
   FastWebStyleId,
-  FastWebTemplateKey,
+  FastWebTeamMemberItem,
 } from "@/lib/fastweb";
 import {
-  FASTWEB_TEMPLATE_KEYS,
+  FASTWEB_CORE_KEYS,
   FASTWEB_STYLES,
-  pickTemplateKey,
+  isFastWebCategoryKey,
   suggestedSectionsForGoal,
 } from "@/lib/fastweb";
+import {
+  defaultSectionsForCategory,
+  getFastWebCategory,
+  pickCategoryKey,
+  pickCoreKey,
+} from "@/lib/fastwebCategories";
 
 function asString(v: unknown, max = 500): string {
   if (typeof v !== "string") return "";
@@ -74,37 +86,139 @@ function asTestimonials(
     .slice(0, 4);
 }
 
+function asPricingPlans(v: unknown): FastWebPricingPlanItem[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const name = asString(row.name, 60);
+      if (!name) return null;
+      return {
+        name,
+        price: asString(row.price, 40),
+        description: asString(row.description, 160),
+        features: asStringArray(row.features, 6, 100),
+      };
+    })
+    .filter((x): x is FastWebPricingPlanItem => Boolean(x))
+    .slice(0, 4);
+}
+
+function asTeamMembers(v: unknown): FastWebTeamMemberItem[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const name = asString(row.name, 60);
+      if (!name) return null;
+      return {
+        name,
+        role: asString(row.role, 60),
+        bio: asString(row.bio, 200),
+      };
+    })
+    .filter((x): x is FastWebTeamMemberItem => Boolean(x))
+    .slice(0, 6);
+}
+
+function asListings(v: unknown): FastWebListingItem[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const title = asString(row.title, 80);
+      if (!title) return null;
+      return {
+        title,
+        price: asString(row.price, 40),
+        meta: asString(row.meta, 100),
+      };
+    })
+    .filter((x): x is FastWebListingItem => Boolean(x))
+    .slice(0, 6);
+}
+
+function asSchedule(v: unknown): FastWebScheduleItem[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const title = asString(row.title, 80);
+      if (!title) return null;
+      return {
+        day: asString(row.day, 40),
+        time: asString(row.time, 40),
+        title,
+      };
+    })
+    .filter((x): x is FastWebScheduleItem => Boolean(x))
+    .slice(0, 8);
+}
+
+function asStats(v: unknown): FastWebStatItem[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const value = asString(row.value, 20);
+      const label = asString(row.label, 60);
+      if (!value || !label) return null;
+      return { value, label };
+    })
+    .filter((x): x is FastWebStatItem => Boolean(x))
+    .slice(0, 4);
+}
+
+const ALL_SECTION_IDS = new Set<FastWebSectionId>([
+  "hero",
+  "services",
+  "products",
+  "menu",
+  "pricing",
+  "gallery",
+  "listings",
+  "portfolio",
+  "caseStudies",
+  "about",
+  "credentials",
+  "team",
+  "stats",
+  "clients",
+  "schedule",
+  "testimonials",
+  "faq",
+  "booking",
+  "contact",
+]);
+
 function asSections(v: unknown): FastWebSectionId[] {
   if (!Array.isArray(v)) return ["hero", "about", "contact"];
-  const allowed = new Set([
-    "hero",
-    "services",
-    "products",
-    "about",
-    "portfolio",
-    "testimonials",
-    "faq",
-    "contact",
-  ]);
   const out: FastWebSectionId[] = [];
   for (const item of v) {
-    if (typeof item === "string" && allowed.has(item)) {
+    if (typeof item === "string" && ALL_SECTION_IDS.has(item as FastWebSectionId)) {
       out.push(item as FastWebSectionId);
     }
   }
   if (!out.includes("hero")) out.unshift("hero");
   if (!out.includes("contact")) out.push("contact");
-  return out.slice(0, 7);
+  return out.slice(0, 12);
 }
 
-function asTemplateKey(v: unknown): FastWebTemplateKey {
-  if (
-    typeof v === "string" &&
-    (FASTWEB_TEMPLATE_KEYS as readonly string[]).includes(v)
-  ) {
-    return v as FastWebTemplateKey;
+function asCategoryKey(v: unknown): FastWebCategoryKey {
+  if (isFastWebCategoryKey(v)) return v;
+  return "service-business";
+}
+
+function asCoreKey(v: unknown): FastWebCoreKey {
+  if (typeof v === "string" && (FASTWEB_CORE_KEYS as readonly string[]).includes(v)) {
+    return v as FastWebCoreKey;
   }
-  return "local-business";
+  return "service";
 }
 
 function asStyleKey(v: unknown): FastWebStyleId {
@@ -151,10 +265,18 @@ export function parseFastWebPreviewContent(
       asString(row.seoDescription, 160) ||
       subheadline ||
       "سایت معرفی کسب‌وکار",
-    templateKey: asTemplateKey(row.templateKey),
+    categoryKey: asCategoryKey(row.categoryKey),
+    templateKey: asCoreKey(row.templateKey),
     styleKey: asStyleKey(row.styleKey),
     brandColor: asColor(row.brandColor),
     sections: asSections(row.sections),
+    pricingPlans: asPricingPlans(row.pricingPlans),
+    teamMembers: asTeamMembers(row.teamMembers),
+    galleryNotes: asStringArray(row.galleryNotes, 8, 120),
+    listings: asListings(row.listings),
+    schedule: asSchedule(row.schedule),
+    stats: asStats(row.stats),
+    clients: asStringArray(row.clients, 8, 60),
   };
 
   if (content.offerings.length === 0) {
@@ -181,11 +303,44 @@ export function hasPreviewContent(
   return Boolean(content?.headline && content?.subheadline);
 }
 
+const DEFAULT_PRICING_PLANS: FastWebPricingPlanItem[] = [
+  {
+    name: "پلن پایه",
+    price: "قیمت را در نسخه نهایی وارد کنید",
+    description: "مناسب برای شروع",
+    features: ["ویژگی اول", "ویژگی دوم"],
+  },
+  {
+    name: "پلن حرفه‌ای",
+    price: "قیمت را در نسخه نهایی وارد کنید",
+    description: "برای استفاده منظم",
+    features: ["همه امکانات پلن پایه", "امکانات بیشتر"],
+  },
+];
+
+const DEFAULT_TEAM_MEMBERS: FastWebTeamMemberItem[] = [
+  { name: "نام و نام خانوادگی", role: "تخصص یا سمت", bio: "توضیح کوتاه در نسخه نهایی تکمیل می‌شود." },
+];
+
+const DEFAULT_LISTINGS: FastWebListingItem[] = [
+  { title: "فایل نمونه", price: "قیمت توافقی", meta: "جزئیات در نسخه نهایی تکمیل می‌شود" },
+];
+
+const DEFAULT_SCHEDULE: FastWebScheduleItem[] = [
+  { day: "شنبه تا چهارشنبه", time: "۹ تا ۱۸", title: "ساعات کاری" },
+];
+
+const DEFAULT_STATS: FastWebStatItem[] = [
+  { value: "+۱۰۰", label: "مشتری راضی" },
+  { value: "+۵", label: "سال تجربه" },
+];
+
 /**
  * Deterministic preview built directly from the brief — no AI.
- * Since the final site is produced by hand, this shows the real template,
- * brand color and the customer's own inputs as a structural mockup.
- * The team writes the polished copy during manual delivery.
+ * Since the final site is produced by hand, this shows the real Core layout,
+ * the category's default blocks, brand color and the customer's own inputs
+ * as a structural mockup. The team writes the polished copy during manual
+ * delivery.
  */
 export function buildDraftPreview(brief: FastWebBrief): FastWebPreviewContent {
   const name = brief.businessName?.trim() || "کسب‌وکار شما";
@@ -212,10 +367,16 @@ export function buildDraftPreview(brief: FastWebBrief): FastWebPreviewContent {
         ];
 
   const style = (brief.style || "modern") as FastWebStyleId;
-  const templateKey = pickTemplateKey(brief);
+  const categoryKey = pickCategoryKey(brief);
+  const templateKey = pickCoreKey(brief);
+  const category = getFastWebCategory(categoryKey);
   const sections = (
-    brief.sections?.length ? brief.sections : suggestedSectionsForGoal(brief.goal)
-  ).slice(0, 7) as FastWebSectionId[];
+    brief.sections?.length
+      ? brief.sections
+      : defaultSectionsForCategory(categoryKey).length
+        ? defaultSectionsForCategory(categoryKey)
+        : suggestedSectionsForGoal(brief.goal)
+  ).slice(0, 12) as FastWebSectionId[];
 
   const faq: FastWebFaqItem[] = [
     {
@@ -237,6 +398,7 @@ export function buildDraftPreview(brief: FastWebBrief): FastWebPreviewContent {
     subheadline:
       shortDescription ||
       advantage ||
+      category?.pitch ||
       "معرفی خدمات و راه‌های ارتباط سریع با ما",
     aboutText:
       shortDescription ||
@@ -249,9 +411,17 @@ export function buildDraftPreview(brief: FastWebBrief): FastWebPreviewContent {
     formTitle: "فرم درخواست",
     seoTitle: city ? `${name} | ${city}` : name,
     seoDescription: (shortDescription || `سایت معرفی ${name}`).slice(0, 150),
+    categoryKey,
     templateKey,
     styleKey: style,
     brandColor: brief.brandColor || "#0F4C5C",
     sections,
+    pricingPlans: sections.includes("pricing") ? DEFAULT_PRICING_PLANS : [],
+    teamMembers: sections.includes("team") ? DEFAULT_TEAM_MEMBERS : [],
+    galleryNotes: [],
+    listings: sections.includes("listings") ? DEFAULT_LISTINGS : [],
+    schedule: sections.includes("schedule") ? DEFAULT_SCHEDULE : [],
+    stats: sections.includes("stats") ? DEFAULT_STATS : [],
+    clients: [],
   };
 }

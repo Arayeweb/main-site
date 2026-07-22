@@ -34,7 +34,7 @@ function toggleSection(
   const next = toggleInList(sections || [], id);
   if (!next.includes("hero")) next.unshift("hero");
   if (!next.includes("contact")) next.push("contact");
-  return next.slice(0, 8) as FastWebSectionId[];
+  return next.slice(0, 12) as FastWebSectionId[];
 }
 
 export default function StepGoalAudience({ brief, onPatch }: StepGoalAudienceProps) {
@@ -57,7 +57,9 @@ export default function StepGoalAudience({ brief, onPatch }: StepGoalAudiencePro
             onClick={() =>
               onPatch({
                 goal: g.id,
-                sections: suggestedSectionsForGoal(g.id),
+                sections: brief.sections?.length
+                  ? brief.sections
+                  : suggestedSectionsForGoal(g.id),
               })
             }
             className={`rounded-xl border px-4 py-4 text-right transition ${

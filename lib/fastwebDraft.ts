@@ -17,6 +17,7 @@ export interface FastWebWizardDraft {
 export function createEmptyBrief(): FastWebBrief {
   return {
     goal: undefined,
+    categoryKey: undefined,
     businessName: "",
     industry: "",
     city: "",

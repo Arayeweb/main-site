@@ -23,7 +23,7 @@ const solutionLinks = [
     href: "/seo",
   },
   {
-    label: "AdReady",
+    label: "لندینگ فروش",
     description: "صفحه فروش سریع برای کمپین تبلیغاتی",
     href: "/adready",
   },
