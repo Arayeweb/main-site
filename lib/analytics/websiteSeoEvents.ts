@@ -12,7 +12,11 @@ export type WebsiteSeoEventName =
   | "website_phone_click"
   | "website_whatsapp_click"
   | "website_sample_click"
-  | "website_pricing_view";
+  | "website_pricing_view"
+  | "website_hub_view"
+  | "website_offer_click"
+  | "website_estimate_open"
+  | "website_scroll_depth";
 
 export function trackWebsiteSeoEvent(
   eventName: WebsiteSeoEventName,
@@ -23,6 +27,9 @@ export function trackWebsiteSeoEvent(
     primary_keyword: string;
     offer: WebsiteSeoOffer;
     cta_position: WebsiteSeoCtaPosition;
+    depth?: number;
+    offer_id?: string;
+    button_text?: string;
   },
 ) {
   pushGtmEvent(eventName, {
@@ -32,6 +39,9 @@ export function trackWebsiteSeoEvent(
     offer: params.offer,
     cta_position: params.cta_position,
     ...(params.industry ? { industry: params.industry } : {}),
+    ...(typeof params.depth === "number" ? { depth: params.depth } : {}),
+    ...(params.offer_id ? { offer_id: params.offer_id } : {}),
+    ...(params.button_text ? { button_text: params.button_text } : {}),
     timestamp: Date.now(),
   });
 }

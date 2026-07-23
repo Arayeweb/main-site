@@ -43,9 +43,48 @@ const HUB_CTA: Record<ToolHub, { label: string; path: string }> = {
   qr: { label: "ساخت QR رایگان", path: "/qr#tool" },
   shortener: { label: "لینک را کوتاه کن", path: "/shortener#tool" },
   googlesabt: { label: "مشاهده پکیج‌ها و قیمت", path: "/googlesabt#packages" },
+  "review-link": { label: "ساخت لینک نظر و QR", path: "/review-link#tool" },
+  "local-seo-check": { label: "شروع تست سئو محلی", path: "/local-seo-check#tool" },
+  "seo-roi-calculator": { label: "محاسبه ROI سئو", path: "/seo-roi-calculator#tool" },
 };
 
 function problemFor(entry: ToolRegistryEntry): ToolProgrammaticPage["problem"] {
+  if (entry.hub === "review-link") {
+    return {
+      title: `چرا ${entry.label} به لینک مستقیم نظر گوگل نیاز دارد؟`,
+      body: `وقتی مسیر ثبت نظر طولانی یا مبهم باشد، بیشتر مشتریان ${entry.label} کار را نیمه‌کاره رها می‌کنند. لینک مستقیم و QR اصطکاک را کم می‌کند و گرفتن بازخورد واقعی را ساده‌تر می‌سازد.`,
+      bullets: [
+        "باز شدن مستقیم فرم ثبت نظر گوگل",
+        "QR آماده چاپ روی میز، رسید یا کارت",
+        "متن مودبانه و صنف‌محور برای درخواست نظر",
+        "بدون ثبت‌نام و بدون ذخیره لینک",
+      ],
+    };
+  }
+  if (entry.hub === "local-seo-check") {
+    return {
+      title: `آیا ${entry.label} برای جست‌وجوی محلی آماده است؟`,
+      body: `دیده‌شدن محلی فقط به ثبت یک نقطه روی نقشه وابسته نیست. این تست، وضعیت پروفایل، اطلاعات تماس، نظرها، سایت، محتوای محلی و اندازه‌گیری را در چند دقیقه ارزیابی می‌کند.`,
+      bullets: [
+        "امتیاز شفاف از ۱۰۰",
+        "سه اقدام فوری بدون نیاز به اطلاعات تماس",
+        "چک‌لیست متناسب با صنف",
+        "گزارش کامل و قابل اجرا",
+      ],
+    };
+  }
+  if (entry.hub === "seo-roi-calculator") {
+    return {
+      title: `آیا سرمایه‌گذاری روی سئو برای ${entry.label} توجیه دارد؟`,
+      body: `با حدس درباره سئو تصمیم نگیرید. ارزش هر مشتری، نرخ تبدیل، حاشیه سود و هزینه واقعی را وارد کنید تا نقطه سربه‌سر و سه سناریوی بازگشت سرمایه را ببینید.`,
+      bullets: [
+        "محاسبه سود خالص و ROI",
+        "نمایش تعداد لید لازم برای سربه‌سر",
+        "سه سناریوی محافظه‌کارانه تا خوش‌بینانه",
+        "فرمول شفاف و بدون وعده تضمینی",
+      ],
+    };
+  }
   if (entry.hub === "googlesabt") {
     if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
       return {
@@ -132,6 +171,36 @@ function problemFor(entry: ToolRegistryEntry): ToolProgrammaticPage["problem"] {
 }
 
 function stepsFor(entry: ToolRegistryEntry): ToolProgrammaticPage["steps"] {
+  if (entry.hub === "review-link") {
+    return {
+      title: `ساخت لینک نظر گوگل ${entry.label} در ۳ قدم`,
+      items: [
+        "لینک Ask for reviews پروفایل گوگل یا Place ID را وارد کنید.",
+        "لینک مستقیم، QR و متن پیشنهادی را همان لحظه دریافت کنید.",
+        "لینک را بعد از ارائه خدمت برای مشتری واقعی بفرستید یا QR را چاپ کنید.",
+      ],
+    };
+  }
+  if (entry.hub === "local-seo-check") {
+    return {
+      title: `مراحل تست سئو محلی ${entry.label}`,
+      items: [
+        "مواردی را که اکنون در پروفایل، سایت و اندازه‌گیری انجام داده‌اید علامت بزنید.",
+        "امتیاز آمادگی و سه ایراد با بیشترین اولویت را ببینید.",
+        "اقدامات باقی‌مانده را اجرا کنید و چند هفته بعد تست را تکرار کنید.",
+      ],
+    };
+  }
+  if (entry.hub === "seo-roi-calculator") {
+    return {
+      title: `مراحل محاسبه ROI سئو ${entry.label}`,
+      items: [
+        "ارزش متوسط مشتری و حاشیه سود واقعی را وارد کنید.",
+        "لید ماهانه، نرخ تبدیل و کل هزینه سئو را تخمین بزنید.",
+        "ROI، نقطه سربه‌سر و سه سناریوی مالی را مقایسه کنید.",
+      ],
+    };
+  }
   if (entry.hub === "googlesabt") {
     if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
       return {
@@ -187,6 +256,30 @@ function stepsFor(entry: ToolRegistryEntry): ToolProgrammaticPage["steps"] {
 }
 
 function benefitsFor(entry: ToolRegistryEntry): ToolProgrammaticPage["benefits"] {
+  if (entry.hub === "review-link") {
+    return [
+      { title: "اصطکاک کمتر", desc: "مشتری مستقیم وارد فرم ثبت نظر می‌شود و بین صفحه‌های گوگل گم نمی‌شود." },
+      { title: "QR آماده چاپ", desc: "برای میز، کارت، فاکتور یا بسته‌بندی یک QR بدون واترمارک می‌گیرید." },
+      { title: "پیام صنف‌محور", desc: `متن درخواست نظر برای لحن و نیاز ${entry.label} آماده شده است.` },
+      { title: "رایگان و خصوصی", desc: "تولید لینک و QR در مرورگر انجام می‌شود و ثبت‌نام لازم نیست." },
+    ];
+  }
+  if (entry.hub === "local-seo-check") {
+    return [
+      { title: "اولویت روشن", desc: "به‌جای فهرست بلند، اول سه اقدام با بیشترین اثر را می‌بینید." },
+      { title: "متناسب با صنف", desc: `کنترل‌های تخصصی ${entry.label} کنار اصول عمومی سئو محلی قرار می‌گیرد.` },
+      { title: "بدون ادعای رتبه", desc: "امتیاز، آمادگی اجرایی را می‌سنجد و جایگاه واقعی گوگل را جعل نمی‌کند." },
+      { title: "قابل تکرار", desc: "پس از اصلاحات دوباره تست کنید و پیشرفت را بسنجید." },
+    ];
+  }
+  if (entry.hub === "seo-roi-calculator") {
+    return [
+      { title: "تصمیم عددی", desc: "هزینه سئو را به سود، مشتری و نقطه سربه‌سر تبدیل می‌کند." },
+      { title: "سناریوهای مختلف", desc: "ریسک را با نتایج محافظه‌کارانه، واقعی و خوش‌بینانه می‌بینید." },
+      { title: "فرمول شفاف", desc: "همه ورودی‌ها دست شماست و نتیجه بر اساس داده‌های خودتان محاسبه می‌شود." },
+      { title: "مناسب خدمات", desc: `برای مدل جذب لید و فروش خدمات ${entry.label} طراحی شده است.` },
+    ];
+  }
   if (entry.hub === "googlesabt") {
     if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
       return [
@@ -290,6 +383,33 @@ function benefitsFor(entry: ToolRegistryEntry): ToolProgrammaticPage["benefits"]
 function faqsFor(entry: ToolRegistryEntry): ToolFaq[] {
   const kw = entry.primaryKeyword;
   const label = entry.label;
+  if (entry.hub === "review-link") {
+    return [
+      { q: "لینک مستقیم نظر گوگل را از کجا بگیرم؟", a: "در پروفایل کسب‌وکار گوگل گزینه Ask for reviews را باز و لینک را کپی کنید. اگر Place ID دارید، ابزار از آن لینک مستقیم می‌سازد." },
+      { q: "آیا می‌توانم برای نظر دادن جایزه بدهم؟", a: "خیر. نظر باید واقعی و بدون مشوق باشد. از مشتریان واقعی و بدون جهت‌دهی برای ثبت تجربه صادقانه دعوت کنید." },
+      { q: "QR نظر گوگل منقضی می‌شود؟", a: "QR استاتیک منقضی نمی‌شود؛ تا زمانی که لینک مقصد معتبر باشد کار می‌کند." },
+      { q: `بهترین زمان درخواست نظر از مشتری ${label} چه موقع است؟`, a: "بلافاصله پس از تجربه موفق و زمانی که مشتری رضایت خود را نشان داده است؛ نه با فشار یا درخواست تکراری." },
+      { q: "آیا آرایه لینک یا اطلاعات من را ذخیره می‌کند؟", a: "خیر. ساخت لینک و QR در مرورگر انجام می‌شود و برای استفاده از ابزار ثبت‌نام لازم نیست." },
+    ];
+  }
+  if (entry.hub === "local-seo-check") {
+    return [
+      { q: "این تست رتبه واقعی گوگل مپ را نشان می‌دهد؟", a: "خیر. این ابزار آمادگی اجرایی سئو محلی را می‌سنجد. رتبه واقعی به مکان جست‌وجو، رقبا و داده‌های زنده وابسته است." },
+      { q: "امتیاز خوب سئو محلی چند است؟", a: "امتیاز بالای ۸۰ یعنی پایه‌ها آماده‌اند، اما کیفیت اجرا و قدرت رقبا همچنان باید جداگانه بررسی شود." },
+      { q: `مهم‌ترین عامل سئو محلی ${label} چیست؟`, a: "پروفایل کامل و درست، یکسان بودن نام/آدرس/تلفن، نظرهای واقعی، سایت مفید و ارتباط موضوعی با جست‌وجوی محلی همگی مهم‌اند." },
+      { q: "بدون وب‌سایت هم می‌توان در نقشه دیده شد؟", a: "بله، اما سایت سریع و معتبر کنترل بیشتری روی محتوا، اعتمادسازی، رزرو و اندازه‌گیری به شما می‌دهد." },
+      { q: "هر چند وقت یک‌بار تست را تکرار کنم؟", a: "پس از هر دور اصلاحات یا حداقل هر سه ماه یک‌بار، به‌ویژه بعد از تغییر آدرس، تلفن، ساعت یا خدمات." },
+    ];
+  }
+  if (entry.hub === "seo-roi-calculator") {
+    return [
+      { q: "فرمول ROI سئو چیست؟", a: "ROI برابر است با سود خالص حاصل از سئو تقسیم بر کل هزینه سئو، ضربدر ۱۰۰. در کسب‌وکار خدماتی باید ارزش لید و نرخ تبدیل هم لحاظ شود." },
+      { q: "هزینه سئو شامل چه چیزهایی است؟", a: "هزینه آژانس یا نیروی داخلی، محتوا، توسعه فنی، ابزارها و لینک‌سازی مرتبط در همان بازه زمانی." },
+      { q: "چرا حاشیه سود مهم است؟", a: "فروش با سود یکسان نیست. برای تصمیم درست باید سود هر مشتری، نه فقط مبلغ فاکتور، وارد محاسبه شود." },
+      { q: `نتیجه سئو برای ${label} چند ماهه مشخص می‌شود؟`, a: "بسته به وضعیت سایت و رقابت متفاوت است؛ معمولاً ارزیابی مالی سئو در بازه ۳ تا ۶ ماهه معنادارتر از یک ماه است." },
+      { q: "آیا این محاسبه تضمین فروش است؟", a: "خیر. خروجی یک مدل تصمیم‌گیری بر اساس ورودی‌های شماست و رتبه، ترافیک یا فروش را تضمین نمی‌کند." },
+    ];
+  }
   if (entry.hub === "googlesabt") {
     if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
       return [
@@ -416,6 +536,30 @@ function bodyParagraphsFor(entry: ToolRegistryEntry): string[] {
   const label = entry.label;
   const secondary = entry.secondaryKeywords[0] ?? kw;
 
+  if (entry.hub === "review-link") {
+    return [
+      `${kw} مسیر مشتری را از دریافت پیام تا باز شدن فرم گوگل کوتاه می‌کند. برای ${label}، این کاهش اصطکاک می‌تواند تعداد بازخوردهای واقعی را بیشتر کند.`,
+      `ابزار آرایه از لینک آماده گوگل یا Place ID استفاده می‌کند و هم‌زمان لینک مستقیم، QR قابل دانلود و متن درخواست نظر متناسب با ${label} می‌سازد.`,
+      `برای حفظ اعتماد، فقط از مشتری واقعی و بدون جایزه یا فشار درخواست نظر کنید. هدف جمع‌کردن تجربه واقعی است، نه دست‌کاری امتیاز.`,
+      `بعد از ساخت لینک می‌توانید وضعیت کلی پروفایل را با تست سئو محلی بررسی کنید یا برای بهینه‌سازی حرفه‌ای از خدمات ثبت و سئو آرایه کمک بگیرید.`,
+    ];
+  }
+  if (entry.hub === "local-seo-check") {
+    return [
+      `${kw} یک ارزیابی سریع از پایه‌های دیده‌شدن ${label} در جست‌وجوی محلی است؛ از صحت اطلاعات و دسته‌بندی تا نظرها، سایت، اسکیما و اندازه‌گیری.`,
+      `این ابزار رتبه جعلی نمایش نمی‌دهد. خروجی آن امتیاز آمادگی، سه اقدام اولویت‌دار و یک فهرست اجرایی است که می‌توانید بدون ابزار تخصصی شروع کنید.`,
+      `مواردی مثل ${secondary} زمانی نتیجه می‌دهند که اطلاعات کسب‌وکار یکسان، صفحات خدمات مفید و مسیر تماس یا رزرو واضح باشد.`,
+      `اگر امتیاز پایین است، ابتدا مشکلات پایه را برطرف کنید؛ سپس رقبا، کلمات محلی و عملکرد واقعی در Search Console و Analytics را بررسی کنید.`,
+    ];
+  }
+  if (entry.hub === "seo-roi-calculator") {
+    return [
+      `${kw} کمک می‌کند هزینه را به تعداد لید، مشتری و سود قابل فهم تبدیل کنید. مدل بر اساس داده‌های خود ${label} محاسبه می‌شود، نه وعده‌های عمومی.`,
+      `ارزش مشتری، نرخ تبدیل لید، حاشیه سود و همه هزینه‌های اجرا را وارد کنید. ابزار نقطه سربه‌سر و سه سناریو را نمایش می‌دهد تا ریسک تصمیم روشن باشد.`,
+      `برای ${secondary} بهتر است بازه ۳ تا ۶ ماهه را در نظر بگیرید؛ چون اثر محتوا و بهبود فنی معمولاً تدریجی است.`,
+      `پس از شروع سئو، ورودی‌های تخمینی را با داده واقعی CRM، GA4 و Search Console جایگزین کنید تا محاسبه دقیق‌تر شود.`,
+    ];
+  }
   if (entry.hub === "googlesabt") {
     if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
       return [
@@ -473,6 +617,9 @@ function prefillFor(entry: ToolRegistryEntry): string | undefined {
 }
 
 function ctaLabelFor(entry: ToolRegistryEntry): string {
+  if (entry.hub === "review-link") return `ساخت لینک نظر گوگل ${entry.label}`;
+  if (entry.hub === "local-seo-check") return `شروع تست سئو محلی ${entry.label}`;
+  if (entry.hub === "seo-roi-calculator") return `محاسبه ROI سئو ${entry.label}`;
   if (entry.hub === "googlesabt") {
     if (entry.pageType === "guide" || entry.pageType === "comparison" || entry.pageType === "intent") {
       return "مشاهده پکیج‌ها و قیمت";
@@ -541,6 +688,21 @@ export function buildToolProgrammaticPage(
     if (entry.industryPath === "doctor") {
       industryLinks.push({ href: "/doctors", label: "پکیج سایت پزشکان" });
     }
+  }
+  if (entry.hub === "review-link" || entry.hub === "local-seo-check") {
+    industryLinks.push({ href: "/free-seo-audit", label: "تحلیل رایگان سایت و سئو" });
+    if (entry.industryPath) {
+      industryLinks.push({
+        href: `/googlesabt/${entry.industryPath === "online-shop" ? "shop" : entry.industryPath}`,
+        label: `ثبت ${entry.label} در گوگل مپ`,
+      });
+    } else {
+      industryLinks.push({ href: "/googlesabt", label: "ثبت کسب‌وکار در گوگل مپ" });
+    }
+  }
+  if (entry.hub === "seo-roi-calculator") {
+    industryLinks.push({ href: "/free-seo-audit", label: "تحلیل رایگان سایت و سئو" });
+    industryLinks.push({ href: "/seo", label: "خدمات سئو آرایه" });
   }
 
   const isPaidService = entry.hub === "googlesabt";

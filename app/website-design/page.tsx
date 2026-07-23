@@ -22,8 +22,11 @@ import WebsiteDesignFaq from "@/components/website-design/website-design-faq";
 import WebsiteDesignLeadForm from "@/components/website-design/website-design-lead-form";
 import WebsiteDesignFinalCta from "@/components/website-design/website-design-final-cta";
 import IndustryHubLinks from "@/components/seo/IndustryHubLinks";
+import WebsiteDesignAiExtract from "@/components/website-design/website-design-ai-extract";
+import WebsiteDesignFunnelAnalytics from "@/components/website-design/WebsiteDesignFunnelAnalytics";
 import { canonicalUrl } from "@/lib/siteUrl";
 import { organizationProviderRef } from "@/lib/seo/siteIdentity";
+import { buildWebsiteDesignItemListJsonLd } from "@/lib/seo/aiReadableWebsiteFiles";
 import { websiteDesignFaq } from "@/data/website-design";
 
 export const metadata: Metadata = {
@@ -90,6 +93,7 @@ const jsonLd = {
         acceptedAnswer: { "@type": "Answer", text: item.a },
       })),
     },
+    buildWebsiteDesignItemListJsonLd(),
   ],
 };
 
@@ -102,7 +106,9 @@ export default function WebsiteDesignPage() {
       />
       <WebsiteDesignNavbar />
       <main>
+        <WebsiteDesignFunnelAnalytics pagePath="/website-design" mode="hub" />
         <WebsiteDesignHero />
+        <WebsiteDesignAiExtract />
         <WebsiteDesignLogic />
         <WebsiteDesignTestimonials />
         <WebsiteDesignPortfolio />

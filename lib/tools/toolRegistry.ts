@@ -1,4 +1,11 @@
-export type ToolHub = "bizcard" | "qr" | "shortener" | "googlesabt";
+export type ToolHub =
+  | "bizcard"
+  | "qr"
+  | "shortener"
+  | "googlesabt"
+  | "review-link"
+  | "local-seo-check"
+  | "seo-roi-calculator";
 export type ToolPageType = "industry" | "intent" | "guide" | "comparison";
 export type PageStatus = "published" | "draft";
 
@@ -1328,11 +1335,109 @@ const GOOGLESABT_PAGES: ToolRegistryEntry[] = [
   },
 ];
 
+const GROWTH_TOOL_INDUSTRIES = [
+  {
+    slug: "doctor",
+    label: "پزشک",
+    industryPath: "doctor",
+    relatedSlugs: ["clinic", "dentist", "lawyer", "restaurant"],
+  },
+  {
+    slug: "clinic",
+    label: "کلینیک",
+    industryPath: "clinic",
+    relatedSlugs: ["doctor", "dentist", "lawyer", "restaurant"],
+  },
+  {
+    slug: "dentist",
+    label: "دندانپزشک",
+    industryPath: "dentist",
+    relatedSlugs: ["doctor", "clinic", "lawyer", "restaurant"],
+  },
+  {
+    slug: "lawyer",
+    label: "وکیل",
+    industryPath: "lawyer",
+    relatedSlugs: ["doctor", "clinic", "dentist", "restaurant"],
+  },
+  {
+    slug: "restaurant",
+    label: "رستوران",
+    industryPath: "restaurant",
+    relatedSlugs: ["doctor", "clinic", "dentist", "lawyer"],
+  },
+] as const;
+
+const REVIEW_LINK_PAGES: ToolRegistryEntry[] = GROWTH_TOOL_INDUSTRIES.map((industry) => ({
+  hub: "review-link",
+  slug: industry.slug,
+  pageType: "industry",
+  status: "published",
+  primaryKeyword: `ساخت لینک نظر گوگل برای ${industry.label}`,
+  secondaryKeywords: [
+    `QR نظر گوگل ${industry.label}`,
+    `لینک ثبت نظر مشتری ${industry.label}`,
+    `متن درخواست نظر برای ${industry.label}`,
+  ],
+  label: industry.label,
+  relatedSlugs: industry.relatedSlugs,
+  crossToolLinks: [
+    { hub: "qr", slug: "google-maps", anchor: "ساخت QR گوگل مپ" },
+    { hub: "googlesabt", slug: industry.slug, anchor: `ثبت ${industry.label} در گوگل مپ` },
+  ],
+  industryPath: industry.industryPath,
+}));
+
+const LOCAL_SEO_CHECK_PAGES: ToolRegistryEntry[] = GROWTH_TOOL_INDUSTRIES.map(
+  (industry) => ({
+    hub: "local-seo-check",
+    slug: industry.slug,
+    pageType: "industry",
+    status: "published",
+    primaryKeyword: `تست سئو محلی ${industry.label}`,
+    secondaryKeywords: [
+      `چک لیست سئو محلی ${industry.label}`,
+      `بررسی گوگل مپ ${industry.label}`,
+      `امتیاز سئو محلی ${industry.label}`,
+    ],
+    label: industry.label,
+    relatedSlugs: industry.relatedSlugs,
+    crossToolLinks: [
+      { hub: "review-link", slug: industry.slug, anchor: `ساخت لینک نظر گوگل ${industry.label}` },
+      { hub: "googlesabt", slug: industry.slug, anchor: `بهینه‌سازی گوگل مپ ${industry.label}` },
+    ],
+    industryPath: industry.industryPath,
+  }),
+);
+
+const SEO_ROI_PAGES: ToolRegistryEntry[] = GROWTH_TOOL_INDUSTRIES.map((industry) => ({
+  hub: "seo-roi-calculator",
+  slug: industry.slug,
+  pageType: "industry",
+  status: "published",
+  primaryKeyword: `محاسبه ROI سئو برای ${industry.label}`,
+  secondaryKeywords: [
+    `بازگشت سرمایه سئو ${industry.label}`,
+    `سئو ${industry.label} چند مشتری لازم دارد`,
+    `محاسبه سود سئو ${industry.label}`,
+  ],
+  label: industry.label,
+  relatedSlugs: industry.relatedSlugs,
+  crossToolLinks: [
+    { hub: "local-seo-check", slug: industry.slug, anchor: `تست سئو محلی ${industry.label}` },
+    { hub: "googlesabt", slug: industry.slug, anchor: `ثبت ${industry.label} در گوگل مپ` },
+  ],
+  industryPath: industry.industryPath,
+}));
+
 export const TOOL_PROGRAMMATIC_PAGES: readonly ToolRegistryEntry[] = [
   ...BIZCARD_PAGES,
   ...QR_PAGES,
   ...SHORTENER_PAGES,
   ...GOOGLESABT_PAGES,
+  ...REVIEW_LINK_PAGES,
+  ...LOCAL_SEO_CHECK_PAGES,
+  ...SEO_ROI_PAGES,
 ];
 
 export function getToolPage(hub: ToolHub, slug: string): ToolRegistryEntry | undefined {
@@ -1347,6 +1452,26 @@ export function getPublishedToolPages(hub: ToolHub): ToolRegistryEntry[] {
   return TOOL_PROGRAMMATIC_PAGES.filter((p) => p.hub === hub && p.status === "published");
 }
 
+/**
+ * Choice architecture for free-tool hubs: show a small, high-utility default set
+ * before exposing the full SEO directory. This reduces decision paralysis while
+ * keeping every published page discoverable.
+ */
+type FeaturedToolHub = "bizcard" | "qr" | "shortener";
+
+const FEATURED_TOOL_SLUGS: Record<FeaturedToolHub, readonly string[]> = {
+  bizcard: ["restaurant", "doctor", "online-shop", "instagram-business", "freelancer", "salon"],
+  qr: ["instagram", "whatsapp", "wifi", "menu", "website", "google-maps"],
+  shortener: ["instagram", "whatsapp", "bio-link", "campaign", "sms", "tracking"],
+};
+
+export function getFeaturedToolPages(hub: FeaturedToolHub): ToolRegistryEntry[] {
+  const featured = FEATURED_TOOL_SLUGS[hub];
+  return featured
+    .map((slug) => getToolPage(hub, slug))
+    .filter((page): page is ToolRegistryEntry => page?.status === "published");
+}
+
 export function getPublishedToolPaths(): string[] {
   return TOOL_PROGRAMMATIC_PAGES.filter((p) => p.status === "published").map(
     (p) => `/${p.hub}/${p.slug}`,
@@ -1357,7 +1482,10 @@ export function getHubLabel(hub: ToolHub): string {
   if (hub === "bizcard") return "کارت ویزیت دیجیتال";
   if (hub === "qr") return "ساخت QR کد";
   if (hub === "shortener") return "کوتاه‌کننده لینک";
-  return "ثبت گوگل مپ";
+  if (hub === "googlesabt") return "ثبت گوگل مپ";
+  if (hub === "review-link") return "لینک نظر گوگل و QR";
+  if (hub === "local-seo-check") return "تست سئو محلی";
+  return "محاسبه‌گر ROI سئو";
 }
 
 export function getHubPath(hub: ToolHub): string {

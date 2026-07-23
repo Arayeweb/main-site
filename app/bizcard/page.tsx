@@ -47,7 +47,7 @@ export default function BizcardPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main className="pb-20 sm:pb-0">
+      <main className="tool-page pb-20 sm:pb-0">
         <BizcardHero countLabel="۵۰۰+" />
         <BizcardBuilder />
         <BizcardSteps />

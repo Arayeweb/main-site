@@ -17,6 +17,16 @@ export function pageFromPath(p: unknown): string | null {
     return `${industry[1].toLowerCase()}/${industry[2].toLowerCase()}`;
   }
 
+  // ابزارهای رشد رایگان — /review-link/doctor → review-link/doctor
+  const growthTool = path.match(
+    /^\/(review-link|local-seo-check|seo-roi-calculator)(?:\/([a-z0-9-]+))?$/i,
+  );
+  if (growthTool) {
+    const hub = growthTool[1].toLowerCase();
+    const slug = growthTool[2]?.toLowerCase();
+    return slug ? `${hub}/${slug}` : hub;
+  }
+
   // لندینگ فروش رستوران زیر hub طراحی‌سایت
   if (/^\/website-design\/restaurant(?:\/.*)?$/i.test(path)) {
     return "restaurant";
@@ -24,13 +34,17 @@ export function pageFromPath(p: unknown): string | null {
 
   // اولویت ۲: لندینگ‌های شناخته‌شده (رفتار قبلی؛ بدون شکستن منبع‌های موجود)
   // مثال: /seo → seo ، /doctors → doctors ، /clinic → clinic
-  const legacyExact = path.match(/^\/(clinic|doctors|restaurant|googlesabt|seo|bizcard|modares)(?:\/.*)?$/i);
+  const legacyExact = path.match(
+    /^\/(clinic|doctors|restaurant|googlesabt|seo|bizcard|modares|qr|shortener|free-seo-audit)(?:\/.*)?$/i,
+  );
   if (legacyExact) {
     return legacyExact[1].toLowerCase();
   }
 
   // اولویت ۳: match شل مثل قبل — وقتی page به صورت لیبل خام می‌آید (مثلاً "seo" یا "doctors")
-  const loose = raw.match(/\b(index|clinic|doctors|restaurant|googlesabt|seo|bizcard)\b/i);
+  const loose = raw.match(
+    /\b(index|clinic|doctors|restaurant|googlesabt|seo|bizcard|review-link|local-seo-check|seo-roi-calculator)\b/i,
+  );
   if (loose) {
     return loose[1].toLowerCase();
   }

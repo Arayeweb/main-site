@@ -85,6 +85,10 @@ export const CRM_SOURCE_LABELS: Record<string, string> = {
   demo_tool: 'ابزار دمو',
   demo_exit_intent: 'دمو — exit intent',
   'free-seo-audit': 'بررسی رایگان سئو',
+  'free-tool-review_link': 'ابزار رایگان — لینک نظر گوگل',
+  'free-tool-local_seo_check': 'ابزار رایگان — تست سئو محلی',
+  'free-tool-seo_roi': 'ابزار رایگان — محاسبه ROI سئو',
+  free_tool_report: 'گزارش ابزار رایگان',
   fastweb_site_form: 'سایت فوری — فرم تماس',
   csv_import: 'ورود از فایل',
   unknown: 'نامشخص',
@@ -112,6 +116,9 @@ export function resolveSourceLabel(source: string): string {
   if (source.startsWith('showdemoto-')) {
     return `دموی مشتری — ${source.replace('showdemoto-', '').replace(/-/g, ' ')}`;
   }
+  if (source.startsWith('free-tool-') || source.startsWith('free_tool_')) {
+    return `ابزار رایگان — ${source.replace(/^free[-_]tool[-_]/, '').replace(/_/g, ' ')}`;
+  }
   return source;
 }
 
@@ -119,6 +126,7 @@ export const CRM_GOAL_LABELS: Record<string, string> = {
   seo_service: 'خدمات سئو',
   seo_audit_free: 'بررسی رایگان سئو',
   doctor_site: 'سایت مطب / پزشک',
+  free_tool_report: 'گزارش ابزار رایگان',
 };
 
 export const CRM_PLAN_LABELS: Record<string, string> = {
@@ -126,6 +134,10 @@ export const CRM_PLAN_LABELS: Record<string, string> = {
   growth: 'پکیج رشد',
   pro: 'پکیج حرفه‌ای',
   bundle: 'ترکیبی سئو+گوگل',
+  review_link: 'لینک نظر گوگل',
+  local_seo_check: 'تست سئو محلی',
+  seo_roi: 'محاسبه ROI سئو',
+  free_tool_report: 'گزارش ابزار رایگان',
   free_audit: 'بررسی رایگان',
 };
 

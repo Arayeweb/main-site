@@ -22,6 +22,27 @@ const tools = [
       "از لینک، متن، وای‌فای یا شماره تماس QR آماده دانلود بسازید — مناسب پرینت و استوری.",
     cta: "ساخت QR رایگان",
   },
+  {
+    href: "/review-link",
+    title: "لینک نظر گوگل + QR",
+    description:
+      "لینک مستقیم فرم ثبت نظر، QR قابل چاپ و متن آماده درخواست بازخورد مشتری.",
+    cta: "ساخت لینک نظر",
+  },
+  {
+    href: "/local-seo-check",
+    title: "تست سئو محلی",
+    description:
+      "آمادگی پروفایل، سایت و نظرها را بسنجید و سه اقدام اولویت‌دار دریافت کنید.",
+    cta: "شروع تست رایگان",
+  },
+  {
+    href: "/seo-roi-calculator",
+    title: "محاسبه ROI سئو",
+    description:
+      "با عددهای خودتان سود، نقطه سربه‌سر و تعداد لید لازم برای سئو را محاسبه کنید.",
+    cta: "محاسبه بازگشت سرمایه",
+  },
 ] as const;
 
 export default function HomeToolsSection() {
@@ -31,14 +52,14 @@ export default function HomeToolsSection() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-bold text-teal-700">ابزارهای رایگان آرایه</p>
           <h2 className="mt-2 text-2xl font-extrabold leading-snug tracking-tight text-navy-900 sm:text-3xl">
-            کارت ویزیت، لینک کوتاه و QR — همین الان
+            شش ابزار رایگان برای حضور و رشد در گوگل
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed text-navy-500 sm:text-base">
-            سه ابزار رایگان برای حضور سریع‌تر آنلاین؛ بدون ثبت‌نام، بدون نصب اپ.
+            از QR و کارت دیجیتال تا تست سئو محلی و محاسبه بازگشت سرمایه.
           </p>
         </div>
 
-        <div className="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {tools.map((tool) => (
             <article
               key={tool.href}

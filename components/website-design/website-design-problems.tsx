@@ -7,7 +7,8 @@ export default function WebsiteDesignProblems() {
       <div className="container-mx container-px">
         <SectionHeader
           badge="مشکل فقط ظاهر سایت نیست"
-          title="چرا خیلی از سایت‌ها هیچ مشتری‌ای نمی‌سازند؟"
+          title="هر روز بدون سایت درست، تماس‌ها و سفارش‌ها را از دست می‌دهید"
+          subtitle="این‌ها همان جاهایی‌اند که بازدیدکننده خارج می‌شود — قبل از اینکه حتی شما را بشناسد."
           className="text-start sm:text-center"
         />
 

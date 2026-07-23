@@ -26,6 +26,19 @@ describe("leadScoring", () => {
     expect(isAutoQualified).toBe(false);
   });
 
+  it("boosts free-tool report leads toward qualification", () => {
+    const { score, isAutoQualified } = scoreLeadFromPayload({
+      contact: "09121234567",
+      plan: "seo_roi",
+      source: "free-tool-seo_roi",
+      goal: "free_tool_report",
+      intent: "doctor",
+      detail: "roi=120 | breakEvenLeads=8 | monthlyLeads=20 | seoCost=15000000",
+    });
+    expect(score).toBeGreaterThanOrEqual(AUTO_QUALIFIED_THRESHOLD);
+    expect(isAutoQualified).toBe(true);
+  });
+
   it("confirms qualified CRM statuses", () => {
     expect(isConfirmedQualifiedStatus("qualified")).toBe(true);
     expect(isConfirmedQualifiedStatus("new")).toBe(false);

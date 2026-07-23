@@ -1,30 +1,25 @@
-import SectionHeader from "@/components/home/SectionHeader";
+import ToolEditorialHeader from "@/components/tools/ToolEditorialHeader";
 import { bizcardTestimonials } from "@/lib/bizcardData";
 
 export default function BizcardTestimonials() {
   return (
-    <section className="section-py bg-white">
+    <section className="tool-section">
       <div className="container-mx container-px">
-        <SectionHeader
-          badge="نظرات"
-          badgeClassName="bg-brand-50 text-brand-600"
+        <ToolEditorialHeader
+          index="۰۴"
+          kicker="روایت کاربران"
           title="کسب‌وکارهایی که دیجیتال شدند"
           subtitle="بدون هزینه و بدون دانش فنی"
         />
-        <div className="mx-auto mt-10 grid max-w-5xl gap-5 lg:grid-cols-3">
-          {bizcardTestimonials.map((t) => (
+        <div className="mt-8 grid border-y border-navy-300 lg:grid-cols-3">
+          {bizcardTestimonials.map((t, index) => (
             <div
               key={t.name}
-              className="flex flex-col rounded-2xl border border-navy-100 bg-white p-6 shadow-soft"
+              className="flex flex-col border-b border-navy-300 p-6 last:border-b-0 lg:border-b-0 lg:border-l lg:last:border-l-0"
             >
-              <div className="mb-3 text-amber-500">★★★★★</div>
-              <p className="flex-1 text-[13px] leading-relaxed text-navy-600">{t.quote}</p>
-              <div className="mt-5 flex items-center gap-3 border-t border-navy-100 pt-4">
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${t.gradient} text-sm font-bold text-white`}
-                >
-                  {t.initial}
-                </div>
+              <span className="tool-index">نقل‌قول {String(index + 1).padStart(2, "0")}</span>
+              <p className="mt-5 flex-1 text-[14px] leading-8 text-navy-700">«{t.quote}»</p>
+              <div className="mt-6 border-t border-navy-200 pt-4">
                 <div>
                   <div className="text-sm font-bold text-navy-900">{t.name}</div>
                   <div className="text-xs text-navy-400">{t.biz}</div>

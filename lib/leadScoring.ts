@@ -35,7 +35,9 @@ export function scoreLeadFromPayload(input: LeadScoreInput): {
     source.includes("doctors_audit") ||
     source.includes("doctors_direct_sale") ||
     source.includes("seo_audit") ||
-    source.includes("free_seo_audit")
+    source.includes("free_seo_audit") ||
+    source.includes("free-tool-") ||
+    source.includes("free_tool_")
   ) {
     score += 35;
   }

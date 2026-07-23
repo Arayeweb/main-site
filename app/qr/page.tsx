@@ -43,7 +43,7 @@ export default function QrPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main>
+      <main className="tool-page">
         <QrHero />
         <QrTool />
         <QrFeatures />

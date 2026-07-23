@@ -2,23 +2,29 @@ import Link from "next/link";
 
 export default function BizcardFinalCta() {
   return (
-    <section className="section-py">
+    <section className="tool-section-compact">
       <div className="container-mx container-px">
-        <div className="mx-auto max-w-3xl rounded-3xl bg-gradient-to-l from-brand-600 to-brand-500 px-8 py-12 text-center text-white shadow-card">
-          <h2 className="text-2xl font-extrabold sm:text-3xl">همین الان کارت ویزیتت را بساز</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-white/90">
-            رایگان، فوری، بدون ثبت‌نام. یا برای ثبت حرفه‌ای در گوگل‌مپ، پکیج محبوب را ببین.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+        <div className="grid gap-8 border-y border-navy-400 py-8 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <p className="tool-kicker">قدم بعدی</p>
+            <h2 className="mt-4 text-2xl font-extrabold text-navy-950 sm:text-3xl">
+              لینک کسب‌وکارتان را همین حالا بسازید.
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-navy-600">
+              رایگان، فوری، بدون ثبت‌نام. برای دیده‌شدن روی نقشه‌ها نیز می‌توانید مسیر
+              حرفه‌ای را انتخاب کنید.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
             <a
               href="#builder"
-              className="rounded-xl bg-white px-7 py-3 text-sm font-bold text-brand-700 shadow-soft transition hover:bg-brand-50"
+              className="bg-navy-950 px-7 py-3 text-sm font-bold text-white transition hover:bg-brand-700"
             >
               ساخت کارت رایگان
             </a>
             <Link
               href="/googlesabt?from=bizcard&package=popular#packages"
-              className="rounded-xl border border-white/40 px-7 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              className="border-b border-navy-400 px-2 py-3 text-sm font-bold text-navy-700 transition hover:border-brand-600 hover:text-brand-700"
             >
               ثبت در گوگل + لینک کامل
             </Link>

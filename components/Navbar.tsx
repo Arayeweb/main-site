@@ -50,6 +50,21 @@ const toolLinks = [
     description: "QR رایگان از لینک، متن و بیشتر",
     href: "/qr",
   },
+  {
+    label: "لینک نظر گوگل + QR",
+    description: "لینک مستقیم ثبت نظر و QR قابل چاپ",
+    href: "/review-link",
+  },
+  {
+    label: "تست سئو محلی",
+    description: "امتیاز آمادگی گوگل مپ و اقدامات فوری",
+    href: "/local-seo-check",
+  },
+  {
+    label: "محاسبه ROI سئو",
+    description: "سود و نقطه سربه‌سر سرمایه‌گذاری سئو",
+    href: "/seo-roi-calculator",
+  },
 ] as const;
 
 const navLinks = [
@@ -101,7 +116,10 @@ function isToolsActive(pathname: string) {
   return (
     pathname.startsWith("/bizcard") ||
     pathname.startsWith("/shortener") ||
-    pathname.startsWith("/qr")
+    pathname.startsWith("/qr") ||
+    pathname.startsWith("/review-link") ||
+    pathname.startsWith("/local-seo-check") ||
+    pathname.startsWith("/seo-roi-calculator")
   );
 }
 

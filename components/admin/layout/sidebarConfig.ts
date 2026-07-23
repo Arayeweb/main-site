@@ -9,6 +9,7 @@ export interface SidebarItem {
 export const managerSidebarItems: SidebarItem[] = [
   { label: 'داشبورد', href: '/admin/manager', iconName: 'LayoutDashboard' },
   { label: 'مشتریان', href: '/admin/manager/clients', iconName: 'Users' },
+  { label: 'مرکز رشد', href: '/admin/growth-hub', iconName: 'Target' },
   { label: 'پروژه‌ها', href: '/admin/manager/projects', iconName: 'FolderOpen' },
   { label: 'تسک‌ها', href: '/admin/manager/tasks', iconName: 'CheckSquare' },
   { label: 'قراردادها', href: '/admin/manager/contracts', iconName: 'FileCheck' },

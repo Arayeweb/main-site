@@ -40,7 +40,8 @@ describe("sitemapRoutes", () => {
   });
 
   it("does not list draft industry routes", () => {
-    expect(SITEMAP_PATHS).not.toContain("/website/cafe");
+    expect(SITEMAP_PATHS).toContain("/website/cafe");
+    expect(SITEMAP_PATHS).not.toContain("/website/restaurant");
     expect(SITEMAP_PATHS).not.toContain("/seo/restaurant");
   });
 

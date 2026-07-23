@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { pushGtmEvent } from "@/lib/gtm";
-import { PORTFOLIO_SECTION_ID } from "@/data/website-design";
+import { PORTFOLIO_SECTION_ID, portfolioItems } from "@/data/website-design";
+import { websiteDesignTestimonials } from "@/data/website-design-testimonials";
 import MedisaHomePreview from "@/components/home/previews/MedisaHomePreview";
 import ShivaClinicHomePreview from "@/components/home/previews/ShivaClinicHomePreview";
 import DeepinHomePreview from "@/components/home/previews/DeepinHomePreview";
@@ -11,9 +12,12 @@ import WebsiteDesignHeroLeadBar, {
   HERO_LEAD_BAR_ID,
   openWebsiteDesignLead,
 } from "@/components/website-design/website-design-hero-lead-bar";
+import { trackWebsiteDesignCtaClick } from "@/lib/analytics/websiteDesignTracking";
 
 const ACCENT = "#3157F6";
 const HERO_BG = "#F4F6FF";
+const SOCIAL_PROOF_PORTFOLIO = portfolioItems.length;
+const SOCIAL_PROOF_REVIEWS = websiteDesignTestimonials.length;
 
 const FEATURED_PROJECTS = [
   {
@@ -174,42 +178,63 @@ export default function WebsiteDesignHero() {
           </p>
 
           <h1 className="mt-[20px] max-w-[950px] text-balance text-[clamp(2rem,4.2vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-navy-900">
-            طراحی سایت حرفه‌ای برای جذب مشتری و رشد کسب‌وکار
+            طراحی سایت حرفه‌ای که مشتری را به تماس و سفارش برساند
           </h1>
 
           <p className="mt-5 max-w-[780px] text-lg font-bold leading-snug text-navy-700 sm:text-xl">
-            سایتی که به مشتری نشان دهد چرا باید شما را انتخاب کند
+            خدمات، اعتماد و مسیر اقدام را طوری می‌چینیم که بازدیدکننده بداند چرا شما را انتخاب کند
           </p>
 
           <p className="mt-6 max-w-[780px] text-[15px] leading-[1.9] text-navy-500 sm:text-base">
-            خدمات، نمونه‌کارها و تفاوت کسب‌وکار شما را طوری کنار هم می‌چینیم که مشتری با
-            اطمینان تصمیم بگیرد؛ برای مشاوره، رزرو، سفارش یا شروع همکاری.
+            برای پزشک، کلینیک، شرکت خدماتی و فروشگاه: سایت معرفی اختصاصی از ۲۵ میلیون، یا سایت فوری
+            از ۴٫۹ میلیون اگر فقط حضور رسمی سریع می‌خواهید.
           </p>
 
           <div className="mt-10 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:w-auto sm:flex-row sm:justify-center">
-            <a
-              href={`#${PORTFOLIO_SECTION_ID}`}
-              onClick={() => track("website_design_portfolio_click", { location: "hero_primary" })}
-              className={`${ctaBase} text-white hover:opacity-95`}
-              style={{ backgroundColor: ACCENT }}
-            >
-              مشاهده نمونه سایت‌ها
-            </a>
             <button
               type="button"
+              data-wd-cta="hero-primary"
               onClick={() => {
-                track("cta_click", { location: "website_design_hero_chat" });
+                track("cta_click", { location: "website_design_hero_primary" });
+                trackWebsiteDesignCtaClick({
+                  button_text: "دریافت برآورد رایگان",
+                  cta_position: "hero",
+                  offer: "custom",
+                });
                 openWebsiteDesignLead("website_design_hero");
                 const target = document.getElementById(HERO_LEAD_BAR_ID);
                 if (target && window.matchMedia("(min-width: 768px)").matches) {
                   target.scrollIntoView({ behavior: "smooth", block: "center" });
                 }
               }}
+              className={`${ctaBase} text-white hover:opacity-95`}
+              style={{ backgroundColor: ACCENT }}
+            >
+              دریافت برآورد رایگان
+            </button>
+            <a
+              href={`#${PORTFOLIO_SECTION_ID}`}
+              onClick={() => {
+                track("website_design_portfolio_click", { location: "hero_secondary" });
+                trackWebsiteDesignCtaClick({
+                  button_text: "مشاهده نمونه‌کارها",
+                  cta_position: "hero",
+                  offer: "both",
+                });
+              }}
               className={`${ctaBase} border border-navy-200 bg-white text-navy-700 hover:border-[#C5D0FF] hover:bg-white hover:text-navy-900`}
             >
-              گفت‌وگو درباره سایت
-            </button>
+              مشاهده نمونه‌کارها
+            </a>
           </div>
+          <p className="mt-3 text-[13px] font-medium text-navy-400">
+            بدون تعهد · پاسخ معمولاً در یک روز کاری · قیمت شفاف قبل از شروع
+          </p>
+          <p className="mt-2 text-[12px] font-semibold text-navy-500">
+            {SOCIAL_PROOF_PORTFOLIO} نمونه‌کار واقعی
+            {SOCIAL_PROOF_REVIEWS > 0 ? ` · ${SOCIAL_PROOF_REVIEWS} نظر تأییدشده مشتری` : ""}
+            {" · "}مسیر دوگانه سایت فوری و اختصاصی
+          </p>
         </div>
 
         <div className="mx-auto mt-16 w-full max-w-[1200px]">

@@ -139,7 +139,7 @@ function LeadBarContent({
           }`}
           style={{ backgroundColor: ACCENT }}
         >
-          {loading ? "در حال ثبت..." : "ثبت و ادامه"}
+          {loading ? "در حال ثبت..." : "دریافت تماس مشاوره"}
         </button>
       </div>
 

@@ -15,11 +15,13 @@ describe("programmaticPages", () => {
       [
         "architect",
         "beauty-clinic",
+        "cafe",
         "clinic",
         "consultant",
         "dentist",
         "instagram-business",
         "lawyer",
+        "online-shop",
         "photographer",
         "private-tutor",
         "service-company",
@@ -32,7 +34,9 @@ describe("programmaticPages", () => {
   });
 
   it("marks draft industries as noindex candidates", () => {
-    expect(isPublishedIndustryPage("website", "cafe")).toBe(false);
+    expect(isPublishedIndustryPage("website", "cafe")).toBe(true);
+    expect(isPublishedIndustryPage("website", "online-shop")).toBe(true);
+    expect(isPublishedIndustryPage("website", "real-estate")).toBe(false);
     expect(isPublishedIndustryPage("website", "restaurant")).toBe(false);
     expect(isPublishedIndustryPage("seo", "restaurant")).toBe(false);
     expect(isPublishedIndustryPage("website", "dentist")).toBe(true);
@@ -54,7 +58,9 @@ describe("programmaticPages", () => {
 
   it("draft pages are excluded from sitemap paths", () => {
     const urls = buildSitemapEntries().map((e) => e.url);
-    expect(urls).not.toContain(canonicalUrl("/website/cafe"));
+    expect(urls).toContain(canonicalUrl("/website/cafe"));
+    expect(urls).toContain(canonicalUrl("/website/online-shop"));
+    expect(urls).not.toContain(canonicalUrl("/website/real-estate"));
     expect(urls).not.toContain(canonicalUrl("/seo/restaurant"));
     expect(urls).toContain(canonicalUrl("/website/dentist"));
     expect(urls).toContain(canonicalUrl("/seo/lawyer"));

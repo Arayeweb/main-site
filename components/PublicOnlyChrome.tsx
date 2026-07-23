@@ -17,6 +17,8 @@ export default function PublicOnlyChrome() {
   const pathname = usePathname();
   if (
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/app") ||
+    pathname.startsWith("/dev/growth-hub") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/ai") ||
     pathname.startsWith("/seo") ||

@@ -25,24 +25,27 @@ function readSource(relPath: string): string {
 }
 
 describe("website design SEO architecture", () => {
-  it("publishes 11 website industry pages including phase-1 verticals", () => {
+  it("publishes phase-1 verticals plus cafe and online-shop; keeps restaurant/doctor draft", () => {
     const slugs = getPublishedIndustryPages("website").map((p) => p.slug).sort();
     expect(slugs).toEqual(
       [
         "architect",
         "beauty-clinic",
+        "cafe",
         "clinic",
         "consultant",
         "dentist",
         "instagram-business",
         "lawyer",
+        "online-shop",
         "photographer",
         "private-tutor",
-        "restaurant",
         "service-company",
       ].sort(),
     );
     expect(isPublishedIndustryPage("website", "doctor")).toBe(false);
+    expect(isPublishedIndustryPage("website", "restaurant")).toBe(false);
+    expect(isPublishedIndustryPage("website", "real-estate")).toBe(false);
   });
 
   it("keeps unique primary keywords across published website + seo pages", () => {
@@ -71,15 +74,16 @@ describe("website design SEO architecture", () => {
     const hero = readSource("components/website-design/website-design-hero.tsx");
     const h1Matches = hero.match(/<h1[\s\S]*?<\/h1>/g) ?? [];
     expect(h1Matches).toHaveLength(1);
-    expect(h1Matches[0]).toContain("طراحی سایت حرفه‌ای برای جذب مشتری و رشد کسب‌وکار");
-    expect(hero).toContain("سایتی که به مشتری نشان دهد چرا باید شما را انتخاب کند");
+    expect(h1Matches[0]).toContain("طراحی سایت حرفه‌ای که مشتری را به تماس و سفارش برساند");
+    expect(hero).toContain("دریافت برآورد رایگان");
+    expect(hero).toContain("مشاهده نمونه‌کارها");
   });
 
   it("fastweb H1 targets فوری/سایت سریع intent", () => {
     const landing = readSource("components/fastweb/FastWebLanding.tsx");
     const h1Matches = landing.match(/<h1[\s\S]*?<\/h1>/g) ?? [];
     expect(h1Matches).toHaveLength(1);
-    expect(h1Matches[0]).toContain("سایت فوری");
+    expect(h1Matches[0]).toMatch(/۲۴ ساعت|فوری|ارزان/);
   });
 
   it("canonical helpers stay on araaye.com for new routes", () => {
@@ -118,7 +122,9 @@ describe("website design SEO architecture", () => {
     }
 
     expect(urls).not.toContain(canonicalUrl("/website/doctor"));
-    expect(urls).not.toContain(canonicalUrl("/website/cafe"));
+    expect(urls).toContain(canonicalUrl("/website/cafe"));
+    expect(urls).toContain(canonicalUrl("/website/online-shop"));
+    expect(urls).not.toContain(canonicalUrl("/website/real-estate"));
   });
 
   it("sitemap has no duplicate URLs", () => {

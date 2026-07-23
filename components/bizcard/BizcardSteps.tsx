@@ -1,27 +1,25 @@
-import SectionHeader from "@/components/home/SectionHeader";
+import ToolEditorialHeader from "@/components/tools/ToolEditorialHeader";
 import { bizcardSteps } from "@/lib/bizcardData";
 
 export default function BizcardSteps() {
   return (
-    <section id="how" className="section-py bg-white">
+    <section id="how" className="tool-section scroll-mt-24">
       <div className="container-mx container-px">
-        <SectionHeader
-          badge="۳ مرحله"
-          badgeClassName="bg-brand-50 text-brand-600"
+        <ToolEditorialHeader
+          index="۰۲"
+          kicker="فرایند"
           title="چطور کار می‌کند؟"
           subtitle="در کمتر از ۲ دقیقه لینک همه‌کاره کسب‌وکارتان آماده می‌شود."
         />
-        <div className="mx-auto mt-10 grid max-w-4xl gap-5 sm:grid-cols-3">
+        <div className="mt-2">
           {bizcardSteps.map((s) => (
             <div
               key={s.num}
-              className="rounded-2xl border border-navy-100 bg-navy-50/40 p-6 text-center shadow-soft"
+              className="tool-rule-row gap-3 sm:grid-cols-[96px_240px_1fr] sm:items-baseline"
             >
-              <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-lg font-extrabold text-brand-600">
-                {s.num}
-              </div>
+              <span className="text-3xl font-extrabold tabular-nums text-brand-700">{s.num}</span>
               <h3 className="text-sm font-extrabold text-navy-900">{s.title}</h3>
-              <p className="mt-2 text-[13px] leading-relaxed text-navy-500">{s.text}</p>
+              <p className="text-[13px] leading-7 text-navy-500">{s.text}</p>
             </div>
           ))}
         </div>

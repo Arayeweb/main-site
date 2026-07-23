@@ -34,6 +34,16 @@ describe("pageFromPath", () => {
     expect(pageFromPath("/some/custom/path")).toBe("some/custom/path");
   });
 
+  it("maps growth free-tool hubs and industry pages", () => {
+    expect(pageFromPath("/review-link")).toBe("review-link");
+    expect(pageFromPath("/review-link/doctor")).toBe("review-link/doctor");
+    expect(pageFromPath("/local-seo-check/clinic")).toBe("local-seo-check/clinic");
+    expect(pageFromPath("/seo-roi-calculator/lawyer")).toBe("seo-roi-calculator/lawyer");
+    expect(pageFromPath("/qr")).toBe("qr");
+    expect(pageFromPath("/shortener")).toBe("shortener");
+    expect(pageFromPath("/free-seo-audit")).toBe("free-seo-audit");
+  });
+
   it("strips query and hash", () => {
     expect(pageFromPath("/seo/doctor?utm_source=x")).toBe("seo/doctor");
     expect(pageFromPath("/website/doctor#lead-form")).toBe("website/doctor");

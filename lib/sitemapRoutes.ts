@@ -22,6 +22,8 @@ const STATIC_SITEMAP_PATHS = [
   "/website-design",
   "/website-design/cost",
   "/website-design/restaurant",
+  "/llms.txt",
+  "/pricing.md",
   "/googlesabt",
   "/modares",
   "/ai",
@@ -64,6 +66,9 @@ const STATIC_SITEMAP_PATHS = [
   "/hamkari",
   "/qr",
   "/shortener",
+  "/review-link",
+  "/local-seo-check",
+  "/seo-roi-calculator",
   "/prompts",
 ] as const;
 

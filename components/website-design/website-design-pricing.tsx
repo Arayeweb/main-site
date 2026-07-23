@@ -12,6 +12,7 @@ import {
   websiteDesignPricingPlans,
   type WebsiteDesignPricingPlan,
 } from "@/data/website-design";
+import { trackWebsiteSeoEvent } from "@/lib/analytics/websiteSeoEvents";
 
 const ACCENT = "#3157F6";
 
@@ -271,11 +272,11 @@ function EstimateModal({
             ) : null}
 
             <button type="submit" disabled={loading} className="btn-primary w-full">
-              {loading ? "در حال ارسال..." : "ارسال درخواست برآورد"}
+              {loading ? "در حال ارسال..." : "دریافت برآورد این پکیج"}
             </button>
 
             <p className="text-center text-[12px] leading-relaxed text-navy-400">
-              پس از بررسی، پیش‌فاکتور دقیق با جزئیات صفحات و امکانات ارسال می‌شود.
+              پس از بررسی، پیش‌فاکتور دقیق ارسال می‌شود — بدون تعهد شروع ساخت.
             </p>
           </form>
         )}
@@ -289,6 +290,14 @@ export default function WebsiteDesignPricing() {
 
   const openEstimate = (plan: WebsiteDesignPricingPlan) => {
     track("website_design_estimate_open", { plan: plan.id });
+    trackWebsiteSeoEvent("website_estimate_open", {
+      page_path: WEBSITE_DESIGN_PAGE,
+      page_type: "hub",
+      primary_keyword: "طراحی سایت",
+      offer: "custom",
+      cta_position: "pricing",
+      offer_id: plan.id,
+    });
     setSelectedPlan(plan);
   };
 
@@ -306,8 +315,8 @@ export default function WebsiteDesignPricing() {
             متناسب با چیزی که واقعاً نیاز دارید
           </h2>
           <p className="mt-4 text-[15px] leading-[1.85] text-navy-500 sm:text-base">
-            قبل از شروع، صفحات، امکانات، زمان تحویل و مبلغ نهایی مشخص می‌شود تا وسط پروژه
-            هزینه مبهمی اضافه نشود.
+            ارزان‌ترین گزینه بازار نیستیم؛ هدف‌مان مسیر شفاف قیمت، زمان و نتیجه است تا وسط
+            پروژه هزینه مبهمی اضافه نشود.
           </p>
         </div>
 
@@ -315,8 +324,20 @@ export default function WebsiteDesignPricing() {
           {websiteDesignPricingPlans.map((plan) => (
             <article
               key={plan.id}
-              className="flex flex-col rounded-2xl border border-navy-100 bg-white p-6 shadow-soft"
+              className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-soft ${
+                plan.recommended
+                  ? "border-[#3157F6] ring-2 ring-[#3157F6]/15"
+                  : "border-navy-100"
+              }`}
             >
+              {plan.recommended && plan.recommendedLabel ? (
+                <span
+                  className="absolute -top-3 right-4 inline-flex rounded-full px-3 py-1 text-[11px] font-extrabold text-white"
+                  style={{ backgroundColor: ACCENT }}
+                >
+                  {plan.recommendedLabel}
+                </span>
+              ) : null}
               <h3 className="text-lg font-extrabold text-navy-900">{plan.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-navy-500">{plan.audience}</p>
 
@@ -353,7 +374,7 @@ export default function WebsiteDesignPricing() {
                 className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3157F6] focus-visible:ring-offset-2"
                 style={{ backgroundColor: ACCENT }}
               >
-                درخواست برآورد
+                درخواست برآورد این پکیج
               </button>
             </article>
           ))}

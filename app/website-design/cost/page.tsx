@@ -3,6 +3,7 @@ import Link from "next/link";
 import WebsiteDesignNavbar from "@/components/website-design/WebsiteDesignNavbar";
 import Footer from "@/components/Footer";
 import WebsitePricingViewAnalytics from "@/components/website-design/WebsitePricingViewAnalytics";
+import WebsiteDesignFunnelAnalytics from "@/components/website-design/WebsiteDesignFunnelAnalytics";
 import { IconCheck } from "@/components/icons";
 import { canonicalUrl } from "@/lib/siteUrl";
 import { organizationProviderRef } from "@/lib/seo/siteIdentity";
@@ -14,6 +15,7 @@ import {
   websiteDesignPricingExtras,
 } from "@/lib/websitePricing";
 import { LEAD_FORM_ID } from "@/data/website-design";
+import CostOfferCta from "@/components/website-design/CostOfferCta";
 
 const PAGE_PATH = "/website-design/cost";
 
@@ -43,6 +45,10 @@ export const metadata: Metadata = {
 
 const faq = [
   {
+    q: "قیمت طراحی سایت در آرایه چقدر است؟",
+    a: `سایت فوری از ${formatWebsiteDesignPrice(FASTWEB_START_PRICE_TOMAN)} تومان و طراحی اختصاصی از ${formatWebsiteDesignPrice(25_000_000)} تومان شروع می‌شود. مبلغ «شروع از» نقطه شروع برآورد است و قیمت قطعی بعد از Scope در پیش‌فاکتور اعلام می‌شود.`,
+  },
+  {
     q: "قیمت نهایی طراحی سایت چه زمانی مشخص می‌شود؟",
     a: "بعد از تعیین دقیق صفحات، امکانات، محتوا و زمان‌بندی. مبلغ «شروع از» فقط نقطه شروع برآورد است و قیمت قطعی در پیش‌فاکتور اعلام می‌شود.",
   },
@@ -52,7 +58,11 @@ const faq = [
   },
   {
     q: "تفاوت سایت فوری (FastWeb) با طراحی اختصاصی چیست؟",
-    a: "FastWeb برای حضور رسمی سریع با ساختار ازپیش‌تعریف‌شده است؛ طراحی اختصاصی برای صفحات، برند و امکانات سفارشی با زمان و هزینه بالاتر مناسب‌تر است.",
+    a: "FastWeb برای حضور رسمی سریع با ساختار ازپیش‌تعریف‌شده و تحویل حدود ۲۴ ساعت کاری است؛ طراحی اختصاصی برای صفحات، برند و امکانات سفارشی با زمان و هزینه بالاتر مناسب‌تر است.",
+  },
+  {
+    q: "سایت فوری مناسب چه کسب‌وکاری است؟",
+    a: "کسب‌وکارهای کوچک که حضور رسمی سریع می‌خواهند، نه فروشگاه پیچیده یا پنل اختصاصی. اگر نیاز به برند یونیک و امکانات سفارشی دارید، مسیر طراحی اختصاصی را انتخاب کنید.",
   },
   {
     q: "سئو در قیمت پکیج‌ها شامل چه می‌شود؟",
@@ -102,6 +112,8 @@ const internalLinks = [
   { href: "/website-design/restaurant", label: "طراحی سایت رستوران" },
   { href: "/blog/website-design-order-checklist", label: "چک‌لیست سفارش طراحی سایت" },
   { href: "/blog/instagram-page-to-website", label: "تبدیل پیج اینستاگرام به سایت" },
+  { href: "/pricing.md", label: "تعرفه ماشین‌خوان (pricing.md)" },
+  { href: "/llms.txt", label: "خلاصه برای AI (llms.txt)" },
 ];
 
 const jsonLd = {
@@ -177,6 +189,7 @@ export default function WebsiteDesignCostPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <WebsitePricingViewAnalytics />
+      <WebsiteDesignFunnelAnalytics pagePath="/website-design/cost" mode="pricing" />
       <WebsiteDesignNavbar />
 
       <main className="pb-16">
@@ -199,15 +212,18 @@ export default function WebsiteDesignCostPage() {
                 تعرفه شفاف
               </span>
               <h1 className="mt-4 text-balance text-2xl font-extrabold text-navy-900 sm:text-3xl lg:text-4xl">
-                قیمت طراحی سایت؛ مقایسه سایت فوری، اختصاصی و فروشگاهی
+                قیمت طراحی سایت؛ ببینید کدام مسیر برای شما به‌صرفه‌تر است
               </h1>
               <p className="mt-4 text-[15px] leading-relaxed text-navy-600 sm:text-base">
-                هزینه از FastWeb ({fastwebFormatted}) تا فروشگاه ({shopFormatted}) — قیمت قطعی بعد از
-                Scope. مبلغ «شروع از» نقطه شروع برآورد است؛ پیش‌فاکتور دقیق پس از مشخص‌شدن صفحات و
-                امکانات ارسال می‌شود.
+                هزینه طراحی سایت در آرایه از سایت فوری ({fastwebFormatted} تومان) تا فروشگاه آنلاین (
+                {shopFormatted} تومان) متغیر است. اول پکیج مناسب را انتخاب کنید؛ قیمت قطعی بعد از Scope
+                در پیش‌فاکتور می‌آید — بدون شروع ساخت قبل از توافق.
               </p>
               <p className="mt-2 text-xs text-navy-400">
-                آخرین به‌روزرسانی تعرفه: {WEBSITE_PRICING_UPDATED_AT}
+                آخرین به‌روزرسانی تعرفه: {WEBSITE_PRICING_UPDATED_AT} ·{" "}
+                <Link href="/pricing.md" className="font-semibold text-teal-700 hover:text-teal-800">
+                  فایل ماشین‌خوان قیمت
+                </Link>
               </p>
             </div>
           </div>
@@ -223,11 +239,22 @@ export default function WebsiteDesignCostPage() {
             </p>
 
             <div className="mx-auto mt-10 grid max-w-6xl gap-5 lg:grid-cols-2">
-              {WEBSITE_PRICING_OFFERS.map((offer) => (
+              {WEBSITE_PRICING_OFFERS.map((offer) => {
+                const isRecommended = offer.id === "business";
+                return (
                 <article
                   key={offer.id}
-                  className="flex flex-col rounded-2xl border border-navy-100 bg-white p-6 shadow-soft"
+                  className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-soft ${
+                    isRecommended
+                      ? "border-teal-500 ring-2 ring-teal-500/20"
+                      : "border-navy-100"
+                  }`}
                 >
+                  {isRecommended ? (
+                    <span className="absolute -top-3 right-4 inline-flex rounded-full bg-teal-600 px-3 py-1 text-[11px] font-extrabold text-white">
+                      پیشنهاد برای بیشتر کسب‌وکارها
+                    </span>
+                  ) : null}
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <h3 className="text-lg font-extrabold text-navy-900">{offer.title}</h3>
                     <span
@@ -248,6 +275,11 @@ export default function WebsiteDesignCostPage() {
                     <span className="text-teal-700">{formatWebsiteDesignPrice(offer.priceFromToman)}</span>{" "}
                     <span className="text-sm font-bold text-navy-500">تومان</span>
                   </p>
+                  {offer.id === "shop" ? (
+                    <p className="mt-1 text-[12px] text-navy-400">
+                      لنگر قیمت بالا — بیشتر پروژه‌ها از پکیج معرفی یا حرفه‌ای شروع می‌شوند.
+                    </p>
+                  ) : null}
 
                   <p className="mt-3 text-sm font-semibold text-navy-700">محدوده کار: {offer.scope}</p>
 
@@ -297,11 +329,15 @@ export default function WebsiteDesignCostPage() {
                     </p>
                   ) : null}
 
-                  <Link href={offer.ctaHref} className="btn-primary mt-6 inline-flex w-full justify-center">
-                    {offer.ctaLabel}
-                  </Link>
+                  <CostOfferCta
+                    href={offer.ctaHref}
+                    label={offer.ctaLabel}
+                    offerId={offer.id}
+                    path={offer.path}
+                  />
                 </article>
-              ))}
+              );
+              })}
             </div>
           </div>
         </section>
@@ -461,22 +497,23 @@ export default function WebsiteDesignCostPage() {
         <section className="section-py bg-navy-50/40" id={LEAD_FORM_ID}>
           <div className="container-mx container-px">
             <div className="mx-auto max-w-2xl rounded-2xl border border-navy-100 bg-white p-6 text-center shadow-soft sm:p-8">
-              <h2 className="text-xl font-extrabold text-navy-900">برآورد دقیق برای پروژه شما</h2>
+              <h2 className="text-xl font-extrabold text-navy-900">نمی‌دانید کدام پکیج مناسب است؟</h2>
               <p className="mt-3 text-sm leading-relaxed text-navy-600">
-                اگر هنوز بین پکیج‌ها مردد هستید، فرم درخواست برآورد را پر کنید تا بر اساس صفحات و امکانات
-                واقعی، پیش‌فاکتور دریافت کنید.
+                برآورد رایگان بگیرید تا بر اساس صفحات و امکانات واقعی، پیش‌فاکتور شفاف دریافت کنید —
+                یا اگر فقط حضور رسمی سریع می‌خواهید، سایت فوری را شروع کنید.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link href={`/website-design#${LEAD_FORM_ID}`} className="btn-primary inline-flex px-6 py-2.5">
-                  فرم درخواست برآورد
+                  دریافت پیش‌فاکتور پروژه من
                 </Link>
                 <Link
-                  href="/fastweb"
+                  href="/fastweb/new"
                   className="inline-flex items-center justify-center rounded-xl border border-navy-200 bg-white px-6 py-2.5 text-sm font-bold text-navy-700 transition-colors hover:bg-navy-50"
                 >
-                  شروع سایت فوری
+                  شروع سایت فوری از {fastwebFormatted}
                 </Link>
               </div>
+              <p className="mt-3 text-xs text-navy-400">بدون تعهد مالی · پاسخ معمولاً در یک روز کاری</p>
             </div>
           </div>
         </section>

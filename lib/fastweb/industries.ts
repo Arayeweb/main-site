@@ -1,6 +1,6 @@
 /**
  * FastWeb programmatic SEO — industry registry (source of truth).
- * Batch 1: indexable after QA. Batch 2: noindex until human QA passes.
+ * All 12 industries are indexable after QA (batches 1 + 2).
  */
 
 export type FastWebIndustrySlug =
@@ -48,7 +48,7 @@ export type FastWebIndustry = {
   indexable: boolean;
 };
 
-const UPDATED_AT = "2026-07-19";
+const UPDATED_AT = "2026-07-23";
 
 export const FASTWEB_INDUSTRIES: FastWebIndustry[] = [
   {
@@ -663,7 +663,7 @@ export const FASTWEB_INDUSTRIES: FastWebIndustry[] = [
     cta: { label: "پیش‌نمایش سایت مشاور املاک من", eventName: "fastweb_cta_click" },
     hubAnchor: "سایت مشاور املاک",
     updatedAt: UPDATED_AT,
-    indexable: false,
+    indexable: true,
   },
   {
     slug: "home-services",
@@ -744,7 +744,7 @@ export const FASTWEB_INDUSTRIES: FastWebIndustry[] = [
     cta: { label: "پیش‌نمایش سایت خدمات منزل من", eventName: "fastweb_cta_click" },
     hubAnchor: "طراحی سایت خدمات منزل",
     updatedAt: UPDATED_AT,
-    indexable: false,
+    indexable: true,
   },
   {
     slug: "car-repair",
@@ -825,7 +825,7 @@ export const FASTWEB_INDUSTRIES: FastWebIndustry[] = [
     cta: { label: "پیش‌نمایش سایت تعمیرگاه من", eventName: "fastweb_cta_click" },
     hubAnchor: "طراحی سایت تعمیرگاه خودرو",
     updatedAt: UPDATED_AT,
-    indexable: false,
+    indexable: true,
   },
   {
     slug: "language-school",
@@ -906,7 +906,7 @@ export const FASTWEB_INDUSTRIES: FastWebIndustry[] = [
     cta: { label: "پیش‌نمایش سایت آموزشگاه زبان من", eventName: "fastweb_cta_click" },
     hubAnchor: "طراحی سایت آموزشگاه زبان",
     updatedAt: UPDATED_AT,
-    indexable: false,
+    indexable: true,
   },
   {
     slug: "insurance",
@@ -987,7 +987,7 @@ export const FASTWEB_INDUSTRIES: FastWebIndustry[] = [
     cta: { label: "پیش‌نمایش سایت بیمه من", eventName: "fastweb_cta_click" },
     hubAnchor: "طراحی سایت نمایندگی بیمه",
     updatedAt: UPDATED_AT,
-    indexable: false,
+    indexable: true,
   },
   {
     slug: "travel-agency",
@@ -1068,7 +1068,7 @@ export const FASTWEB_INDUSTRIES: FastWebIndustry[] = [
     cta: { label: "پیش‌نمایش سایت آژانس مسافرتی من", eventName: "fastweb_cta_click" },
     hubAnchor: "طراحی سایت آژانس مسافرتی",
     updatedAt: UPDATED_AT,
-    indexable: false,
+    indexable: true,
   },
 ];
 

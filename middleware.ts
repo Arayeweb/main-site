@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { agentDebugLog } from './lib/agentDebug';
 import { ADMIN_GATE_COOKIE, isAdminGateEnabled, verifyAdminGateCookieEdge } from './lib/adminGateEdge';
+import { updateGrowthHubSession } from './lib/growth-hub/supabase/middleware';
 
 // Edge-compatible token verification using Web Crypto API (no Node.js crypto)
 // Token format: base64url(payloadJSON).hmacHex — same as lib/auth.ts signUserToken
@@ -123,6 +124,15 @@ export async function middleware(req: NextRequest) {
   if (blogRedirect) return blogRedirect;
 
   const { pathname } = req.nextUrl;
+
+  // Growth Hub client portal: refresh the Supabase Auth session cookies so
+  // SSR sees a valid session. Authorization itself happens in the /app layouts
+  // (requireWorkspaceMembership). Scoped strictly to /app so other products and
+  // the existing admin auth are untouched.
+  if (pathname === "/app" || pathname.startsWith("/app/")) {
+    const ghResponse = await updateGrowthHubSession(req);
+    return ghResponse ?? NextResponse.next();
+  }
 
   // Host canonicalization runs globally; admin gate only on /admin.
   if (!pathname.startsWith("/admin")) {

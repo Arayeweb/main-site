@@ -51,15 +51,12 @@ describe("fastweb industry programmatic SEO", () => {
     expect(getAllFastWebIndustries()).toHaveLength(12);
   });
 
-  it("batch 1 is indexable and batch 2 is noindex", () => {
-    for (const slug of BATCH_1_SLUGS) {
+  it("all 12 industries are indexable after batch 1 + 2 QA", () => {
+    for (const slug of [...BATCH_1_SLUGS, ...BATCH_2_SLUGS]) {
       expect(isIndexableFastWebIndustry(slug)).toBe(true);
     }
-    for (const slug of BATCH_2_SLUGS) {
-      expect(isIndexableFastWebIndustry(slug)).toBe(false);
-    }
-    expect(getIndexableFastWebIndustries()).toHaveLength(6);
-    expect(getPublishedFastWebIndustryPaths()).toHaveLength(6);
+    expect(getIndexableFastWebIndustries()).toHaveLength(12);
+    expect(getPublishedFastWebIndustryPaths()).toHaveLength(12);
   });
 
   it("rejects unknown slugs", () => {
@@ -91,13 +88,10 @@ describe("fastweb industry programmatic SEO", () => {
     }
   });
 
-  it("indexable batch 1 pages appear in sitemap; batch 2 excluded", () => {
+  it("all indexable fastweb industry pages appear in sitemap", () => {
     const urls = buildSitemapEntries().map((e) => e.url);
-    for (const slug of BATCH_1_SLUGS) {
+    for (const slug of [...BATCH_1_SLUGS, ...BATCH_2_SLUGS]) {
       expect(urls).toContain(canonicalUrl(`/fastweb/${slug}`));
-    }
-    for (const slug of BATCH_2_SLUGS) {
-      expect(urls).not.toContain(canonicalUrl(`/fastweb/${slug}`));
     }
   });
 
@@ -112,7 +106,7 @@ describe("fastweb industry programmatic SEO", () => {
     for (const slug of BATCH_1_SLUGS) {
       const entry = entries.find((e) => e.url === canonicalUrl(`/fastweb/${slug}`));
       expect(entry?.lastModified).toBeDefined();
-      expect(entry?.lastModified?.toISOString().startsWith("2026-07-19")).toBe(true);
+      expect(entry?.lastModified?.toISOString().startsWith("2026-07-23")).toBe(true);
     }
   });
 

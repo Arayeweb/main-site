@@ -1,6 +1,12 @@
 import Link from "next/link";
 import SectionHeader from "@/components/home/SectionHeader";
-import { getPublishedToolPages, getHubPath, type ToolHub } from "@/lib/tools/toolRegistry";
+import ToolEditorialHeader from "@/components/tools/ToolEditorialHeader";
+import {
+  getFeaturedToolPages,
+  getPublishedToolPages,
+  getHubPath,
+  type ToolHub,
+} from "@/lib/tools/toolRegistry";
 
 function PageGroup({
   title,
@@ -93,42 +99,94 @@ export default function ToolHubIndex({
     );
   }
 
-  const intents = pages.filter((p) => p.pageType === "industry" || p.pageType === "intent");
+  if (
+    hub === "review-link" ||
+    hub === "local-seo-check" ||
+    hub === "seo-roi-calculator"
+  ) {
+    return (
+      <section className="section-py bg-white">
+        <div className="container-mx container-px">
+          <SectionHeader
+            badge="راهنماهای صنفی"
+            badgeClassName="bg-brand-50 text-brand-600"
+            title={title}
+            subtitle={subtitle}
+          />
+          <PageGroup title="انتخاب نوع کسب‌وکار" pages={pages} hub={hub} />
+        </div>
+      </section>
+    );
+  }
+
+  const featured = getFeaturedToolPages(hub);
+  const featuredSlugs = new Set(featured.map((page) => page.slug));
+  const remainingIntents = pages.filter(
+    (page) =>
+      (page.pageType === "industry" || page.pageType === "intent") &&
+      !featuredSlugs.has(page.slug),
+  );
   const guides = pages.filter((p) => p.pageType === "guide" || p.pageType === "comparison");
 
   return (
-    <section className="section-py bg-white">
+    <section className="tool-section">
       <div className="container-mx container-px">
-        <SectionHeader
-          badge="راهنماها"
-          badgeClassName="bg-brand-50 text-brand-600"
+        <ToolEditorialHeader
+          index={hub === "bizcard" ? "۰۵" : "۰۳"}
+          kicker="فهرست کاربردها"
           title={title}
           subtitle={subtitle}
         />
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {intents.map((page) => (
+        <p className="mt-5 max-w-xl text-xs font-semibold leading-6 text-navy-500">
+          یکی از کاربردهای پرطرفدار را انتخاب کنید؛ ساخت ابزار رایگان است و ثبت‌نام نمی‌خواهد.
+        </p>
+        <div className="mt-7 grid border-y border-navy-300 sm:grid-cols-2">
+          {featured.map((page, index) => (
             <Link
               key={page.slug}
               href={`${getHubPath(hub)}/${page.slug}`}
-              className="rounded-2xl border border-navy-100 bg-white p-5 shadow-soft transition hover:border-brand-200 hover:shadow-card"
+              className="group grid min-h-28 grid-cols-[52px_1fr] border-b border-navy-300 p-5 transition hover:bg-white sm:odd:border-l"
             >
-              <p className="text-sm font-extrabold text-navy-900">{page.primaryKeyword}</p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-navy-500">
-                {page.label}
-                {page.secondaryKeywords[0] ? ` — ${page.secondaryKeywords[0]}` : ""}
-              </p>
+              <span className="tool-index">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <p className="text-sm font-extrabold text-navy-900 group-hover:text-brand-700">
+                  {page.primaryKeyword}
+                </p>
+                <p className="mt-2 text-[12px] leading-6 text-navy-500">
+                  {page.label}
+                  {page.secondaryKeywords[0] ? ` — ${page.secondaryKeywords[0]}` : ""}
+                </p>
+              </div>
             </Link>
           ))}
         </div>
+        {remainingIntents.length > 0 ? (
+          <details className="mt-6 border-y border-navy-300 py-4">
+            <summary className="cursor-pointer text-sm font-extrabold text-navy-700">
+              مشاهده همه {remainingIntents.length} کاربرد دیگر
+            </summary>
+            <div className="mt-5 grid border-t border-navy-200 sm:grid-cols-2 lg:grid-cols-3">
+              {remainingIntents.map((page) => (
+                <Link
+                  key={page.slug}
+                  href={`${getHubPath(hub)}/${page.slug}`}
+                  className="border-b border-navy-200 px-2 py-3 text-sm font-bold text-navy-700 transition hover:bg-white hover:text-brand-700 sm:border-l"
+                >
+                  {page.primaryKeyword}
+                </Link>
+              ))}
+            </div>
+          </details>
+        ) : null}
         {guides.length > 0 ? (
-          <div className="mt-10">
-            <h3 className="text-center text-base font-extrabold text-navy-900">راهنما و مقایسه</h3>
-            <div className="mx-auto mt-4 grid max-w-3xl gap-3 sm:grid-cols-2">
+          <div className="mt-8 border-t border-navy-300 pt-5">
+            <h3 className="text-sm font-extrabold text-navy-900">راهنما و مقایسه</h3>
+            <div className="mt-4 grid sm:grid-cols-2">
               {guides.map((page) => (
                 <Link
                   key={page.slug}
                   href={`${getHubPath(hub)}/${page.slug}`}
-                  className="rounded-xl border border-navy-100 bg-slate-50 px-4 py-3 text-sm font-bold text-navy-700 transition hover:border-brand-200 hover:text-brand-700"
+                  className="border-b border-navy-200 px-2 py-3 text-sm font-bold text-navy-700 transition hover:bg-white hover:text-brand-700 sm:odd:border-l"
                 >
                   {page.primaryKeyword}
                 </Link>

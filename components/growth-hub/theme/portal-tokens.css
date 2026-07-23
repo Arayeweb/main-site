@@ -1,0 +1,52 @@
+.gh-root {
+  --gh-bg: #f7f6f3;
+  --gh-app-bg: #e7e3dc;
+  --gh-product-surface: #fdfcf9;
+  --gh-surface: #ffffff;
+  --gh-surface-muted: #efede8;
+  --gh-surface-warm: #f2eee7;
+  --gh-border: #e2dfd6;
+  --gh-border-strong: #ccc7bb;
+  --gh-text: #1c1917;
+  --gh-text-muted: #57534e;
+  --gh-text-subtle: #78716c;
+  --gh-accent: #0f766e;
+  --gh-accent-hover: #0d675f;
+  --gh-accent-soft: #ccfbf1;
+  --gh-warning: #a64808;
+  --gh-warning-soft: #fff5df;
+  --gh-danger: #b91c1c;
+  --gh-danger-soft: #fef2f2;
+  --gh-success: #15803d;
+  --gh-success-soft: #f0fdf4;
+  --gh-info: #315b63;
+  --gh-info-soft: #edf6f6;
+  --gh-radius: 12px;
+  --gh-shadow: 0 1px 2px rgb(28 25 23 / 6%);
+  color: var(--gh-text);
+  background: var(--gh-bg);
+  font-family: "Vazirmatn", system-ui, sans-serif;
+  font-feature-settings: "ss01", "ss02";
+}
+
+.gh-root *,
+.gh-root *::before,
+.gh-root *::after {
+  box-sizing: border-box;
+}
+
+.gh-root :where(a, button, select):focus-visible {
+  outline: 2px solid var(--gh-accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gh-root *,
+  .gh-root *::before,
+  .gh-root *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

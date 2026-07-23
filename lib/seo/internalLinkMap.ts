@@ -1,5 +1,5 @@
 /**
- * Internal linking map for Araaye SEO clusters (doctors + AI).
+ * Internal linking map for Araaye SEO clusters (doctors + AI + website-design).
  * Source of truth for hub CTAs and content planning — prefer body links over footer.
  */
 
@@ -21,6 +21,326 @@ export type InternalLinkNode = {
 };
 
 export const INTERNAL_LINK_MAP: Record<string, InternalLinkNode> = {
+  "/website-design": {
+    url: "/website-design",
+    primaryKeyword: "طراحی سایت",
+    inboundFrom: [
+      {
+        href: "/",
+        anchors: ["طراحی سایت", "طراحی سایت حرفه‌ای"],
+        placement: "nav",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["طراحی سایت حرفه‌ای", "بازگشت به طراحی سایت"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/fastweb",
+        anchors: ["طراحی اختصاصی", "طراحی سایت حرفه‌ای"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/blog/website-design-order-checklist",
+        anchors: ["طراحی سایت آرایه", "سفارش طراحی سایت"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/blog/instagram-page-to-website",
+        anchors: ["طراحی سایت", "ساخت سایت از اینستاگرام"],
+        placement: "cta",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/website-design/cost",
+        anchors: ["قیمت طراحی سایت", "تعرفه طراحی سایت"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/fastweb",
+        anchors: ["سایت فوری", "طراحی سایت ارزان و فوری"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/doctors",
+        anchors: ["طراحی سایت پزشکی"],
+        placement: "related",
+        priority: "P0",
+      },
+      {
+        href: "/website/clinic",
+        anchors: ["طراحی سایت کلینیک"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/website/dentist",
+        anchors: ["طراحی سایت دندانپزشکی"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/website-design/restaurant",
+        anchors: ["طراحی سایت رستوران"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/blog/website-design-order-checklist",
+        anchors: ["چک‌لیست سفارش طراحی سایت"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/pricing.md",
+        anchors: ["تعرفه ماشین‌خوان"],
+        placement: "related",
+        priority: "P2",
+      },
+    ],
+  },
+  "/website-design/cost": {
+    url: "/website-design/cost",
+    primaryKeyword: "قیمت طراحی سایت",
+    inboundFrom: [
+      {
+        href: "/website-design",
+        anchors: ["قیمت طراحی سایت", "تعرفه"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/fastweb",
+        anchors: ["قیمت سایت فوری", "مقایسه قیمت"],
+        placement: "body",
+        priority: "P1",
+      },
+      {
+        href: "/website/clinic",
+        anchors: ["قیمت طراحی سایت"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت حرفه‌ای"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/fastweb",
+        anchors: ["سایت فوری FastWeb"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/doctors",
+        anchors: ["طراحی سایت پزشکان"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/website/clinic",
+        anchors: ["طراحی سایت کلینیک"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/llms.txt",
+        anchors: ["خلاصه برای AI"],
+        placement: "related",
+        priority: "P2",
+      },
+    ],
+  },
+  "/fastweb": {
+    url: "/fastweb",
+    primaryKeyword: "سایت فوری",
+    inboundFrom: [
+      {
+        href: "/website-design",
+        anchors: ["سایت فوری", "طراحی سایت ارزان و فوری"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["سایت فوری FastWeb"],
+        placement: "cta",
+        priority: "P0",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی اختصاصی", "طراحی سایت حرفه‌ای"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["قیمت طراحی سایت"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/fastweb/new",
+        anchors: ["شروع سفارش سایت فوری"],
+        placement: "cta",
+        priority: "P0",
+      },
+    ],
+  },
+  "/website/dentist": {
+    url: "/website/dentist",
+    primaryKeyword: "طراحی سایت دندانپزشکی",
+    inboundFrom: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت دندانپزشکی"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/doctors",
+        anchors: ["طراحی سایت دندانپزشکی"],
+        placement: "body",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت حرفه‌ای"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["قیمت طراحی سایت"],
+        placement: "related",
+        priority: "P0",
+      },
+      {
+        href: "/doctors/dentist",
+        anchors: ["پکیج سایت دندانپزشکی"],
+        placement: "cta",
+        priority: "P1",
+      },
+    ],
+  },
+  "/website/cafe": {
+    url: "/website/cafe",
+    primaryKeyword: "طراحی سایت کافه",
+    inboundFrom: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت کافه"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/website-design/restaurant",
+        anchors: ["طراحی سایت کافه"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت حرفه‌ای"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/restaurant",
+        anchors: ["طراحی سایت رستوران"],
+        placement: "related",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["قیمت طراحی سایت"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+  },
+  "/website/online-shop": {
+    url: "/website/online-shop",
+    primaryKeyword: "طراحی سایت فروشگاه",
+    inboundFrom: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت فروشگاه"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت حرفه‌ای"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["قیمت طراحی سایت فروشگاهی"],
+        placement: "related",
+        priority: "P0",
+      },
+      {
+        href: "/website/instagram-business",
+        anchors: ["طراحی سایت کسب‌وکار اینستاگرامی"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+  },
+  "/blog/website-design-order-checklist": {
+    url: "/blog/website-design-order-checklist",
+    primaryKeyword: "چک‌لیست سفارش طراحی سایت",
+    inboundFrom: [
+      {
+        href: "/website-design",
+        anchors: ["چک‌لیست سفارش طراحی سایت"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["چک‌لیست سفارش طراحی سایت"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت آرایه", "سفارش طراحی سایت"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["قیمت طراحی سایت"],
+        placement: "body",
+        priority: "P0",
+      },
+    ],
+  },
   "/doctors": {
     url: "/doctors",
     primaryKeyword: "طراحی سایت پزشکی",
@@ -244,6 +564,12 @@ export const INTERNAL_LINK_MAP: Record<string, InternalLinkNode> = {
     primaryKeyword: "طراحی سایت کلینیک",
     inboundFrom: [
       {
+        href: "/website-design",
+        anchors: ["طراحی سایت کلینیک"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
         href: "/blog/doctors",
         anchors: ["طراحی سایت کلینیک"],
         placement: "body",
@@ -263,6 +589,18 @@ export const INTERNAL_LINK_MAP: Record<string, InternalLinkNode> = {
       },
     ],
     outboundTo: [
+      {
+        href: "/website-design",
+        anchors: ["طراحی سایت حرفه‌ای"],
+        placement: "body",
+        priority: "P0",
+      },
+      {
+        href: "/website-design/cost",
+        anchors: ["قیمت طراحی سایت"],
+        placement: "related",
+        priority: "P0",
+      },
       {
         href: "/doctors",
         anchors: ["طراحی سایت پزشکی"],
@@ -576,9 +914,165 @@ export const INTERNAL_LINK_MAP: Record<string, InternalLinkNode> = {
         placement: "body",
         priority: "P0",
       },
-      {
+        {
         href: "/bizcard",
         anchors: ["کارت ویزیت دیجیتال رایگان"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/review-link",
+        anchors: ["ساخت لینک نظر گوگل"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/local-seo-check",
+        anchors: ["تست سئو محلی"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+  },
+  "/review-link": {
+    url: "/review-link",
+    primaryKeyword: "ساخت لینک نظر گوگل",
+    inboundFrom: [
+      {
+        href: "/",
+        anchors: ["لینک نظر گوگل + QR"],
+        placement: "body",
+        priority: "P1",
+      },
+      {
+        href: "/googlesabt",
+        anchors: ["ساخت لینک نظر گوگل"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/local-seo-check",
+        anchors: ["لینک نظر گوگل"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/local-seo-check",
+        anchors: ["تست سئو محلی"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt",
+        anchors: ["ثبت کسب‌وکار در گوگل"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/qr",
+        anchors: ["ساخت QR کد"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/free-seo-audit",
+        anchors: ["تحلیل رایگان سایت"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+  },
+  "/local-seo-check": {
+    url: "/local-seo-check",
+    primaryKeyword: "تست سئو محلی",
+    inboundFrom: [
+      {
+        href: "/",
+        anchors: ["تست سئو محلی"],
+        placement: "body",
+        priority: "P1",
+      },
+      {
+        href: "/review-link",
+        anchors: ["تست سئو محلی"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/seo",
+        anchors: ["چک‌لیست سئو محلی"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/free-seo-audit",
+        anchors: ["تحلیل رایگان سایت و سئو"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/googlesabt",
+        anchors: ["ثبت و بهینه‌سازی گوگل مپ"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/review-link",
+        anchors: ["ساخت لینک نظر گوگل"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/seo-roi-calculator",
+        anchors: ["محاسبه ROI سئو"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+  },
+  "/seo-roi-calculator": {
+    url: "/seo-roi-calculator",
+    primaryKeyword: "محاسبه ROI سئو",
+    inboundFrom: [
+      {
+        href: "/",
+        anchors: ["محاسبه ROI سئو"],
+        placement: "body",
+        priority: "P1",
+      },
+      {
+        href: "/local-seo-check",
+        anchors: ["محاسبه ROI سئو"],
+        placement: "related",
+        priority: "P1",
+      },
+      {
+        href: "/seo",
+        anchors: ["بازگشت سرمایه سئو"],
+        placement: "related",
+        priority: "P1",
+      },
+    ],
+    outboundTo: [
+      {
+        href: "/free-seo-audit",
+        anchors: ["درخواست تحلیل رایگان"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/seo",
+        anchors: ["خدمات سئو آرایه"],
+        placement: "cta",
+        priority: "P0",
+      },
+      {
+        href: "/local-seo-check",
+        anchors: ["تست سئو محلی"],
         placement: "related",
         priority: "P1",
       },

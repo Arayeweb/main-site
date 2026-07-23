@@ -4,6 +4,12 @@ import Link from "next/link";
 import SectionHeader from "@/components/home/SectionHeader";
 import { pushGtmEvent } from "@/lib/gtm";
 import { LEAD_FORM_ID, websiteTypes } from "@/data/website-design";
+import {
+  FASTWEB_START_PRICE_TOMAN,
+  WEBSITE_PRICING_UPDATED_AT,
+  formatWebsiteDesignPrice,
+  websiteDesignPricingPlans,
+} from "@/lib/websitePricing";
 
 function trackLink(event: string) {
   if (typeof window === "undefined") return;
@@ -56,6 +62,9 @@ export function WebsiteDesignTypes() {
 }
 
 export default function WebsiteTypeComparison() {
+  const customFrom = formatWebsiteDesignPrice(websiteDesignPricingPlans[0].priceFrom);
+  const fastFrom = formatWebsiteDesignPrice(FASTWEB_START_PRICE_TOMAN);
+
   return (
     <section className="section-py bg-navy-50/40">
       <div className="container-mx container-px">
@@ -63,11 +72,17 @@ export default function WebsiteTypeComparison() {
           badge="انتخاب مسیر درست"
           title="کدام محصول آرایه مناسب شماست؟"
         />
+        <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-navy-500">
+          تعرفه از {fastFrom} تومان (سایت فوری) تا شروع از {customFrom} تومان (اختصاصی) — به‌روز{" "}
+          {WEBSITE_PRICING_UPDATED_AT}
+        </p>
 
-        <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
+        <div className="mx-auto mt-8 grid max-w-5xl gap-5 md:grid-cols-3">
           <article className="rounded-2xl border border-navy-100 bg-white p-6 shadow-soft">
             <h3 className="text-lg font-extrabold text-navy-900">سایت فوری</h3>
-            <p className="mt-1 text-xs font-bold text-navy-400">سایت رسمی دائمی</p>
+            <p className="mt-1 text-xs font-bold text-navy-400">
+              شروع از {fastFrom} تومان · سایت رسمی دائمی
+            </p>
             <ul className="mt-4 space-y-2">
               {[
                 "معرفی یک‌صفحه‌ای کسب‌وکار",
@@ -91,9 +106,14 @@ export default function WebsiteTypeComparison() {
             </Link>
           </article>
 
-          <article className="rounded-2xl border border-navy-100 bg-white p-6 shadow-soft">
+          <article className="relative rounded-2xl border border-[#3157F6] bg-white p-6 shadow-soft ring-2 ring-[#3157F6]/15">
+            <span className="absolute -top-3 right-4 inline-flex rounded-full bg-[#3157F6] px-3 py-1 text-[11px] font-extrabold text-white">
+              اگر رشد و برند مهم است
+            </span>
             <h3 className="text-lg font-extrabold text-navy-900">طراحی اختصاصی</h3>
-            <p className="mt-1 text-xs font-bold text-navy-400">مناسب برای</p>
+            <p className="mt-1 text-xs font-bold text-navy-400">
+              شروع از {customFrom} تومان · برند و امکانات سفارشی
+            </p>
             <ul className="mt-4 space-y-2">
               {[
                 "معرفی کامل برند",
@@ -109,7 +129,7 @@ export default function WebsiteTypeComparison() {
               ))}
             </ul>
             <a href={`#${LEAD_FORM_ID}`} className="btn-primary mt-6 w-full">
-              درخواست طراحی سایت
+              دریافت برآورد رایگان
             </a>
           </article>
 

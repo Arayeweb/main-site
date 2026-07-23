@@ -97,9 +97,44 @@ export const PROGRAMMATIC_INDUSTRY_PAGES: readonly ProgrammaticIndustryPage[] = 
     relatedSlugs: ["lawyer", "beauty-clinic", "clinic"],
   },
   // ── Website design (draft) ──
-  { slug: "cafe", productType: "website", status: "draft", primaryKeyword: "طراحی سایت کافه", secondaryKeywords: [], relatedSlugs: ["restaurant"] },
-  { slug: "real-estate", productType: "website", status: "draft", primaryKeyword: "طراحی سایت املاک", secondaryKeywords: [], relatedSlugs: ["lawyer"] },
-  { slug: "online-shop", productType: "website", status: "draft", primaryKeyword: "طراحی سایت فروشگاه", secondaryKeywords: [], relatedSlugs: ["restaurant"] },
+  {
+    slug: "cafe",
+    productType: "website",
+    status: "published",
+    primaryKeyword: "طراحی سایت کافه",
+    secondaryKeywords: [
+      "طراحی وب‌سایت کافه",
+      "سایت منوی کافه",
+      "قیمت طراحی سایت کافه",
+      "نمونه سایت کافه",
+    ],
+    relatedSlugs: ["restaurant", "instagram-business", "service-company"],
+  },
+  {
+    slug: "real-estate",
+    productType: "website",
+    status: "draft",
+    primaryKeyword: "طراحی سایت املاک",
+    secondaryKeywords: [
+      "طراحی سایت مشاور املاک",
+      "سایت فایل ملکی",
+      "طراحی وب‌سایت املاک",
+    ],
+    relatedSlugs: ["lawyer", "service-company"],
+  },
+  {
+    slug: "online-shop",
+    productType: "website",
+    status: "published",
+    primaryKeyword: "طراحی سایت فروشگاه",
+    secondaryKeywords: [
+      "طراحی فروشگاه اینترنتی",
+      "طراحی وب‌سایت فروشگاهی",
+      "قیمت طراحی سایت فروشگاه",
+      "ساخت فروشگاه آنلاین",
+    ],
+    relatedSlugs: ["instagram-business", "service-company", "restaurant"],
+  },
   ...(NEW_WEBSITE_PROGRAMMATIC_PAGES as ProgrammaticIndustryPage[]),
 
   // ── SEO (published) ──

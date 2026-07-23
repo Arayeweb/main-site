@@ -43,7 +43,7 @@ export default function ShortenerPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main>
+      <main className="tool-page">
         <ShortenerHero />
         <ShortenerTool />
         <ShortenerFeatures />

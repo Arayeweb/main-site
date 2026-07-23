@@ -76,7 +76,7 @@ export const WEBSITE_PRICING_OFFERS: readonly WebsitePricingOffer[] = [
     revisions: websiteDesignPricingPlans[0].revisions,
     support: websiteDesignPricingPlans[0].support,
     separateCosts: websiteDesignPricingExtras.separateFeatures,
-    ctaLabel: "درخواست برآورد سایت معرفی",
+    ctaLabel: "دریافت برآورد سایت معرفی",
     ctaHref: "/website-design#website-design-lead-form",
   },
   {
@@ -92,7 +92,7 @@ export const WEBSITE_PRICING_OFFERS: readonly WebsitePricingOffer[] = [
     revisions: websiteDesignPricingPlans[1].revisions,
     support: websiteDesignPricingPlans[1].support,
     separateCosts: websiteDesignPricingExtras.separateFeatures,
-    ctaLabel: "درخواست برآورد سایت حرفه‌ای",
+    ctaLabel: "دریافت برآورد سایت حرفه‌ای",
     ctaHref: "/website-design#website-design-lead-form",
   },
   {
@@ -111,12 +111,12 @@ export const WEBSITE_PRICING_OFFERS: readonly WebsitePricingOffer[] = [
       ...websiteDesignPricingExtras.separateFeatures,
       "کارمزد درگاه و هزینه سالانه دامنه/هاست",
     ],
-    ctaLabel: "درخواست برآورد فروشگاه",
+    ctaLabel: "دریافت برآورد فروشگاه",
     ctaHref: "/website-design#website-design-lead-form",
   },
 ] as const;
 
-export const WEBSITE_PRICING_UPDATED_AT = "2026-07-19";
+export const WEBSITE_PRICING_UPDATED_AT = "2026-07-23";
 
 export function getWebsiteOfferById(id: string): WebsitePricingOffer | undefined {
   return WEBSITE_PRICING_OFFERS.find((o) => o.id === id);

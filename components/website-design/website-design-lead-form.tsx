@@ -12,6 +12,7 @@ import {
   projectTypeOptions,
   WEBSITE_DESIGN_PAGE,
 } from "@/data/website-design";
+import { trackWebsiteSeoEvent } from "@/lib/analytics/websiteSeoEvents";
 
 const VISITOR_KEY = "ary_wd_vid";
 const SUBMIT_COOLDOWN_MS = 30_000;
@@ -114,6 +115,13 @@ export default function WebsiteDesignLeadForm() {
     if (formStartedRef.current) return;
     formStartedRef.current = true;
     pushGtmEvent("website_design_form_start", analyticsPayload());
+    trackWebsiteSeoEvent("website_form_start", {
+      page_path: WEBSITE_DESIGN_PAGE,
+      page_type: "hub",
+      primary_keyword: "طراحی سایت",
+      offer: "custom",
+      cta_position: "final",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -195,6 +203,13 @@ export default function WebsiteDesignLeadForm() {
       }
 
       pushGtmEvent("website_design_lead_submit", analyticsPayload({ projectType, mainGoal }));
+      trackWebsiteSeoEvent("website_lead_submit", {
+        page_path: WEBSITE_DESIGN_PAGE,
+        page_type: "hub",
+        primary_keyword: "طراحی سایت",
+        offer: "custom",
+        cta_position: "final",
+      });
       pushGtmEvent("generate_lead", {
         source: "website_design_landing",
         page: "website-design",
@@ -271,8 +286,8 @@ export default function WebsiteDesignLeadForm() {
       <div className="container-mx container-px">
         <SectionHeader
           badge="شروع پروژه"
-          title="درخواست طراحی سایت"
-          subtitle="اطلاعات اولیه را ثبت کنید تا نیاز پروژه بررسی و برای ادامه مسیر با شما تماس گرفته شود."
+          title="برآورد رایگان برای پروژه شما"
+          subtitle="۴ فیلد اصلی کافی است. نیاز را بررسی می‌کنیم و مسیر مناسب (سایت فوری یا اختصاصی) را با محدوده قیمت اعلام می‌کنیم."
         />
 
         <form
@@ -280,6 +295,17 @@ export default function WebsiteDesignLeadForm() {
           className="mx-auto max-w-2xl rounded-3xl border border-navy-100 bg-white p-6 shadow-card sm:p-8"
           noValidate
         >
+          <p className="mb-5 rounded-xl bg-teal-50/80 px-4 py-3 text-[13px] leading-relaxed text-teal-800">
+            بدون تعهد مالی · پاسخ معمولاً در یک روز کاری · پیش‌فاکتور قبل از شروع ساخت
+          </p>
+
+          <ol className="mb-5 grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-navy-500 sm:text-[12px]">
+            <li className="rounded-lg border border-teal-100 bg-teal-50/50 px-2 py-2 text-teal-800">
+              ۱. اطلاعات
+            </li>
+            <li className="rounded-lg border border-navy-100 bg-navy-50/40 px-2 py-2">۲. بررسی نیاز</li>
+            <li className="rounded-lg border border-navy-100 bg-navy-50/40 px-2 py-2">۳. پیش‌فاکتور</li>
+          </ol>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="wd-full-name" className="mb-1.5 block text-[13px] font-bold text-navy-700">
@@ -331,7 +357,7 @@ export default function WebsiteDesignLeadForm() {
 
             <div className="sm:col-span-2">
               <label htmlFor="wd-website" className="mb-1.5 block text-[13px] font-bold text-navy-700">
-                وب‌سایت فعلی
+                وب‌سایت فعلی <span className="font-medium text-navy-400">(اختیاری)</span>
               </label>
               <input
                 id="wd-website"
@@ -390,7 +416,7 @@ export default function WebsiteDesignLeadForm() {
 
             <div className="sm:col-span-2">
               <label htmlFor="wd-budget" className="mb-1.5 block text-[13px] font-bold text-navy-700">
-                بودجه تقریبی
+                بودجه تقریبی <span className="font-medium text-navy-400">(اختیاری)</span>
               </label>
               <input
                 id="wd-budget"
@@ -404,7 +430,7 @@ export default function WebsiteDesignLeadForm() {
 
             <div className="sm:col-span-2">
               <label htmlFor="wd-message" className="mb-1.5 block text-[13px] font-bold text-navy-700">
-                توضیحات
+                توضیحات <span className="font-medium text-navy-400">(اختیاری)</span>
               </label>
               <textarea
                 id="wd-message"
@@ -427,8 +453,11 @@ export default function WebsiteDesignLeadForm() {
           ) : null}
 
           <button type="submit" disabled={loading} className="btn-primary mt-6 w-full">
-            {loading ? "در حال ارسال..." : "ثبت درخواست طراحی سایت"}
+            {loading ? "در حال ارسال..." : "دریافت برآورد رایگان"}
           </button>
+          <p className="mt-2 text-center text-[12px] text-navy-400">
+            فقط برای هماهنگی تماس استفاده می‌شود؛ اسپم نمی‌فرستیم.
+          </p>
 
           <a
             href={SITE_PHONE_TEL}

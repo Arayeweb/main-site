@@ -430,6 +430,9 @@ export const footerColumns: FooterColumn[] = [
       { label: "کارت ویزیت دیجیتال", url: "/bizcard" },
       { label: "کوتاه‌کننده لینک", url: "/shortener" },
       { label: "ساخت QR کد", url: "/qr" },
+      { label: "لینک نظر گوگل + QR", url: "/review-link" },
+      { label: "تست سئو محلی", url: "/local-seo-check" },
+      { label: "محاسبه ROI سئو", url: "/seo-roi-calculator" },
     ],
   },
   {

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { loadQrcode } from "@/lib/qrcodeClient";
+import { trackFreeToolEvent } from "@/lib/analytics/freeToolTracking";
 
 const ERROR_MAP: Record<string, string> = {
   invalid_target: "لینک معتبر نیست — یک آدرس کامل وارد کنید.",
@@ -54,6 +56,7 @@ export default function ShortenerTool({ prefill }: { prefill?: Prefill } = {}) {
     const trimmed = url.trim();
     if (!trimmed) return;
 
+    trackFreeToolEvent("shortener", "start", { custom_slug: Boolean(slug.trim()) });
     setLoading(true);
     try {
       const res = await fetch("/api/shorten", {
@@ -78,6 +81,7 @@ export default function ShortenerTool({ prefill }: { prefill?: Prefill } = {}) {
       const link = data.short_url || `${window.location.origin}/s/${data.slug}`;
       setShortUrl(link);
       await renderQr(link);
+      trackFreeToolEvent("shortener", "complete", { custom_slug: Boolean(slug.trim()) });
     } catch {
       setError("خطا در اتصال — دوباره تلاش کنید.");
     } finally {
@@ -90,6 +94,7 @@ export default function ShortenerTool({ prefill }: { prefill?: Prefill } = {}) {
     try {
       await navigator.clipboard.writeText(shortUrl);
       setCopied(true);
+      trackFreeToolEvent("shortener", "copy");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       window.prompt("لینک کوتاه:", shortUrl);
@@ -97,15 +102,20 @@ export default function ShortenerTool({ prefill }: { prefill?: Prefill } = {}) {
   }
 
   return (
-    <section id="tool" className="pb-12 sm:pb-16">
+    <section id="tool" className="-mt-12 scroll-mt-24 pb-12 sm:-mt-14 sm:pb-16">
       <div className="container-mx container-px">
         <form
           onSubmit={onSubmit}
-          className="mx-auto max-w-xl rounded-2xl border border-navy-100 bg-white p-6 shadow-soft sm:p-8"
+          className="tool-panel mx-auto max-w-2xl p-6 sm:p-8"
         >
+          <ol className="mb-6 grid grid-cols-3 border-y border-navy-200 text-[11px] font-bold text-navy-500">
+            <li className="border-l border-navy-200 py-2 text-brand-700">۱. چسباندن لینک</li>
+            <li className="border-l border-navy-200 px-3 py-2">۲. ساخت</li>
+            <li className="px-3 py-2">۳. کپی</li>
+          </ol>
           <div>
             <label htmlFor="short-url" className="mb-1.5 block text-sm font-bold text-navy-800">
-              لینک بلندت را وارد کن
+              لینک بلند را وارد کنید
             </label>
             <input
               id="short-url"
@@ -121,14 +131,14 @@ export default function ShortenerTool({ prefill }: { prefill?: Prefill } = {}) {
             />
           </div>
 
-          <div className="mt-5">
-            <label htmlFor="short-slug" className="mb-1.5 block text-sm font-bold text-navy-800">
-              آدرس دلخواه{" "}
-              <span className="font-normal text-navy-400">(اختیاری)</span>
-            </label>
-            <div className="flex" dir="ltr">
+          <details className="mt-4 border-y border-navy-200 bg-navy-50/40 p-3" open={Boolean(prefill?.slug)}>
+            <summary className="cursor-pointer text-xs font-bold text-navy-600">
+              تنظیم آدرس دلخواه (اختیاری)
+            </summary>
+            <div className="mt-3 flex" dir="ltr">
               <input
                 id="short-slug"
+                aria-label="آدرس دلخواه لینک کوتاه"
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
@@ -141,7 +151,7 @@ export default function ShortenerTool({ prefill }: { prefill?: Prefill } = {}) {
                 {hostPrefix}
               </span>
             </div>
-          </div>
+          </details>
 
           <input
             type="text"
@@ -156,17 +166,20 @@ export default function ShortenerTool({ prefill }: { prefill?: Prefill } = {}) {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-xl bg-brand-600 px-6 py-3.5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-navy-300"
+            className="mt-6 w-full bg-navy-950 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-navy-300"
           >
-            {loading ? "در حال ساخت..." : "کوتاه کن ←"}
+            {loading ? "در حال ساخت..." : "ساخت رایگان لینک کوتاه"}
           </button>
+          <p className="mt-2 text-center text-[11px] font-semibold text-navy-400">
+            بدون ثبت‌نام · همراه QR کد · نتیجه فوری
+          </p>
 
           {error ? (
             <p className="mt-3 text-center text-sm font-bold text-red-600">{error}</p>
           ) : null}
 
           {shortUrl ? (
-            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-center">
+            <div className="mt-6 border border-emerald-300 bg-emerald-50 p-5 text-center">
               <h3 className="text-base font-bold text-emerald-800">لینک کوتاهت آماده‌ست!</h3>
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2.5" dir="ltr">
                 <a
@@ -202,12 +215,25 @@ export default function ShortenerTool({ prefill }: { prefill?: Prefill } = {}) {
                   <a
                     href={qrSrc}
                     download="qrcode.png"
+                    onClick={() => trackFreeToolEvent("shortener", "download", { asset: "qr" })}
                     className="text-xs font-bold text-brand-600 hover:text-brand-700"
                   >
                     دانلود QR کد
                   </a>
                 </div>
               ) : null}
+              <p className="mt-4 border-t border-emerald-200 pt-4 text-xs leading-relaxed text-emerald-800">
+                چند راه تماس و شبکه اجتماعی دارید؟{" "}
+                <Link
+                  href="/bizcard#builder"
+                  onClick={() =>
+                    trackFreeToolEvent("shortener", "next_step", { destination: "bizcard" })
+                  }
+                  className="font-extrabold hover:underline"
+                >
+                  همه را در یک کارت ویزیت دیجیتال رایگان جمع کنید
+                </Link>
+              </p>
             </div>
           ) : null}
         </form>

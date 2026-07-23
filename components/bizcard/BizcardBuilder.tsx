@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { pushGtmEvent } from "@/lib/gtm";
+import { trackFreeToolEvent } from "@/lib/analytics/freeToolTracking";
 import BizcardPreview, { bizcardThemes } from "@/components/bizcard/BizcardPreview";
 import type { BizcardTheme } from "@/lib/bizcardData";
 import { IconCheck } from "@/components/icons";
@@ -25,7 +26,7 @@ interface Suggestion {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-navy-100 bg-navy-50/50 px-4 py-3 text-sm text-navy-900 outline-none transition focus:border-brand-400 focus:bg-white";
+  "w-full border border-navy-200 bg-navy-50/50 px-4 py-3 text-sm text-navy-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/10";
 
 export default function BizcardBuilder() {
   const [screen, setScreen] = useState<Screen>("form");
@@ -130,6 +131,7 @@ export default function BizcardBuilder() {
     });
     if (uploadedUrl) body.logo_url = uploadedUrl;
 
+    trackFreeToolEvent("bizcard", "start", { category: form.category.trim() || undefined });
     setSubmitting(true);
     try {
       const res = await fetch("/api/bizcards/public", {
@@ -149,6 +151,7 @@ export default function BizcardBuilder() {
       const link = `${window.location.origin}/b/${data.slug}`;
       setCard({ id: data.id || "", slug: data.slug, link });
       pushGtmEvent("generate_lead", { source: "bizcard_create", page: "bizcard" });
+      trackFreeToolEvent("bizcard", "complete", { category: form.category.trim() || undefined });
       setScreen("done");
     } catch {
       setError("خطا در اتصال — دوباره تلاش کنید.");
@@ -258,19 +261,24 @@ export default function BizcardBuilder() {
   }, [screen]);
 
   return (
-    <section id="builder" className="section-py scroll-mt-24 bg-white">
+    <section id="builder" className="-mt-12 scroll-mt-24 pb-12 sm:-mt-14 sm:pb-16">
       <div className="container-mx container-px">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_380px] lg:items-start">
-          <div className="rounded-3xl border border-navy-100 bg-white p-6 shadow-card sm:p-8">
+        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_380px] lg:items-start">
+          <div className="tool-panel p-6 sm:p-8">
             {screen === "form" ? (
               <>
-                <h2 className="text-xl font-extrabold text-navy-900">کارت ویزیت رایگان بساز</h2>
+                <p className="tool-index">۰۱ / اطلاعات کسب‌وکار</p>
+                <h2 className="mt-3 text-2xl font-extrabold text-navy-950">
+                  کارت ویزیت رایگان بسازید
+                </h2>
                 <p className="mt-1 text-[13px] text-navy-500">
                   چند فیلد کوتاه — لینک اختصاصی و QR کد همین الان فعال می‌شود.
                 </p>
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-5" id="bizForm">
-                  <p className="text-xs font-bold uppercase tracking-wide text-brand-600">اطلاعات کسب‌وکار</p>
+                  <p className="border-b border-navy-200 pb-2 text-xs font-bold text-brand-700">
+                    اطلاعات ضروری و راه‌های تماس
+                  </p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2">
                       <label className="mb-1.5 block text-xs font-bold text-navy-700">نام کسب‌وکار *</label>
@@ -413,7 +421,9 @@ export default function BizcardBuilder() {
                     </div>
                   </div>
 
-                  <p className="text-xs font-bold uppercase tracking-wide text-brand-600">ظاهر کارت</p>
+                  <p className="border-b border-navy-200 pb-2 text-xs font-bold text-brand-700">
+                    ظاهر کارت
+                  </p>
                   <div>
                     <label className="mb-2 block text-xs font-bold text-navy-700">لوگو / تصویر</label>
                     <button
@@ -479,7 +489,7 @@ export default function BizcardBuilder() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full rounded-xl bg-brand-600 py-3.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
+                    className="w-full bg-navy-950 py-3.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
                   >
                     {submitting ? "در حال ساخت..." : "ساخت کارت ویزیت ←"}
                   </button>
@@ -519,6 +529,9 @@ export default function BizcardBuilder() {
                   </p>
                   <Link
                     href="/googlesabt?from=bizcard&package=popular#packages"
+                    onClick={() =>
+                      trackFreeToolEvent("bizcard", "next_step", { destination: "googlesabt" })
+                    }
                     className="mt-3 inline-block rounded-lg bg-[#4285F4] px-4 py-2 text-xs font-bold text-white"
                   >
                     ثبت در گوگل — از ۹۹۰ هزار تومان
@@ -653,7 +666,7 @@ export default function BizcardBuilder() {
             ) : null}
           </div>
 
-          <div className="hidden lg:block">
+          <div className="hidden border-r border-navy-300 pr-6 lg:block">
             <BizcardPreview data={previewData} />
           </div>
         </div>

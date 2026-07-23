@@ -20,74 +20,43 @@ export default function BizcardHero({ countLabel }: { countLabel: string }) {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-brand-50/30 to-slate-50 pb-12 pt-14 sm:pb-16 sm:pt-20">
-      <div className="container-mx container-px text-center">
-        <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1.5 text-xs font-bold text-brand-600">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-          رایگان — همیشه
-        </span>
-        <h1 className="mx-auto max-w-3xl text-3xl font-extrabold leading-tight text-navy-900 sm:text-4xl lg:text-[2.75rem]">
-          کارت ویزیت دیجیتال{" "}
-          <span className="bg-gradient-to-l from-brand-600 to-brand-400 bg-clip-text text-transparent">
-            برای همه کسب‌وکارها
-          </span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-500 sm:text-base">
-          لینک اختصاصی، QR کد، نقشه، تماس و شبکه‌های اجتماعی — همه در یک صفحه.
-          بدون سایت، بدون کدنویسی، بدون هزینه.
-        </p>
+    <section className="border-b border-navy-300 pb-20 pt-12 sm:pb-24 sm:pt-16">
+      <div className="container-mx container-px tool-reveal">
+        <div className="grid gap-8 lg:grid-cols-[1fr_300px] lg:items-end">
+          <div>
+            <p className="tool-kicker">ابزار ۰۱ / کارت دیجیتال</p>
+            <h1 className="mt-6 max-w-4xl text-4xl font-extrabold leading-[1.18] text-navy-950 sm:text-6xl lg:text-7xl">
+              تمام راه‌های تماس،
+              <span className="block text-brand-700">در یک نشانی ثابت.</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-navy-600">
+              مشتری با یک لینک به تماس، نقشه و شبکه‌های اجتماعی شما می‌رسد. در دو دقیقه
+              بسازید؛ بدون سایت، کدنویسی یا هزینه.
+            </p>
+          </div>
+          <aside className="border-r-2 border-brand-600 pr-5">
+            <p className="text-3xl font-extrabold tabular-nums text-navy-950">{label}</p>
+            <p className="mt-1 text-xs font-bold text-navy-500">کارت ساخته‌شده در آرایه</p>
+            <p className="mt-5 text-sm font-extrabold text-navy-900">۰ تومان · همیشه رایگان</p>
+          </aside>
+        </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center gap-3">
           <a
             href="#builder"
             onClick={() => pushGtmEvent("cta_click", { location: "bizcard_hero", page: "bizcard" })}
-            className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-7 py-3.5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-700 active:scale-[0.98]"
+            className="inline-flex items-center gap-2 bg-navy-950 px-7 py-3.5 text-sm font-bold text-white transition hover:bg-brand-700 active:translate-y-px"
           >
-            همین حالا کارتت را بساز
+            ساخت رایگان کارت من
           </a>
           <a
             href="#how"
-            className="rounded-xl border border-navy-200 bg-white px-7 py-3.5 text-sm font-bold text-navy-700 transition hover:border-brand-200 hover:text-brand-600"
+            className="border-b border-navy-400 px-2 py-3 text-sm font-bold text-navy-700 transition hover:border-brand-600 hover:text-brand-700"
           >
             چطور کار می‌کند؟
           </a>
         </div>
-
-        <div className="mx-auto mt-8 flex max-w-lg flex-wrap items-center justify-center gap-3 text-xs font-bold text-navy-500">
-          <span className="text-amber-500">★★★★★</span>
-          <span>
-            <b className="text-navy-800">{label}</b> کسب‌وکار از آرایه استفاده می‌کنند
-          </span>
-        </div>
-
-        <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
-          {[
-            { num: label, lbl: "کارت ساخته‌شده" },
-            { num: "۲ دقیقه", lbl: "تا آماده‌شدن" },
-            { num: "۰ تومان", lbl: "هزینه ساخت" },
-          ].map((s) => (
-            <div
-              key={s.lbl}
-              className="rounded-2xl border border-navy-100 bg-white px-4 py-5 shadow-soft"
-            >
-              <div className="text-2xl font-extrabold text-brand-600">{s.num}</div>
-              <div className="mt-1 text-xs font-bold text-navy-500">{s.lbl}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-          {["رایگان", "لینک اختصاصی", "QR کد", "بدون نصب اپ"].map((t) => (
-            <span
-              key={t}
-              className="inline-flex items-center gap-1 rounded-full border border-navy-100 bg-white px-3 py-1 text-[11px] font-bold text-navy-600"
-            >
-              ✓ {t}
-            </span>
-          ))}
-        </div>
-
-        <p className="mx-auto mt-8 max-w-xl text-[13px] leading-relaxed text-navy-400">
+        <p className="mt-8 max-w-xl border-t border-navy-200 pt-4 text-[13px] leading-relaxed text-navy-500">
           می‌خواهید در گوگل‌مپ هم ثبت شوید و همه مسیریاب‌ها روی همین لینک باشد؟{" "}
           <Link href="/googlesabt?from=bizcard&package=popular#packages" className="font-bold text-[#4285F4] hover:underline">
             پکیج محبوب ثبت گوگل ←
