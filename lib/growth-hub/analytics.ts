@@ -2,6 +2,11 @@ import "server-only";
 
 import { getSupabaseAdmin } from "@/lib/supabase";
 import {
+  ANALYTICS_SCHEMA_VERSION,
+  canonicalEventName,
+  funnelStageForEvent,
+} from "@/lib/analytics/core";
+import {
   GROWTH_HUB_ANALYTICS_SOURCE,
   type GrowthHubEventName,
 } from "@/lib/growth-hub/constants";
@@ -56,6 +61,10 @@ export async function trackGrowthHubEvent(params: {
       .from("analytics_events")
       .insert({
         event_name: event,
+        canonical_event_name: canonicalEventName(event),
+        schema_version: ANALYTICS_SCHEMA_VERSION,
+        product_area: GROWTH_HUB_ANALYTICS_SOURCE,
+        funnel_stage: funnelStageForEvent(event),
         source: GROWTH_HUB_ANALYTICS_SOURCE,
         page: path ?? null,
         payload,

@@ -108,12 +108,36 @@ export const CHECKOUT_STEP_LABELS: Record<CheckoutWizardStep, string> = {
   2: "آدرس",
   3: "ساعات کاری",
   4: "بازبینی",
-  5: "تکمیل سفارش",
+  5: "ثبت درخواست",
 };
+
+/** بازه ترجیحی تماس کارشناس با مشتری */
+export const GOOGLESABT_CALL_WINDOWS = [
+  { id: "morning", label: "صبح", hint: "۹ تا ۱۲" },
+  { id: "afternoon", label: "ظهر", hint: "۱۲ تا ۱۶" },
+  { id: "evening", label: "عصر", hint: "۱۶ تا ۲۰" },
+  { id: "anytime", label: "هر ساعتی", hint: "روز کاری" },
+] as const;
+
+export type GooglesabtCallWindowId = (typeof GOOGLESABT_CALL_WINDOWS)[number]["id"];
+
+export const GOOGLESABT_CONTACT_CHANNELS = [
+  { id: "call", label: "تماس تلفنی" },
+  { id: "whatsapp", label: "واتساپ" },
+] as const;
+
+export type GooglesabtContactChannelId = (typeof GOOGLESABT_CONTACT_CHANNELS)[number]["id"];
+
+export function callWindowLabel(id: GooglesabtCallWindowId): string {
+  const row = GOOGLESABT_CALL_WINDOWS.find((w) => w.id === id);
+  return row ? `${row.label} (${row.hint})` : id;
+}
 
 export interface GooglesabtOrderDraft {
   packageKey: "basic" | "popular" | "vip";
   businessName: string;
+  /** نام فرد پاسخگو برای تماس کارشناس */
+  contactName: string;
   phone: string;
   category: string;
   province: string;
@@ -124,6 +148,10 @@ export interface GooglesabtOrderDraft {
   openTime: string;
   closeTime: string;
   weekdays: GooglesabtWeekdayId[];
+  preferredCallWindow: GooglesabtCallWindowId;
+  contactChannel: GooglesabtContactChannelId;
+  /** کد تخفیف نرمال‌شده (اختیاری) */
+  discountCode: string;
 }
 
 export const emptyOrderDraft = (
@@ -131,6 +159,7 @@ export const emptyOrderDraft = (
 ): GooglesabtOrderDraft => ({
   packageKey,
   businessName: "",
+  contactName: "",
   phone: "",
   category: "",
   province: "",
@@ -141,6 +170,10 @@ export const emptyOrderDraft = (
   openTime: "09:00",
   closeTime: "21:00",
   weekdays: ["sat", "sun", "mon", "tue", "wed", "thu"],
+  preferredCallWindow: "anytime",
+  contactChannel: "call",
+  discountCode: "",
 });
 
-export const CHECKOUT_STORAGE_KEY = "googlesabt_checkout_v1";
+export const CHECKOUT_STORAGE_KEY = "googlesabt_checkout_v2";
+

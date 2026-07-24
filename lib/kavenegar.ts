@@ -86,6 +86,68 @@ export async function sendKavenegarLookup(input: {
   };
 }
 
+/**
+ * Plain SMS send (invite links, etc.).
+ * https://kavenegar.com/rest.html#sms-send
+ * Receptor should be local 09… or E.164; Kavenegar accepts both.
+ */
+export async function sendKavenegarSms(input: {
+  receptor: string;
+  message: string;
+}): Promise<KavenegarLookupResult> {
+  const apiKey = getKavenegarApiKey();
+  if (!apiKey) {
+    return { ok: false, error: "kavenegar_not_configured" };
+  }
+
+  const url = new URL(
+    `https://api.kavenegar.com/v1/${encodeURIComponent(apiKey)}/sms/send.json`,
+  );
+  url.searchParams.set("receptor", input.receptor);
+  url.searchParams.set("message", input.message.slice(0, 900));
+
+  let res: Response;
+  try {
+    res = await fetch(url.toString(), {
+      method: "GET",
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch (e) {
+    console.error("[kavenegar] sms network error", e);
+    return { ok: false, error: "kavenegar_network" };
+  }
+
+  let data: KavenegarLookupResponse | null = null;
+  try {
+    data = (await res.json()) as KavenegarLookupResponse;
+  } catch {
+    return { ok: false, error: "kavenegar_bad_response", status: res.status };
+  }
+
+  const status = data.return?.status;
+  if (status !== 200) {
+    console.error("[kavenegar] sms failed", {
+      status,
+      message: data.return?.message,
+      http: res.status,
+    });
+    return {
+      ok: false,
+      error: mapKavenegarStatus(status),
+      status,
+      message: data.return?.message,
+    };
+  }
+
+  const entry = Array.isArray(data.entries) ? data.entries[0] : undefined;
+  return {
+    ok: true,
+    messageId: entry?.messageid,
+    status: entry?.status,
+  };
+}
+
 function mapKavenegarStatus(status: number | undefined): string {
   switch (status) {
     case 411:

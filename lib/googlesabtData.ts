@@ -9,13 +9,51 @@ export interface GooglesabtPackage {
   tagline: string;
   price: number;
   oldPrice: number;
-  /** مبلغ پرداخت آنلاین = قیمت کامل پکیج (تومان) */
+  /** مبلغ پایه پکیج (تومان) — پرداخت پس از هماهنگی کارشناس */
   deposit: number;
   description: string;
   mapCount: number;
   includesBizcard: boolean;
   features: string[];
   popular?: boolean;
+  recommendedLabel?: string;
+}
+
+/** کدهای تخفیف معتبر برای فرم قیمت googlesabt */
+export const GOOGLESABT_DISCOUNT_CODES: Record<
+  string,
+  { percent: number; label: string }
+> = {
+  ARAAYE10: { percent: 10, label: "۱۰٪ تخفیف آرایه" },
+  MAP15: { percent: 15, label: "۱۵٪ تخفیف ویژه نقشه" },
+  WELCOME5: { percent: 5, label: "۵٪ تخفیف خوش‌آمد" },
+};
+
+export function normalizeGooglesabtDiscountCode(raw: string): string {
+  return raw
+    .trim()
+    .toUpperCase()
+    .replace(/[^\w]/g, "");
+}
+
+export function resolveGooglesabtDiscount(raw: string | null | undefined): {
+  code: string;
+  percent: number;
+  label: string;
+} | null {
+  if (!raw) return null;
+  const code = normalizeGooglesabtDiscountCode(raw);
+  const match = GOOGLESABT_DISCOUNT_CODES[code];
+  if (!match) return null;
+  return { code, percent: match.percent, label: match.label };
+}
+
+export function applyGooglesabtDiscount(
+  priceToman: number,
+  discountPercent: number,
+): number {
+  if (discountPercent <= 0) return priceToman;
+  return Math.max(0, Math.round(priceToman * (1 - discountPercent / 100)));
 }
 
 export const googlesabtPackages: GooglesabtPackage[] = [
@@ -32,7 +70,7 @@ export const googlesabtPackages: GooglesabtPackage[] = [
     features: [
       "ثبت در ۳ نقشه: گوگل، نشان، بلد",
       "درستی‌سنجی نمایه گوگل",
-      "لینک پروفایل گوگل قابل اشتراک",
+      "لینک موقعیت روی نقشه گوگل",
       "تحویل کمتر از یک روز کاری",
     ],
   },
@@ -46,6 +84,7 @@ export const googlesabtPackages: GooglesabtPackage[] = [
     mapCount: 5,
     includesBizcard: true,
     popular: true,
+    recommendedLabel: "پیشنهاد بیشتر کسب‌وکارها",
     description: "ثبت در ۵ نقشه + هدیه کارت هوشمند کسب‌وکار.",
     features: [
       "ثبت در ۵ نقشه: گوگل، نشان، بلد، اسنپ، OSM",
@@ -68,7 +107,6 @@ export const googlesabtPackages: GooglesabtPackage[] = [
     features: [
       "همه امکانات پکیج حرفه‌ای",
       "هدیه: کارت هوشمند کسب‌وکار",
-      "پنل پیامکی مدیریت نمایه",
       "مدیریت نظرات و پاسخ‌گویی",
       "پیگیری درستی‌سنجی گوگل",
     ],
@@ -116,8 +154,12 @@ export const googlesabtFaq: GooglesabtFaqItem[] = [
     a: "تیم پشتیبانی آرایه در تمام مراحل پاسخگوی شما خواهد بود.",
   },
   {
-    q: "پرداخت آنلاین امن است؟",
-    a: "بله. پرداخت از طریق درگاه بانکی امن انجام می‌شود و اطلاعات پرداخت نزد آرایه ذخیره نخواهد شد.",
+    q: "کی باید پرداخت کنم؟",
+    a: "الان فقط درخواست ثبت می‌شود. کارشناسان ما با شما تماس می‌گیرند، جزئیات را تأیید می‌کنند و سپس مسیر پرداخت را هماهنگ می‌کنند — بدون اجبار به پرداخت فوری در سایت.",
+  },
+  {
+    q: "کد تخفیف چطور اعمال می‌شود؟",
+    a: "کد را در بخش پکیج‌ها وارد کنید. اگر معتبر باشد، مبلغ نمایشی کم می‌شود و همان کد همراه درخواست برای کارشناس ارسال می‌شود.",
   },
   {
     q: "اگر قبل از خرید سوال داشته باشم؟",
@@ -126,10 +168,10 @@ export const googlesabtFaq: GooglesabtFaqItem[] = [
 ];
 
 export const googlesabtHowToSteps = [
-  "پکیج مناسب را انتخاب کنید.",
+  "پکیج مناسب را انتخاب کنید (در صورت داشتن، کد تخفیف را بزنید).",
   "اطلاعات کسب‌وکار، آدرس و ساعات کاری را تکمیل کنید.",
-  "پرداخت آنلاین را انجام دهید.",
-  "تیم آرایه راه‌اندازی را انجام می‌دهد و خروجی را تحویل می‌دهد.",
+  "درخواست را ثبت کنید — کارشناسان آرایه با شما تماس می‌گیرند.",
+  "پس از هماهنگی، راه‌اندازی انجام و خروجی تحویل می‌شود.",
 ];
 
 export interface GooglesabtCaseStudy {

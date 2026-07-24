@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { paymentSiteUrl } from "@/lib/paymentCallback";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { resolveZibalVerify } from "@/lib/zibal";
+import { tomanToIrr, trackServerAnalyticsEvent } from "@/lib/analytics/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,6 +58,16 @@ export async function GET(req: NextRequest) {
     } catch (e) {
       console.error("[googlesabt/verify] failed to save confirmation lead:", e);
     }
+
+    await trackServerAnalyticsEvent({
+      event: "purchase_completed",
+      dedupeKey: `purchase:googlesabt:${trackId}`,
+      productArea: "local_seo",
+      page: "/googlesabt",
+      value: tomanToIrr(verify.amount),
+      currency: "IRR",
+      properties: { payment_provider: "zibal" },
+    });
 
     return NextResponse.redirect(`${SITE_URL}/googlesabt?payment=success&trackId=${trackId}`);
   } catch (e) {

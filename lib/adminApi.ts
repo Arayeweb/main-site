@@ -125,6 +125,7 @@ export function fetchSalesLeads(params?: {
   status?: string;
   q?: string;
   followup?: string;
+  owner?: string;
   page_num?: number;
   page_size?: number;
 }) {
@@ -132,6 +133,7 @@ export function fetchSalesLeads(params?: {
   if (params?.status) sp.set('status', params.status);
   if (params?.q) sp.set('q', params.q);
   if (params?.followup) sp.set('followup', params.followup);
+  if (params?.owner) sp.set('owner', params.owner);
   if (params?.page_num != null) sp.set('page_num', String(params.page_num));
   if (params?.page_size != null) sp.set('page_size', String(params.page_size));
   const qs = sp.toString();
@@ -144,6 +146,21 @@ export function fetchSalesLeads(params?: {
 
 export function fetchSalesLeadById(id: string) {
   return adminFetch<{ lead: ApiLead }>(`/api/sales/leads/${id}`, undefined, 'H1');
+}
+
+export interface ApiSalesTeamMember {
+  id: string;
+  name: string | null;
+  email: string | null;
+  role: string;
+}
+
+export function fetchSalesTeam() {
+  return adminFetch<{ team: ApiSalesTeamMember[]; me: string; role: string }>(
+    '/api/sales/team',
+    undefined,
+    'H1'
+  );
 }
 
 export interface ApiLeadActivity {
@@ -571,22 +588,15 @@ export function fetchAdminStats() {
 
 // ── GTM analytics events ─────────────────────────────────
 
-export interface AnalyticsEventsStats {
-  total_events: number;
-  this_week: number;
-  this_month: number;
-  by_event: AdminStatsGroup[];
-  by_page: AdminStatsGroup[];
-  by_source: AdminStatsGroup[];
-  by_package: AdminStatsGroup[];
-  funnel: Record<string, number>;
-  checkout_to_purchase_rate: number;
-  last_7_days: { date: string; count: number }[];
-  last_30_days: { date: string; count: number }[];
-}
+export type AnalyticsReportResponse = import('@/lib/analytics/report').AnalyticsReport;
 
-export function fetchAnalyticsEvents() {
-  return adminFetch<AnalyticsEventsStats>('/api/admin/analytics/events', undefined, 'H1');
+export function fetchAnalyticsEvents(params?: URLSearchParams) {
+  const query = params?.toString();
+  return adminFetch<AnalyticsReportResponse>(
+    `/api/admin/analytics/events${query ? `?${query}` : ''}`,
+    undefined,
+    'H1'
+  );
 }
 
 // ── Ads / campaigns ──────────────────────────────────────
@@ -901,6 +911,14 @@ export function createClient(body: Record<string, unknown>) {
   }, 'H2');
 }
 
+export function deleteClient(id: string) {
+  return adminFetch<{ id: string }>(
+    `/api/admin/clients?id=${encodeURIComponent(id)}`,
+    { method: 'DELETE' },
+    'H2'
+  );
+}
+
 export function createProject(body: Record<string, unknown>) {
   return adminFetch<{ project: { id: string; project_code: string } }>('/api/admin/projects', {
     method: 'POST',
@@ -984,6 +1002,23 @@ export function patchSalesLead(id: string, body: Record<string, unknown>) {
   return adminFetch<{ lead: ApiLead }>('/api/sales/leads', {
     method: 'PATCH',
     body: JSON.stringify({ id, ...body }),
+  }, 'H2');
+}
+
+export function createSalesLead(body: {
+  name?: string;
+  contact: string;
+  company?: string;
+  page?: string;
+  goal?: string;
+  budget?: string;
+  channel?: string;
+  crm_note?: string;
+  assign_me?: boolean;
+}) {
+  return adminFetch<{ id: string }>('/api/sales/leads', {
+    method: 'POST',
+    body: JSON.stringify(body),
   }, 'H2');
 }
 

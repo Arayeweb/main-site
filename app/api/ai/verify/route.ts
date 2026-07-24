@@ -5,6 +5,10 @@ import { AI_PACKAGES, higherPlan, type AIPlan } from "@/lib/aiPackages";
 import { paymentSiteUrl } from "@/lib/paymentCallback";
 import { REFERRAL_REFERRER_CREDITS } from "@/lib/aiPromo";
 import { resolveZibalVerify } from "@/lib/zibal";
+import {
+  tomanToIrr,
+  trackServerAnalyticsEvent,
+} from "@/lib/analytics/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +41,7 @@ export async function GET(req: NextRequest) {
   const { data: order } = await supabase
     .from("ai_orders")
     .select(
-      "id, user_id, package_id, amount_toman, credits_granted, status, promo_code, referral_code, referrer_user_id"
+      "id, user_id, package_id, amount_toman, credits_granted, status, promo_code, referral_code, referrer_user_id, utm_source, utm_medium, utm_campaign"
     )
     .eq("zibal_track_id", trackId)
     .maybeSingle();
@@ -47,6 +51,19 @@ export async function GET(req: NextRequest) {
   }
 
   if (order.status === "paid") {
+    await trackServerAnalyticsEvent({
+      event: "purchase_completed",
+      dedupeKey: `purchase:ai:${order.id}`,
+      productArea: "ai",
+      page: "/ai/pricing",
+      actorId: order.user_id,
+      value: tomanToIrr(order.amount_toman),
+      currency: "IRR",
+      utmSource: order.utm_source,
+      utmMedium: order.utm_medium,
+      utmCampaign: order.utm_campaign,
+      properties: { package: order.package_id, payment_provider: "zibal" },
+    });
     return redirectNoStore(`${siteUrl()}/ai?payment=success`);
   }
 
@@ -83,6 +100,20 @@ export async function GET(req: NextRequest) {
   if (!claimed) {
     return redirectNoStore(`${siteUrl()}/ai?payment=success`);
   }
+
+  await trackServerAnalyticsEvent({
+    event: "purchase_completed",
+    dedupeKey: `purchase:ai:${order.id}`,
+    productArea: "ai",
+    page: "/ai/pricing",
+    actorId: order.user_id,
+    value: tomanToIrr(order.amount_toman),
+    currency: "IRR",
+    utmSource: order.utm_source,
+    utmMedium: order.utm_medium,
+    utmCampaign: order.utm_campaign,
+    properties: { package: order.package_id, payment_provider: "zibal" },
+  });
 
   const pkg = AI_PACKAGES[order.package_id as string];
   const { data: user } = await supabase

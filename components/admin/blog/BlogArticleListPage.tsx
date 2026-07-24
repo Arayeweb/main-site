@@ -12,6 +12,7 @@ import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAd
 import { createCmsArticle, fetchCmsArticles } from '@/lib/cmsAdminApi';
 import { BlogDashboardWidgets } from '@/components/admin/blog/BlogDashboardWidgets';
 import { STATUS_LABELS } from '@/lib/cms/articleStatus';
+import { formatFaDate } from '@/lib/adminMappers';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-slate-100 text-slate-700',
@@ -159,7 +160,7 @@ export function BlogArticleListPage() {
                     </span>
                   </td>
                   <td className="p-3 text-slate-500 text-xs">
-                    {new Date(a.updated_at).toLocaleDateString('fa-IR')}
+                    {formatFaDate(a.updated_at)}
                   </td>
                 </tr>
               ))}

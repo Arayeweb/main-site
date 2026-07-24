@@ -19,6 +19,7 @@ import {
 } from '@/lib/adminTypes';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
 import { SimpleFormModal } from '@/components/admin/ui/SimpleFormModal';
+import { ShamsiDateInput } from '@/components/admin/ui/ShamsiDateInput';
 
 export default function TasksPage() {
   const router = useRouter();
@@ -146,7 +147,7 @@ export default function TasksPage() {
       >
         <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="عنوان تسک *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
         <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="مسئول" value={form.assigned_to} onChange={(e) => setForm({ ...form, assigned_to: e.target.value })} />
-        <input type="date" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+        <ShamsiDateInput value={form.due_date} onChange={(due_date) => setForm({ ...form, due_date })} />
         <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
           {Object.entries(TASK_PRIORITY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>

@@ -2,10 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { CheckCircle2, Loader2, MessageCircle } from "lucide-react";
-import {
-  getCampaignTrackingContext,
-  trackCampaignEvent,
-} from "@/lib/adreadyTracking";
+import { getCampaignTrackingContext } from "@/lib/adreadyTracking";
+import { pushGtmEvent } from "@/lib/gtm";
 import styles from "./campaignPage.module.css";
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
@@ -85,7 +83,7 @@ export default function CampaignLeadForm({
         throw new Error(data.error || "submit_failed");
       }
 
-      trackCampaignEvent("campaign_lead_submit", {
+      pushGtmEvent("campaign_lead_submit", {
         campaignPageId,
         slug,
         visitorId: ctx.visitorId,

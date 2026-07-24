@@ -43,6 +43,12 @@ export function buildContractPrintHtml(contract: ApiContract): string {
     `<div class="section"><h2>شرایط پرداخت</h2><p>${esc(contract.payment_terms || DEFAULT_COMPANY_SETTINGS.invoice.defaultPaymentTerms)}</p></div>` +
     (contract.support_terms ? `<div class="section"><h2>شرایط پشتیبانی</h2><p>${esc(contract.support_terms)}</p></div>` : '') +
     (contract.notes ? `<div class="section"><h2>یادداشت</h2><p>${esc(contract.notes)}</p></div>` : '') +
+    `<div style="margin-top:28px;display:flex;justify-content:flex-start">` +
+      `<div style="text-align:center">` +
+        `<img src="${esc(DEFAULT_COMPANY_SETTINGS.company.sealUrl)}" alt="مهر شرکت" width="220" style="display:block;max-width:100%;height:auto" />` +
+        `<div style="font-size:11px;color:#666;margin-top:6px">امضا و مهر شرکت</div>` +
+      `</div>` +
+    `</div>` +
     `</body></html>`;
 }
 

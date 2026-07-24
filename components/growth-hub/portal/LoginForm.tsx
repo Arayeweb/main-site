@@ -2,85 +2,128 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { signInAction } from "@/lib/growth-hub/actions/auth";
-import { safeNextPath } from "@/lib/growth-hub/redirect";
+import {
+  sendLoginOtpAction,
+  verifyLoginOtpAction,
+} from "@/lib/growth-hub/actions/auth";
 import styles from "./auth.module.css";
-import "../theme/portal-tokens.css";
 
 export function LoginForm({ next }: { next: string }) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const [cooldown, setCooldown] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function onSubmit(event: React.FormEvent) {
+  function startCooldown(sec: number) {
+    setCooldown(sec);
+    const timer = window.setInterval(() => {
+      setCooldown((c) => {
+        if (c <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+  }
+
+  function onSendOtp(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = await signInAction({ email, password });
+      const result = await sendLoginOtpAction({ phone });
+      if (!result.ok) {
+        setError(result.error);
+        if (result.retryAfterSec) startCooldown(result.retryAfterSec);
+        return;
+      }
+      setStep("otp");
+      startCooldown(result.cooldownSec ?? 60);
+    });
+  }
+
+  function onVerify(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const result = await verifyLoginOtpAction({ phone, code, next });
       if (!result.ok) {
         setError(result.error);
         return;
       }
-      router.replace(safeNextPath(next));
+      router.replace(result.next ?? next);
       router.refresh();
     });
   }
 
   return (
-    <div className={`gh-root ${styles.screen}`}>
-      <div className={styles.card}>
-        <div className={styles.brand}>
-          <img className={styles.brandMark} src="/assets/logo-icon.svg" alt="" />
-          <div>
-            <p className={styles.brandTitle}>مرکز رشد آرایه</p>
-            <p className={styles.brandSubtitle}>پنل مشتریان آرایه</p>
-          </div>
-        </div>
+    <div className={styles.card}>
+      <h1 className={styles.title}>ورود به مرکز رشد</h1>
+      <p className={styles.subtitle}>
+        با شماره موبایلی که دعوت شده‌اید وارد شوید.
+      </p>
+      {error ? <p className={styles.error}>{error}</p> : null}
 
-        <h1 className={styles.title}>ورود به حساب</h1>
-        <p className={styles.subtitle}>
-          با ایمیل و رمز عبوری که هنگام پذیرش دعوت ساخته‌اید وارد شوید.
-        </p>
-
-        {error ? <p className={styles.error}>{error}</p> : null}
-
-        <form onSubmit={onSubmit} noValidate>
+      {step === "phone" ? (
+        <form onSubmit={onSendOtp} noValidate>
           <label className={styles.field}>
-            <span className={styles.label}>ایمیل</span>
+            <span className={styles.label}>شماره موبایل</span>
             <input
               className={styles.input}
-              type="email"
-              inputMode="email"
-              autoComplete="email"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
               dir="ltr"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </label>
-          <label className={styles.field}>
-            <span className={styles.label}>رمز عبور</span>
-            <input
-              className={styles.input}
-              type="password"
-              autoComplete="current-password"
-              dir="ltr"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder="0912…"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               required
             />
           </label>
           <button className={styles.submit} type="submit" disabled={pending}>
-            {pending ? "در حال ورود…" : "ورود"}
+            {pending ? "در حال ارسال…" : "دریافت کد ورود"}
           </button>
         </form>
-
-        <p className={styles.hint}>
-          حساب کاربری ندارید؟ دسترسی به مرکز رشد از طریق دعوت تیم آرایه فراهم می‌شود.
-        </p>
-      </div>
+      ) : (
+        <form onSubmit={onVerify} noValidate>
+          <label className={styles.field}>
+            <span className={styles.label}>کد تأیید</span>
+            <input
+              className={styles.input}
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              dir="ltr"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              required
+            />
+          </label>
+          <button
+            className={styles.submit}
+            type="submit"
+            disabled={pending || code.length !== 6}
+          >
+            {pending ? "در حال تأیید…" : "تأیید و ورود"}
+          </button>
+          <div style={{ textAlign: "center" }}>
+            <button
+              type="button"
+              className={styles.toggle}
+              disabled={pending || cooldown > 0}
+              onClick={() => onSendOtp({ preventDefault() {} } as React.FormEvent)}
+            >
+              {cooldown > 0
+                ? `ارسال مجدد تا ${cooldown} ثانیه دیگر`
+                : "ارسال مجدد کد"}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

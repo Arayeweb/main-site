@@ -124,8 +124,8 @@ export default function GooglesabtPage() {
         <GooglesabtTimeline />
         <ToolHubIndex
           hub="googlesabt"
-          title="ثبت گوگل مپ برای چه کسب‌وکارهایی؟"
-          subtitle="راهنمای ثبت رستوران، مطب، کلینیک، آرایشگاه، فروشگاه و بیشتر"
+          title="کدام صنف هستید؟"
+          subtitle="۶ مسیر پرتکرار را ببینید؛ بقیه صنوف در فهرست کامل هستند."
         />
         <GooglesabtFaq />
         <GooglesabtFinalCta />

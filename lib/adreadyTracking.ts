@@ -1,4 +1,5 @@
 import { getUtmParams } from "@/lib/utm";
+import { pushGtmEvent } from "@/lib/gtm";
 import type { CampaignEventName } from "@/lib/adready";
 
 const VISITOR_KEY = "ary_adready_vid";
@@ -121,7 +122,7 @@ export async function sendCampaignEvent(
     pagePath: ctx.pagePath,
   };
 
-  trackCampaignEvent(eventName, {
+  pushGtmEvent(eventName, {
     campaignPageId: extra.campaignPageId,
     slug,
     visitorId: ctx.visitorId,

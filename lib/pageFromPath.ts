@@ -34,6 +34,11 @@ export function pageFromPath(p: unknown): string | null {
 
   // اولویت ۲: لندینگ‌های شناخته‌شده (رفتار قبلی؛ بدون شکستن منبع‌های موجود)
   // مثال: /seo → seo ، /doctors → doctors ، /clinic → clinic
+  // /website-design و زیرمسیرها (به‌جز restaurant که بالاتر handle شد)
+  if (/^\/website-design(?:\/.*)?$/i.test(path)) {
+    return "website-design";
+  }
+
   const legacyExact = path.match(
     /^\/(clinic|doctors|restaurant|googlesabt|seo|bizcard|modares|qr|shortener|free-seo-audit)(?:\/.*)?$/i,
   );
@@ -43,7 +48,7 @@ export function pageFromPath(p: unknown): string | null {
 
   // اولویت ۳: match شل مثل قبل — وقتی page به صورت لیبل خام می‌آید (مثلاً "seo" یا "doctors")
   const loose = raw.match(
-    /\b(index|clinic|doctors|restaurant|googlesabt|seo|bizcard|review-link|local-seo-check|seo-roi-calculator)\b/i,
+    /\b(index|clinic|doctors|restaurant|googlesabt|seo|bizcard|website-design|web-design|review-link|local-seo-check|seo-roi-calculator)\b/i,
   );
   if (loose) {
     return loose[1].toLowerCase();

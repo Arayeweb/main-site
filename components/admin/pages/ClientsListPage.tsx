@@ -8,7 +8,7 @@ import { FilterBar } from '@/components/admin/ui/FilterBar';
 import { ActionMenu } from '@/components/admin/ui/ActionMenu';
 import { EmptyState } from '@/components/admin/ui/EmptyState';
 import { Users, Plus } from 'lucide-react';
-import { fetchClients, fetchProjects, createClient } from '@/lib/adminApi';
+import { fetchClients, fetchProjects, createClient, deleteClient } from '@/lib/adminApi';
 import { deriveClientsFromProjects, mapClientRow } from '@/lib/adminMappers';
 import { CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_TYPE_LABELS } from '@/lib/adminTypes';
 import { AdminErrorState, AdminLoadingState, useAdminFetch } from '@/hooks/useAdminFetch';
@@ -22,6 +22,8 @@ interface ClientsListPageProps {
   description?: string;
 }
 
+const emptyForm = { name: '', phone: '', email: '', city: '', client_type: 'other' };
+
 export function ClientsListPage({
   panel,
   detailBasePath,
@@ -34,7 +36,9 @@ export function ClientsListPage({
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState('');
-  const [form, setForm] = useState({ name: '', phone: '', email: '', city: '', client_type: 'other' });
+  const [form, setForm] = useState(emptyForm);
+
+  const canWrite = panel === 'manager' || panel === 'sales';
 
   const { data: clientsData, loading: cLoading, error: cError, refetch: refetchClients } = useAdminFetch(() => fetchClients(), []);
   const { data: projectsData, loading: pLoading, error: pError } = useAdminFetch(() => fetchProjects(), []);
@@ -52,9 +56,10 @@ export function ClientsListPage({
       return fromDb.map((c) => ({
         ...c,
         activeProjects: activeByClient.get(c.id) ?? activeByClient.get(c.phone) ?? 0,
+        fromDb: true as const,
       }));
     }
-    return deriveClientsFromProjects(projects);
+    return deriveClientsFromProjects(projects).map((c) => ({ ...c, fromDb: false as const }));
   }, [clientsData, projectsData]);
 
   const filtered = clients.filter((c) => {
@@ -72,6 +77,18 @@ export function ClientsListPage({
 
   const hasRichClients = (clientsData?.clients?.length ?? 0) > 0;
 
+  async function handleDelete(id: string, name: string) {
+    if (!window.confirm(`مشتری «${name}» حذف شود؟ این عمل قابل بازگشت نیست.`)) return;
+    setBusy(true);
+    const res = await deleteClient(id);
+    setBusy(false);
+    if (!res.ok) {
+      window.alert(res.error === 'not_found' ? 'مشتری پیدا نشد' : `خطا در حذف: ${res.error}`);
+      return;
+    }
+    refetchClients();
+  }
+
   return (
     <div className="flex flex-col gap-6" dir="rtl">
       <AdminPageHeader
@@ -80,10 +97,14 @@ export function ClientsListPage({
         icon={Users}
         breadcrumb={[{ label: panelLabel }, { label: 'مشتریان' }]}
         actions={
-          panel === 'manager' ? (
+          canWrite ? (
             <button
               type="button"
-              onClick={() => setCreating(true)}
+              onClick={() => {
+                setForm(emptyForm);
+                setFormError('');
+                setCreating(true);
+              }}
               className="flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -154,7 +175,18 @@ export function ClientsListPage({
                     </td>
                     <td className="px-4 py-3.5 text-slate-500 tabular-nums">{client.lastContact}</td>
                     <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-                      <ActionMenu actions={[{ label: 'مشاهده پروفایل', onClick: () => router.push(`${detailBasePath}/${client.id}`) }]} />
+                      <ActionMenu
+                        actions={[
+                          { label: 'مشاهده پروفایل', onClick: () => router.push(`${detailBasePath}/${client.id}`) },
+                          ...(canWrite && client.fromDb
+                            ? [{
+                                label: 'حذف مشتری',
+                                variant: 'danger' as const,
+                                onClick: () => void handleDelete(client.id, client.name),
+                              }]
+                            : []),
+                        ]}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -170,7 +202,12 @@ export function ClientsListPage({
         onClose={() => setCreating(false)}
         busy={busy}
         error={formError}
+        submitLabel="ثبت مشتری"
         onSubmit={async () => {
+          if (!form.name.trim()) {
+            setFormError('نام مشتری الزامی است');
+            return;
+          }
           setBusy(true);
           setFormError('');
           const res = await createClient(form);
@@ -180,7 +217,7 @@ export function ClientsListPage({
             return;
           }
           setCreating(false);
-          setForm({ name: '', phone: '', email: '', city: '', client_type: 'other' });
+          setForm(emptyForm);
           refetchClients();
         }}
       >

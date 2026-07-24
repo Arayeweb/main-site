@@ -1,7 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateInviteToken, hashInviteToken } from "@/lib/growth-hub/inviteToken";
 import { computeInviteExpiresAt } from "@/lib/growth-hub/inviteExpiry";
+import {
+  createAdminClient,
+  createAnonClient,
+  createConfirmedUser,
+  signedInClient as liveSignIn,
+} from "../helpers/growthHubLive";
 
 // =============================================================================
 // Cross-tenant + RLS integration tests for Growth Hub Sprint 1B.
@@ -35,22 +41,11 @@ let userA = "";
 let userB = "";
 
 async function makeUser(email: string): Promise<string> {
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-  });
-  if (error) throw error;
-  return data.user!.id;
+  return createConfirmedUser(admin, email, password);
 }
 
 async function signedInClient(email: string): Promise<SupabaseClient> {
-  const c = createClient(URL!, ANON!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { error } = await c.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  return c;
+  return liveSignIn(URL!, ANON!, email, password);
 }
 
 /** Insert an invite directly (mirrors staff createInviteAction). */
@@ -77,9 +72,7 @@ async function seedInvite(opts: {
 
 describe.skipIf(!ENABLED)("Growth Hub — cross-tenant RLS + invitation flow", () => {
   beforeAll(async () => {
-    admin = createClient(URL!, SERVICE!, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    admin = createAdminClient(URL!, SERVICE!);
 
     const { data: ws, error: wsErr } = await admin
       .from("gh_workspaces")
@@ -110,8 +103,8 @@ describe.skipIf(!ENABLED)("Growth Hub — cross-tenant RLS + invitation flow", (
     const a = await signedInClient(emailA);
     const { data, error } = await a.rpc("gh_accept_invite", { p_token_hash: hash });
     expect(error).toBeNull();
-    expect(data?.[0]?.workspace_slug).toBe(slugA);
-    expect(data?.[0]?.member_role).toBe("client_owner");
+    expect(data?.[0]?.accepted_workspace_slug).toBe(slugA);
+    expect(data?.[0]?.accepted_member_role).toBe("client_owner");
   });
 
   it("makes an accepted invite single-use (reuse rejected)", async () => {
@@ -222,9 +215,7 @@ describe.skipIf(!ENABLED)("Growth Hub — cross-tenant RLS + invitation flow", (
   });
 
   it("denies anonymous reads of tenant tables", async () => {
-    const anon = createClient(URL!, ANON!, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const anon = createAnonClient(URL!, ANON!);
     const ws = await anon.from("gh_workspaces").select("id");
     expect(ws.data ?? []).toHaveLength(0);
     const members = await anon.from("gh_workspace_members").select("id");

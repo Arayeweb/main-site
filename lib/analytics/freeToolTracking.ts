@@ -24,4 +24,11 @@ export function trackFreeToolEvent(
           : "complete",
     ...details,
   });
+  if (action === "complete") {
+    pushGtmEvent("first_key_action_completed", {
+      action_type: `${tool}_output_completed`,
+      feature_name: tool,
+      feature_category: "free_tool",
+    });
+  }
 }

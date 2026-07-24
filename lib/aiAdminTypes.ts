@@ -112,23 +112,7 @@ export function formatNum(n: number): string {
   return new Intl.NumberFormat("fa-IR").format(Math.round(n));
 }
 
-export function formatFaDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("fa-IR");
-  } catch {
-    return "—";
-  }
-}
-
-export function formatFaDateTime(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleString("fa-IR", { dateStyle: "short", timeStyle: "short" });
-  } catch {
-    return "—";
-  }
-}
+export { formatJalaliDate as formatFaDate, formatJalaliDateTime as formatFaDateTime } from "@/lib/jalali";
 
 /** نرخ تبدیل تقریبی — فقط برای نمایش هزینه USD در کنار درآمد تومانی در داشبورد */
 export const USD_TO_TOMAN_APPROX = Number(process.env.NEXT_PUBLIC_USD_TOMAN_RATE || "850000");

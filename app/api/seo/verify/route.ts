@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { paymentSiteUrl } from "@/lib/paymentCallback";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { resolveZibalVerify, zibalVerify } from "@/lib/zibal";
+import { tomanToIrr, trackServerAnalyticsEvent } from "@/lib/analytics/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,6 +54,16 @@ export async function GET(req: NextRequest) {
     } catch (e) {
       console.error("[seo/verify] failed to save confirmation lead:", e);
     }
+
+    await trackServerAnalyticsEvent({
+      event: "purchase_completed",
+      dedupeKey: `purchase:seo:${trackId}`,
+      productArea: "seo",
+      page: "/seo",
+      value: tomanToIrr(data.amount),
+      currency: "IRR",
+      properties: { payment_provider: "zibal" },
+    });
 
     return NextResponse.redirect(`${SITE_URL}/seo?payment=success&trackId=${trackId}`);
   } catch (e) {

@@ -1,5 +1,6 @@
 import { DEFAULT_COMPANY_SETTINGS } from '@/lib/adminTypes';
 import type { ApiInvoice } from '@/lib/adminApi';
+import { formatJalaliDate } from '@/lib/jalali';
 
 export const INVOICE_KIND_LABELS: Record<string, string> = {
   invoice: 'فاکتور',
@@ -20,6 +21,8 @@ export interface InvoicePrintCompany {
   address?: string;
   phone?: string;
   email?: string;
+  registrationNumber?: string;
+  sealUrl?: string;
 }
 
 function esc(value: string | null | undefined): string {
@@ -34,13 +37,18 @@ function toFa(value: string): string {
   return value.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 }
 
-function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  try {
-    return toFa(new Date(iso).toLocaleDateString('fa-IR'));
-  } catch {
-    return '—';
+function resolveAssetUrl(path: string): string {
+  if (!path) return path;
+  if (/^https?:\/\//i.test(path) || path.startsWith('data:')) return path;
+  if (typeof window !== 'undefined' && path.startsWith('/')) {
+    return `${window.location.origin}${path}`;
   }
+  return path;
+}
+
+function fmtDate(iso: string | null | undefined): string {
+  const s = formatJalaliDate(iso);
+  return s === '—' ? s : toFa(s);
 }
 
 function fmtMoney(amount: number | null | undefined, currency = 'IRR'): string {
@@ -66,12 +74,15 @@ export function buildInvoicePrintHtml(
     address: DEFAULT_COMPANY_SETTINGS.company.address,
     phone: DEFAULT_COMPANY_SETTINGS.company.phone,
     email: DEFAULT_COMPANY_SETTINGS.company.email,
+    registrationNumber: DEFAULT_COMPANY_SETTINGS.company.registrationNumber,
+    sealUrl: DEFAULT_COMPANY_SETTINGS.company.sealUrl,
   }
 ): string {
   const cur = inv.currency || 'IRR';
   const items = Array.isArray(inv.items) ? inv.items : [];
   const kindLabel = INVOICE_KIND_LABELS[inv.kind] || 'سند';
   const statusLabel = INVOICE_STATUS_PRINT_LABELS[inv.status] || inv.status;
+  const sealUrl = resolveAssetUrl(company.sealUrl || DEFAULT_COMPANY_SETTINGS.company.sealUrl);
 
   const itemsHtml = items
     .map((it, i) => {
@@ -94,11 +105,12 @@ export function buildInvoicePrintHtml(
 
   const issuerLines = [
     company.legalName || company.brandName,
+    company.registrationNumber ? `شماره ثبت: ${toFa(company.registrationNumber)}` : null,
     company.website,
     company.phone,
     company.email,
     company.address,
-  ].filter(Boolean);
+  ].filter(Boolean) as string[];
 
   return `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"/>` +
     `<title>${esc(kindLabel)} ${esc(inv.invoice_number)}</title>` +
@@ -132,7 +144,9 @@ export function buildInvoicePrintHtml(
     `.inv-footer{border-top:1px solid #e2e8ee;padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px}` +
     `.inv-footer-label{font-size:10px;font-weight:800;color:#2E7D6B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}` +
     `.inv-footer-val{font-size:12px;color:#444;line-height:1.7;white-space:pre-wrap}` +
-    `.inv-sig{border:1px dashed #ccc;border-radius:6px;height:60px;margin-top:10px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px}` +
+    `.inv-sig{margin-top:14px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}` +
+    `.inv-sig img{display:block;width:220px;max-width:100%;height:auto}` +
+    `.inv-sig-caption{font-size:11px;color:#666}` +
     `.status-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#e8f5f2;color:#2E7D6B;margin-right:8px}` +
     `@media print{body{padding:20px 24px}}` +
     `</style></head><body>` +
@@ -174,7 +188,10 @@ export function buildInvoicePrintHtml(
     `<div class="inv-footer">` +
       `<div><div class="inv-footer-label">توضیحات</div><div class="inv-footer-val">${esc(inv.note || '—')}</div></div>` +
       `<div><div class="inv-footer-label">شرایط و مقررات</div><div class="inv-footer-val">${esc(inv.terms || DEFAULT_COMPANY_SETTINGS.invoice.defaultPaymentTerms)}</div>` +
-        `<div class="inv-sig">امضا و مهر</div></div>` +
+        `<div class="inv-sig">` +
+          `<img src="${esc(sealUrl)}" alt="مهر شرکت هوش آرایه پارس" width="220" height="90" />` +
+          `<div class="inv-sig-caption">امضا و مهر شرکت</div>` +
+        `</div></div>` +
     `</div>` +
     `</body></html>`;
 }
@@ -210,6 +227,9 @@ export function companyFromSettings(settings: Record<string, unknown> | undefine
     address: company.address,
     phone: company.phone,
     email: company.email,
+    registrationNumber:
+      company.registrationNumber || DEFAULT_COMPANY_SETTINGS.company.registrationNumber,
+    sealUrl: company.sealUrl || DEFAULT_COMPANY_SETTINGS.company.sealUrl,
   };
 }
 

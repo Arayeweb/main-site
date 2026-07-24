@@ -277,24 +277,50 @@ export function ProposalDetailPage({
             <table className="w-full text-sm" dir="rtl">
               <thead>
                 <tr className="bg-slate-50/60 border-b border-slate-100">
-                  {['شرح', 'تعداد', 'قیمت واحد', 'تخفیف', 'مالیات'].map((h) => (
+                  {['شرح', 'تعداد', 'قیمت واحد', 'تخفیف', 'جمع ردیف'].map((h) => (
                     <th key={h} className="text-right px-4 py-3 text-xs font-semibold text-slate-500">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {invoice.items.map((item, idx) => (
-                  <tr key={idx}>
-                    <td className="px-4 py-3 text-slate-800">{item.title}</td>
-                    <td className="px-4 py-3 tabular-nums">{item.qty}</td>
-                    <td className="px-4 py-3 tabular-nums">{formatCurrency(item.unit_price)}</td>
-                    <td className="px-4 py-3 tabular-nums">{item.discount ? `${item.discount}٪` : '—'}</td>
-                    <td className="px-4 py-3 tabular-nums">{item.tax ? `${item.tax}٪` : '—'}</td>
-                  </tr>
-                ))}
+                {invoice.items.map((item, idx) => {
+                  const base = (Number(item.qty) || 0) * (Number(item.unit_price) || 0);
+                  const discPct = Number(item.discount) || 0;
+                  const disc = Math.round(base * (discPct / 100));
+                  const rowNet = base - disc;
+                  return (
+                    <tr key={idx}>
+                      <td className="px-4 py-3 text-slate-800">{item.title}</td>
+                      <td className="px-4 py-3 tabular-nums">{item.qty}</td>
+                      <td className="px-4 py-3 tabular-nums">{formatCurrency(item.unit_price)}</td>
+                      <td className="px-4 py-3 tabular-nums">{discPct ? `${discPct}٪ (− ${formatCurrency(disc)})` : '—'}</td>
+                      <td className="px-4 py-3 tabular-nums font-medium">{formatCurrency(rowNet)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+          {(invoice.subtotal != null || invoice.discount_total != null || invoice.grand_total != null) && (
+            <div className="px-5 py-4 border-t border-slate-100 space-y-1.5 text-sm">
+              {invoice.subtotal != null && (
+                <div className="flex justify-between text-slate-600">
+                  <span>جمع</span>
+                  <span className="tabular-nums">{formatCurrency(invoice.subtotal)}</span>
+                </div>
+              )}
+              {(invoice.discount_total ?? 0) > 0 && (
+                <div className="flex justify-between text-emerald-700">
+                  <span>تخفیف</span>
+                  <span className="tabular-nums">− {formatCurrency(invoice.discount_total ?? 0)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-slate-900 pt-1 border-t border-slate-100">
+                <span>مبلغ نهایی</span>
+                <span className="tabular-nums">{formatCurrency(invoice.grand_total)}</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

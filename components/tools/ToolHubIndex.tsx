@@ -2,11 +2,75 @@ import Link from "next/link";
 import SectionHeader from "@/components/home/SectionHeader";
 import ToolEditorialHeader from "@/components/tools/ToolEditorialHeader";
 import {
+  getFeaturedGooglesabtProblemPages,
   getFeaturedToolPages,
   getPublishedToolPages,
   getHubPath,
   type ToolHub,
+  type ToolRegistryEntry,
 } from "@/lib/tools/toolRegistry";
+
+function EditorialLinkGrid({
+  pages,
+  hub,
+  primary = "keyword",
+}: {
+  pages: ToolRegistryEntry[];
+  hub: ToolHub;
+  primary?: "keyword" | "label";
+}) {
+  const hubPath = getHubPath(hub);
+  return (
+    <div className="mt-7 grid border-y border-navy-300 sm:grid-cols-2">
+      {pages.map((page, index) => (
+        <Link
+          key={page.slug}
+          href={`${hubPath}/${page.slug}`}
+          className="group grid min-h-24 grid-cols-[52px_1fr] border-b border-navy-300 p-5 transition hover:bg-white sm:odd:border-l"
+        >
+          <span className="tool-index">{String(index + 1).padStart(2, "0")}</span>
+          <div>
+            <p className="text-sm font-extrabold text-navy-900 group-hover:text-brand-700">
+              {primary === "label" ? page.label : page.primaryKeyword}
+            </p>
+            <p className="mt-1.5 text-[12px] leading-6 text-navy-500">
+              {primary === "label" ? page.primaryKeyword : page.label}
+            </p>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function CollapsedLinkList({
+  pages,
+  hub,
+  summary,
+}: {
+  pages: ToolRegistryEntry[];
+  hub: ToolHub;
+  summary: string;
+}) {
+  if (pages.length === 0) return null;
+  const hubPath = getHubPath(hub);
+  return (
+    <details className="mt-6 border-y border-navy-300 py-4">
+      <summary className="cursor-pointer text-sm font-extrabold text-navy-700">{summary}</summary>
+      <div className="mt-5 grid border-t border-navy-200 sm:grid-cols-2 lg:grid-cols-3">
+        {pages.map((page) => (
+          <Link
+            key={page.slug}
+            href={`${hubPath}/${page.slug}`}
+            className="border-b border-navy-200 px-2 py-3 text-sm font-bold text-navy-700 transition hover:bg-white hover:text-brand-700 sm:border-l"
+          >
+            {page.label}
+          </Link>
+        ))}
+      </div>
+    </details>
+  );
+}
 
 function PageGroup({
   title,
@@ -81,19 +145,63 @@ export default function ToolHubIndex({
     const guides = pages.filter((p) => p.pageType === "guide");
     const comparisons = pages.filter((p) => p.pageType === "comparison");
 
+    const featuredIndustries = getFeaturedToolPages("googlesabt");
+    const featuredIndustrySlugs = new Set(featuredIndustries.map((p) => p.slug));
+    const remainingIndustries = industries.filter((p) => !featuredIndustrySlugs.has(p.slug));
+
+    const featuredProblems = getFeaturedGooglesabtProblemPages();
+    const featuredProblemSlugs = new Set(featuredProblems.map((p) => p.slug));
+    const remainingProblems = problems.filter((p) => !featuredProblemSlugs.has(p.slug));
+
     return (
-      <section className="section-py bg-white">
+      <section className="tool-section">
         <div className="container-mx container-px">
-          <SectionHeader
-            badge="راهنماها"
-            badgeClassName="bg-brand-50 text-brand-600"
+          <ToolEditorialHeader
+            index="۰۴"
+            kicker="راهنمای صنفی"
             title={title}
             subtitle={subtitle}
           />
-          <PageGroup title="ثبت بر اساس نوع کسب‌وکار" pages={industries} hub={hub} />
-          <PageGroup title="مشکلات رایج و راه‌حل‌ها" pages={problems} hub={hub} variant="compact" />
-          <PageGroup title="راهنماهای آموزشی" pages={guides} hub={hub} variant="compact" />
-          <PageGroup title="مقایسه و تصمیم‌گیری" pages={comparisons} hub={hub} variant="compact" />
+          <p className="mt-5 max-w-xl text-xs font-semibold leading-6 text-navy-500">
+            صنف خود را انتخاب کنید؛ صفحات SEO کامل‌تر در ادامه در دسترس‌اند.
+          </p>
+
+          <EditorialLinkGrid pages={featuredIndustries} hub={hub} primary="label" />
+          <CollapsedLinkList
+            pages={remainingIndustries}
+            hub={hub}
+            summary={`مشاهده همه ${remainingIndustries.length} صنف دیگر`}
+          />
+
+          <div className="mt-12">
+            <h3 className="text-sm font-extrabold text-navy-900">مشکل رایج دارید؟</h3>
+            <p className="mt-2 max-w-xl text-xs leading-6 text-navy-500">
+              مسیر نزدیک‌ترین مشکل را انتخاب کنید تا راه‌حل مشخص ببینید.
+            </p>
+            <EditorialLinkGrid pages={featuredProblems} hub={hub} primary="keyword" />
+            <CollapsedLinkList
+              pages={remainingProblems}
+              hub={hub}
+              summary={`مشاهده همه ${remainingProblems.length} مشکل دیگر`}
+            />
+          </div>
+
+          {guides.length > 0 || comparisons.length > 0 ? (
+            <div className="mt-12 border-t border-navy-300 pt-6">
+              <h3 className="text-sm font-extrabold text-navy-900">راهنما و مقایسه</h3>
+              <div className="mt-4 grid sm:grid-cols-2">
+                {[...guides, ...comparisons].map((page) => (
+                  <Link
+                    key={page.slug}
+                    href={`${getHubPath(hub)}/${page.slug}`}
+                    className="border-b border-navy-200 px-2 py-3 text-sm font-bold text-navy-700 transition hover:bg-white hover:text-brand-700 sm:odd:border-l"
+                  >
+                    {page.primaryKeyword}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
     );

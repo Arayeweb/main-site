@@ -17,6 +17,7 @@ import {
   recommendedServiceLabels,
 } from '@/lib/websiteBrief/constants';
 import type { RecommendedService } from '@/lib/websiteBrief/types';
+import { formatFaDate } from '@/lib/adminMappers';
 
 function labelFor(options: { value: string; label: string }[], value: string) {
   return options.find((o) => o.value === value)?.label ?? value;
@@ -131,7 +132,7 @@ export default function WebsiteBriefsPage() {
               <tbody className="divide-y divide-slate-100">
                 {briefs.map((row) => {
                   const id = String(row.id);
-                  const created = row.created_at ? new Date(String(row.created_at)).toLocaleDateString('fa-IR') : '—';
+                  const created = row.created_at ? formatFaDate(String(row.created_at)) : '—';
                   const rec = String(row.recommended_service ?? 'none') as RecommendedService;
                   return (
                     <tr

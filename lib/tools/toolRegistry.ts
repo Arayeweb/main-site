@@ -1453,23 +1453,40 @@ export function getPublishedToolPages(hub: ToolHub): ToolRegistryEntry[] {
 }
 
 /**
- * Choice architecture for free-tool hubs: show a small, high-utility default set
+ * Choice architecture for tool hubs: show a small, high-utility default set
  * before exposing the full SEO directory. This reduces decision paralysis while
  * keeping every published page discoverable.
  */
-type FeaturedToolHub = "bizcard" | "qr" | "shortener";
+type FeaturedToolHub = "bizcard" | "qr" | "shortener" | "googlesabt";
 
 const FEATURED_TOOL_SLUGS: Record<FeaturedToolHub, readonly string[]> = {
   bizcard: ["restaurant", "doctor", "online-shop", "instagram-business", "freelancer", "salon"],
   qr: ["instagram", "whatsapp", "wifi", "menu", "website", "google-maps"],
   shortener: ["instagram", "whatsapp", "bio-link", "campaign", "sms", "tracking"],
+  googlesabt: ["restaurant", "cafe", "doctor", "clinic", "salon", "shop"],
 };
+
+/** Distinct high-intent problem pages — near-duplicates stay discoverable in “all”. */
+const FEATURED_GOOGLESABT_PROBLEMS = [
+  "why-business-not-found",
+  "change-address",
+  "verify-google-listing",
+  "google-reviews",
+  "edit-listing",
+  "suspended-profile",
+] as const;
 
 export function getFeaturedToolPages(hub: FeaturedToolHub): ToolRegistryEntry[] {
   const featured = FEATURED_TOOL_SLUGS[hub];
   return featured
     .map((slug) => getToolPage(hub, slug))
     .filter((page): page is ToolRegistryEntry => page?.status === "published");
+}
+
+export function getFeaturedGooglesabtProblemPages(): ToolRegistryEntry[] {
+  return FEATURED_GOOGLESABT_PROBLEMS.map((slug) => getToolPage("googlesabt", slug)).filter(
+    (page): page is ToolRegistryEntry => page?.status === "published",
+  );
 }
 
 export function getPublishedToolPaths(): string[] {

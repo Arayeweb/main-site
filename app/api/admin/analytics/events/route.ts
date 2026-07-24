@@ -1,12 +1,86 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSession } from "@/lib/auth";
-import { buildDailySeries, fetchAllRows, groupCount } from "@/lib/analyticsDb";
+import {
+  buildAnalyticsReport,
+  type AnalyticsFilters,
+  type AnalyticsRow,
+  type AttributionModel,
+} from "@/lib/analytics/report";
+import { fetchAllRows } from "@/lib/analyticsDb";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const FUNNEL_EVENTS = ["pkg_selected", "begin_checkout", "purchase", "generate_lead"] as const;
+const SELECT_COLUMNS = [
+  "created_at",
+  "event_id",
+  "event_origin",
+  "actor_id",
+  "account_id",
+  "dedupe_key",
+  "event_name",
+  "canonical_event_name",
+  "schema_version",
+  "visitor_id",
+  "session_id",
+  "product_area",
+  "funnel_stage",
+  "page",
+  "source",
+  "location",
+  "package",
+  "value",
+  "currency",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "first_utm_source",
+  "first_utm_medium",
+  "first_utm_campaign",
+  "first_utm_content",
+  "first_utm_term",
+  "last_utm_source",
+  "last_utm_medium",
+  "last_utm_campaign",
+  "last_utm_content",
+  "last_utm_term",
+  "landing_page",
+  "first_landing_page",
+  "initial_referrer",
+  "traffic_type",
+  "payload",
+  "user_agent",
+].join(",");
+
+function cleanFilter(value: string | null, max = 200): string | undefined {
+  const normalized = value?.trim();
+  if (!normalized || normalized === "all") return undefined;
+  return normalized.slice(0, max);
+}
+
+function parseFilters(req: NextRequest): AnalyticsFilters {
+  const query = req.nextUrl.searchParams;
+  const period = query.get("period") || "30d";
+  const days = period === "7d" ? 7 : period === "90d" ? 90 : 30;
+  const defaultFrom = new Date(Date.now() - (days - 1) * 86_400_000).toISOString().slice(0, 10);
+  const attribution = query.get("attribution");
+  return {
+    from: cleanFilter(query.get("from"), 10) || defaultFrom,
+    to: cleanFilter(query.get("to"), 10) || new Date().toISOString().slice(0, 10),
+    product: cleanFilter(query.get("product")),
+    source: cleanFilter(query.get("source")),
+    medium: cleanFilter(query.get("medium")),
+    campaign: cleanFilter(query.get("campaign")),
+    page: cleanFilter(query.get("page"), 300),
+    event: cleanFilter(query.get("event")),
+    attribution: (["session", "first", "last"].includes(attribution || "")
+      ? attribution
+      : "session") as AttributionModel,
+  };
+}
 
 export async function GET(req: NextRequest) {
   if (!getSession(req)) {
@@ -14,55 +88,21 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabaseAdmin();
-    const { data: events, error } = await fetchAllRows(
+    const { data, error } = await fetchAllRows(
       "analytics_events",
-      "event_name, page, source, location, package, promo_code, utm_source, created_at",
-      supabase
+      SELECT_COLUMNS,
+      getSupabaseAdmin(),
     );
-
     if (error) {
       console.error("[api/admin/analytics/events] error:", error);
       return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
     }
 
-    const now = Date.now();
-    const weekMs = 7 * 24 * 60 * 60 * 1000;
-    const monthMs = 30 * 24 * 60 * 60 * 1000;
-
-    const thisWeek = events.filter(
-      (e) => now - new Date(e.created_at as string).getTime() < weekMs
-    ).length;
-    const thisMonth = events.filter(
-      (e) => now - new Date(e.created_at as string).getTime() < monthMs
-    ).length;
-
-    const funnel: Record<string, number> = {};
-    for (const name of FUNNEL_EVENTS) {
-      funnel[name] = events.filter((e) => e.event_name === name).length;
-    }
-
-    const checkoutToPurchase =
-      funnel.begin_checkout > 0
-        ? Math.round((funnel.purchase / funnel.begin_checkout) * 100)
-        : 0;
-
-    return NextResponse.json({
-      ok: true,
-      total_events: events.length,
-      this_week: thisWeek,
-      this_month: thisMonth,
-      by_event: groupCount(events, "event_name"),
-      by_page: groupCount(events, "page"),
-      by_source: groupCount(events, "source"),
-      by_package: groupCount(events, "package"),
-      funnel,
-      checkout_to_purchase_rate: checkoutToPurchase,
-      last_7_days: buildDailySeries(events, 7),
-      last_30_days: buildDailySeries(events, 30),
-    });
-  } catch (e) {
-    console.error("[api/admin/analytics/events] GET error:", e);
+    const filters = parseFilters(req);
+    const report = buildAnalyticsReport(data as AnalyticsRow[], filters);
+    return NextResponse.json({ ok: true, ...report });
+  } catch (error) {
+    console.error("[api/admin/analytics/events] GET error:", error);
     return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
   }
 }

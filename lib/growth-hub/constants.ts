@@ -19,6 +19,7 @@ export const GROWTH_HUB_EVENTS = {
   workspaceInvited: "workspace_invited",
   workspaceActivated: "workspace_activated",
   workspaceOpened: "workspace_opened",
+  serviceViewed: "service_viewed",
 } as const;
 
 export type GrowthHubEventName =

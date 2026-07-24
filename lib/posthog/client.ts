@@ -22,6 +22,7 @@ export function captureAiEvent(
 ) {
   if (typeof window === "undefined" || !key) return;
   try {
+    initPostHog();
     posthog.capture(event, properties);
   } catch {
     /* analytics must not break UX */
@@ -34,6 +35,7 @@ export function identifyAiUser(
 ) {
   if (typeof window === "undefined" || !key) return;
   try {
+    initPostHog();
     posthog.identify(userId, traits);
   } catch {
     /* analytics must not break UX */

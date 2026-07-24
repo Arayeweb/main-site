@@ -142,7 +142,7 @@ describe("Growth Hub — validation schemas", () => {
     expect(
       createInviteSchema.safeParse({
         workspace_id: "00000000-0000-4000-8000-000000000000",
-        email: "a@b.com",
+        phone: "09121234567",
         role: "client_owner",
         expiry_days: 7,
       }).success,
@@ -150,7 +150,7 @@ describe("Growth Hub — validation schemas", () => {
     expect(
       createInviteSchema.safeParse({
         workspace_id: "not-uuid",
-        email: "a@b.com",
+        phone: "09121234567",
         role: "client_owner",
       }).success,
     ).toBe(false);

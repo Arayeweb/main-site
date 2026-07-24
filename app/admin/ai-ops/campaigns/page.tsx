@@ -10,6 +10,7 @@ import { INFLUENCER_SLOTS, buildInfluencerLinks, STARTER_FINAL_PRICE_TOMAN } fro
 import { formatToman } from '@/lib/aiAdminTypes';
 import { Megaphone, Copy, Check, ShoppingCart, Wallet, Users, Plus } from 'lucide-react';
 import { SimpleFormModal } from '@/components/admin/ui/SimpleFormModal';
+import { ShamsiDateInput } from '@/components/admin/ui/ShamsiDateInput';
 
 export default function AiOpsCampaignsPage() {
   const [groupBy, setGroupBy] = useState<'promo' | 'utm'>('promo');
@@ -194,7 +195,10 @@ export default function AiOpsCampaignsPage() {
         <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="کد" dir="ltr" value={couponForm.code} onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })} />
         <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="درصد تخفیف" dir="ltr" value={couponForm.value} onChange={(e) => setCouponForm({ ...couponForm, value: e.target.value })} />
         <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="حداکثر استفاده" dir="ltr" value={couponForm.max_uses} onChange={(e) => setCouponForm({ ...couponForm, max_uses: e.target.value })} />
-        <input type="date" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" value={couponForm.expires_at} onChange={(e) => setCouponForm({ ...couponForm, expires_at: e.target.value })} />
+        <ShamsiDateInput
+          value={couponForm.expires_at}
+          onChange={(expires_at) => setCouponForm({ ...couponForm, expires_at })}
+        />
       </SimpleFormModal>
     </div>
   );

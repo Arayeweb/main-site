@@ -14,8 +14,71 @@
      To use GA4, load gtag and push dataLayer events; this shim already prepares them. */
   window.dataLayer = window.dataLayer || [];
   const ANALYTICS_ENDPOINT = window.ARAYEH_ANALYTICS_ENDPOINT || null;
+
+  function analyticsUuid() {
+    if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+      var r = (Math.random() * 16) | 0;
+      return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+    });
+  }
+
+  function getSessionId() {
+    try {
+      var key = "__ary_session_id";
+      var id = sessionStorage.getItem(key);
+      if (!id) {
+        id = analyticsUuid();
+        sessionStorage.setItem(key, id);
+      }
+      return id;
+    } catch (_) { return null; }
+  }
+
+  function canonicalEventName(event) {
+    var aliases = {
+      cta_click: "cta_clicked",
+      generate_lead: "lead_submitted",
+      lead_submit: "lead_submitted",
+      sign_up: "signup_completed",
+      begin_checkout: "checkout_started",
+      purchase: "purchase_completed",
+      pkg_selected: "plan_selected",
+      phone_click: "phone_clicked",
+      whatsapp_click: "whatsapp_clicked",
+    };
+    return aliases[event] || event;
+  }
+
+  function legacyProductArea(path) {
+    if (path.indexOf("/seo") === 0) return "seo";
+    if (path.indexOf("/doctors") === 0 || path.indexOf("/clinic") === 0) return "healthcare";
+    if (path.indexOf("/googlesabt") === 0) return "local_seo";
+    if (path.indexOf("/portfolio") === 0 || path.indexOf("/software") === 0) return "website_design";
+    return "marketing_site";
+  }
+
   const track = (window.track = function (event, props) {
-    const payload = Object.assign({ event: event, ts: Date.now(), page: location.pathname }, props || {});
+    try {
+      if (localStorage.getItem("araaye_analytics_opt_out") === "1" || navigator.doNotTrack === "1") {
+        return;
+      }
+    } catch (_) {
+      if (navigator.doNotTrack === "1") return;
+    }
+    var canonical = canonicalEventName(event);
+    const payload = Object.assign({
+      event: event,
+      event_id: analyticsUuid(),
+      canonical_event_name: canonical,
+      schema_version: 1,
+      visitor_id: getVisitorId() || undefined,
+      session_id: getSessionId() || undefined,
+      product_area: legacyProductArea(location.pathname),
+      client_timestamp: new Date().toISOString(),
+      ts: Date.now(),
+      page: location.pathname,
+    }, getUtms(), props || {});
     window.dataLayer.push(payload);
     fetch("/api/analytics/event", {
       method: "POST",
@@ -36,27 +99,108 @@
   track("page_view", { title: document.title, referrer: document.referrer });
 
   /* ---------- UTM helper — هم‌تراز با lib/utm.ts ----------
-     merge: URL → sessionStorage → merged همیشه ذخیره می‌شود (نه فقط وقتی utm_source داشته باشد).
-     shortcutها: ?src= و ?source= → utm_source | ?promptSlug= → utm_content | ?code= → arena_promo_code */
+     active session + lifetime first-touch + latest-touch attribution */
   function getUtms() {
-    var STORAGE_KEY = "__utms";
     var UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
     var p = new URLSearchParams(location.search);
     var fromUrl = {};
-    UTM_KEYS.forEach(function (k) { var v = p.get(k); if (v) fromUrl[k] = v; });
+    function normalize(v) {
+      return (v || "").trim().toLowerCase().replace(/\s+/g, "_").replace(/-+/g, "_").slice(0, 200);
+    }
+    function read(storage, key) {
+      try { return JSON.parse(storage.getItem(key) || "{}"); } catch (_) { return {}; }
+    }
+    function write(storage, key, value) {
+      try { storage.setItem(key, JSON.stringify(value)); } catch (_) {}
+    }
+    UTM_KEYS.forEach(function (k) { var v = normalize(p.get(k)); if (v) fromUrl[k] = v; });
     var src = (p.get("src") || "").trim();
-    if (src && !fromUrl.utm_source) fromUrl.utm_source = src;
+    if (src && !fromUrl.utm_source) {
+      fromUrl.utm_source = normalize(src);
+      if (!fromUrl.utm_medium) fromUrl.utm_medium = "referral";
+    }
     var source = (p.get("source") || "").trim();
-    if (source && !fromUrl.utm_source) fromUrl.utm_source = source;
+    if (source && !fromUrl.utm_source) {
+      fromUrl.utm_source = normalize(source);
+      if (!fromUrl.utm_medium) fromUrl.utm_medium = "internal";
+    }
     var promptSlug = (p.get("promptSlug") || "").trim();
-    if (promptSlug && !fromUrl.utm_content) fromUrl.utm_content = "prompt:" + promptSlug;
+    if (promptSlug && !fromUrl.utm_content) fromUrl.utm_content = normalize("prompt:" + promptSlug);
+    var clickType = p.get("gclid") ? "gclid" : p.get("fbclid") ? "fbclid" : p.get("msclkid") ? "msclkid" : p.get("yclid") ? "yclid" : "";
+    if (clickType && !fromUrl.utm_source) {
+      var defaults = {
+        gclid: ["google", "cpc"],
+        fbclid: ["meta", "paid_social"],
+        msclkid: ["bing", "cpc"],
+        yclid: ["yandex", "cpc"]
+      }[clickType];
+      fromUrl.utm_source = defaults[0];
+      fromUrl.utm_medium = defaults[1];
+    }
     var promoCode = (p.get("code") || "").trim();
     if (promoCode) { try { sessionStorage.setItem("arena_promo_code", promoCode.toUpperCase()); } catch (_) {} }
-    var stored = {};
-    try { stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "{}"); } catch (_) {}
-    var merged = Object.assign({}, stored, fromUrl);
-    if (Object.keys(merged).length) { try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch (_) {} }
-    return merged;
+
+    var inferred = {};
+    var trafficType = "direct";
+    if (!Object.keys(fromUrl).length && document.referrer) {
+      try {
+        var ref = new URL(document.referrer);
+        if (ref.origin === location.origin) trafficType = "internal";
+        else {
+          var host = ref.hostname.replace(/^www\./, "").toLowerCase();
+          if (/google\.|bing\.com$|duckduckgo\.com$|yahoo\./.test(host)) {
+            inferred = { utm_source: host.split(".")[0], utm_medium: "organic" };
+            trafficType = "organic";
+          } else if (/instagram\.com$|t\.me$|telegram\.me$|linkedin\.com$|x\.com$|twitter\.com$|facebook\.com$/.test(host)) {
+            inferred = { utm_source: host.split(".")[0], utm_medium: "social" };
+            trafficType = "social";
+          } else {
+            inferred = { utm_source: host, utm_medium: "referral" };
+            trafficType = "referral";
+          }
+        }
+      } catch (_) {}
+    }
+    var candidate = Object.keys(fromUrl).length ? fromUrl : inferred;
+    var sessionTouch = read(sessionStorage, "__ary_utm_session_touch");
+    var firstTouch = read(localStorage, "__ary_utm_first_touch");
+    var lastTouch = read(localStorage, "__ary_utm_last_touch");
+    if (!Object.keys(sessionTouch).length || Object.keys(fromUrl).length) {
+      sessionTouch = candidate;
+      write(sessionStorage, "__ary_utm_session_touch", sessionTouch);
+    }
+    if (!Object.keys(firstTouch).length && Object.keys(candidate).length) {
+      firstTouch = candidate;
+      write(localStorage, "__ary_utm_first_touch", firstTouch);
+    }
+    if (Object.keys(candidate).length && trafficType !== "internal") {
+      lastTouch = candidate;
+      write(localStorage, "__ary_utm_last_touch", lastTouch);
+    }
+    try {
+      if (!sessionStorage.getItem("__ary_session_landing")) sessionStorage.setItem("__ary_session_landing", location.pathname);
+      if (!localStorage.getItem("__ary_first_landing")) localStorage.setItem("__ary_first_landing", location.pathname);
+      if (!sessionStorage.getItem("__ary_initial_referrer") && document.referrer) sessionStorage.setItem("__ary_initial_referrer", document.referrer);
+    } catch (_) {}
+    var output = Object.assign({}, sessionTouch);
+    UTM_KEYS.forEach(function (key) {
+      if (firstTouch[key]) output["first_" + key] = firstTouch[key];
+      if (lastTouch[key]) output["last_" + key] = lastTouch[key];
+    });
+    try {
+      output.landing_page = sessionStorage.getItem("__ary_session_landing") || location.pathname;
+      output.first_landing_page = localStorage.getItem("__ary_first_landing") || location.pathname;
+      output.initial_referrer = sessionStorage.getItem("__ary_initial_referrer") || undefined;
+    } catch (_) {}
+    output.traffic_type = /cpc|ppc|paid|display|affiliate/.test(sessionTouch.utm_medium || "")
+      ? "paid"
+      : (sessionTouch.utm_medium || trafficType);
+    if (clickType) {
+      output.click_id_type = clickType;
+      output.has_click_id = true;
+    }
+    write(sessionStorage, "__utms", sessionTouch);
+    return output;
   }
 
   /* ---------- visitor_id — ثابت در localStorage برای unique visitors ---------- */

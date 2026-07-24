@@ -7,6 +7,10 @@ import { noStore } from "@/lib/apiHeaders";
 import { paymentSiteUrl } from "@/lib/paymentCallback";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { resolveZibalVerify } from "@/lib/zibal";
+import {
+  tomanToIrr,
+  trackServerAnalyticsEvent,
+} from "@/lib/analytics/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -130,6 +134,18 @@ export async function GET(req: NextRequest) {
     if (paidError) {
       console.error("[adready/verify] mark order paid", paidError);
     }
+
+    await trackServerAnalyticsEvent({
+      event: "purchase_completed",
+      dedupeKey: `purchase:adready:${order.id}`,
+      productArea: "adready",
+      page: "/dashboard/adready/pages",
+      actorId: order.user_id,
+      accountId: order.campaign_page_id,
+      value: tomanToIrr(order.amount_toman),
+      currency: "IRR",
+      properties: { package: order.package, payment_provider: "zibal" },
+    });
 
     return redirect(
       `/dashboard/adready/pages/${order.campaign_page_id}?paid=1`

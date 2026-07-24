@@ -33,6 +33,12 @@ describe("free-tool choice architecture", () => {
     }
   });
 
+  it("features six googlesabt industries without dumping the full directory", () => {
+    const featured = getFeaturedToolPages("googlesabt");
+    expect(featured).toHaveLength(6);
+    expect(featured.every((page) => page.pageType === "industry")).toBe(true);
+  });
+
   it("keeps all published pages discoverable beyond featured defaults", () => {
     for (const hub of ["bizcard", "qr", "shortener"] as const) {
       const published = getPublishedToolPages(hub);

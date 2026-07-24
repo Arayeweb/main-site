@@ -66,6 +66,20 @@ export const createWorkspaceSchema = z.object({
 
 export const createInviteSchema = z.object({
   workspace_id: uuidSchema,
+  phone: z
+    .string()
+    .trim()
+    .min(10, "شماره موبایل نامعتبر است.")
+    .max(20, "شماره موبایل نامعتبر است.")
+    .refine((v) => /(\+98|0098|98|0)?9\d{9}/.test(v.replace(/[\s\-()]/g, "")), {
+      message: "شماره موبایل نامعتبر است.",
+    }),
+  role: inviteRoleSchema,
+  expiry_days: inviteExpiryDaysSchema,
+});
+
+export const createInviteEmailSchema = z.object({
+  workspace_id: uuidSchema,
   email: emailSchema,
   role: inviteRoleSchema,
   expiry_days: inviteExpiryDaysSchema,
@@ -87,5 +101,6 @@ export const acceptInviteSchema = z.object({
 
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
 export type CreateInviteInput = z.infer<typeof createInviteSchema>;
+export type CreateInviteEmailInput = z.infer<typeof createInviteEmailSchema>;
 export type MemberActionInput = z.infer<typeof memberActionSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;

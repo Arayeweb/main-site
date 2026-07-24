@@ -177,6 +177,133 @@
   cursor: default;
 }
 
+.listStack {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--gh-border);
+  border-radius: 14px;
+  background: var(--gh-product-surface);
+  padding: 16px 18px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.listRow:hover {
+  border-color: var(--gh-border-strong);
+}
+
+.listRowBody {
+  min-width: 0;
+}
+
+.listRowTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gh-text);
+}
+
+.listRowMeta {
+  margin: 4px 0 0;
+  color: var(--gh-text-muted);
+  font-size: 12px;
+}
+
+.listRowAction {
+  margin: 8px 0 0;
+  color: var(--gh-accent-strong, var(--gh-accent));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.progressChip {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--gh-accent) 12%, white);
+  padding: 6px 10px;
+  color: var(--gh-accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.milestoneList {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.milestoneItem {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  border-bottom: 1px solid var(--gh-border);
+  padding: 14px 2px;
+}
+
+.milestoneItem:last-child {
+  border-bottom: 0;
+}
+
+.milestoneDot {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--gh-border-strong);
+}
+
+.milestoneDotDone {
+  background: var(--gh-accent);
+}
+
+.milestoneTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gh-text);
+}
+
+.milestoneMeta {
+  margin: 3px 0 0;
+  color: var(--gh-text-subtle);
+  font-size: 11px;
+}
+
+.waitingBanner {
+  border: 1px solid color-mix(in srgb, var(--gh-accent) 35%, white);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--gh-accent) 10%, white);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.waitingBannerTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gh-text);
+}
+
+.waitingBannerText {
+  margin: 6px 0 0;
+  color: var(--gh-text-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
 .navItemDisabled {
   opacity: 0.45;
   cursor: default;

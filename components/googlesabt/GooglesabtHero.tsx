@@ -46,7 +46,7 @@ export default function GooglesabtHero() {
                 }
                 className="rounded-xl bg-[#4285F4] px-8 py-3.5 text-sm font-bold text-white shadow-soft transition hover:bg-[#1b6ef3] active:scale-[0.98]"
               >
-                شروع درخواست
+                شروع درخواست رایگان
               </a>
               <button
                 type="button"
@@ -60,7 +60,7 @@ export default function GooglesabtHero() {
               </button>
             </div>
             <p className="mt-3 text-xs font-bold text-navy-400">
-              ثبت درخواست کمتر از ۲ دقیقه — یا اول رایگان مشاوره بگیر.
+              بدون پرداخت آنلاین — کارشناسان با شما تماس می‌گیرند.
             </p>
           </div>
 

@@ -125,7 +125,7 @@ export function trackAiBeginCheckout(payload: {
   const props = {
     page: "ai_pricing",
     package: payload.packageId,
-    value: payload.amountToman,
+    value: payload.amountToman * 10,
     currency: "IRR",
     promo_code: payload.promoCode,
     ...utm,
@@ -143,7 +143,10 @@ export function trackAiPurchase(payload: {
   const props = {
     page: "ai",
     package: payload.packageId,
-    value: payload.amountToman,
+    value:
+      typeof payload.amountToman === "number"
+        ? payload.amountToman * 10
+        : undefined,
     currency: "IRR",
     promo_code: payload.promoCode,
     ...utm,

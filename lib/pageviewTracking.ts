@@ -1,4 +1,4 @@
-import { getUtmParams } from "@/lib/utm";
+import { getUtmAttribution } from "@/lib/utm";
 
 const VISITOR_ID_KEY = "__ary_visitor_id";
 
@@ -41,7 +41,7 @@ export function recordPageview(page: string) {
     /* ignore */
   }
 
-  const utm = getUtmParams();
+  const utm = getUtmAttribution();
   const visitorId = getVisitorId();
   fetch("/api/pageview", {
     method: "POST",

@@ -1,24 +1,16 @@
 import type { Activity } from '@/lib/adminTypes';
 import type { ApiInvoice, ApiLead, ApiProject, ApiTicket } from '@/lib/adminApi';
+import { formatJalaliDate, formatJalaliDateTime } from '@/lib/jalali';
+import { pageFromPath } from '@/lib/pageFromPath';
 
-// ── Date helpers ─────────────────────────────────────────
+// ── Date helpers (همیشه شمسی) ────────────────────────────
 
 export function formatFaDate(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString('fa-IR');
-  } catch {
-    return '—';
-  }
+  return formatJalaliDate(iso);
 }
 
 export function formatFaDateTime(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleString('fa-IR', { dateStyle: 'short', timeStyle: 'short' });
-  } catch {
-    return '—';
-  }
+  return formatJalaliDateTime(iso);
 }
 
 export function isOverdue(dueDate: string | null | undefined): boolean {
@@ -45,6 +37,30 @@ export const CRM_STATUS_COLORS: Record<string, string> = {
   won: 'bg-green-50 text-green-700 ring-green-200',
   lost: 'bg-red-50 text-red-700 ring-red-200',
 };
+
+export const CRM_ACTIVITY_KIND_LABELS: Record<string, string> = {
+  note: 'یادداشت',
+  call: 'تماس',
+  followup: 'پیگیری',
+  status_change: 'تغییر وضعیت',
+};
+
+export const CRM_ACTIVITY_KIND_COLORS: Record<string, string> = {
+  note: 'bg-slate-50 text-slate-600 ring-slate-200',
+  call: 'bg-sky-50 text-sky-700 ring-sky-200',
+  followup: 'bg-amber-50 text-amber-700 ring-amber-200',
+  status_change: 'bg-violet-50 text-violet-700 ring-violet-200',
+};
+
+export function resolveOwnerLabel(
+  ownerId: string | null | undefined,
+  teamById?: Map<string, string> | Record<string, string>
+): string {
+  if (!ownerId) return 'بدون مالک';
+  if (teamById instanceof Map) return teamById.get(ownerId) ?? 'اختصاص‌یافته';
+  if (teamById && teamById[ownerId]) return teamById[ownerId];
+  return 'اختصاص‌یافته';
+}
 
 export const CRM_SOURCE_LABELS: Record<string, string> = {
   multistep_form: 'فرم چندمرحله‌ای',
@@ -127,7 +143,101 @@ export const CRM_GOAL_LABELS: Record<string, string> = {
   seo_audit_free: 'بررسی رایگان سئو',
   doctor_site: 'سایت مطب / پزشک',
   free_tool_report: 'گزارش ابزار رایگان',
+  map_register: 'ثبت نقشه گوگل',
+  medical_website_quote: 'قیمت سایت پزشکی',
+  website_design: 'طراحی سایت',
+  other: 'سایر',
 };
+
+/** برچسب فارسی صفحه/بخش لید */
+export const CRM_PAGE_LABELS: Record<string, string> = {
+  index: 'صفحه اصلی',
+  home: 'صفحه اصلی',
+  homepage: 'صفحه اصلی',
+  googlesabt: 'گوگل‌ثبت',
+  doctors: 'پزشکان',
+  seo: 'سئو',
+  'website-design': 'طراحی سایت',
+  website_design: 'طراحی سایت',
+  website: 'طراحی سایت',
+  'web-design': 'طراحی سایت',
+  webdesign: 'طراحی سایت',
+  web_design: 'طراحی سایت',
+  telegram: 'تلگرام',
+  ai: 'هوش مصنوعی',
+  modares: 'مدرسان',
+  fastweb: 'سایت فوری',
+  contact: 'تماس',
+  restaurant: 'رستوران',
+  clinic: 'کلینیک',
+  'free-seo-audit': 'بررسی رایگان سئو',
+  bizcard: 'کارت ویزیت',
+  adready: 'AdReady',
+  'free-tools': 'ابزارهای رایگان',
+  'review-link': 'لینک نظر گوگل',
+  'local-seo-check': 'تست سئو محلی',
+  'seo-roi-calculator': 'محاسبه ROI سئو',
+  portfolio: 'نمونه کارها',
+  manual: 'ثبت دستی',
+  _other: 'سایر / بدون بخش',
+};
+
+/** صفحات اصلی که همیشه در دسته‌بندی لید دیده می‌شوند */
+export const CRM_PRIMARY_PAGES = [
+  'index',
+  'seo',
+  'website-design',
+  'doctors',
+  'googlesabt',
+  'clinic',
+  'contact',
+  'fastweb',
+  'free-seo-audit',
+  'restaurant',
+  'telegram',
+  'ai',
+  'modares',
+  'bizcard',
+  'manual',
+] as const;
+
+export function normalizeCrmPageKey(page: string | null | undefined): string {
+  if (!page || page === '—' || page === '_other') return '_other';
+  const raw = pageFromPath(page) || 'index';
+
+  if (raw === 'home' || raw === 'homepage') return 'index';
+  if (
+    raw === 'website' ||
+    raw === 'website_design' ||
+    raw === 'website-design' ||
+    raw === 'web-design' ||
+    raw === 'webdesign' ||
+    raw === 'web_design' ||
+    raw.startsWith('website/') ||
+    raw.startsWith('website-design')
+  ) {
+    return 'website-design';
+  }
+  if (raw === 'seo' || raw.startsWith('seo/')) return 'seo';
+  if (
+    raw.startsWith('review-link') ||
+    raw.startsWith('local-seo-check') ||
+    raw.startsWith('seo-roi-calculator')
+  ) {
+    return 'free-tools';
+  }
+  if (raw.startsWith('b/') || raw === 'bizcard') return 'bizcard';
+  if (raw.startsWith('s/') || raw === 'fastweb') return 'fastweb';
+  if (raw.startsWith('c/') || raw === 'adready') return 'adready';
+  return raw;
+}
+
+export function resolvePageLabel(page: string | null | undefined): string {
+  if (!page || page === '—') return CRM_PAGE_LABELS._other;
+  const key = normalizeCrmPageKey(page);
+  if (key === '_other') return CRM_PAGE_LABELS._other;
+  return CRM_PAGE_LABELS[key] ?? key;
+}
 
 export const CRM_PLAN_LABELS: Record<string, string> = {
   basic: 'پکیج پایه',
@@ -252,7 +362,8 @@ export function mapLeadRow(lead: ApiLead) {
     createdAt: formatFaDateTime(lead.created_at),
     nextFollowUp: formatFaDate(lead.next_followup_at),
     nextFollowUpRaw: lead.next_followup_at,
-    assignedTo: lead.owner_id ? 'اختصاص‌یافته' : '—',
+    ownerId: lead.owner_id ?? null,
+    assignedTo: lead.owner_id ? 'اختصاص‌یافته' : 'بدون مالک',
     budget: lead.budget ?? '—',
     note: lead.crm_note,
     utmSource: lead.utm_source ?? '—',

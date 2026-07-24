@@ -5,7 +5,7 @@ import { openSiteChat } from "@/lib/openSiteChat";
 import { IconShield, IconPhone, IconStar, IconSparkle } from "@/components/icons";
 
 const TRUST = [
-  { text: "پرداخت امن بانکی", Icon: IconShield },
+  { text: "بدون پرداخت فوری در سایت", Icon: IconShield },
   { text: "پشتیبانی تا پایان راه‌اندازی", Icon: IconPhone },
   { text: "صدها کسب‌وکار به آرایه اعتماد کرده‌اند", Icon: IconStar },
 ] as const;
@@ -43,7 +43,8 @@ export default function GooglesabtFinalCta() {
         </h2>
 
         <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-white/60 sm:text-base">
-          ثبت سفارش کمتر از دو دقیقه زمان می‌برد و بلافاصله پس از پرداخت، فرایند راه‌اندازی آغاز خواهد شد.
+          درخواست کمتر از دو دقیقه ثبت می‌شود؛ کارشناسان ما تماس می‌گیرند و پرداخت را بعداً
+          هماهنگ می‌کنند — بدون اجبار به درگاه همین الان.
         </p>
 
         <ul className="mx-auto mt-10 flex max-w-3xl flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-8 sm:gap-y-3">
@@ -66,7 +67,7 @@ export default function GooglesabtFinalCta() {
             }
             className="inline-flex min-w-[220px] items-center justify-center rounded-2xl bg-[#4285F4] px-10 py-4 text-base font-bold text-white shadow-[0_12px_40px_rgba(66,133,244,0.35)] transition hover:bg-[#1b6ef3] hover:shadow-[0_16px_48px_rgba(66,133,244,0.45)] active:scale-[0.98]"
           >
-            ثبت سفارش
+            ثبت درخواست
           </a>
           <button
             type="button"
@@ -84,7 +85,7 @@ export default function GooglesabtFinalCta() {
         </div>
 
         <p className="mt-8 text-[12px] font-medium text-white/40">
-          هیچ هزینه پنهانی وجود ندارد.
+          هیچ هزینه پنهانی نیست؛ پرداخت بعد از هماهنگی با کارشناس.
         </p>
       </div>
     </section>

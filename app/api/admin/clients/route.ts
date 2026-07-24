@@ -4,14 +4,17 @@ import {
   dbError,
   normDate,
   num,
-  requireAdmin,
+  requireRoles,
   requireSession,
   str,
   unauthorized,
 } from '@/lib/adminRouteHelpers';
+import type { AdminRole } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const CLIENT_WRITE_ROLES: AdminRole[] = ['admin', 'sales'];
 
 const CLIENT_TYPES = new Set([
   'doctor', 'clinic', 'service_company', 'online_store', 'art_brand', 'startup', 'b2b', 'other',
@@ -48,7 +51,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!requireAdmin(req)) return unauthorized();
+  if (!requireRoles(req, CLIENT_WRITE_ROLES)) return unauthorized();
 
   let body: Record<string, unknown>;
   try {
@@ -92,7 +95,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!requireAdmin(req)) return unauthorized();
+  if (!requireRoles(req, CLIENT_WRITE_ROLES)) return unauthorized();
 
   let body: Record<string, unknown>;
   try {
@@ -129,6 +132,28 @@ export async function PATCH(req: NextRequest) {
     if (error) return dbError(error.message);
     if (!data) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
     return NextResponse.json({ ok: true, client: data });
+  } catch (e) {
+    return dbError(String(e));
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  if (!requireRoles(req, CLIENT_WRITE_ROLES)) return unauthorized();
+
+  const id = str(req.nextUrl.searchParams.get('id'), 64);
+  if (!id) return NextResponse.json({ ok: false, error: 'missing_id' }, { status: 422 });
+
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from('crm_clients')
+      .delete()
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
+    if (error) return dbError(error.message);
+    if (!data) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    return NextResponse.json({ ok: true, id: data.id });
   } catch (e) {
     return dbError(String(e));
   }

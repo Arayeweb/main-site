@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import {
   assertGrowthHubStaffAccess,
   GrowthHubStaffAuthError,
@@ -12,10 +13,11 @@ import {
 } from "@/lib/growth-hub/validation";
 import { generateInviteToken, hashInviteToken } from "@/lib/growth-hub/inviteToken";
 import { computeInviteExpiresAt } from "@/lib/growth-hub/inviteExpiry";
-import { sendGrowthHubInviteEmail } from "@/lib/growth-hub/email/invite";
 import { trackGrowthHubEvent } from "@/lib/growth-hub/analytics";
 import { GROWTH_HUB_EVENTS } from "@/lib/growth-hub/constants";
 import { resolvePublicOrigin } from "@/lib/siteUrl";
+import { normalizePhoneE164, phoneE164ToLocal } from "@/lib/growth-hub/phone";
+import { sendKavenegarSms } from "@/lib/kavenegar";
 
 export type StaffActionResult<T = undefined> =
   | { ok: true; data: T }
@@ -80,7 +82,9 @@ export async function createWorkspaceAction(
 
 export async function createInviteAction(
   input: unknown,
-): Promise<StaffActionResult<{ inviteId: string }>> {
+): Promise<
+  StaffActionResult<{ inviteId: string; inviteUrl: string; phoneMasked: string }>
+> {
   let access;
   try {
     access = assertGrowthHubStaffAccess();
@@ -94,7 +98,9 @@ export async function createInviteAction(
   if (!parsed.success) {
     return fail(parsed.error.issues[0]?.message ?? "ورودی نامعتبر است.");
   }
-  const { workspace_id, email, role, expiry_days } = parsed.data;
+  const { workspace_id, phone, role, expiry_days } = parsed.data;
+  const phoneE164 = normalizePhoneE164(phone);
+  if (!phoneE164) return fail("شماره موبایل نامعتبر است.");
 
   const { data: ws } = await service
     .from("gh_workspaces")
@@ -111,11 +117,13 @@ export async function createInviteAction(
     .from("gh_workspace_invites")
     .insert({
       workspace_id,
-      email,
+      email: null,
+      phone: phoneE164ToLocal(phoneE164),
+      invited_phone_e164: phoneE164,
       role,
       token_hash: tokenHash,
       expires_at: expiresAt,
-      created_by: null, // staff has no gh_profiles row; staff id kept in audit metadata
+      created_by: null,
     })
     .select("id")
     .single();
@@ -126,7 +134,7 @@ export async function createInviteAction(
   }
 
   const inviteUrl = `${resolvePublicOrigin()}/app/invite/${rawToken}`;
-  await sendGrowthHubInviteEmail({ to: email, workspaceName: ws.name, inviteUrl });
+  const phoneMasked = `${phoneE164ToLocal(phoneE164).slice(0, 4)}•••${phoneE164ToLocal(phoneE164).slice(-4)}`;
 
   await service.from("gh_activity_events").insert({
     workspace_id,
@@ -134,19 +142,93 @@ export async function createInviteAction(
     entity_type: "invite",
     entity_id: invite.id,
     event_type: "invitation_created",
-    metadata: { role, staff_user_id: staff.userId },
+    metadata: {
+      role,
+      staff_user_id: staff.userId,
+      channel: "phone",
+      phone_last4: phoneE164.slice(-4),
+    },
   });
 
-  // Product analytics — no token, no raw email (channel only).
   await trackGrowthHubEvent({
     event: GROWTH_HUB_EVENTS.workspaceInvited,
     workspaceId: workspace_id,
     userRole: "staff",
-    properties: { invite_id: invite.id, invited_role: role, channel: "email" },
+    properties: {
+      invite_id: invite.id,
+      invited_role: role,
+      channel: "phone",
+    },
   });
 
   revalidatePath(`/admin/growth-hub/workspaces/${workspace_id}`);
-  return { ok: true, data: { inviteId: invite.id } };
+  return {
+    ok: true,
+    data: { inviteId: invite.id, inviteUrl, phoneMasked },
+  };
+}
+
+/** Resend invite link SMS for an existing pending invite (no raw token reissue). */
+export async function sendInviteSmsAction(
+  input: unknown,
+): Promise<StaffActionResult<{ sent: boolean }>> {
+  let access;
+  try {
+    access = assertGrowthHubStaffAccess();
+  } catch (error) {
+    if (error instanceof GrowthHubStaffAuthError) return fail(error.message);
+    throw error;
+  }
+  const { service } = access;
+
+  const parsed = z
+    .object({
+      workspace_id: z.string().uuid(),
+      invite_id: z.string().uuid(),
+      invite_url: z.string().url().optional(),
+    })
+    .safeParse(input);
+  if (!parsed.success) return fail("ورودی نامعتبر است.");
+
+  const { data: invite } = await service
+    .from("gh_workspace_invites")
+    .select("id, invited_phone_e164, accepted_at, revoked_at, expires_at, workspace_id")
+    .eq("id", parsed.data.invite_id)
+    .eq("workspace_id", parsed.data.workspace_id)
+    .maybeSingle();
+
+  if (!invite?.invited_phone_e164) return fail("دعوت پیدا نشد.");
+  if (invite.accepted_at || invite.revoked_at) return fail("این دعوت قابل ارسال نیست.");
+  if (new Date(invite.expires_at).getTime() <= Date.now()) {
+    return fail("این دعوت منقضی شده است.");
+  }
+
+  const { data: ws } = await service
+    .from("gh_workspaces")
+    .select("name")
+    .eq("id", invite.workspace_id)
+    .maybeSingle();
+
+  // SMS body must not be logged. Link is only sent if staff just created it
+  // and still has invite_url in the browser — we do not store raw tokens.
+  if (!parsed.data.invite_url) {
+    return fail("لینک دعوت فقط هنگام ساخت در دسترس است. دعوت تازه بسازید.");
+  }
+  if (!parsed.data.invite_url.includes("/app/invite/")) {
+    return fail("لینک دعوت نامعتبر است.");
+  }
+
+  const message = `دعوت مرکز رشد آرایه برای «${ws?.name ?? "فضای کاری"}»:\n${parsed.data.invite_url}\nاین لینک یک‌بارمصرف است.`;
+  const sms = await sendKavenegarSms({
+    receptor: phoneE164ToLocal(invite.invited_phone_e164),
+    message,
+  });
+  if (!sms.ok) {
+    console.error("[gh/staff] invite sms", sms.error);
+    return fail("ارسال پیامک ناموفق بود.");
+  }
+
+  return { ok: true, data: { sent: true } };
 }
 
 export async function revokeInviteAction(

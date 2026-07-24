@@ -11,6 +11,10 @@ import { ensureAraayeUser, linkAraayeUser } from "./accounts";
 import { trackEvent } from "./events";
 import { sendMessage } from "./api";
 import { COPY } from "./copy";
+import {
+  tomanToIrr,
+  trackServerAnalyticsEvent,
+} from "@/lib/analytics/server";
 
 const AMOUNT_TOLERANCE = 10;
 
@@ -181,6 +185,17 @@ export async function settlePaymentByTrackId(
   const telegramId = tgUser?.telegram_id as number | undefined;
 
   if (order.status === "paid") {
+    await trackServerAnalyticsEvent({
+      event: "purchase_completed",
+      dedupeKey: `purchase:telegram:${order.id}`,
+      productArea: "ai",
+      page: "/telegram",
+      actorId: tgUser?.araaye_user_id,
+      accountId: order.telegram_user_id,
+      value: tomanToIrr(order.amount_toman),
+      currency: "IRR",
+      properties: { package: order.package_id, channel: "telegram", payment_provider: "zibal" },
+    });
     return { ok: true, telegramId, alreadyPaid: true };
   }
 
@@ -248,6 +263,18 @@ export async function settlePaymentByTrackId(
 
   const result = settled as { ok?: boolean; already_paid?: boolean };
   if (!result.ok) return { ok: false, error: "settle_rejected", telegramId };
+
+  await trackServerAnalyticsEvent({
+    event: "purchase_completed",
+    dedupeKey: `purchase:telegram:${order.id}`,
+    productArea: "ai",
+    page: "/telegram",
+    actorId: araayeUserId,
+    accountId: order.telegram_user_id,
+    value: tomanToIrr(order.amount_toman),
+    currency: "IRR",
+    properties: { package: order.package_id, channel: "telegram", payment_provider: "zibal" },
+  });
 
   if (telegramId) {
     await sendMessage(telegramId, COPY.paymentSuccess);

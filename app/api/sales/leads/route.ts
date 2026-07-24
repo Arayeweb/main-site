@@ -132,6 +132,7 @@ export async function POST(req: NextRequest) {
   const status = str(body.crm_status, 32) || "new";
   const insert: Record<string, unknown> = {
     source: "manual_entry",
+    page: str(body.page, 120),
     name,
     company,
     contact: value,
@@ -266,10 +267,19 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (statusChange) {
+      let authorName = session.role === "admin" ? "مدیر" : "فروش";
+      if (session.userId && session.userId !== "admin") {
+        const { data: userRow } = await supabase
+          .from("admin_users")
+          .select("name")
+          .eq("id", session.userId)
+          .maybeSingle();
+        if (userRow?.name) authorName = String(userRow.name);
+      }
       await supabase.from("lead_activities").insert({
         lead_id: id,
         author_id: session.userId === "admin" ? null : session.userId,
-        author_name: session.role === "admin" ? "مدیر" : "فروش",
+        author_name: authorName,
         kind: "status_change",
         body: `وضعیت به «${statusChange}» تغییر کرد`,
       });

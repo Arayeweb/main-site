@@ -41,13 +41,21 @@ export default async function GrowthHubAdminDashboard() {
             مدیریت فضاهای کاری مشتریان، اعضا و دعوت‌ها.
           </p>
         </div>
-        <Link
-          href="/admin/growth-hub/workspaces/new"
-          className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-700"
-        >
-          <Plus className="h-4 w-4" />
-          فضای کاری جدید
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/growth-hub/services"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            خدمات
+          </Link>
+          <Link
+            href="/admin/growth-hub/workspaces/new"
+            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-700"
+          >
+            <Plus className="h-4 w-4" />
+            فضای کاری جدید
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

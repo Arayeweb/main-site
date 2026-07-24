@@ -26,7 +26,7 @@ const NAV_ITEMS: Array<{
   live: boolean;
 }> = [
   { segment: "home", label: "خانه", icon: Home, live: true },
-  { segment: "services", label: "خدمات", icon: BriefcaseBusiness, live: false },
+  { segment: "services", label: "خدمات", icon: BriefcaseBusiness, live: true },
   { segment: "requests", label: "درخواست‌ها", icon: MessageSquareText, live: false },
   { segment: "reports", label: "گزارش‌ها", icon: FileText, live: false },
   { segment: "files", label: "فایل‌ها و مالی", icon: FolderOpen, live: false },

@@ -17,6 +17,9 @@ describe("pageFromPath", () => {
     expect(pageFromPath("/clinic")).toBe("clinic");
     expect(pageFromPath("/restaurant")).toBe("restaurant");
     expect(pageFromPath("/website-design/restaurant")).toBe("restaurant");
+    expect(pageFromPath("/website-design")).toBe("website-design");
+    expect(pageFromPath("/website-design/cost")).toBe("website-design");
+    expect(pageFromPath("web-design")).toBe("web-design");
     expect(pageFromPath("/googlesabt")).toBe("googlesabt");
     expect(pageFromPath("/modares")).toBe("modares");
     expect(pageFromPath("/")).toBe("index");

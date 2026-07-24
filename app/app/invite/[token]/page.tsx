@@ -32,6 +32,7 @@ export default async function InvitePage({
       token={params.token}
       workspaceName={peek.workspaceName}
       role={peek.role}
+      phoneMasked={peek.phoneMasked}
       isAuthenticated={Boolean(user)}
     />
   );

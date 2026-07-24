@@ -10,7 +10,7 @@ export default function GooglesabtStickyCta() {
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-100 bg-white/95 p-3 shadow-[0_-4px_20px_rgba(0,0,0,.08)] backdrop-blur-sm sm:hidden">
       <div className="container-mx flex items-center gap-3">
         <p className="min-w-0 flex-1 text-[11px] font-bold leading-snug text-navy-600">
-          از <span className="text-[#4285F4]">{formatToman(fromPrice)}</span> تومان
+          از <span className="text-[#4285F4]">{formatToman(fromPrice)}</span> — بدون پرداخت آنلاین
         </p>
         <a
           href="#packages"

@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
         supabase
       ),
       fetchAllRows("page_views", "page, visitor_id, created_at", supabase),
-      fetchAllRows("analytics_events", "event, page, created_at", supabase),
+      fetchAllRows("analytics_events", "canonical_event_name, event_name, page, created_at", supabase),
       fetchAllRows(
         "invoices",
         "status, kind, grand_total, currency, paid_at, created_at, lead_id, client_id",
@@ -151,7 +151,9 @@ export async function GET(req: NextRequest) {
     const repeatClients = (clientsRes.data ?? []).filter((c) => Number(c.total_revenue) > 0).length;
 
     const generateLeadEvents = (eventsRes.data ?? []).filter(
-      (e) => e.event === "generate_lead" && now - new Date(e.created_at as string).getTime() < sinceMs
+      (e) =>
+        (e.canonical_event_name === "lead_submitted" || e.event_name === "generate_lead") &&
+        now - new Date(e.created_at as string).getTime() < sinceMs
     ).length;
 
     const cpl = leadsInPeriod > 0 ? Math.round(adSpend / leadsInPeriod) : 0;

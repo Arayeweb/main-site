@@ -3,6 +3,10 @@ import { paymentSiteUrl } from "@/lib/paymentCallback";
 import { setFastWebSessionCookie } from "@/lib/fastwebSession";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { resolveZibalVerify } from "@/lib/zibal";
+import {
+  tomanToIrr,
+  trackServerAnalyticsEvent,
+} from "@/lib/analytics/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +41,7 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabaseAdmin();
     const { data: row, error } = await supabase
       .from("fastweb_orders")
-      .select("id, access_token, payment_status, promo_code")
+      .select("id, access_token, payment_status, promo_code, package, amount_toman")
       .eq("zibal_track_id", trackId)
       .maybeSingle();
 
@@ -80,6 +84,17 @@ export async function GET(req: NextRequest) {
         }
       }
     }
+
+    await trackServerAnalyticsEvent({
+      event: "purchase_completed",
+      dedupeKey: `purchase:fastweb:${row.id}`,
+      productArea: "fastweb",
+      page: "/fastweb/new",
+      accountId: row.id,
+      value: tomanToIrr(row.amount_toman),
+      currency: "IRR",
+      properties: { package: row.package, payment_provider: "zibal" },
+    });
 
     const res = NextResponse.redirect(
       `${SITE_URL}/dashboard/fastweb/${row.id}?paid=1`

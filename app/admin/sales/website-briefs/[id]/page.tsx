@@ -20,6 +20,7 @@ import {
   requiredSectionOptions,
 } from '@/lib/websiteBrief/constants';
 import type { ConfirmationBranch, RecommendedService } from '@/lib/websiteBrief/types';
+import { formatFaDateTime } from '@/lib/adminMappers';
 
 function labelFor(options: { value: string; label: string }[], value: string) {
   return options.find((o) => o.value === value)?.label ?? value ?? '—';
@@ -81,7 +82,7 @@ export default function WebsiteBriefDetailPage({ params }: { params: Promise<{ i
     <div className="flex flex-col gap-6" dir="rtl">
       <AdminPageHeader
         title={String(brief.business_name ?? 'بریف طراحی سایت')}
-        description={`ثبت: ${brief.created_at ? new Date(String(brief.created_at)).toLocaleString('fa-IR') : '—'}`}
+        description={`ثبت: ${brief.created_at ? formatFaDateTime(String(brief.created_at)) : '—'}`}
         icon={ClipboardList}
         breadcrumb={[
           { label: 'فروش' },

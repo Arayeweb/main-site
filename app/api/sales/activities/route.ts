@@ -74,12 +74,23 @@ export async function POST(req: NextRequest) {
 
   try {
     const supabase = getSupabaseAdmin();
+
+    let authorName = session.role === "admin" ? "مدیر" : "فروش";
+    if (session.userId && session.userId !== "admin") {
+      const { data: userRow } = await supabase
+        .from("admin_users")
+        .select("name")
+        .eq("id", session.userId)
+        .maybeSingle();
+      if (userRow?.name) authorName = String(userRow.name);
+    }
+
     const { data, error } = await supabase
       .from("lead_activities")
       .insert({
         lead_id: leadId,
         author_id: session.userId === "admin" ? null : session.userId,
-        author_name: session.role === "admin" ? "مدیر" : "فروش",
+        author_name: authorName,
         kind,
         body: text,
       })

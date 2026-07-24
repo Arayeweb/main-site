@@ -6,22 +6,29 @@ import { pushGtmEvent } from "@/lib/gtm";
 import {
   googlesabtPackages,
   formatToman,
+  applyGooglesabtDiscount,
+  resolveGooglesabtDiscount,
   type GooglesabtPackageKey,
 } from "@/lib/googlesabtData";
 import {
   CHECKOUT_STEP_LABELS,
   CHECKOUT_STORAGE_KEY,
+  GOOGLESABT_CALL_WINDOWS,
   GOOGLESABT_CATEGORIES,
+  GOOGLESABT_CONTACT_CHANNELS,
   GOOGLESABT_WEEKDAYS,
   IRAN_PROVINCE_CITIES,
   IRAN_PROVINCES,
   PROVINCE_MAP_CENTER,
+  callWindowLabel,
   emptyOrderDraft,
   type CheckoutWizardStep,
+  type GooglesabtCallWindowId,
+  type GooglesabtContactChannelId,
   type GooglesabtOrderDraft,
   type GooglesabtWeekdayId,
 } from "@/lib/googlesabtCheckout";
-import { IconCheck, IconShield, IconStar } from "@/components/icons";
+import { IconCheck, IconPhone, IconStar } from "@/components/icons";
 import GooglesabtMapPicker from "@/components/googlesabt/GooglesabtMapPicker";
 import {
   SITE_PHONE_DISPLAY,
@@ -44,7 +51,6 @@ function normalizePhone(raw: string): string | null {
 }
 
 type Phase = "pricing" | "checkout" | "success";
-type PaymentFail = "failed" | "error" | null;
 
 function fieldClass(extra = "") {
   return `w-full rounded-xl border border-navy-100 bg-navy-50/40 px-4 py-3 text-sm text-navy-900 outline-none transition focus:border-[#4285F4] focus:bg-white ${extra}`;
@@ -54,51 +60,104 @@ function labelClass() {
   return "mb-1.5 block text-[13px] font-bold text-navy-700";
 }
 
+const TIME_HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const TIME_MINUTES = ["00", "15", "30", "45"] as const;
+
+/** Native type=time breaks in RTL (AM/PM + reversed digits). Use clear 24h selects. */
+function parseHm(value: string): { h: string; m: string } {
+  const [rawH = "09", rawM = "00"] = value.split(":");
+  const h = String(Math.min(23, Math.max(0, Number(rawH) || 0))).padStart(2, "0");
+  const minuteNum = Number(rawM) || 0;
+  const snapped =
+    TIME_MINUTES.find((m) => Number(m) === minuteNum) ??
+    TIME_MINUTES.reduce((best, m) =>
+      Math.abs(Number(m) - minuteNum) < Math.abs(Number(best) - minuteNum) ? m : best,
+    );
+  return { h, m: snapped };
+}
+
+function formatHmFa(value: string): string {
+  const { h, m } = parseHm(value);
+  return `${h}:${m}`;
+}
+
+function TimeField({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  const { h, m } = parseHm(value);
+  return (
+    <div>
+      <label htmlFor={`${id}-h`} className={labelClass()}>
+        {label}
+      </label>
+      <div className="flex items-center gap-2" dir="ltr">
+        <select
+          id={`${id}-h`}
+          className={fieldClass("text-center tabular-nums")}
+          value={h}
+          onChange={(e) => onChange(`${e.target.value}:${m}`)}
+          aria-label={`${label} — ساعت`}
+        >
+          {TIME_HOURS.map((hour) => (
+            <option key={hour} value={hour}>
+              {hour}
+            </option>
+          ))}
+        </select>
+        <span className="text-sm font-extrabold text-navy-400" aria-hidden>
+          :
+        </span>
+        <select
+          id={`${id}-m`}
+          className={fieldClass("text-center tabular-nums")}
+          value={m}
+          onChange={(e) => onChange(`${h}:${e.target.value}`)}
+          aria-label={`${label} — دقیقه`}
+        >
+          {TIME_MINUTES.map((minute) => (
+            <option key={minute} value={minute}>
+              {minute}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p className="mt-1.5 text-[11px] font-semibold text-navy-400" dir="ltr">
+        {formatHmFa(value)} · ۲۴ ساعته
+      </p>
+    </div>
+  );
+}
+
 export default function GooglesabtCheckout() {
   const rootRef = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState<Phase>("pricing");
   const [step, setStep] = useState<CheckoutWizardStep>(1);
   const [draft, setDraft] = useState<GooglesabtOrderDraft>(() => emptyOrderDraft("popular"));
   const [error, setError] = useState<string | null>(null);
-  const [paying, setPaying] = useState(false);
-  const [paymentFail, setPaymentFail] = useState<PaymentFail>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [trackId, setTrackId] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [discountInput, setDiscountInput] = useState("");
+  const [discountMessage, setDiscountMessage] = useState<string | null>(null);
 
   const pkg =
     googlesabtPackages.find((p) => p.key === draft.packageKey) ?? googlesabtPackages[1];
   const cities = draft.province ? IRAN_PROVINCE_CITIES[draft.province] ?? [] : [];
+  const activeDiscount = resolveGooglesabtDiscount(draft.discountCode);
+  const finalPrice = activeDiscount
+    ? applyGooglesabtDiscount(pkg.price, activeDiscount.percent)
+    : pkg.price;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const payment = params.get("payment");
-    const tid = params.get("trackId");
-
-    if (payment === "success") {
-      setPhase("success");
-      setTrackId(tid);
-      pushGtmEvent("purchase", { page: "googlesabt" });
-      try {
-        const raw = sessionStorage.getItem(CHECKOUT_STORAGE_KEY);
-        if (raw) {
-          const saved = JSON.parse(raw) as { draft?: GooglesabtOrderDraft };
-          if (saved.draft?.packageKey) {
-            setDraft({ ...emptyOrderDraft(saved.draft.packageKey), ...saved.draft });
-          }
-        }
-        sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
-      } catch {
-        /* ignore */
-      }
-      setHydrated(true);
-      return;
-    }
-    if (payment === "failed" || payment === "error") {
-      setPaymentFail(payment);
-      setPhase("checkout");
-      setStep(5);
-      setTrackId(tid);
-    }
 
     try {
       const raw = sessionStorage.getItem(CHECKOUT_STORAGE_KEY);
@@ -109,13 +168,16 @@ export default function GooglesabtCheckout() {
           phase?: Phase;
         };
         if (saved.draft?.packageKey) {
-          setDraft({ ...emptyOrderDraft(saved.draft.packageKey), ...saved.draft });
+          const nextDraft = { ...emptyOrderDraft(saved.draft.packageKey), ...saved.draft };
+          setDraft(nextDraft);
+          if (nextDraft.discountCode) setDiscountInput(nextDraft.discountCode);
         }
-        if (payment !== "failed" && payment !== "error") {
-          if (saved.phase === "checkout" && saved.step) {
-            setPhase("checkout");
-            setStep(saved.step);
-          }
+        if (saved.phase === "checkout" && saved.step) {
+          setPhase("checkout");
+          setStep(saved.step);
+        }
+        if (saved.phase === "success") {
+          setPhase("success");
         }
       }
     } catch {
@@ -153,6 +215,18 @@ export default function GooglesabtCheckout() {
     rootRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const applyDiscountCode = () => {
+    const resolved = resolveGooglesabtDiscount(discountInput);
+    if (!resolved) {
+      patch({ discountCode: "" });
+      setDiscountMessage("کد تخفیف معتبر نیست.");
+      return;
+    }
+    patch({ discountCode: resolved.code });
+    setDiscountInput(resolved.code);
+    setDiscountMessage(`${resolved.label} اعمال شد.`);
+  };
+
   const selectPackage = (key: GooglesabtPackageKey) => {
     pushGtmEvent("pkg_selected", { package: key, page: "googlesabt" });
     pushGtmEvent("begin_checkout", { package: key, page: "googlesabt" });
@@ -161,7 +235,6 @@ export default function GooglesabtCheckout() {
       setStep(1);
       setPhase("checkout");
       setError(null);
-      setPaymentFail(null);
     });
     requestAnimationFrame(scrollToRoot);
   };
@@ -215,16 +288,21 @@ export default function GooglesabtCheckout() {
     });
   };
 
-  const startPayment = async () => {
+  const submitRequest = async () => {
     const phone = normalizePhone(draft.phone);
     if (!phone) {
       setError("شماره موبایل معتبر نیست.");
       setStep(1);
       return;
     }
-    setPaying(true);
+    setSubmitting(true);
     setError(null);
-    pushGtmEvent("add_payment_info", { package: draft.packageKey, page: "googlesabt" });
+    pushGtmEvent("generate_lead", {
+      source: "googlesabt_request",
+      package: draft.packageKey,
+      page: "googlesabt",
+      has_discount: Boolean(activeDiscount),
+    });
     try {
       const res = await fetch("/api/googlesabt/checkout", {
         method: "POST",
@@ -232,6 +310,7 @@ export default function GooglesabtCheckout() {
         body: JSON.stringify({
           package: draft.packageKey,
           businessName: draft.businessName.trim(),
+          contactName: draft.contactName.trim() || undefined,
           contact: phone,
           category: draft.category,
           province: draft.province,
@@ -242,17 +321,30 @@ export default function GooglesabtCheckout() {
           openTime: draft.openTime,
           closeTime: draft.closeTime,
           weekdays: draft.weekdays,
+          preferredCallWindow: draft.preferredCallWindow,
+          contactChannel: draft.contactChannel,
+          discountCode: draft.discountCode || undefined,
         }),
       });
-      const data = (await res.json()) as { ok?: boolean; redirectUrl?: string };
-      if (data.ok && data.redirectUrl) {
-        window.location.href = data.redirectUrl;
+      const data = (await res.json()) as {
+        ok?: boolean;
+        trackId?: string;
+        error?: string;
+      };
+      if (data.ok && data.trackId) {
+        setTrackId(data.trackId);
+        setPhase("success");
+        try {
+          sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
+        } catch {
+          /* ignore */
+        }
         return;
       }
-      throw new Error("checkout_failed");
+      throw new Error(data.error || "request_failed");
     } catch {
-      setError("اتصال به درگاه پرداخت برقرار نشد. دوباره تلاش کنید.");
-      setPaying(false);
+      setError("ثبت درخواست ممکن نشد. دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.");
+      setSubmitting(false);
     }
   };
 
@@ -261,21 +353,23 @@ export default function GooglesabtCheckout() {
     .filter(Boolean)
     .join("، ");
 
-  const downloadInvoice = () => {
+  const downloadSummary = () => {
     const lines = [
-      "فاکتور رزرو — آرایه ثبت گوگل",
+      "خلاصه درخواست — آرایه ثبت گوگل",
       `کد پیگیری: ${trackId || "—"}`,
       `پکیج: ${pkg.name}`,
-      `مبلغ پرداختی: ${formatToman(pkg.price)} تومان`,
+      `مبلغ برآوردی: ${formatToman(finalPrice)} تومان`,
+      activeDiscount ? `کد تخفیف: ${activeDiscount.code} (${activeDiscount.percent}٪)` : "کد تخفیف: —",
       `کسب‌وکار: ${draft.businessName || "—"}`,
       `تماس: ${draft.phone || "—"}`,
+      "وضعیت: کارشناسان آرایه به‌زودی تماس می‌گیرند",
       `تاریخ: ${new Date().toLocaleDateString("fa-IR")}`,
     ];
     const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `araaye-invoice-${trackId || "order"}.txt`;
+    a.download = `araaye-request-${trackId || "order"}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -292,16 +386,67 @@ export default function GooglesabtCheckout() {
             <header className="mx-auto max-w-2xl text-center">
               <p className="text-[12px] font-bold tracking-wide text-[#4285F4]">پکیج‌ها</p>
               <h2 className="mt-2 text-2xl font-extrabold text-navy-900 sm:text-3xl lg:text-[2.1rem]">
-                پکیج مناسب را انتخاب کنید
+                پکیج مناسب کسب‌وکارتان را انتخاب کنید
               </h2>
               <p className="mt-3 text-[15px] text-navy-500">
-                با انتخاب پکیج، مستقیم وارد تکمیل سفارش می‌شوید.
+                فقط اطلاعات را ثبت کنید. کارشناس آرایه با شما تماس می‌گیرد و جزئیات را نهایی
+                می‌کند.
               </p>
             </header>
 
-            <div className="mx-auto mt-14 grid max-w-6xl items-stretch gap-5 lg:grid-cols-3 lg:gap-6">
+            <div className="mx-auto mt-8 max-w-xl rounded-2xl border border-navy-100 bg-white p-4 shadow-soft sm:p-5">
+              <label htmlFor="gs-discount" className={labelClass()}>
+                کد تخفیف{" "}
+                <span className="font-normal text-navy-400">(اختیاری)</span>
+              </label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  id="gs-discount"
+                  value={discountInput}
+                  onChange={(e) => {
+                    setDiscountInput(e.target.value);
+                    setDiscountMessage(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyDiscountCode();
+                    }
+                  }}
+                  placeholder="مثلاً ARAAYE10"
+                  className={fieldClass("sm:flex-1")}
+                  dir="ltr"
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={applyDiscountCode}
+                  className="rounded-xl bg-navy-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-navy-800"
+                >
+                  اعمال کد
+                </button>
+              </div>
+              {discountMessage ? (
+                <p
+                  className={`mt-2 text-xs font-bold ${
+                    activeDiscount ? "text-emerald-700" : "text-red-600"
+                  }`}
+                >
+                  {discountMessage}
+                </p>
+              ) : (
+                <p className="mt-2 text-[11px] text-navy-400">
+                  اگر کد دارید اینجا وارد کنید تا روی مبلغ پکیج‌ها اعمال شود.
+                </p>
+              )}
+            </div>
+
+            <div className="mx-auto mt-10 grid max-w-6xl items-stretch gap-5 lg:grid-cols-3 lg:gap-6">
               {googlesabtPackages.map((p) => {
                 const isPopular = Boolean(p.popular);
+                const discounted = activeDiscount
+                  ? applyGooglesabtDiscount(p.price, activeDiscount.percent)
+                  : p.price;
                 return (
                   <article
                     key={p.key}
@@ -314,15 +459,21 @@ export default function GooglesabtCheckout() {
                     {isPopular ? (
                       <span className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#4285F4] px-3.5 py-1 text-[11px] font-bold text-white shadow-soft">
                         <IconStar size={12} className="fill-current" />
-                        پیشنهادی
+                        {p.recommendedLabel || "پیشنهادی"}
                       </span>
                     ) : null}
 
                     <div className="flex items-baseline justify-between gap-2">
                       <h3 className="text-lg font-extrabold text-navy-900">پکیج {p.name}</h3>
-                      <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                        ۱۰٪ تخفیف
-                      </span>
+                      {activeDiscount ? (
+                        <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                          {activeDiscount.percent}٪ با کد
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                          ۱۰٪ تخفیف
+                        </span>
+                      )}
                     </div>
                     <p className="mt-2 text-[13px] leading-relaxed text-navy-500">{p.description}</p>
 
@@ -330,10 +481,18 @@ export default function GooglesabtCheckout() {
                       <span className="block text-xs text-navy-300 line-through">
                         {formatToman(p.oldPrice)} تومان
                       </span>
+                      {activeDiscount && discounted !== p.price ? (
+                        <span className="mt-0.5 block text-xs text-navy-400 line-through">
+                          {formatToman(p.price)} تومان
+                        </span>
+                      ) : null}
                       <span className="text-2xl font-extrabold text-navy-900 sm:text-[1.75rem]">
-                        {formatToman(p.price)}
+                        {formatToman(discounted)}
                         <small className="mr-1 text-xs font-medium text-navy-400">تومان</small>
                       </span>
+                      <p className="mt-1 text-[11px] font-semibold text-navy-400">
+                        برآورد قیمت — پرداخت بعد از تماس کارشناس
+                      </p>
                     </div>
 
                     <ul className="mt-5 flex flex-1 flex-col gap-2.5">
@@ -354,12 +513,15 @@ export default function GooglesabtCheckout() {
                           : "border border-navy-200 bg-white text-navy-800 hover:border-[#4285F4] hover:text-[#4285F4]"
                       }`}
                     >
-                      انتخاب این پکیج
+                      {isPopular ? "شروع با این پکیج" : "انتخاب این پکیج"}
                     </button>
                   </article>
                 );
               })}
             </div>
+            <p className="mx-auto mt-6 max-w-2xl text-center text-xs font-semibold text-navy-400">
+              بیشتر کسب‌وکارها پکیج حرفه‌ای را انتخاب می‌کنند.
+            </p>
           </>
         ) : null}
 
@@ -380,7 +542,12 @@ export default function GooglesabtCheckout() {
                   )}
                 </p>
                 <p className="mt-0.5 text-[13px] font-bold text-[#4285F4]">
-                  {formatToman(pkg.price)} تومان
+                  {formatToman(finalPrice)} تومان
+                  {activeDiscount ? (
+                    <span className="mr-1 text-[11px] font-semibold text-emerald-700">
+                      ({activeDiscount.code})
+                    </span>
+                  ) : null}
                 </p>
               </div>
               <button
@@ -399,10 +566,10 @@ export default function GooglesabtCheckout() {
                 </p>
                 <p className="text-[11px] font-bold text-navy-400">
                   {stepsLeft === 0
-                    ? "آخرین مرحله"
+                    ? "آخرین مرحله — کارشناسان تماس می‌گیرند"
                     : stepsLeft === 1
-                      ? "فقط ۱ مرحله تا تکمیل سفارش"
-                      : `فقط ${stepsLeft} مرحله تا تکمیل سفارش`}
+                      ? "فقط ۱ مرحله تا ثبت درخواست"
+                      : `فقط ${stepsLeft} مرحله تا ثبت درخواست`}
                 </p>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-navy-100">
@@ -415,12 +582,6 @@ export default function GooglesabtCheckout() {
               </div>
               <p className="mt-2 text-[11px] text-navy-400">{CHECKOUT_STEP_LABELS[step]}</p>
             </div>
-
-            {paymentFail ? (
-              <div className="mb-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-center text-[13px] font-bold text-red-600">
-                پرداخت انجام نشد. می‌توانید دوباره تلاش کنید.
-              </div>
-            ) : null}
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -446,6 +607,22 @@ export default function GooglesabtCheckout() {
                         placeholder="مثلاً کافه ارکیده"
                         autoComplete="organization"
                       />
+                    </div>
+                    <div>
+                      <label htmlFor="gs-contact-name" className={labelClass()}>
+                        نام مسئول تماس
+                      </label>
+                      <input
+                        id="gs-contact-name"
+                        className={fieldClass()}
+                        value={draft.contactName}
+                        onChange={(e) => patch({ contactName: e.target.value })}
+                        placeholder="مثلاً آقای محمدی"
+                        autoComplete="name"
+                      />
+                      <p className="mt-1.5 text-[11px] font-semibold text-navy-400">
+                        کارشناس با همین نام شما را صدا می‌زند.
+                      </p>
                     </div>
                     <div>
                       <label htmlFor="gs-phone" className={labelClass()}>
@@ -550,12 +727,14 @@ export default function GooglesabtCheckout() {
                     </div>
                     <div>
                       <p className={labelClass()}>موقعیت روی نقشه</p>
-                      <GooglesabtMapPicker
-                        lat={draft.lat}
-                        lng={draft.lng}
-                        province={draft.province}
-                        onChange={(lat, lng) => patch({ lat, lng })}
-                      />
+                      <div className="mt-2">
+                        <GooglesabtMapPicker
+                          lat={draft.lat}
+                          lng={draft.lng}
+                          province={draft.province}
+                          onChange={(lat, lng) => patch({ lat, lng })}
+                        />
+                      </div>
                     </div>
                   </div>
                 ) : null}
@@ -563,31 +742,22 @@ export default function GooglesabtCheckout() {
                 {step === 3 ? (
                   <div className="space-y-5">
                     <h3 className="text-base font-extrabold text-navy-900">ساعات کاری</h3>
+                    <p className="text-[12px] font-semibold leading-6 text-navy-500">
+                      ساعت را به‌صورت ۲۴ ساعته انتخاب کنید (مثلاً ۰۹:۰۰ تا ۲۱:۰۰).
+                    </p>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="gs-open" className={labelClass()}>
-                          ساعت شروع
-                        </label>
-                        <input
-                          id="gs-open"
-                          type="time"
-                          className={fieldClass()}
-                          value={draft.openTime}
-                          onChange={(e) => patch({ openTime: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="gs-close" className={labelClass()}>
-                          ساعت پایان
-                        </label>
-                        <input
-                          id="gs-close"
-                          type="time"
-                          className={fieldClass()}
-                          value={draft.closeTime}
-                          onChange={(e) => patch({ closeTime: e.target.value })}
-                        />
-                      </div>
+                      <TimeField
+                        id="gs-open"
+                        label="ساعت شروع"
+                        value={draft.openTime}
+                        onChange={(openTime) => patch({ openTime })}
+                      />
+                      <TimeField
+                        id="gs-close"
+                        label="ساعت پایان"
+                        value={draft.closeTime}
+                        onChange={(closeTime) => patch({ closeTime })}
+                      />
                     </div>
                     <div>
                       <p className={labelClass()}>روزهای کاری</p>
@@ -629,11 +799,16 @@ export default function GooglesabtCheckout() {
                         </button>
                       </div>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-navy-500">قیمت</span>
+                        <span className="text-navy-500">برآورد قیمت</span>
                         <span className="font-bold text-navy-800">
-                          {formatToman(pkg.price)} تومان
+                          {formatToman(finalPrice)} تومان
                         </span>
                       </div>
+                      {activeDiscount ? (
+                        <p className="mt-2 text-[11px] font-bold text-emerald-700">
+                          کد {activeDiscount.code} اعمال شده
+                        </p>
+                      ) : null}
                     </div>
 
                     <div className="space-y-3 rounded-2xl border border-navy-100 p-4 text-[13px] leading-relaxed text-navy-600">
@@ -642,7 +817,15 @@ export default function GooglesabtCheckout() {
                         value={`${draft.businessName} · ${draft.category}`}
                         onEdit={() => setStep(1)}
                       />
-                      <Row label="تماس" value={draft.phone} onEdit={() => setStep(1)} />
+                      <Row
+                        label="تماس"
+                        value={
+                          draft.contactName.trim()
+                            ? `${draft.contactName.trim()} · ${draft.phone}`
+                            : draft.phone
+                        }
+                        onEdit={() => setStep(1)}
+                      />
                       <Row
                         label="آدرس"
                         value={`${draft.province}، ${draft.city} — ${draft.address}`}
@@ -650,7 +833,7 @@ export default function GooglesabtCheckout() {
                       />
                       <Row
                         label="ساعات"
-                        value={`${draft.openTime} تا ${draft.closeTime} · ${weekdayLabels}`}
+                        value={`${formatHmFa(draft.openTime)} تا ${formatHmFa(draft.closeTime)} · ${weekdayLabels}`}
                         onEdit={() => setStep(3)}
                       />
                     </div>
@@ -659,25 +842,86 @@ export default function GooglesabtCheckout() {
 
                 {step === 5 ? (
                   <div className="space-y-5">
-                    <h3 className="text-base font-extrabold text-navy-900">تکمیل سفارش</h3>
+                    <h3 className="text-base font-extrabold text-navy-900">ثبت درخواست</h3>
+                    <div>
+                      <p className={labelClass()}>کی با شما تماس بگیریم؟</p>
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {GOOGLESABT_CALL_WINDOWS.map((w) => {
+                          const on = draft.preferredCallWindow === w.id;
+                          return (
+                            <button
+                              key={w.id}
+                              type="button"
+                              onClick={() =>
+                                patch({ preferredCallWindow: w.id as GooglesabtCallWindowId })
+                              }
+                              className={`rounded-xl px-3 py-3 text-center transition ${
+                                on
+                                  ? "bg-[#4285F4] text-white"
+                                  : "border border-navy-100 bg-navy-50 text-navy-600"
+                              }`}
+                            >
+                              <span className="block text-[12px] font-extrabold">{w.label}</span>
+                              <span
+                                className={`mt-0.5 block text-[10px] font-semibold ${
+                                  on ? "text-white/80" : "text-navy-400"
+                                }`}
+                              >
+                                {w.hint}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <p className={labelClass()}>چطور راحت‌ترید؟</p>
+                      <div className="flex flex-wrap gap-2">
+                        {GOOGLESABT_CONTACT_CHANNELS.map((c) => {
+                          const on = draft.contactChannel === c.id;
+                          return (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() =>
+                                patch({ contactChannel: c.id as GooglesabtContactChannelId })
+                              }
+                              className={`rounded-full px-4 py-2 text-[12px] font-bold transition ${
+                                on
+                                  ? "bg-[#4285F4] text-white"
+                                  : "border border-navy-100 bg-navy-50 text-navy-500"
+                              }`}
+                            >
+                              {c.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                     <div className="rounded-2xl border border-navy-100 bg-navy-50/40 p-5">
                       <div className="flex justify-between text-[13px] text-navy-500">
                         <span>پکیج {pkg.name}</span>
                         <span className="line-through">{formatToman(pkg.oldPrice)} تومان</span>
                       </div>
                       <div className="mt-3 flex justify-between border-t border-navy-100 pt-3 text-sm font-extrabold text-navy-900">
-                        <span>مبلغ قابل پرداخت</span>
+                        <span>برآورد مبلغ</span>
                         <span className="text-[#4285F4]">
-                          {formatToman(pkg.price)} تومان
+                          {formatToman(finalPrice)} تومان
                         </span>
                       </div>
+                      {activeDiscount ? (
+                        <p className="mt-2 text-[11px] font-bold text-emerald-700">
+                          تخفیف {activeDiscount.percent}٪ با کد {activeDiscount.code}
+                        </p>
+                      ) : null}
                       <p className="mt-2 text-[11px] text-navy-400">
-                        پرداخت کامل پکیج. با تأیید پرداخت، راه‌اندازی همان روز شروع می‌شود. مالیات بر ارزش افزوده در صورت شمول در فاکتور لحاظ می‌شود.
+                        الان پرداختی انجام نمی‌شود. بعد از ثبت، در بازهٔ انتخابی با شما هماهنگ
+                        می‌کنیم.
                       </p>
                     </div>
                     <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5 text-[12px] font-bold text-emerald-700">
-                      <IconShield size={15} className="shrink-0" />
-                      پرداخت امن از طریق درگاه معتبر
+                      <IconPhone size={15} className="shrink-0" />
+                      تماس در بازهٔ {callWindowLabel(draft.preferredCallWindow)}
                     </div>
                   </div>
                 ) : null}
@@ -702,21 +946,21 @@ export default function GooglesabtCheckout() {
                       onClick={goNext}
                       className="flex-1 rounded-xl bg-[#4285F4] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#1b6ef3] active:scale-[0.98]"
                     >
-                      {step === 4 ? "ادامه به پرداخت" : "ادامه"}
+                      {step === 4 ? "ادامه به ثبت درخواست" : "ادامه"}
                     </button>
                   ) : (
                     <button
                       type="button"
-                      onClick={startPayment}
-                      disabled={paying}
+                      onClick={submitRequest}
+                      disabled={submitting}
                       className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#4285F4] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#1b6ef3] active:scale-[0.98] disabled:opacity-60"
                     >
-                      {paying ? (
-                        "در حال انتقال…"
+                      {submitting ? (
+                        "در حال ثبت…"
                       ) : (
                         <>
-                          <IconShield size={16} className="shrink-0" />
-                          پرداخت امن آنلاین
+                          <IconPhone size={16} className="shrink-0" />
+                          ثبت درخواست — کارشناسان تماس می‌گیرند
                         </>
                       )}
                     </button>
@@ -733,19 +977,36 @@ export default function GooglesabtCheckout() {
               <IconCheck size={36} />
             </div>
             <h2 className="mt-6 text-2xl font-extrabold text-navy-900 sm:text-3xl">
-              ثبت سفارش شما با موفقیت انجام شد.
+              درخواست شما ثبت شد.
             </h2>
             <p className="mt-3 text-[14px] text-navy-500">
-              تیم آرایه به‌زودی برای تکمیل راه‌اندازی با شما تماس می‌گیرد.
+              کارشناسان ما به‌زودی با شما تماس می‌گیرند تا جزئیات را نهایی و مسیر پرداخت را
+              هماهنگ کنند.
             </p>
 
             <div className="mt-8 space-y-3 rounded-[1.75rem] border border-navy-100 bg-white p-6 text-right shadow-[0_12px_40px_rgba(16,42,67,0.06)] sm:p-7">
               <SuccessRow label="کد پیگیری" value={trackId || "—"} mono />
-              <SuccessRow label="زمان تحویل تقریبی" value="کمتر از ۱ روز کاری" />
+              <SuccessRow
+                label="زمان تماس"
+                value={callWindowLabel(draft.preferredCallWindow)}
+              />
+              <SuccessRow
+                label="نحوه تماس"
+                value={
+                  GOOGLESABT_CONTACT_CHANNELS.find((c) => c.id === draft.contactChannel)
+                    ?.label ?? "تماس تلفنی"
+                }
+              />
               <SuccessRow label="پکیج" value={pkg.name} />
-              <SuccessRow label="مبلغ پرداخت‌شده" value={`${formatToman(pkg.price)} تومان`} />
+              <SuccessRow label="برآورد مبلغ" value={`${formatToman(finalPrice)} تومان`} />
+              {activeDiscount ? (
+                <SuccessRow label="کد تخفیف" value={activeDiscount.code} />
+              ) : null}
               {draft.businessName ? (
                 <SuccessRow label="کسب‌وکار" value={draft.businessName} />
+              ) : null}
+              {draft.contactName.trim() ? (
+                <SuccessRow label="مسئول تماس" value={draft.contactName.trim()} />
               ) : null}
             </div>
 
@@ -757,7 +1018,7 @@ export default function GooglesabtCheckout() {
                 پشتیبانی {SITE_PHONE_DISPLAY}
               </a>
               <a
-                href={siteWhatsAppUrl(`سلام، سفارش ثبت گوگل من با کد ${trackId || ""}`)}
+                href={siteWhatsAppUrl(`سلام، درخواست ثبت گوگل من با کد ${trackId || ""}`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 rounded-xl bg-[#25D366] px-4 py-3 text-sm font-bold text-white"
@@ -767,10 +1028,10 @@ export default function GooglesabtCheckout() {
             </div>
             <button
               type="button"
-              onClick={downloadInvoice}
+              onClick={downloadSummary}
               className="mt-3 w-full rounded-xl border border-navy-100 px-4 py-3 text-sm font-bold text-[#4285F4]"
             >
-              دانلود فاکتور
+              دانلود خلاصه درخواست
             </button>
           </div>
         ) : null}
